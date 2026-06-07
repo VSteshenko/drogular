@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
+
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif()
 
 project(Drogular
     VERSION 0.1.0
@@ -43,6 +47,20 @@ if(DROGULAR_BUILD_EXAMPLES)
 endif()
 
 if(DROGULAR_BUILD_TESTS)
+
+    include(FetchContent)
+
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+    )
+
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(googletest)
+
     enable_testing()
+
     add_subdirectory(tests)
+
 endif()
