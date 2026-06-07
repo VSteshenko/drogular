@@ -16,18 +16,28 @@ std::string spaces(unsigned int count) {
 
 } // namespace
 
-Selection::Selection(std::string name, std::vector<std::string> fields)
+Selection::Selection(std::string name)
+    : name_(std::move(name)) {
+}
+
+Selection::Selection(std::string name, std::vector<Selection> children)
     : name_(std::move(name)),
-      fields_(std::move(fields)) {
+      children_(std::move(children)) {
 }
 
 std::string Selection::toString(unsigned int indent) const {
     std::ostringstream output;
 
-    output << spaces(indent) << name_ << " {\n";
+    output << spaces(indent) << name_;
 
-    for (const auto& field : fields_) {
-        output << spaces(indent + 2) << field << "\n";
+    if (children_.empty()) {
+        return output.str();
+    }
+
+    output << " {\n";
+
+    for (const auto& child : children_) {
+        output << child.toString(indent + 2) << "\n";
     }
 
     output << spaces(indent) << "}";
@@ -35,12 +45,20 @@ std::string Selection::toString(unsigned int indent) const {
     return output.str();
 }
 
+Selection field(std::string name) {
+    return Selection(std::move(name));
+}
+
+Selection field(std::string name, std::vector<Selection> children) {
+    return Selection(std::move(name), std::move(children));
+}
+
 Query::Query(std::string name)
     : name_(std::move(name)) {
 }
 
-Query& Query::select(std::string name, std::vector<std::string> fields) {
-    selections_.emplace_back(std::move(name), std::move(fields));
+Query& Query::select(std::string name, std::vector<Selection> children) {
+    selections_.emplace_back(std::move(name), std::move(children));
     return *this;
 }
 
@@ -50,7 +68,7 @@ std::string Query::toString() const {
     output << "query " << name_ << " {\n";
 
     for (const auto& selection : selections_) {
-        output << selection.toString(2) << '\n';
+        output << selection.toString(2) << "\n";
     }
 
     output << "}";

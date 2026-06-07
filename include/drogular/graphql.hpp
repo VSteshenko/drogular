@@ -7,10 +7,14 @@ namespace drogular::gql {
 
 /**
  * Represents a GraphQL field selection.
+ *
+ * A field can be either scalar or nested.
  */
 class Selection {
 public:
-    Selection(std::string name, std::vector<std::string> fields);
+    explicit Selection(std::string name);
+
+    Selection(std::string name, std::vector<Selection> children);
 
     /**
      * Converts the selection to GraphQL text.
@@ -19,8 +23,18 @@ public:
 
 private:
     std::string name_;
-    std::vector<std::string> fields_;
+    std::vector<Selection> children_;
 };
+
+/**
+ * Creates a scalar GraphQL field.
+ */
+Selection field(std::string name);
+
+/**
+ * Creates a nested GraphQL field.
+ */
+Selection field(std::string name, std::vector<Selection> children);
 
 /**
  * Builds a GraphQL query string.
@@ -32,7 +46,7 @@ public:
     /**
      * Adds a field selection to the query.
      */
-    Query& select(std::string name, std::vector<std::string> fields);
+    Query& select(std::string name, std::vector<Selection> children);
 
     /**
      * Converts the query to GraphQL text.

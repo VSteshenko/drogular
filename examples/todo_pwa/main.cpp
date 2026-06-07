@@ -26,7 +26,11 @@ public:
 
     std::optional<drogular::gql::Query> query() const override {
         return drogular::gql::query("TodoPage")
-            .select("todos", {"id", "title", "done"});
+            .select("todos", {
+                drogular::gql::field("id"),
+                drogular::gql::field("title"),
+                drogular::gql::field("done")
+            });
     }
 
     std::string render(drogular::RenderContext&) override {

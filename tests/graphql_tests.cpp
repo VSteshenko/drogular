@@ -13,7 +13,10 @@ TEST(GraphQLTests, BuildsEmptyQuery) {
 
 TEST(GraphQLTests, BuildsQueryWithSingleSelection) {
     const auto query = drogular::gql::query("Dashboard")
-        .select("user", {"id", "name"})
+        .select("user", {
+            drogular::gql::field("id"),
+            drogular::gql::field("name")
+        })
         .toString();
 
     EXPECT_EQ(
@@ -29,8 +32,16 @@ R"(query Dashboard {
 
 TEST(GraphQLTests, BuildsQueryWithMultipleSelections) {
     const auto query = drogular::gql::query("Dashboard")
-        .select("user", {"id", "name", "avatarUrl"})
-        .select("todos", {"id", "title", "done"})
+        .select("user", {
+            drogular::gql::field("id"),
+            drogular::gql::field("name"),
+            drogular::gql::field("avatarUrl")
+        })
+        .select("todos", {
+            drogular::gql::field("id"),
+            drogular::gql::field("title"),
+            drogular::gql::field("done")
+        })
         .toString();
 
     EXPECT_EQ(
@@ -45,6 +56,33 @@ R"(query Dashboard {
     id
     title
     done
+  }
+})"
+    );
+}
+
+TEST(GraphQLTests, BuildsNestedSelections) {
+    const auto query = drogular::gql::query("Dashboard")
+        .select("user", {
+            drogular::gql::field("id"),
+            drogular::gql::field("name"),
+            drogular::gql::field("company", {
+                drogular::gql::field("id"),
+                drogular::gql::field("title")
+            })
+        })
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query Dashboard {
+  user {
+    id
+    name
+    company {
+      id
+      title
+    }
   }
 })"
     );
