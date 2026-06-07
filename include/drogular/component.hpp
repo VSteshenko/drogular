@@ -17,6 +17,51 @@ public:
 };
 
 /**
+ * Stores GraphQL result data for rendering.
+ */
+class GraphQLResult {
+public:
+    template <typename T>
+    void set(std::string key, T value) {
+        values_[std::move(key)] = std::move(value);
+    }
+
+    template <typename T>
+    std::optional<T> get(const std::string& key) const {
+        const auto it = values_.find(key);
+
+        if (it == values_.end()) {
+            return std::nullopt;
+        }
+
+        const auto value = std::any_cast<T>(&it->second);
+
+        if (value == nullptr) {
+            return std::nullopt;
+        }
+
+        return *value;
+    }
+
+    template <typename T>
+    T require(const std::string& key) const {
+        const auto value = get<T>(key);
+
+        if (!value.has_value()) {
+            throw RenderContextError("GraphQL result value '" + key + "' is missing or has a wrong type");
+        }
+
+        return *value;
+    }
+
+    bool contains(const std::string& key) const;
+    void clear();
+
+private:
+    std::unordered_map<std::string, std::any> values_;
+};
+
+/**
  * Provides data and services needed during rendering.
  */
 class RenderContext {
@@ -98,8 +143,19 @@ public:
         return *value;
     }
 
+    /**
+     * Returns mutable GraphQL result data.
+     */
+    GraphQLResult& graphql();
+
+    /**
+     * Returns read-only GraphQL result data.
+     */
+    const GraphQLResult& graphql() const;
+
 private:
     std::unordered_map<std::string, std::any> values_;
+    GraphQLResult graphql_;
 };
 
 /**

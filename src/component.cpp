@@ -2,6 +2,22 @@
 
 namespace drogular {
 
+bool GraphQLResult::contains(const std::string& key) const {
+    return values_.contains(key);
+}
+
+void GraphQLResult::clear() {
+    values_.clear();
+}
+
+GraphQLResult& RenderContext::graphql() {
+    return graphql_;
+}
+
+const GraphQLResult& RenderContext::graphql() const {
+    return graphql_;
+}
+
 RenderContextError::RenderContextError(const std::string& message)
     : std::runtime_error(message) {
 }
