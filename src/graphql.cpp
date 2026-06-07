@@ -27,7 +27,7 @@ std::string argumentsToString(const std::vector<Argument>& arguments) {
     output << "(";
 
     for (size_t i = 0; i < arguments.size(); ++i) {
-        output << arguments[i].name << ": " << arguments[i].value;
+        output << arguments[i].name << ": " << arguments[i].value.toString();
 
         if (i + 1 < arguments.size()) {
             output << ", ";
@@ -41,6 +41,45 @@ std::string argumentsToString(const std::vector<Argument>& arguments) {
 
 } // namespace
 
+Value::Value(std::string text)
+    : text_(std::move(text)) {
+}
+
+const std::string& Value::toString() const {
+    return text_;
+}
+
+Value string(std::string value) {
+    std::string escaped;
+    escaped.reserve(value.size() + 2);
+
+    escaped += '"';
+
+    for (const auto ch : value) {
+        if (ch == '"' || ch == '\\') {
+            escaped += '\\';
+        }
+
+        escaped += ch;
+    }
+
+    escaped += '"';
+
+    return Value(std::move(escaped));
+}
+
+Value intValue(int value) {
+    return Value(std::to_string(value));
+}
+
+Value boolValue(bool value) {
+    return Value(value ? "true" : "false");
+}
+
+Value raw(std::string value) {
+    return Value(std::move(value));
+}
+
 Selection::Selection(std::string name)
     : name_(std::move(name)) {
 }
@@ -50,7 +89,7 @@ Selection::Selection(std::string name, std::vector<Selection> children)
       children_(std::move(children)) {
 }
 
-Selection& Selection::arg(std::string name, std::string value) {
+Selection& Selection::arg(std::string name, Value value) {
     arguments_.push_back({
         .name = std::move(name),
         .value = std::move(value)

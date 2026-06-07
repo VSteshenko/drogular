@@ -6,11 +6,49 @@
 namespace drogular::gql {
 
 /**
+ * Represents a GraphQL literal value.
+ */
+class Value {
+public:
+    explicit Value(std::string text);
+
+    /**
+     * Converts the value to GraphQL text.
+     */
+    const std::string& toString() const;
+
+private:
+    std::string text_;
+};
+
+/**
+ * Creates a GraphQL string value.
+ */
+Value string(std::string value);
+
+/**
+ * Creates a GraphQL integer value.
+ */
+Value intValue(int value);
+
+/**
+ * Creates a GraphQL boolean value.
+ */
+Value boolValue(bool value);
+
+/**
+ * Creates a raw GraphQL value.
+ *
+ * Use this for variables, enums, null, or advanced values.
+ */
+Value raw(std::string value);
+
+/**
  * Represents a GraphQL argument.
  */
 struct Argument {
     std::string name;
-    std::string value;
+    Value value;
 };
 
 /**
@@ -27,7 +65,7 @@ public:
     /**
      * Adds an argument to the field.
      */
-    Selection& arg(std::string name, std::string value);
+    Selection& arg(std::string name, Value value);
 
     /**
      * Adds nested child fields.
