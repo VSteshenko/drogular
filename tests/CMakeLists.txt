@@ -4,6 +4,7 @@ add_executable(drogular_tests
         graphql_result_tests.cpp
         graphql_tests.cpp
         render_context_tests.cpp
+        testing_tests.cpp
 )
 
 target_link_libraries(drogular_tests
