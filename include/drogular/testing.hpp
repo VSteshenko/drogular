@@ -15,6 +15,16 @@ struct RenderResult {
 };
 
 /**
+ * Returns true if the text contains the specified substring.
+ */
+inline bool contains(
+    const std::string& text,
+    const std::string& value
+) {
+    return text.find(value) != std::string::npos;
+}
+
+/**
  * Creates a page, runs its lifecycle, and renders it.
  */
 template <typename PageType>

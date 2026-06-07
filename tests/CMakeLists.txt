@@ -5,12 +5,19 @@ add_executable(drogular_tests
         graphql_tests.cpp
         render_context_tests.cpp
         testing_tests.cpp
+        todo_page_tests.cpp
+        ../examples/todo_pwa/todo_page.cpp
 )
 
 target_link_libraries(drogular_tests
         PRIVATE
         Drogular::drogular
         GTest::gtest_main
+)
+
+target_include_directories(drogular_tests
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}/examples/todo_pwa
 )
 
 include(GoogleTest)
