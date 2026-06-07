@@ -11,19 +11,28 @@ permissions:
 
 jobs:
   build-and-test:
-    name: Build and test
-    runs-on: ubuntu-24.04
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - macos-15
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install system dependencies
+      - name: Install Ubuntu dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             cmake \
             g++ \
+            git \
             libjsoncpp-dev \
             uuid-dev \
             zlib1g-dev \
@@ -31,7 +40,8 @@ jobs:
             libssl-dev \
             libc-ares-dev
 
-      - name: Install Drogon
+      - name: Install Drogon on Ubuntu
+        if: runner.os == 'Linux'
         run: |
           git clone https://github.com/drogonframework/drogon.git
           cd drogon
@@ -40,6 +50,12 @@ jobs:
           cmake --build build --parallel
           sudo cmake --install build
           sudo ldconfig
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install drogon
 
       - name: Configure CMake
         run: |
