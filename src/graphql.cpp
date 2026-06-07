@@ -15,6 +15,31 @@ std::string spaces(unsigned int count) {
 }
 
 /**
+ * Converts GraphQL variable declarations to text.
+ */
+std::string variablesToString(const std::vector<Variable>& variables) {
+    if (variables.empty()) {
+        return "";
+    }
+
+    std::ostringstream output;
+
+    output << "(";
+
+    for (size_t i = 0; i < variables.size(); ++i) {
+        output << "$" << variables[i].name << ": " << variables[i].type;
+
+        if (i + 1 < variables.size()) {
+            output << ", ";
+        }
+    }
+
+    output << ")";
+
+    return output.str();
+}
+
+/**
  * Converts GraphQL arguments to text.
  */
 std::string argumentsToString(const std::vector<Argument>& arguments) {
@@ -80,6 +105,10 @@ Value raw(std::string value) {
     return Value(std::move(value));
 }
 
+Value variable(std::string name) {
+    return Value("$" + std::move(name));
+}
+
 Selection::Selection(std::string name)
     : name_(std::move(name)) {
 }
@@ -136,6 +165,15 @@ Query::Query(std::string name)
     : name_(std::move(name)) {
 }
 
+Query& Query::variable(std::string name, std::string type) {
+    variables_.push_back({
+        .name = std::move(name),
+        .type = std::move(type)
+    });
+
+    return *this;
+}
+
 Query& Query::select(Selection selection) {
     selections_.push_back(std::move(selection));
     return *this;
@@ -149,7 +187,7 @@ Query& Query::select(std::string name, std::vector<Selection> children) {
 std::string Query::toString() const {
     std::ostringstream output;
 
-    output << "query " << name_ << " {\n";
+    output << "query " << name_ << variablesToString(variables_) << " {\n";
 
     for (const auto& selection : selections_) {
         output << selection.toString(2) << "\n";

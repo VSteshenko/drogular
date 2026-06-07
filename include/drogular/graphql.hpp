@@ -44,6 +44,11 @@ Value boolValue(bool value);
 Value raw(std::string value);
 
 /**
+ * Creates a GraphQL variable reference.
+ */
+Value variable(std::string name);
+
+/**
  * Represents a GraphQL argument.
  */
 struct Argument {
@@ -94,11 +99,24 @@ Selection field(std::string name);
 Selection field(std::string name, std::vector<Selection> children);
 
 /**
+ * Represents a GraphQL variable declaration.
+ */
+struct Variable {
+    std::string name;
+    std::string type;
+};
+
+/**
  * Builds a GraphQL query string.
  */
 class Query {
 public:
     explicit Query(std::string name);
+
+    /**
+     * Adds a variable declaration to the query.
+     */
+    Query& variable(std::string name, std::string type);
 
     /**
      * Adds a selection to the query.
@@ -117,6 +135,7 @@ public:
 
 private:
     std::string name_;
+    std::vector<Variable> variables_;
     std::vector<Selection> selections_;
 };
 

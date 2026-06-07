@@ -11,6 +11,56 @@ TEST(GraphQLTests, BuildsEmptyQuery) {
     );
 }
 
+TEST(GraphQLTests, BuildsQueryWithVariable) {
+    const auto query = drogular::gql::query("UserPage")
+        .variable("userId", "ID!")
+        .select(
+            drogular::gql::field("user")
+                .arg("id", drogular::gql::variable("userId"))
+                .children({
+                    drogular::gql::field("id"),
+                    drogular::gql::field("name")
+                })
+        )
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query UserPage($userId: ID!) {
+  user(id: $userId) {
+    id
+    name
+  }
+})"
+    );
+}
+
+TEST(GraphQLTests, BuildsQueryWithMultipleVariables) {
+    const auto query = drogular::gql::query("TodoPage")
+        .variable("limit", "Int!")
+        .variable("done", "Boolean")
+        .select(
+            drogular::gql::field("todos")
+                .arg("limit", drogular::gql::variable("limit"))
+                .arg("done", drogular::gql::variable("done"))
+                .children({
+                    drogular::gql::field("id"),
+                    drogular::gql::field("title")
+                })
+        )
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query TodoPage($limit: Int!, $done: Boolean) {
+  todos(limit: $limit, done: $done) {
+    id
+    title
+  }
+})"
+    );
+}
+
 TEST(GraphQLTests, BuildsQueryWithSingleSelection) {
     const auto query = drogular::gql::query("Dashboard")
         .select("user", {
