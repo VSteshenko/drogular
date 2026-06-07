@@ -14,6 +14,31 @@ std::string spaces(unsigned int count) {
     return std::string(count, ' ');
 }
 
+/**
+ * Converts GraphQL arguments to text.
+ */
+std::string argumentsToString(const std::vector<Argument>& arguments) {
+    if (arguments.empty()) {
+        return "";
+    }
+
+    std::ostringstream output;
+
+    output << "(";
+
+    for (size_t i = 0; i < arguments.size(); ++i) {
+        output << arguments[i].name << ": " << arguments[i].value;
+
+        if (i + 1 < arguments.size()) {
+            output << ", ";
+        }
+    }
+
+    output << ")";
+
+    return output.str();
+}
+
 } // namespace
 
 Selection::Selection(std::string name)
@@ -25,10 +50,25 @@ Selection::Selection(std::string name, std::vector<Selection> children)
       children_(std::move(children)) {
 }
 
+Selection& Selection::arg(std::string name, std::string value) {
+    arguments_.push_back({
+        .name = std::move(name),
+        .value = std::move(value)
+    });
+
+    return *this;
+}
+
+Selection& Selection::children(std::vector<Selection> children) {
+    children_ = std::move(children);
+    return *this;
+}
+
 std::string Selection::toString(unsigned int indent) const {
     std::ostringstream output;
 
     output << spaces(indent) << name_;
+    output << argumentsToString(arguments_);
 
     if (children_.empty()) {
         return output.str();
@@ -55,6 +95,11 @@ Selection field(std::string name, std::vector<Selection> children) {
 
 Query::Query(std::string name)
     : name_(std::move(name)) {
+}
+
+Query& Query::select(Selection selection) {
+    selections_.push_back(std::move(selection));
+    return *this;
 }
 
 Query& Query::select(std::string name, std::vector<Selection> children) {

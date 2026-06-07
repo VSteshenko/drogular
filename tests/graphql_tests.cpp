@@ -87,3 +87,50 @@ R"(query Dashboard {
 })"
     );
 }
+
+TEST(GraphQLTests, BuildsFieldWithArgument) {
+    const auto query = drogular::gql::query("Dashboard")
+        .select(
+            drogular::gql::field("user")
+                .arg("id", R"("42")")
+                .children({
+                    drogular::gql::field("id"),
+                    drogular::gql::field("name")
+                })
+        )
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query Dashboard {
+  user(id: "42") {
+    id
+    name
+  }
+})"
+    );
+}
+
+TEST(GraphQLTests, BuildsFieldWithMultipleArguments) {
+    const auto query = drogular::gql::query("Dashboard")
+        .select(
+            drogular::gql::field("todos")
+                .arg("limit", "10")
+                .arg("done", "false")
+                .children({
+                    drogular::gql::field("id"),
+                    drogular::gql::field("title")
+                })
+        )
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query Dashboard {
+  todos(limit: 10, done: false) {
+    id
+    title
+  }
+})"
+    );
+}
