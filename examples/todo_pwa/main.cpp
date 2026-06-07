@@ -1,8 +1,7 @@
 #include <drogular/app.hpp>
 #include <drogular/page.hpp>
-#include <drogular/router.hpp>
 
-#include <memory>
+#include <optional>
 #include <string>
 
 class HomePage final : public drogular::Page {
@@ -35,10 +34,8 @@ private:
 };
 
 int main() {
-    drogular::Router router;
-
-    router.page("/", std::make_shared<HomePage>());
-
     drogular::App app;
+
+    app.page<HomePage>("/");
     app.run(8080);
 }
