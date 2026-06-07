@@ -4,8 +4,17 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace drogular {
+
+/**
+ * Thrown when a required render context value is missing or has a wrong type.
+ */
+class RenderContextError : public std::runtime_error {
+public:
+    explicit RenderContextError(const std::string& message);
+};
 
 /**
  * Provides data and services needed during rendering.
@@ -58,6 +67,36 @@ public:
      * Removes all values from the context.
      */
     void clear();
+
+    /**
+     * Returns a required typed value by key.
+     *
+     * Throws RenderContextError when the key is missing or the stored type is different.
+     */
+    template <typename T>
+    T require(const std::string& key) const {
+        const auto value = get<T>(key);
+
+        if (!value.has_value()) {
+            throw RenderContextError("Render context value '" + key + "' is missing or has a wrong type");
+        }
+
+        return *value;
+    }
+
+    /**
+     * Returns a typed value by key or the provided default value.
+     */
+    template <typename T>
+    T getOr(const std::string& key, T defaultValue) const {
+        const auto value = get<T>(key);
+
+        if (!value.has_value()) {
+            return defaultValue;
+        }
+
+        return *value;
+    }
 
 private:
     std::unordered_map<std::string, std::any> values_;

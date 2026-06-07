@@ -73,3 +73,51 @@ TEST(RenderContextTests, ClearsValues) {
     EXPECT_FALSE(context.contains("title"));
     EXPECT_FALSE(context.contains("count"));
 }
+
+TEST(RenderContextTests, RequiresExistingValue) {
+    drogular::RenderContext context;
+
+    context.set("title", std::string("Hello"));
+
+    const auto title = context.require<std::string>("title");
+
+    EXPECT_EQ(title, "Hello");
+}
+
+TEST(RenderContextTests, ThrowsWhenRequiredValueIsMissing) {
+    drogular::RenderContext context;
+
+    EXPECT_THROW(
+        context.require<std::string>("title"),
+        drogular::RenderContextError
+    );
+}
+
+TEST(RenderContextTests, ThrowsWhenRequiredValueHasWrongType) {
+    drogular::RenderContext context;
+
+    context.set("count", 42);
+
+    EXPECT_THROW(
+        context.require<std::string>("count"),
+        drogular::RenderContextError
+    );
+}
+
+TEST(RenderContextTests, ReturnsDefaultValueWhenKeyIsMissing) {
+    drogular::RenderContext context;
+
+    const auto count = context.getOr<int>("count", 0);
+
+    EXPECT_EQ(count, 0);
+}
+
+TEST(RenderContextTests, ReturnsStoredValueInsteadOfDefaultValue) {
+    drogular::RenderContext context;
+
+    context.set("count", 42);
+
+    const auto count = context.getOr<int>("count", 0);
+
+    EXPECT_EQ(count, 42);
+}

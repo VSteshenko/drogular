@@ -2,6 +2,10 @@
 
 namespace drogular {
 
+RenderContextError::RenderContextError(const std::string& message)
+    : std::runtime_error(message) {
+}
+
 bool RenderContext::contains(const std::string& key) const {
     return values_.contains(key);
 }
