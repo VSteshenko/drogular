@@ -29,8 +29,7 @@ jobs:
             zlib1g-dev \
             openssl \
             libssl-dev \
-            libc-ares-dev \
-            postgresql-server-dev-all
+            libc-ares-dev
 
       - name: Configure CMake
         run: |
