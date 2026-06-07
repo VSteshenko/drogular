@@ -7,7 +7,16 @@
 
 class HomePage final : public drogular::Page {
 public:
-    std::string render() override {
+    void onInit(drogular::RenderContext&) override {
+        title_ = "Hello from Drogular";
+    }
+
+    std::optional<drogular::gql::Query> query() const override {
+        return drogular::gql::query("HomePage")
+            .select("viewer", {"id", "name"});
+    }
+
+    std::string render(drogular::RenderContext&) override {
         return R"(
 <!doctype html>
 <html>
@@ -15,11 +24,14 @@ public:
     <title>Drogular Todo PWA</title>
 </head>
 <body>
-    <h1>Hello from Drogular</h1>
+    <h1>)" + title_ + R"(</h1>
 </body>
 </html>
 )";
     }
+
+private:
+    std::string title_;
 };
 
 int main() {

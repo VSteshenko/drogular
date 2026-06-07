@@ -20,6 +20,8 @@ find_package(Drogon REQUIRED)
 
 add_library(drogular
     src/app.cpp
+    src/component.cpp
+    src/page.cpp
     src/router.cpp
     src/graphql.cpp
 )

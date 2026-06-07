@@ -10,9 +10,14 @@ void Router::page(const std::string& path, std::shared_ptr<Page> page) {
         path,
         [page](const drogon::HttpRequestPtr&,
                std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
+            RenderContext context;
+
+            page->onInit(context);
+
             auto response = drogon::HttpResponse::newHttpResponse();
             response->setContentTypeCode(drogon::CT_TEXT_HTML);
-            response->setBody(page->render());
+            response->setBody(page->render(context));
+
             callback(response);
         }
     );
