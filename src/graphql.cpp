@@ -132,6 +132,12 @@ Selection& Selection::arg(std::string name, Value value) {
     return *this;
 }
 
+Selection Selection::fragmentSpread(std::string name) {
+    Selection selection(std::move(name));
+    selection.kind_ = SelectionKind::FragmentSpread;
+    return selection;
+}
+
 Selection& Selection::children(std::vector<Selection> children) {
     children_ = std::move(children);
     return *this;
@@ -139,6 +145,10 @@ Selection& Selection::children(std::vector<Selection> children) {
 
 std::string Selection::toString(unsigned int indent) const {
     std::ostringstream output;
+
+    if (kind_ == SelectionKind::FragmentSpread) {
+        return spaces(indent) + "..." + name_;
+    }
 
     output << spaces(indent);
 
@@ -172,6 +182,46 @@ Selection field(std::string name, std::vector<Selection> children) {
     return Selection(std::move(name), std::move(children));
 }
 
+Selection spread(std::string name) {
+    return Selection::fragmentSpread(std::move(name));
+}
+
+Fragment::Fragment(
+    std::string name,
+    std::string typeName,
+    std::vector<Selection> selections
+)
+    : name_(std::move(name)),
+      typeName_(std::move(typeName)),
+      selections_(std::move(selections)) {
+}
+
+std::string Fragment::toString() const {
+    std::ostringstream output;
+
+    output << "fragment " << name_ << " on " << typeName_ << " {\n";
+
+    for (const auto& selection : selections_) {
+        output << selection.toString(2) << "\n";
+    }
+
+    output << "}";
+
+    return output.str();
+}
+
+Fragment fragment(
+    std::string name,
+    std::string typeName,
+    std::vector<Selection> selections
+) {
+    return Fragment(
+        std::move(name),
+        std::move(typeName),
+        std::move(selections)
+    );
+}
+
 Query::Query(std::string name)
     : name_(std::move(name)) {
 }
@@ -195,6 +245,11 @@ Query& Query::select(std::string name, std::vector<Selection> children) {
     return *this;
 }
 
+Query& Query::fragment(Fragment fragment) {
+    fragments_.push_back(std::move(fragment));
+    return *this;
+}
+
 std::string Query::toString() const {
     std::ostringstream output;
 
@@ -205,6 +260,10 @@ std::string Query::toString() const {
     }
 
     output << "}";
+
+    for (const auto& fragment : fragments_) {
+        output << "\n\n" << fragment.toString();
+    }
 
     return output.str();
 }

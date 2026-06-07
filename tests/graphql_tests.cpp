@@ -253,3 +253,70 @@ R"(query Dashboard($userId: ID!) {
 })"
     );
 }
+
+TEST(GraphQLTests, BuildsQueryWithFragmentSpread) {
+    const auto userFields = drogular::gql::fragment("UserFields", "User", {
+        drogular::gql::field("id"),
+        drogular::gql::field("name")
+    });
+
+    const auto query = drogular::gql::query("UserPage")
+        .select(
+            drogular::gql::field("user")
+                .arg("id", drogular::gql::string("42"))
+                .children({
+                    drogular::gql::spread("UserFields")
+                })
+        )
+        .fragment(userFields)
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query UserPage {
+  user(id: "42") {
+    ...UserFields
+  }
+}
+
+fragment UserFields on User {
+  id
+  name
+})"
+    );
+}
+
+TEST(GraphQLTests, BuildsQueryWithFragmentAndVariables) {
+    const auto todoFields = drogular::gql::fragment("TodoFields", "Todo", {
+        drogular::gql::field("id"),
+        drogular::gql::field("title"),
+        drogular::gql::field("done")
+    });
+
+    const auto query = drogular::gql::query("TodoPage")
+        .variable("limit", "Int!")
+        .select(
+            drogular::gql::field("todos")
+                .arg("limit", drogular::gql::variable("limit"))
+                .children({
+                    drogular::gql::spread("TodoFields")
+                })
+        )
+        .fragment(todoFields)
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query TodoPage($limit: Int!) {
+  todos(limit: $limit) {
+    ...TodoFields
+  }
+}
+
+fragment TodoFields on Todo {
+  id
+  title
+  done
+})"
+    );
+}

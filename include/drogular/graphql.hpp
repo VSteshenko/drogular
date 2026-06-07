@@ -58,6 +58,14 @@ struct Argument {
 };
 
 /**
+ * Represents the kind of GraphQL selection.
+ */
+enum class SelectionKind {
+    Field,
+    FragmentSpread
+};
+
+/**
  * Represents a GraphQL field selection.
  *
  * A field can be scalar, nested, and can contain arguments.
@@ -79,6 +87,11 @@ public:
     Selection& arg(std::string name, Value value);
 
     /**
+     * Creates a fragment spread selection.
+     */
+    static Selection fragmentSpread(std::string name);
+
+    /**
      * Adds nested child fields.
      */
     Selection& children(std::vector<Selection> children);
@@ -92,6 +105,7 @@ private:
     std::string name_;
     std::optional<std::string> alias_;
     std::vector<Argument> arguments_;
+    SelectionKind kind_ = SelectionKind::Field;
     std::vector<Selection> children_;
 };
 
@@ -104,6 +118,34 @@ Selection field(std::string name);
  * Creates a nested GraphQL field.
  */
 Selection field(std::string name, std::vector<Selection> children);
+
+/**
+ * Creates a GraphQL fragment spread.
+ */
+Selection spread(std::string name);
+
+/**
+ * Represents a GraphQL fragment definition.
+ */
+class Fragment {
+public:
+    Fragment(std::string name, std::string typeName, std::vector<Selection> selections);
+
+    /**
+     * Converts the fragment to GraphQL text.
+     */
+    std::string toString() const;
+
+private:
+    std::string name_;
+    std::string typeName_;
+    std::vector<Selection> selections_;
+};
+
+/**
+ * Creates a GraphQL fragment definition.
+ */
+Fragment fragment(std::string name, std::string typeName, std::vector<Selection> selections);
 
 /**
  * Represents a GraphQL variable declaration.
@@ -136,6 +178,11 @@ public:
     Query& select(std::string name, std::vector<Selection> children);
 
     /**
+     * Adds a fragment definition to the query document.
+     */
+    Query& fragment(Fragment fragment);
+
+    /**
      * Converts the query to GraphQL text.
      */
     std::string toString() const;
@@ -144,6 +191,7 @@ private:
     std::string name_;
     std::vector<Variable> variables_;
     std::vector<Selection> selections_;
+    std::vector<Fragment> fragments_;
 };
 
 /**
