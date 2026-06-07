@@ -13,27 +13,37 @@ struct Todo {
 
 class TodoPage final : public drogular::Page {
 public:
-    void onInit(drogular::RenderContext&) override {
-        todos_ = {
+    void onInit(drogular::RenderContext& context) override {
+        const std::vector<Todo> todos = {
             {1, "Create Drogular project skeleton", true},
             {2, "Add GoogleTest support", true},
             {3, "Build GraphQL query builder", true},
             {4, "Create component/page framework", true},
             {5, "Wrap Drogon routing in App", true},
-            {6, "Build Todo PWA example", false}
+            {6, "Build Todo PWA example", true},
+            {7, "Add RenderContext data store", true},
+            {8, "Add fake GraphQL result", true},
+            {9, "Render todos from GraphQL result", false}
         };
+
+        context.graphql().set("todos", todos);
     }
 
     std::optional<drogular::gql::Query> query() const override {
         return drogular::gql::query("TodoPage")
-            .select("todos", {
-                drogular::gql::field("id"),
-                drogular::gql::field("title"),
-                drogular::gql::field("done")
-            });
+            .select(
+                drogular::gql::field("todos")
+                    .children({
+                        drogular::gql::field("id"),
+                        drogular::gql::field("title"),
+                        drogular::gql::field("done")
+                    })
+            );
     }
 
-    std::string render(drogular::RenderContext&) override {
+    std::string render(drogular::RenderContext& context) override {
+        const auto todos = context.graphql().require<std::vector<Todo>>("todos");
+
         std::string html = R"(
 <!doctype html>
 <html>
@@ -51,7 +61,7 @@ public:
         <ul>
 )";
 
-        for (const auto& todo : todos_) {
+        for (const auto& todo : todos) {
             html += "            <li>";
             html += todo.done ? "[x] " : "[ ] ";
             html += todo.title;
@@ -66,9 +76,6 @@ public:
 
         return html;
     }
-
-private:
-    std::vector<Todo> todos_;
 };
 
 int main() {
