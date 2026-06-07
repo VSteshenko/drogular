@@ -205,3 +205,51 @@ R"(query Search {
 })"
     );
 }
+
+TEST(GraphQLTests, BuildsFieldWithAlias) {
+    const auto query = drogular::gql::query("Dashboard")
+        .select(
+            drogular::gql::field("user")
+                .alias("profile")
+                .children({
+                    drogular::gql::field("id"),
+                    drogular::gql::field("name")
+                })
+        )
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query Dashboard {
+  profile: user {
+    id
+    name
+  }
+})"
+    );
+}
+
+TEST(GraphQLTests, BuildsFieldWithAliasAndArguments) {
+    const auto query = drogular::gql::query("Dashboard")
+        .variable("userId", "ID!")
+        .select(
+            drogular::gql::field("user")
+                .alias("profile")
+                .arg("id", drogular::gql::variable("userId"))
+                .children({
+                    drogular::gql::field("id"),
+                    drogular::gql::field("name")
+                })
+        )
+        .toString();
+
+    EXPECT_EQ(
+        query,
+R"(query Dashboard($userId: ID!) {
+  profile: user(id: $userId) {
+    id
+    name
+  }
+})"
+    );
+}

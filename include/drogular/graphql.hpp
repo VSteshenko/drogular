@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace drogular::gql {
 
@@ -68,6 +69,11 @@ public:
     Selection(std::string name, std::vector<Selection> children);
 
     /**
+     * Sets an alias for the field.
+     */
+    Selection& alias(std::string alias);
+
+    /**
      * Adds an argument to the field.
      */
     Selection& arg(std::string name, Value value);
@@ -84,6 +90,7 @@ public:
 
 private:
     std::string name_;
+    std::optional<std::string> alias_;
     std::vector<Argument> arguments_;
     std::vector<Selection> children_;
 };

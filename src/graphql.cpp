@@ -118,6 +118,11 @@ Selection::Selection(std::string name, std::vector<Selection> children)
       children_(std::move(children)) {
 }
 
+Selection& Selection::alias(std::string alias) {
+    alias_ = std::move(alias);
+    return *this;
+}
+
 Selection& Selection::arg(std::string name, Value value) {
     arguments_.push_back({
         .name = std::move(name),
@@ -135,7 +140,13 @@ Selection& Selection::children(std::vector<Selection> children) {
 std::string Selection::toString(unsigned int indent) const {
     std::ostringstream output;
 
-    output << spaces(indent) << name_;
+    output << spaces(indent);
+
+    if (alias_.has_value()) {
+        output << *alias_ << ": ";
+    }
+
+    output << name_;
     output << argumentsToString(arguments_);
 
     if (children_.empty()) {
