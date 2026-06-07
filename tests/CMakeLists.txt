@@ -1,11 +1,12 @@
 add_executable(drogular_tests
-    app_tests.cpp
-    graphql_tests.cpp
-    component_tests.cpp
+        app_tests.cpp
+        component_tests.cpp
+        graphql_tests.cpp
+        render_context_tests.cpp
 )
 
 target_link_libraries(drogular_tests
-    PRIVATE
+        PRIVATE
         Drogular::drogular
         GTest::gtest_main
 )
