@@ -31,6 +31,16 @@ jobs:
             libssl-dev \
             libc-ares-dev
 
+      - name: Install Drogon
+        run: |
+          git clone https://github.com/drogonframework/drogon.git
+          cd drogon
+          git submodule update --init --recursive
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+          sudo cmake --install build
+          sudo ldconfig
+
       - name: Configure CMake
         run: |
           cmake -S . -B build \
