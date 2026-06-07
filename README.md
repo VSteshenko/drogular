@@ -14,10 +14,47 @@ Current features:
 - Drogon integration
 - Page and component base classes
 - Simple routing through `drogular::App`
-- Basic GraphQL query builder
+- GraphQL query builder
+    - Nested selections
+    - Typed values
+    - Arguments
+    - Variables
+    - Aliases
+    - Fragments
+    - Basic validation
 - GoogleTest-based test infrastructure
 - Todo PWA example
 - GitHub Actions CI for Ubuntu and macOS
+
+## GraphQL builder
+
+Drogular includes a small GraphQL query builder.
+
+```cpp
+const auto userFields = drogular::gql::fragment("UserFields", "User", {
+    drogular::gql::field("id"),
+    drogular::gql::field("name")
+});
+
+const auto query = drogular::gql::query("UserPage")
+    .variable("userId", "ID!")
+    .select(
+        drogular::gql::field("user")
+            .alias("profile")
+            .arg("id", drogular::gql::variable("userId"))
+            .children({
+                drogular::gql::spread("UserFields")
+            })
+    )
+    .fragment(userFields);
+
+const auto validation = query.validate();
+
+if (validation.valid()) {
+    const auto text = query.toString();
+}
+
+```
 
 ## Example
 
@@ -36,7 +73,10 @@ public:
 
     std::optional<drogular::gql::Query> query() const override {
         return drogular::gql::query("HomePage")
-            .select("viewer", {"id", "name"});
+            .select("viewer", {
+                drogular::gql::field("id"), 
+                drogular::gql::field("name")
+             });
     }
 
     std::string render(drogular::RenderContext&) override {
@@ -53,3 +93,5 @@ int main() {
     app.page<HomePage>("/");
     app.run(8080);
 }
+
+```

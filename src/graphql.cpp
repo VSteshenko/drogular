@@ -64,6 +64,49 @@ std::string argumentsToString(const std::vector<Argument>& arguments) {
     return output.str();
 }
 
+/**
+ * Collects fragment spread names from a selection tree.
+ */
+void collectFragmentSpreads(
+    const Selection& selection,
+    std::set<std::string>& spreads
+) {
+    if (selection.kind() == SelectionKind::FragmentSpread) {
+        spreads.insert(selection.name());
+        return;
+    }
+
+    for (const auto& child : selection.children()) {
+        collectFragmentSpreads(child, spreads);
+    }
+}
+
+/**
+ * Validates a selection tree.
+ */
+void validateSelection(
+    const Selection& selection,
+    ValidationResult& result
+) {
+    if (selection.name().empty()) {
+        result.addError("Selection name cannot be empty");
+    }
+
+    if (selection.alias().has_value() && selection.alias()->empty()) {
+        result.addError("Selection alias cannot be empty");
+    }
+
+    for (const auto& argument : selection.arguments()) {
+        if (argument.name.empty()) {
+            result.addError("Argument name cannot be empty");
+        }
+    }
+
+    for (const auto& child : selection.children()) {
+        validateSelection(child, result);
+    }
+}
+
 } // namespace
 
 Value::Value(std::string text)
@@ -186,6 +229,26 @@ Selection spread(std::string name) {
     return Selection::fragmentSpread(std::move(name));
 }
 
+const std::string& Selection::name() const {
+    return name_;
+}
+
+SelectionKind Selection::kind() const {
+    return kind_;
+}
+
+const std::optional<std::string>& Selection::alias() const {
+    return alias_;
+}
+
+const std::vector<Argument>& Selection::arguments() const {
+    return arguments_;
+}
+
+const std::vector<Selection>& Selection::children() const {
+    return children_;
+}
+
 Fragment::Fragment(
     std::string name,
     std::string typeName,
@@ -222,6 +285,30 @@ Fragment fragment(
     );
 }
 
+const std::string& Fragment::name() const {
+    return name_;
+}
+
+const std::string& Fragment::typeName() const {
+    return typeName_;
+}
+
+const std::vector<Selection>& Fragment::selections() const {
+    return selections_;
+}
+
+void ValidationResult::addError(std::string error) {
+    errors_.push_back(std::move(error));
+}
+
+bool ValidationResult::valid() const {
+    return errors_.empty();
+}
+
+const std::vector<std::string>& ValidationResult::errors() const {
+    return errors_;
+}
+
 Query::Query(std::string name)
     : name_(std::move(name)) {
 }
@@ -248,6 +335,68 @@ Query& Query::select(std::string name, std::vector<Selection> children) {
 Query& Query::fragment(Fragment fragment) {
     fragments_.push_back(std::move(fragment));
     return *this;
+}
+
+ValidationResult Query::validate() const {
+    ValidationResult result;
+
+    if (name_.empty()) {
+        result.addError("Query name cannot be empty");
+    }
+
+    for (const auto& variable : variables_) {
+        if (variable.name.empty()) {
+            result.addError("Variable name cannot be empty");
+        }
+
+        if (variable.type.empty()) {
+            result.addError("Variable type cannot be empty");
+        }
+    }
+
+    for (const auto& selection : selections_) {
+        validateSelection(selection, result);
+    }
+
+    std::set<std::string> definedFragments;
+    std::set<std::string> usedFragments;
+
+    for (const auto& selection : selections_) {
+        collectFragmentSpreads(selection, usedFragments);
+    }
+
+    for (const auto& fragment : fragments_) {
+        if (fragment.name().empty()) {
+            result.addError("Fragment name cannot be empty");
+        }
+
+        if (fragment.typeName().empty()) {
+            result.addError("Fragment type name cannot be empty");
+        }
+
+        if (!fragment.name().empty()) {
+            definedFragments.insert(fragment.name());
+        }
+
+        for (const auto& selection : fragment.selections()) {
+            validateSelection(selection, result);
+            collectFragmentSpreads(selection, usedFragments);
+        }
+    }
+
+    for (const auto& used : usedFragments) {
+        if (!definedFragments.contains(used)) {
+            result.addError("Fragment '" + used + "' is not defined");
+        }
+    }
+
+    for (const auto& defined : definedFragments) {
+        if (!usedFragments.contains(defined)) {
+            result.addError("Fragment '" + defined + "' is defined but never used");
+        }
+    }
+
+    return result;
 }
 
 std::string Query::toString() const {

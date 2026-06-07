@@ -320,3 +320,76 @@ fragment TodoFields on Todo {
 })"
     );
 }
+
+TEST(GraphQLTests, ValidatesValidQuery) {
+    const auto userFields = drogular::gql::fragment("UserFields", "User", {
+        drogular::gql::field("id"),
+        drogular::gql::field("name")
+    });
+
+    const auto query = drogular::gql::query("UserPage")
+        .variable("userId", "ID!")
+        .select(
+            drogular::gql::field("user")
+                .arg("id", drogular::gql::variable("userId"))
+                .children({
+                    drogular::gql::spread("UserFields")
+                })
+        )
+        .fragment(userFields);
+
+    const auto result = query.validate();
+
+    EXPECT_TRUE(result.valid());
+    EXPECT_TRUE(result.errors().empty());
+}
+
+TEST(GraphQLTests, DetectsUndefinedFragment) {
+    const auto query = drogular::gql::query("UserPage")
+        .select(
+            drogular::gql::field("user")
+                .children({
+                    drogular::gql::spread("UserFields")
+                })
+        );
+
+    const auto result = query.validate();
+
+    ASSERT_FALSE(result.valid());
+    EXPECT_EQ(result.errors()[0], "Fragment 'UserFields' is not defined");
+}
+
+TEST(GraphQLTests, DetectsUnusedFragment) {
+    const auto userFields = drogular::gql::fragment("UserFields", "User", {
+        drogular::gql::field("id")
+    });
+
+    const auto query = drogular::gql::query("UserPage")
+        .select(
+            drogular::gql::field("user")
+                .children({
+                    drogular::gql::field("id")
+                })
+        )
+        .fragment(userFields);
+
+    const auto result = query.validate();
+
+    ASSERT_FALSE(result.valid());
+    EXPECT_EQ(result.errors()[0], "Fragment 'UserFields' is defined but never used");
+}
+
+TEST(GraphQLTests, DetectsEmptyNames) {
+    const auto query = drogular::gql::query("")
+        .variable("", "")
+        .select(
+            drogular::gql::field("")
+                .alias("")
+                .arg("", drogular::gql::string("value"))
+        );
+
+    const auto result = query.validate();
+
+    ASSERT_FALSE(result.valid());
+    EXPECT_GE(result.errors().size(), 5);
+}

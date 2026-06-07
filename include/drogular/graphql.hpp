@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <set>
 
 namespace drogular::gql {
 
@@ -101,6 +102,12 @@ public:
      */
     std::string toString(unsigned int indent = 2) const;
 
+    const std::string& name() const;
+    SelectionKind kind() const;
+    const std::optional<std::string>& alias() const;
+    const std::vector<Argument>& arguments() const;
+    const std::vector<Selection>& children() const;
+
 private:
     std::string name_;
     std::optional<std::string> alias_;
@@ -136,6 +143,10 @@ public:
      */
     std::string toString() const;
 
+    const std::string& name() const;
+    const std::string& typeName() const;
+    const std::vector<Selection>& selections() const;
+
 private:
     std::string name_;
     std::string typeName_;
@@ -153,6 +164,27 @@ Fragment fragment(std::string name, std::string typeName, std::vector<Selection>
 struct Variable {
     std::string name;
     std::string type;
+};
+
+/**
+ * Represents GraphQL validation result.
+ */
+class ValidationResult {
+public:
+    void addError(std::string error);
+
+    /**
+     * Returns true when no validation errors were found.
+     */
+    bool valid() const;
+
+    /**
+     * Returns validation errors.
+     */
+    const std::vector<std::string>& errors() const;
+
+private:
+    std::vector<std::string> errors_;
 };
 
 /**
@@ -181,6 +213,11 @@ public:
      * Adds a fragment definition to the query document.
      */
     Query& fragment(Fragment fragment);
+
+    /**
+     * Validates the query document.
+     */
+    ValidationResult validate() const;
 
     /**
      * Converts the query to GraphQL text.
