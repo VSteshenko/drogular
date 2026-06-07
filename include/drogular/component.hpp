@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_map>
 #include <stdexcept>
+#include <memory>
+#include <vector>
 
 namespace drogular {
 
@@ -176,6 +178,11 @@ public:
      * Renders the component into HTML.
      */
     virtual std::string render(RenderContext& context) = 0;
+
+    /**
+     * Returns child components.
+     */
+    virtual std::vector<std::shared_ptr<Component>> children();
 };
 
 } // namespace drogular

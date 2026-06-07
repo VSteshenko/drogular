@@ -25,6 +25,24 @@ inline bool contains(
 }
 
 /**
+ * Renders a component and its children.
+ */
+inline std::string renderComponentTree(
+    Component& component,
+    RenderContext& context
+) {
+    component.onInit(context);
+
+    std::string html = component.render(context);
+
+    for (const auto& child : component.children()) {
+        html += renderComponentTree(*child, context);
+    }
+
+    return html;
+}
+
+/**
  * Creates a page, runs its lifecycle, and renders it.
  */
 template <typename PageType>
@@ -32,10 +50,8 @@ RenderResult renderPage() {
     PageType page;
     RenderContext context;
 
-    page.onInit(context);
-
     return {
-        .html = page.render(context),
+        .html = renderComponentTree(page, context),
         .context = std::move(context)
     };
 }
