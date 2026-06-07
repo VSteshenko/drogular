@@ -54,3 +54,33 @@ TEST(TestingTests, RendersComponentTree) {
     EXPECT_TRUE(drogular::test::contains(html, "Parent"));
     EXPECT_TRUE(drogular::test::contains(html, "Child"));
 }
+
+class SlotLayoutComponent final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        return "<main><slot/></main>";
+    }
+
+    std::vector<std::shared_ptr<drogular::Component>> children() override {
+        return {
+            std::make_shared<SlotContentComponent>()
+        };
+    }
+
+private:
+    class SlotContentComponent final : public drogular::Component {
+    public:
+        std::string render(drogular::RenderContext&) override {
+            return "<h1>Hello Slot</h1>";
+        }
+    };
+};
+
+TEST(TestingTests, RendersChildrenIntoSlot) {
+    SlotLayoutComponent component;
+    drogular::RenderContext context;
+
+    const auto html = drogular::test::renderComponentTree(component, context);
+
+    EXPECT_EQ(html, "<main><h1>Hello Slot</h1></main>");
+}

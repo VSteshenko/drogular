@@ -3,6 +3,7 @@
 #include <drogular/page.hpp>
 
 #include <string>
+#include <cstring>
 
 namespace drogular::test {
 
@@ -26,6 +27,9 @@ inline bool contains(
 
 /**
  * Renders a component and its children.
+ *
+ * If the component HTML contains <slot/>, child HTML is inserted there.
+ * Otherwise, child HTML is appended to the end.
  */
 inline std::string renderComponentTree(
     Component& component,
@@ -33,10 +37,22 @@ inline std::string renderComponentTree(
 ) {
     component.onInit(context);
 
-    std::string html = component.render(context);
+    auto html = component.render(context);
+
+    std::string childrenHtml;
 
     for (const auto& child : component.children()) {
-        html += renderComponentTree(*child, context);
+        childrenHtml += renderComponentTree(*child, context);
+    }
+
+    constexpr auto slot = "<slot/>";
+
+    const auto pos = html.find(slot);
+
+    if (pos != std::string::npos) {
+        html.replace(pos, std::strlen(slot), childrenHtml);
+    } else {
+        html += childrenHtml;
     }
 
     return html;
