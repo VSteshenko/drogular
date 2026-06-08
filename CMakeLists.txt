@@ -5,7 +5,7 @@ if(POLICY CMP0135)
 endif()
 
 project(Drogular
-    VERSION 0.3.0
+    VERSION 0.4.0
     LANGUAGES CXX
 )
 
@@ -26,6 +26,7 @@ add_library(drogular
     src/graphql.cpp
     src/graphql_client.cpp
     src/services.cpp
+    src/template_engine.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
