@@ -95,32 +95,62 @@ std::string render(
     size_t position = 0;
 
     while (position < html.size()) {
-        const auto start = html.find("{{", position);
+        const auto rawStart = html.find("{{{", position);
+        const auto escapedStart = html.find("{{", position);
 
-        if (start == std::string_view::npos) {
+        if (rawStart == std::string_view::npos &&
+            escapedStart == std::string_view::npos) {
             output.append(html.substr(position));
             break;
-        }
+            }
+
+        const bool useRaw =
+            rawStart != std::string_view::npos &&
+            rawStart == escapedStart;
+
+        const auto start = useRaw ? rawStart : escapedStart;
 
         output.append(html.substr(position, start - position));
 
-        const auto end = html.find("}}", start + 2);
+        if (useRaw) {
+            const auto end = html.find("}}}", start + 3);
 
-        if (end == std::string_view::npos) {
-            output.append(html.substr(start));
-            break;
+            if (end == std::string_view::npos) {
+                output.append(html.substr(start));
+                break;
+            }
+
+            const auto key = trim(
+                html.substr(start + 3, end - start - 3)
+            );
+
+            const auto value = valueToString(context, key);
+
+            if (value.has_value()) {
+                output += *value;
+            }
+
+            position = end + 3;
+        } else {
+            const auto end = html.find("}}", start + 2);
+
+            if (end == std::string_view::npos) {
+                output.append(html.substr(start));
+                break;
+            }
+
+            const auto key = trim(
+                html.substr(start + 2, end - start - 2)
+            );
+
+            const auto value = valueToString(context, key);
+
+            if (value.has_value()) {
+                output += escapeHtml(*value);
+            }
+
+            position = end + 2;
         }
-
-        const auto key = trim(
-            html.substr(start + 2, end - start - 2)
-        );
-
-        const auto value = valueToString(context, key);
-
-        if (value.has_value()) {
-            output += escapeHtml(*value);
-        }
-        position = end + 2;
     }
 
     return output;

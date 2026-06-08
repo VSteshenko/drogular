@@ -152,3 +152,54 @@ TEST(TemplateEngineTests, EscapesHtmlSpecialCharacters) {
         "<p>Tom &amp; &quot;Jerry&quot; &lt;Cat&gt; &#39;Mouse&#39;</p>"
     );
 }
+
+TEST(TemplateEngineTests, RendersRawHtmlVariable) {
+    drogular::RenderContext context;
+
+    context.set("content", std::string("<strong>Hello</strong>"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "<div>{{{ content }}}</div>",
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<div><strong>Hello</strong></div>"
+    );
+}
+
+TEST(TemplateEngineTests, EscapedAndRawVariablesBehaveDifferently) {
+    drogular::RenderContext context;
+
+    context.set("content", std::string("<strong>Hello</strong>"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "<p>{{ content }}</p><div>{{{ content }}}</div>",
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<p>&lt;strong&gt;Hello&lt;/strong&gt;</p><div><strong>Hello</strong></div>"
+    );
+}
+
+TEST(TemplateEngineTests, LeavesBrokenRawExpressionAsText) {
+    drogular::RenderContext context;
+
+    context.set("content", std::string("<strong>Hello</strong>"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "<div>{{{ content }}</div>",
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<div>{{{ content }}</div>"
+    );
+}
