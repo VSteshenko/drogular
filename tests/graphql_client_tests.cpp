@@ -111,3 +111,35 @@ TEST(GraphQLClientTests, StaticClientReturnsPredefinedResult) {
         "Vadim"
     );
 }
+
+TEST(
+    GraphQLClientTests,
+    ExecuteGraphQLMergesResults
+) {
+    drogular::GraphQLResult existing;
+
+    existing.set("viewer", std::string("Vadim"));
+    drogular::GraphQLResult incoming;
+
+    incoming.set("theme", std::string("dark"));
+    drogular::StaticGraphQLClient client(std::move(incoming));
+    drogular::RenderContext context;
+
+    context.graphql().merge(std::move(existing));
+    context.setGraphQLClient(&client);
+
+    auto query = drogular::gql::query("Settings");
+    context.executeGraphQL(query);
+
+    EXPECT_EQ(
+        context.graphql()
+            .require<std::string>("viewer"),
+        "Vadim"
+    );
+
+    EXPECT_EQ(
+        context.graphql()
+            .require<std::string>("theme"),
+        "dark"
+    );
+}

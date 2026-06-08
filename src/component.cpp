@@ -4,6 +4,12 @@
 
 namespace drogular {
 
+void GraphQLResult::merge(GraphQLResult other) {
+    for (auto& [key, value] : other.values_) {
+        values_[std::move(key)] = std::move(value);
+    }
+}
+
 bool GraphQLResult::contains(const std::string& key) const {
     return values_.contains(key);
 }
@@ -22,12 +28,12 @@ bool RenderContext::hasGraphQLClient() const {
 
 void RenderContext::executeGraphQL(const gql::Query& query) {
     if (services_ != nullptr && services_->graphQLClient() != nullptr) {
-        graphql_ = services_->graphQLClient()->execute(query);
+        mergeGraphQL(services_->graphQLClient()->execute(query));
         return;
     }
 
     if (graphqlClient_ != nullptr) {
-        graphql_ = graphqlClient_->execute(query);
+        mergeGraphQL(graphqlClient_->execute(query));
         return;
     }
 
@@ -48,6 +54,10 @@ GraphQLResult& RenderContext::graphql() {
 
 const GraphQLResult& RenderContext::graphql() const {
     return graphql_;
+}
+
+void RenderContext::mergeGraphQL(GraphQLResult result) {
+    graphql_.merge(std::move(result));
 }
 
 RenderContextError::RenderContextError(const std::string& message)

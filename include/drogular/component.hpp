@@ -56,6 +56,13 @@ public:
         return *value;
     }
 
+    /**
+     * Merges another GraphQL result into this one.
+     *
+     * Existing keys are replaced by incoming values.
+    */
+    void merge(GraphQLResult other);
+
     bool contains(const std::string& key) const;
     void clear();
 
@@ -186,6 +193,11 @@ public:
      * Returns read-only GraphQL result data.
      */
     const GraphQLResult& graphql() const;
+
+    /**
+     * Merges GraphQL data into the current context.
+     */
+    void mergeGraphQL(GraphQLResult result);
 
 private:
     std::unordered_map<std::string, std::any> values_;

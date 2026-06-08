@@ -72,3 +72,28 @@ TEST(GraphQLResultTests, ClearsValues) {
 
     EXPECT_FALSE(context.graphql().contains("viewer"));
 }
+
+TEST(GraphQLResultTests, MergesResults) {
+    drogular::GraphQLResult first;
+
+    first.set("viewer", std::string("Vadim"));
+    drogular::GraphQLResult second;
+
+    second.set("theme", std::string("dark"));
+    first.merge(std::move(second));
+
+    EXPECT_EQ(first.require<std::string>("viewer"), "Vadim");
+    EXPECT_EQ(first.require<std::string>("theme"), "dark");
+}
+
+TEST(GraphQLResultTests, ReplacesExistingKeys) {
+    drogular::GraphQLResult first;
+
+    first.set("viewer", std::string("Old"));
+    drogular::GraphQLResult second;
+
+    second.set("viewer", std::string("New"));
+    first.merge(std::move(second));
+
+    EXPECT_EQ(first.require<std::string>("viewer"), "New");
+}
