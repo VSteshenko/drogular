@@ -3,6 +3,7 @@ add_executable(drogular_tests
         component_tests.cpp
         graphql_result_tests.cpp
         graphql_tests.cpp
+        graphql_client_tests.cpp
         render_context_tests.cpp
         testing_tests.cpp
         todo_page_tests.cpp
