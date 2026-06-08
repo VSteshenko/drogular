@@ -3,26 +3,18 @@
 #include <drogular/component.hpp>
 #include <drogular/graphql.hpp>
 
+#include <cstdint>
+#include <string>
+
 namespace drogular {
 
-/**
- * Executes GraphQL queries and returns GraphQL result data.
- */
 class GraphQLClient {
 public:
     virtual ~GraphQLClient() = default;
 
-    /**
-     * Executes a GraphQL query.
-     */
     virtual GraphQLResult execute(const gql::Query& query) = 0;
 };
 
-/**
- * Simple GraphQL client for tests and examples.
- *
- * It always returns the same predefined result.
- */
 class StaticGraphQLClient final : public GraphQLClient {
 public:
     explicit StaticGraphQLClient(GraphQLResult result);
@@ -31,6 +23,22 @@ public:
 
 private:
     GraphQLResult result_;
+};
+
+class HttpGraphQLClient final : public GraphQLClient {
+public:
+    HttpGraphQLClient(
+        std::string host,
+        std::uint16_t port,
+        std::string path = "/graphql"
+    );
+
+    GraphQLResult execute(const gql::Query& query) override;
+
+private:
+    std::string host_;
+    std::uint16_t port_;
+    std::string path_;
 };
 
 } // namespace drogular

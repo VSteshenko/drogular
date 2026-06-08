@@ -143,3 +143,13 @@ TEST(
         "dark"
     );
 }
+
+TEST(GraphQLClientTests, CreatesHttpGraphQLClient) {
+    drogular::HttpGraphQLClient client(
+        "localhost",
+        8080,
+        "/graphql"
+    );
+
+    SUCCEED();
+}
