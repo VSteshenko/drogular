@@ -2,6 +2,7 @@
 
 #include <drogular/component.hpp>
 #include <drogular/graphql.hpp>
+#include <drogular/template_engine.hpp>
 
 #include <optional>
 
@@ -20,6 +21,22 @@ public:
      * Returns the GraphQL query required by this page.
      */
     virtual std::optional<gql::Query> query() const;
+};
+
+/**
+ * Page base class for template-based rendering.
+ */
+class TemplatePage : public Page {
+public:
+    /**
+     * Returns template HTML.
+     */
+    virtual std::string templateHtml() const = 0;
+
+    /**
+     * Renders the template using RenderContext.
+     */
+    std::string render(RenderContext& context) override;
 };
 
 } // namespace drogular
