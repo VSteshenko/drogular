@@ -53,6 +53,38 @@ std::optional<std::string> valueToString(
     return std::nullopt;
 }
 
+/**
+ * Escapes text for safe HTML output.
+ */
+std::string escapeHtml(std::string_view value) {
+    std::string output;
+
+    for (const auto ch : value) {
+        switch (ch) {
+        case '&':
+            output += "&amp;";
+            break;
+        case '<':
+            output += "&lt;";
+            break;
+        case '>':
+            output += "&gt;";
+            break;
+        case '"':
+            output += "&quot;";
+            break;
+        case '\'':
+            output += "&#39;";
+            break;
+        default:
+            output += ch;
+            break;
+        }
+    }
+
+    return output;
+}
+
 } // namespace
 
 std::string render(
@@ -86,7 +118,7 @@ std::string render(
         const auto value = valueToString(context, key);
 
         if (value.has_value()) {
-            output += *value;
+            output += escapeHtml(*value);
         }
         position = end + 2;
     }

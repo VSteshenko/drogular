@@ -118,3 +118,37 @@ TEST(TemplateEngineTests, ReplacesDoubleVariable) {
 
     EXPECT_EQ(html, "<span>3.140000</span>");
 }
+
+TEST(TemplateEngineTests, EscapesHtmlInStringValues) {
+    drogular::RenderContext context;
+
+    context.set("title", std::string("<script>alert(1)</script>"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "<h1>{{ title }}</h1>",
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<h1>&lt;script&gt;alert(1)&lt;/script&gt;</h1>"
+    );
+}
+
+TEST(TemplateEngineTests, EscapesHtmlSpecialCharacters) {
+    drogular::RenderContext context;
+
+    context.set("text", std::string("Tom & \"Jerry\" <Cat> 'Mouse'"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "<p>{{ text }}</p>",
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<p>Tom &amp; &quot;Jerry&quot; &lt;Cat&gt; &#39;Mouse&#39;</p>"
+    );
+}
