@@ -76,3 +76,45 @@ TEST(TemplateEngineTests, RemovesMissingVariables) {
 
     EXPECT_EQ(html, "<h1></h1>");
 }
+
+TEST(TemplateEngineTests, ReplacesIntegerVariable) {
+    drogular::RenderContext context;
+
+    context.set("count", 42);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<span>{{ count }}</span>",
+            context
+        );
+
+    EXPECT_EQ(html, "<span>42</span>");
+}
+
+TEST(TemplateEngineTests, ReplacesBooleanVariable) {
+    drogular::RenderContext context;
+
+    context.set("done", true);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<span>{{ done }}</span>",
+            context
+        );
+
+    EXPECT_EQ(html, "<span>true</span>");
+}
+
+TEST(TemplateEngineTests, ReplacesDoubleVariable) {
+    drogular::RenderContext context;
+
+    context.set("price", 3.14);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<span>{{ price }}</span>",
+            context
+        );
+
+    EXPECT_EQ(html, "<span>3.140000</span>");
+}

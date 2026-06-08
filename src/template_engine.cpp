@@ -1,6 +1,6 @@
 #include <drogular/template_engine.hpp>
 
-#include <cctype>
+#include <optional>
 #include <string>
 
 namespace drogular::template_engine {
@@ -25,6 +25,32 @@ std::string trim(std::string_view value) {
     }
 
     return std::string(value.substr(start, end - start));
+}
+
+/**
+ * Converts a render context value to text.
+ */
+std::optional<std::string> valueToString(
+    const RenderContext& context,
+    const std::string& key
+) {
+    if (const auto value = context.get<std::string>(key)) {
+        return *value;
+    }
+
+    if (const auto value = context.get<int>(key)) {
+        return std::to_string(*value);
+    }
+
+    if (const auto value = context.get<double>(key)) {
+        return std::to_string(*value);
+    }
+
+    if (const auto value = context.get<bool>(key)) {
+        return *value ? "true" : "false";
+    }
+
+    return std::nullopt;
 }
 
 } // namespace
@@ -57,12 +83,11 @@ std::string render(
             html.substr(start + 2, end - start - 2)
         );
 
-        const auto value = context.get<std::string>(key);
+        const auto value = valueToString(context, key);
 
         if (value.has_value()) {
             output += *value;
         }
-
         position = end + 2;
     }
 
