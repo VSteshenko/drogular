@@ -6,8 +6,9 @@ add_executable(drogular_tests
     graphql_client_tests.cpp
     render_context_tests.cpp
     services_tests.cpp
-    testing_tests.cpp
+    template_component_tests.cpp
     template_engine_tests.cpp
+    testing_tests.cpp
     todo_page_tests.cpp
     ../examples/todo_pwa/todo_page.cpp
 )

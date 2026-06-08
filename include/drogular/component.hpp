@@ -231,4 +231,20 @@ public:
     virtual std::vector<std::shared_ptr<Component>> children();
 };
 
+/**
+ * Component base class for template-based rendering.
+ */
+class TemplateComponent : public Component {
+public:
+    /**
+     * Returns template HTML.
+     */
+    virtual std::string templateHtml() const = 0;
+
+    /**
+     * Renders the template using RenderContext.
+     */
+    std::string render(RenderContext& context) override;
+};
+
 } // namespace drogular

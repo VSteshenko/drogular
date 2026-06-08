@@ -1,6 +1,7 @@
 #include <drogular/component.hpp>
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
+#include <drogular/template_engine.hpp>
 
 namespace drogular {
 
@@ -82,6 +83,13 @@ void Component::onInit(RenderContext&) {
 
 std::vector<std::shared_ptr<Component>> Component::children() {
     return {};
+}
+
+std::string TemplateComponent::render(RenderContext& context) {
+    return template_engine::render(
+        templateHtml(),
+        context
+    );
 }
 
 } // namespace drogular
