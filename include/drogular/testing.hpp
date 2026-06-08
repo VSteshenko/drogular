@@ -72,4 +72,20 @@ RenderResult renderPage() {
     };
 }
 
+/**
+ * Creates a page, runs its lifecycle with application services, and renders it.
+ */
+template <typename PageType>
+RenderResult renderPage(ApplicationServices* services) {
+    PageType page;
+    RenderContext context;
+
+    context.setServices(services);
+
+    return {
+        .html = renderComponentTree(page, context),
+        .context = std::move(context)
+    };
+}
+
 } // namespace drogular::test

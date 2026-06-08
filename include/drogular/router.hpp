@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/services.hpp>
+
 #include <memory>
 #include <string>
 
@@ -13,11 +15,15 @@ class Page;
 class Router {
 public:
     Router() = default;
+    explicit Router(ApplicationServices* services = nullptr);
 
     /**
      * Registers a page instance for the given path.
      */
     void page(const std::string& path, std::shared_ptr<Page> page);
+
+private:
+    ApplicationServices* services_ = nullptr;
 };
 
 } // namespace drogular

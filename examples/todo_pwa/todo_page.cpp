@@ -4,20 +4,11 @@
 #include <vector>
 
 void TodoPage::onInit(drogular::RenderContext& context) {
-    const std::vector<Todo> todos = {
-        {1, "Create Drogular project skeleton", true},
-        {2, "Add GoogleTest support", true},
-        {3, "Build GraphQL query builder", true},
-        {4, "Create component/page framework", true},
-        {5, "Wrap Drogon routing in App", true},
-        {6, "Build Todo PWA example", true},
-        {7, "Add RenderContext data store", true},
-        {8, "Add fake GraphQL result", true},
-        {9, "Render todos from GraphQL result", true},
-        {10, "Test TodoPage rendering", false}
-    };
+    const auto pageQuery = query();
 
-    context.graphql().set("todos", todos);
+    if (pageQuery.has_value()) {
+        context.executeGraphQL(*pageQuery);
+    }
 }
 
 std::optional<drogular::gql::Query> TodoPage::query() const {

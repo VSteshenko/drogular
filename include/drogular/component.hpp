@@ -63,6 +63,13 @@ private:
     std::unordered_map<std::string, std::any> values_;
 };
 
+class GraphQLClient;
+class ApplicationServices;
+
+namespace gql {
+class Query;
+}
+
 /**
  * Provides data and services needed during rendering.
  */
@@ -146,6 +153,31 @@ public:
     }
 
     /**
+      * Sets the GraphQL client used by this render context.
+     */
+    void setGraphQLClient(GraphQLClient* client);
+
+    /**
+     * Returns true if a GraphQL client is available.
+     */
+    bool hasGraphQLClient() const;
+
+    /**
+     * Executes a GraphQL query and stores the result in this context.
+     */
+    void executeGraphQL(const gql::Query& query);
+
+    /**
+     * Sets application services for this render context.
+     */
+    void setServices(ApplicationServices* services);
+
+    /**
+     * Returns true if application services are available.
+     */
+    bool hasServices() const;
+
+    /**
      * Returns mutable GraphQL result data.
      */
     GraphQLResult& graphql();
@@ -157,6 +189,8 @@ public:
 
 private:
     std::unordered_map<std::string, std::any> values_;
+    GraphQLClient* graphqlClient_ = nullptr;
+    ApplicationServices* services_ = nullptr;
     GraphQLResult graphql_;
 };
 

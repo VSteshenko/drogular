@@ -25,6 +25,7 @@ add_library(drogular
     src/router.cpp
     src/graphql.cpp
     src/graphql_client.cpp
+    src/services.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)

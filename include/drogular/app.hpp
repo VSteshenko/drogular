@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/graphql_client.hpp>
+#include <drogular/services.hpp>
 #include <drogular/page.hpp>
 #include <drogular/router.hpp>
 
@@ -17,6 +19,14 @@ namespace drogular {
 class App {
 public:
     App() = default;
+
+    /**
+     * Sets the GraphQL client used by application pages.
+     */
+    App& graphQLClient(std::shared_ptr<GraphQLClient> client) {
+        services_.setGraphQLClient(std::move(client));
+        return *this;
+    }
 
     /**
      * Registers a page type for the given path.
@@ -38,7 +48,8 @@ public:
     void run(unsigned short port);
 
 private:
-    Router router_;
+    ApplicationServices services_;
+    Router router_{&services_};
 };
 
 } // namespace drogular

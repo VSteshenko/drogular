@@ -1,4 +1,6 @@
 #include <drogular/component.hpp>
+#include <drogular/graphql_client.hpp>
+#include <drogular/services.hpp>
 
 namespace drogular {
 
@@ -8,6 +10,36 @@ bool GraphQLResult::contains(const std::string& key) const {
 
 void GraphQLResult::clear() {
     values_.clear();
+}
+
+void RenderContext::setGraphQLClient(GraphQLClient* client) {
+    graphqlClient_ = client;
+}
+
+bool RenderContext::hasGraphQLClient() const {
+    return graphqlClient_ != nullptr;
+}
+
+void RenderContext::executeGraphQL(const gql::Query& query) {
+    if (services_ != nullptr && services_->graphQLClient() != nullptr) {
+        graphql_ = services_->graphQLClient()->execute(query);
+        return;
+    }
+
+    if (graphqlClient_ != nullptr) {
+        graphql_ = graphqlClient_->execute(query);
+        return;
+    }
+
+    throw RenderContextError("GraphQL client is not set");
+}
+
+void RenderContext::setServices(ApplicationServices* services) {
+    services_ = services;
+}
+
+bool RenderContext::hasServices() const {
+    return services_ != nullptr;
 }
 
 GraphQLResult& RenderContext::graphql() {
