@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <json/json.h>
 
 TEST(TemplateEngineTests, ReplacesStringVariable) {
     drogular::RenderContext context;
@@ -344,4 +345,90 @@ TEST(TemplateEngineTests, EscapesForeachValues) {
         );
 
     EXPECT_EQ(html, "&lt;script&gt;");
+}
+
+TEST(TemplateEngineTests, RendersJsonObjectProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["name"] = "Vadim";
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<h1>{{ user.name }}</h1>",
+            context
+        );
+
+    EXPECT_EQ(html, "<h1>Vadim</h1>");
+}
+
+TEST(TemplateEngineTests, RendersNestedJsonObjectProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["profile"]["email"] = "vadim@example.com";
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<p>{{ user.profile.email }}</p>",
+            context
+        );
+
+    EXPECT_EQ(html, "<p>vadim@example.com</p>");
+}
+
+TEST(TemplateEngineTests, EscapesJsonStringProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["name"] = "<Vadim>";
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<h1>{{ user.name }}</h1>",
+            context
+        );
+
+    EXPECT_EQ(html, "<h1>&lt;Vadim&gt;</h1>");
+}
+
+TEST(TemplateEngineTests, RendersJsonNumberAndBoolProperties) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["age"] = 49;
+    user["active"] = true;
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "{{ user.age }} {{ user.active }}",
+            context
+        );
+
+    EXPECT_EQ(html, "49 true");
+}
+
+TEST(TemplateEngineTests, RemovesMissingJsonProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["name"] = "Vadim";
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "<p>{{ user.email }}</p>",
+            context
+        );
+
+    EXPECT_EQ(html, "<p></p>");
 }

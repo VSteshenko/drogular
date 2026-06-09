@@ -2,10 +2,84 @@
 
 #include <optional>
 #include <string>
+#include <json/json.h>
+#include <sstream>
+#include <vector>
 
 namespace drogular::template_engine {
 
 namespace {
+
+std::vector<std::string> splitPath(const std::string& key) {
+    std::vector<std::string> parts;
+    std::stringstream stream(key);
+    std::string part;
+
+    while (std::getline(stream, part, '.')) {
+        if (!part.empty()) {
+            parts.push_back(part);
+        }
+    }
+
+    return parts;
+}
+
+std::optional<std::string> jsonValueToString(const Json::Value& value) {
+    if (value.isString()) {
+        return value.asString();
+    }
+
+    if (value.isInt()) {
+        return std::to_string(value.asInt());
+    }
+
+    if (value.isUInt()) {
+        return std::to_string(value.asUInt());
+    }
+
+    if (value.isDouble()) {
+        return std::to_string(value.asDouble());
+    }
+
+    if (value.isBool()) {
+        return value.asBool() ? "true" : "false";
+    }
+
+    if (value.isNull()) {
+        return "";
+    }
+
+    return std::nullopt;
+}
+
+std::optional<std::string> resolveJsonPath(
+    const RenderContext& context,
+    const std::string& key
+) {
+    const auto parts = splitPath(key);
+
+    if (parts.size() < 2) {
+        return std::nullopt;
+    }
+
+    const auto root = context.get<Json::Value>(parts[0]);
+
+    if (!root.has_value()) {
+        return std::nullopt;
+    }
+
+    Json::Value current = *root;
+
+    for (size_t i = 1; i < parts.size(); ++i) {
+        if (!current.isObject() || !current.isMember(parts[i])) {
+            return std::nullopt;
+        }
+
+        current = current[parts[i]];
+    }
+
+    return jsonValueToString(current);
+}
 
 /**
  * Trims whitespace from both sides of a string.
@@ -34,6 +108,10 @@ std::optional<std::string> valueToString(
     const RenderContext& context,
     const std::string& key
 ) {
+    if (const auto jsonValue = resolveJsonPath(context, key)) {
+        return jsonValue;
+    }
+
     if (const auto value = context.get<std::string>(key)) {
         return *value;
     }
@@ -48,6 +126,10 @@ std::optional<std::string> valueToString(
 
     if (const auto value = context.get<bool>(key)) {
         return *value ? "true" : "false";
+    }
+
+    if (const auto value = context.get<Json::Value>(key)) {
+        return jsonValueToString(*value);
     }
 
     return std::nullopt;
