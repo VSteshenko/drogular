@@ -277,6 +277,52 @@ std::string renderForeachBlocks(
 }
 
 /**
+ * Resolves a template condition from RenderContext.
+ */
+bool conditionToBool(
+    const RenderContext& context,
+    const std::string& key
+) {
+    if (const auto value = context.get<bool>(key)) {
+        return *value;
+    }
+
+    if (const auto jsonValue = resolveJsonPath(context, key)) {
+        return !jsonValue->empty() &&
+               *jsonValue != "false" &&
+               *jsonValue != "0";
+    }
+
+    if (const auto value = context.get<Json::Value>(key)) {
+        if (value->isBool()) {
+            return value->asBool();
+        }
+
+        if (value->isString()) {
+            return !value->asString().empty();
+        }
+
+        if (value->isInt()) {
+            return value->asInt() != 0;
+        }
+
+        if (value->isUInt()) {
+            return value->asUInt() != 0;
+        }
+
+        if (value->isDouble()) {
+            return value->asDouble() != 0.0;
+        }
+
+        if (value->isArray() || value->isObject()) {
+            return !value->empty();
+        }
+    }
+
+    return false;
+}
+
+/**
  * Renders simple @if(condition) ... @endif blocks.
  */
 std::string renderIfBlocks(
@@ -330,8 +376,7 @@ std::string renderIfBlocks(
                           blockEnd - elseStart - std::string_view("@else").size())
             : std::string_view{};
 
-        const auto condition =
-            context.get<bool>(conditionName).value_or(false);
+        const auto condition = conditionToBool(context, conditionName);
 
         if (condition) {
             output.append(trueBlock);

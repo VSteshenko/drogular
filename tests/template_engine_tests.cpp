@@ -502,3 +502,87 @@ TEST(TemplateEngineTests, EscapesForeachJsonObjectValues) {
 
     EXPECT_EQ(html, "&lt;script&gt;");
 }
+
+TEST(TemplateEngineTests, RendersIfBlockForJsonBoolProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["active"] = true;
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(user.active)<p>Active</p>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "<p>Active</p>");
+}
+
+TEST(TemplateEngineTests, SkipsIfBlockForJsonFalseProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["active"] = false;
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(user.active)<p>Active</p>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "");
+}
+
+TEST(TemplateEngineTests, RendersElseBlockForJsonFalseProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["active"] = false;
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(user.active)<p>Active</p>@else<p>Inactive</p>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "<p>Inactive</p>");
+}
+
+TEST(TemplateEngineTests, RendersIfInsideJsonForeach) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value first;
+    first["title"] = "Learn Drogular";
+    first["done"] = true;
+
+    Json::Value second;
+    second["title"] = "Build PWA";
+    second["done"] = false;
+
+    todos.append(first);
+    todos.append(second);
+
+    context.set("todos", todos);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(todo in todos)"
+            "@if(todo.done)"
+            "<li>[x] {{ todo.title }}</li>"
+            "@else"
+            "<li>[ ] {{ todo.title }}</li>"
+            "@endif"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "<li>[x] Learn Drogular</li><li>[ ] Build PWA</li>");
+}
