@@ -229,6 +229,11 @@ public:
      * Returns child components.
      */
     virtual std::vector<std::shared_ptr<Component>> children();
+
+    /**
+     * Returns the slot name used by the parent component.
+     */
+    virtual std::string slot() const;
 };
 
 /**

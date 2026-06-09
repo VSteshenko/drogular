@@ -4,6 +4,7 @@
 
 #include <string>
 #include <cstring>
+#include <unordered_map>
 
 namespace drogular::test {
 
@@ -28,8 +29,9 @@ inline bool contains(
 /**
  * Renders a component and its children.
  *
- * If the component HTML contains <slot/>, child HTML is inserted there.
- * Otherwise, child HTML is appended to the end.
+ * Supports:
+ * - <slot/> for default children
+ * - <slot name="header"/> for named children
  */
 inline std::string renderComponentTree(
     Component& component,
@@ -39,20 +41,38 @@ inline std::string renderComponentTree(
 
     auto html = component.render(context);
 
-    std::string childrenHtml;
+    std::string defaultChildrenHtml;
+    std::unordered_map<std::string, std::string> namedChildrenHtml;
 
     for (const auto& child : component.children()) {
-        childrenHtml += renderComponentTree(*child, context);
+        const auto childHtml = renderComponentTree(*child, context);
+
+        if (child->slot().empty()) {
+            defaultChildrenHtml += childHtml;
+        } else {
+            namedChildrenHtml[child->slot()] += childHtml;
+        }
     }
 
-    constexpr auto slot = "<slot/>";
+    constexpr auto defaultSlot = "<slot/>";
 
-    const auto pos = html.find(slot);
+    if (const auto pos = html.find(defaultSlot);
+        pos != std::string::npos) {
+        html.replace(pos, std::strlen(defaultSlot), defaultChildrenHtml);
+        } else {
+            html += defaultChildrenHtml;
+        }
 
-    if (pos != std::string::npos) {
-        html.replace(pos, std::strlen(slot), childrenHtml);
-    } else {
-        html += childrenHtml;
+    for (const auto& [name, childHtml] : namedChildrenHtml) {
+        const auto slot =
+            "<slot name=\"" + name + "\"/>";
+
+        size_t position = 0;
+
+        while ((position = html.find(slot, position)) != std::string::npos) {
+            html.replace(position, slot.size(), childHtml);
+            position += childHtml.size();
+        }
     }
 
     return html;

@@ -85,6 +85,10 @@ std::vector<std::shared_ptr<Component>> Component::children() {
     return {};
 }
 
+std::string Component::slot() const {
+    return "";
+}
+
 std::string TemplateComponent::render(RenderContext& context) {
     return template_engine::render(
         templateHtml(),
