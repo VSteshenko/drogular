@@ -123,7 +123,7 @@ public:
 
         return std::nullopt;
     }
-    
+
     /**
      * Checks whether the context contains a value for the given key.
      */
@@ -278,6 +278,22 @@ public:
      * Copies component parameters into the render context.
      */
     void applyParams(RenderContext& context) const;
+
+    /**
+     * Stores a typed component input.
+     */
+    template <typename T>
+    void setInput(std::string key, T value) {
+        setParam(std::move(key), std::move(value));
+    }
+
+    /**
+     * Returns a typed component input.
+     */
+    template <typename T>
+    std::optional<T> input(const std::string& key) const {
+        return param<T>(key);
+    }
 
 private:
     std::unordered_map<std::string, std::any> params_;

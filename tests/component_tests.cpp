@@ -63,3 +63,21 @@ TEST(ComponentTests, ReturnsNulloptForMissingComponentParameter) {
 
     EXPECT_FALSE(component.param<std::string>("missing").has_value());
 }
+
+TEST(ComponentTests, StoresAndReadsComponentInput) {
+    class InputComponent final : public drogular::Component {
+    public:
+        std::string render(drogular::RenderContext&) override {
+            return "";
+        }
+    };
+
+    InputComponent component;
+
+    component.setInput("title", std::string("Hello Input"));
+
+    const auto title = component.input<std::string>("title");
+
+    ASSERT_TRUE(title.has_value());
+    EXPECT_EQ(*title, "Hello Input");
+}

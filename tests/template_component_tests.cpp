@@ -39,3 +39,23 @@ TEST(TemplateComponentTests, RendersComponentParams) {
 
     EXPECT_EQ(component.render(context), "<h2>Hello Card</h2>");
 }
+
+class InputTemplateComponent final : public drogular::TemplateComponent {
+public:
+    std::string templateHtml() const override {
+        return "<article><h2>{{ title }}</h2><p>{{ subtitle }}</p></article>";
+    }
+};
+
+TEST(TemplateComponentTests, RendersComponentInputs) {
+    InputTemplateComponent component;
+    drogular::RenderContext context;
+
+    component.setInput("title", std::string("Card Title"));
+    component.setInput("subtitle", std::string("Card Subtitle"));
+
+    EXPECT_EQ(
+        component.render(context),
+        "<article><h2>Card Title</h2><p>Card Subtitle</p></article>"
+    );
+}
