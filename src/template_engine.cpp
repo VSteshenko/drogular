@@ -52,35 +52,6 @@ std::optional<std::string> jsonValueToString(const Json::Value& value) {
     return std::nullopt;
 }
 
-std::optional<std::string> resolveJsonPath(
-    const RenderContext& context,
-    const std::string& key
-) {
-    const auto parts = splitPath(key);
-
-    if (parts.size() < 2) {
-        return std::nullopt;
-    }
-
-    const auto root = context.get<Json::Value>(parts[0]);
-
-    if (!root.has_value()) {
-        return std::nullopt;
-    }
-
-    Json::Value current = *root;
-
-    for (size_t i = 1; i < parts.size(); ++i) {
-        if (!current.isObject() || !current.isMember(parts[i])) {
-            return std::nullopt;
-        }
-
-        current = current[parts[i]];
-    }
-
-    return jsonValueToString(current);
-}
-
 /**
  * Trims whitespace from both sides of a string.
  */
@@ -101,6 +72,89 @@ std::string trim(std::string_view value) {
     return std::string(value.substr(start, end - start));
 }
 
+struct ResolvedValue {
+    enum class Type {
+        Missing,
+        String,
+        Json
+    };
+
+    Type type = Type::Missing;
+    std::string stringValue;
+    Json::Value jsonValue;
+};
+
+ResolvedValue resolveValue(
+    const RenderContext& context,
+    const std::string& key
+) {
+    const auto parts = splitPath(key);
+
+    if (parts.empty()) {
+        return {};
+    }
+
+    if (parts.size() == 1) {
+        if (const auto value = context.get<std::string>(key)) {
+            return {
+                .type = ResolvedValue::Type::String,
+                .stringValue = *value
+            };
+        }
+
+        if (const auto value = context.get<int>(key)) {
+            return {
+                .type = ResolvedValue::Type::String,
+                .stringValue = std::to_string(*value)
+            };
+        }
+
+        if (const auto value = context.get<double>(key)) {
+            return {
+                .type = ResolvedValue::Type::String,
+                .stringValue = std::to_string(*value)
+            };
+        }
+
+        if (const auto value = context.get<bool>(key)) {
+            return {
+                .type = ResolvedValue::Type::String,
+                .stringValue = *value ? "true" : "false"
+            };
+        }
+
+        if (const auto value = context.get<Json::Value>(key)) {
+            return {
+                .type = ResolvedValue::Type::Json,
+                .jsonValue = *value
+            };
+        }
+
+        return {};
+    }
+
+    const auto root = context.get<Json::Value>(parts[0]);
+
+    if (!root.has_value()) {
+        return {};
+    }
+
+    Json::Value current = *root;
+
+    for (size_t i = 1; i < parts.size(); ++i) {
+        if (!current.isObject() || !current.isMember(parts[i])) {
+            return {};
+        }
+
+        current = current[parts[i]];
+    }
+
+    return {
+        .type = ResolvedValue::Type::Json,
+        .jsonValue = current
+    };
+}
+
 /**
  * Converts a render context value to text.
  */
@@ -108,33 +162,18 @@ std::optional<std::string> valueToString(
     const RenderContext& context,
     const std::string& key
 ) {
-    if (const auto jsonValue = resolveJsonPath(context, key)) {
-        return jsonValue;
+    const auto resolved = resolveValue(context, key);
+
+    if (resolved.type == ResolvedValue::Type::String) {
+        return resolved.stringValue;
     }
 
-    if (const auto value = context.get<std::string>(key)) {
-        return *value;
-    }
-
-    if (const auto value = context.get<int>(key)) {
-        return std::to_string(*value);
-    }
-
-    if (const auto value = context.get<double>(key)) {
-        return std::to_string(*value);
-    }
-
-    if (const auto value = context.get<bool>(key)) {
-        return *value ? "true" : "false";
-    }
-
-    if (const auto value = context.get<Json::Value>(key)) {
-        return jsonValueToString(*value);
+    if (resolved.type == ResolvedValue::Type::Json) {
+        return jsonValueToString(resolved.jsonValue);
     }
 
     return std::nullopt;
 }
-
 /**
  * Escapes text for safe HTML output.
  */
@@ -283,39 +322,39 @@ bool conditionToBool(
     const RenderContext& context,
     const std::string& key
 ) {
-    if (const auto value = context.get<bool>(key)) {
-        return *value;
+    const auto resolved = resolveValue(context, key);
+
+    if (resolved.type == ResolvedValue::Type::String) {
+        return !resolved.stringValue.empty() &&
+               resolved.stringValue != "false" &&
+               resolved.stringValue != "0";
     }
 
-    if (const auto jsonValue = resolveJsonPath(context, key)) {
-        return !jsonValue->empty() &&
-               *jsonValue != "false" &&
-               *jsonValue != "0";
-    }
+    if (resolved.type == ResolvedValue::Type::Json) {
+        const auto& value = resolved.jsonValue;
 
-    if (const auto value = context.get<Json::Value>(key)) {
-        if (value->isBool()) {
-            return value->asBool();
+        if (value.isBool()) {
+            return value.asBool();
         }
 
-        if (value->isString()) {
-            return !value->asString().empty();
+        if (value.isString()) {
+            return !value.asString().empty();
         }
 
-        if (value->isInt()) {
-            return value->asInt() != 0;
+        if (value.isInt()) {
+            return value.asInt() != 0;
         }
 
-        if (value->isUInt()) {
-            return value->asUInt() != 0;
+        if (value.isUInt()) {
+            return value.asUInt() != 0;
         }
 
-        if (value->isDouble()) {
-            return value->asDouble() != 0.0;
+        if (value.isDouble()) {
+            return value.asDouble() != 0.0;
         }
 
-        if (value->isArray() || value->isObject()) {
-            return !value->empty();
+        if (value.isArray() || value.isObject()) {
+            return !value.empty();
         }
     }
 

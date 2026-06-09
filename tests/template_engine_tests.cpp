@@ -586,3 +586,70 @@ TEST(TemplateEngineTests, RendersIfInsideJsonForeach) {
 
     EXPECT_EQ(html, "<li>[x] Learn Drogular</li><li>[ ] Build PWA</li>");
 }
+
+TEST(TemplateEngineTests, RendersDeepJsonObjectProperty) {
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["profile"]["contact"]["email"] = "vadim@example.com";
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::template_engine::render(
+            "{{ user.profile.contact.email }}",
+            context
+        );
+
+    EXPECT_EQ(html, "vadim@example.com");
+}
+
+TEST(TemplateEngineTests, RendersDeepJsonPropertyInsideForeach) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value todo;
+    todo["title"] = "Learn Drogular";
+    todo["author"]["profile"]["name"] = "Vadim";
+
+    todos.append(todo);
+
+    context.set("todos", todos);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(todo in todos)"
+            "{{ todo.author.profile.name }}: {{ todo.title }}"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "Vadim: Learn Drogular");
+}
+
+TEST(TemplateEngineTests, RendersDeepJsonConditionInsideForeach) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value todo;
+    todo["title"] = "Learn Drogular";
+    todo["meta"]["done"] = true;
+
+    todos.append(todo);
+
+    context.set("todos", todos);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(todo in todos)"
+            "@if(todo.meta.done)"
+            "{{ todo.title }}"
+            "@endif"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "Learn Drogular");
+}
