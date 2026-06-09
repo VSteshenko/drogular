@@ -236,35 +236,35 @@ std::string renderForeachBlocks(
                 )
             );
 
-        const auto values =
+        const auto stringValues =
             context.get<std::vector<std::string>>(
                 collectionName
             );
 
-        if (values.has_value()) {
-            for (const auto& value : *values) {
-                std::string itemHtml =
-                    templateBlock;
+        if (stringValues.has_value()) {
+            for (const auto& value : *stringValues) {
+                auto itemContext = context.createChild();
 
-                const auto token =
-                    "{{ " + itemName + " }}";
+                itemContext.set(itemName, value);
 
-                size_t tokenPos = 0;
+                output += render(
+                    templateBlock,
+                    itemContext
+                );
+            }
+        } else if (const auto jsonValues =
+            context.get<Json::Value>(collectionName);
+            jsonValues.has_value() && jsonValues->isArray())
+        {
+            for (const auto& value : *jsonValues) {
+                auto itemContext = context.createChild();
 
-                while ((tokenPos =
-                    itemHtml.find(token, tokenPos))
-                    != std::string::npos)
-                {
-                    itemHtml.replace(
-                        tokenPos,
-                        token.size(),
-                        escapeHtml(value)
-                    );
+                itemContext.set(itemName, value);
 
-                    tokenPos += value.size();
-                }
-
-                output += itemHtml;
+                output += render(
+                    templateBlock,
+                    itemContext
+                );
             }
         }
 

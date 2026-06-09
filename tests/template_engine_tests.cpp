@@ -432,3 +432,73 @@ TEST(TemplateEngineTests, RemovesMissingJsonProperty) {
 
     EXPECT_EQ(html, "<p></p>");
 }
+
+TEST(TemplateEngineTests, RendersForeachJsonArrayObjects) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value first;
+    first["title"] = "Learn Drogular";
+
+    Json::Value second;
+    second["title"] = "Build PWA";
+
+    todos.append(first);
+    todos.append(second);
+
+    context.set("todos", todos);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(todo in todos)"
+            "<li>{{ todo.title }}</li>"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "<li>Learn Drogular</li><li>Build PWA</li>");
+}
+
+TEST(TemplateEngineTests, RendersForeachJsonArrayScalarValues) {
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    items.append("A");
+    items.append("B");
+
+    context.set("items", items);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(item in items)"
+            "<span>{{ item }}</span>"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "<span>A</span><span>B</span>");
+}
+
+TEST(TemplateEngineTests, EscapesForeachJsonObjectValues) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value todo;
+    todo["title"] = "<script>";
+
+    todos.append(todo);
+
+    context.set("todos", todos);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(todo in todos)"
+            "{{ todo.title }}"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "&lt;script&gt;");
+}
