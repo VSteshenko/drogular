@@ -4,16 +4,19 @@ Drogular is an Angular-inspired C++ web framework built on top of Drogon.
 
 The goal is to provide a component-oriented way to build SSR, SPA, and PWA-style applications in modern C++ with first-class GraphQL support.
 
-## Why Drogular?
+### Why Drogular?
 
-Drogular brings together:
+Drogular combines:
 
 - Drogon performance
 - Angular-inspired components
 - GraphQL-first data loading
 - Server-side rendering
-- Testable pages and components
+- Scoped component contexts
+- Template engine
+- Service container
 - Modern C++20
+- Strong testing support
 
 Example architecture:
 
