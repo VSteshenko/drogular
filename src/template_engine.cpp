@@ -85,6 +85,115 @@ std::string escapeHtml(std::string_view value) {
     return output;
 }
 
+std::string renderForeachBlocks(
+    std::string_view html,
+    const RenderContext& context
+) {
+    std::string output;
+    size_t position = 0;
+
+    while (position < html.size()) {
+        const auto foreachStart =
+            html.find("@foreach(", position);
+
+        if (foreachStart == std::string_view::npos) {
+            output.append(html.substr(position));
+            break;
+        }
+
+        output.append(
+            html.substr(
+                position,
+                foreachStart - position
+            )
+        );
+
+        const auto headerEnd =
+            html.find(")", foreachStart);
+
+        if (headerEnd == std::string_view::npos) {
+            output.append(html.substr(foreachStart));
+            break;
+        }
+
+        const auto blockEnd =
+            html.find("@endforeach", headerEnd);
+
+        if (blockEnd == std::string_view::npos) {
+            output.append(html.substr(foreachStart));
+            break;
+        }
+
+        const auto expression =
+            trim(
+                html.substr(
+                    foreachStart + 9,
+                    headerEnd - foreachStart - 9
+                )
+            );
+
+        const auto inPos =
+            expression.find(" in ");
+
+        if (inPos == std::string::npos) {
+            output.append(html.substr(foreachStart));
+            break;
+        }
+
+        const auto itemName =
+            trim(expression.substr(0, inPos));
+
+        const auto collectionName =
+            trim(expression.substr(inPos + 4));
+
+        const auto templateBlock =
+            std::string(
+                html.substr(
+                    headerEnd + 1,
+                    blockEnd - headerEnd - 1
+                )
+            );
+
+        const auto values =
+            context.get<std::vector<std::string>>(
+                collectionName
+            );
+
+        if (values.has_value()) {
+            for (const auto& value : *values) {
+                std::string itemHtml =
+                    templateBlock;
+
+                const auto token =
+                    "{{ " + itemName + " }}";
+
+                size_t tokenPos = 0;
+
+                while ((tokenPos =
+                    itemHtml.find(token, tokenPos))
+                    != std::string::npos)
+                {
+                    itemHtml.replace(
+                        tokenPos,
+                        token.size(),
+                        escapeHtml(value)
+                    );
+
+                    tokenPos += value.size();
+                }
+
+                output += itemHtml;
+            }
+        }
+
+        position =
+            blockEnd +
+            std::string_view("@endforeach").size();
+    }
+
+    return output;
+}
+
 /**
  * Renders simple @if(condition) ... @endif blocks.
  */
@@ -160,8 +269,10 @@ std::string render(
     std::string_view html,
     const RenderContext& context
 ) {
-    const auto processedIfBlocks = renderIfBlocks(html, context);
-    html = processedIfBlocks;
+    auto processed =
+        renderForeachBlocks(html, context);
+    processed = renderIfBlocks(processed, context);
+    html = processed;
 
     std::string output;
     size_t position = 0;

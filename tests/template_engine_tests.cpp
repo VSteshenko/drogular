@@ -301,3 +301,47 @@ TEST(TemplateEngineTests, RendersElseBlockWhenConditionIsMissing) {
 
     EXPECT_EQ(html, "<p>Please log in</p>");
 }
+
+TEST(TemplateEngineTests, RendersForeachBlock) {
+    drogular::RenderContext context;
+
+    context.set("items",
+        std::vector<std::string>{
+            "A",
+            "B",
+            "C"
+        }
+    );
+
+    const auto html =
+        drogular::template_engine::render(
+            R"(
+<ul>
+@foreach(item in items)
+<li>{{ item }}</li>
+@endforeach
+</ul>
+)",
+            context
+        );
+
+    EXPECT_TRUE(html.find("<li>A</li>") != std::string::npos);
+    EXPECT_TRUE(html.find("<li>B</li>") != std::string::npos);
+    EXPECT_TRUE(html.find("<li>C</li>") != std::string::npos);
+}
+
+TEST(TemplateEngineTests, EscapesForeachValues) {
+    drogular::RenderContext context;
+
+    context.set("items", std::vector<std::string>{"<script>"});
+
+    const auto html =
+        drogular::template_engine::render(
+            "@foreach(item in items)"
+            "{{ item }}"
+            "@endforeach",
+            context
+        );
+
+    EXPECT_EQ(html, "&lt;script&gt;");
+}
