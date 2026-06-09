@@ -1,30 +1,43 @@
 #pragma once
 
 #include <memory>
+#include <typeindex>
+#include <unordered_map>
 
 namespace drogular {
 
 class GraphQLClient;
 
-/**
- * Stores application-wide services.
- *
- * This is the foundation for a future dependency injection container.
- */
 class ApplicationServices {
 public:
-    /**
-     * Sets the GraphQL client.
-     */
     void setGraphQLClient(std::shared_ptr<GraphQLClient> client);
+    GraphQLClient* graphQLClient() const;
 
     /**
-     * Returns the GraphQL client or nullptr if it is not configured.
+     * Registers an application service by type.
      */
-    GraphQLClient* graphQLClient() const;
+    template <typename T>
+    void registerService(std::shared_ptr<T> service) {
+        services_[std::type_index(typeid(T))] = std::move(service);
+    }
+
+    /**
+     * Returns an application service by type.
+     */
+    template <typename T>
+    std::shared_ptr<T> service() const {
+        const auto it = services_.find(std::type_index(typeid(T)));
+
+        if (it == services_.end()) {
+            return nullptr;
+        }
+
+        return std::static_pointer_cast<T>(it->second);
+    }
 
 private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
+    std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
 };
 
 } // namespace drogular

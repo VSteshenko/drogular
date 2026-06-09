@@ -13,3 +13,45 @@ TEST(ServicesTests, StoresGraphQLClient) {
 
     EXPECT_NE(services.graphQLClient(), nullptr);
 }
+
+#include <drogular/services.hpp>
+
+#include <gtest/gtest.h>
+
+#include <memory>
+#include <string>
+
+class TestLogger {
+public:
+    explicit TestLogger(std::string name)
+        : name_(std::move(name)) {
+    }
+
+    const std::string& name() const {
+        return name_;
+    }
+
+private:
+    std::string name_;
+};
+
+TEST(ServicesTests, RegistersAndReturnsServiceByType) {
+    drogular::ApplicationServices services;
+
+    auto logger = std::make_shared<TestLogger>("main");
+
+    services.registerService<TestLogger>(logger);
+
+    const auto resolved = services.service<TestLogger>();
+
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->name(), "main");
+}
+
+TEST(ServicesTests, ReturnsNullptrForMissingService) {
+    drogular::ApplicationServices services;
+
+    const auto resolved = services.service<TestLogger>();
+
+    EXPECT_EQ(resolved, nullptr);
+}

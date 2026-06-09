@@ -1,8 +1,18 @@
 #include <drogular/component.hpp>
+#include <drogular/services.hpp>
 
 #include <gtest/gtest.h>
 
 #include <string>
+
+TEST(RenderContextTests, ReturnsApplicationServices) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext context;
+
+    context.setServices(&services);
+
+    EXPECT_EQ(context.services(), &services);
+}
 
 TEST(RenderContextTests, StoresAndReadsStringValue) {
     drogular::RenderContext context;

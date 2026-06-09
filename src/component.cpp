@@ -27,6 +27,14 @@ RenderContext::RenderContext(const RenderContext* parent)
     : parent_(parent) {
 }
 
+ApplicationServices* RenderContext::services() {
+    return services_;
+}
+
+const ApplicationServices* RenderContext::services() const {
+    return services_;
+}
+
 RenderContext RenderContext::createChild() const {
     RenderContext child(this);
 

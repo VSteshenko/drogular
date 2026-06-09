@@ -86,6 +86,16 @@ public:
     explicit RenderContext(const RenderContext* parent);
 
     /**
+     * Returns application services.
+     */
+    ApplicationServices* services();
+
+    /**
+     * Returns read-only application services.
+     */
+    const ApplicationServices* services() const;
+
+    /**
      * Creates a child render context.
      */
     RenderContext createChild() const;
