@@ -123,16 +123,29 @@ std::string renderIfBlocks(
             html.substr(ifStart + 4, conditionEnd - ifStart - 4)
         );
 
-        const auto blockContent = html.substr(
-            conditionEnd + 1,
-            blockEnd - conditionEnd - 1
-        );
+        const auto blockStart = conditionEnd + 1;
+        const auto elseStart = html.find("@else", blockStart);
+
+        const bool hasElse =
+            elseStart != std::string_view::npos &&
+            elseStart < blockEnd;
+
+        const auto trueBlock = hasElse
+            ? html.substr(blockStart, elseStart - blockStart)
+            : html.substr(blockStart, blockEnd - blockStart);
+
+        const auto falseBlock = hasElse
+            ? html.substr(elseStart + std::string_view("@else").size(),
+                          blockEnd - elseStart - std::string_view("@else").size())
+            : std::string_view{};
 
         const auto condition =
             context.get<bool>(conditionName).value_or(false);
 
         if (condition) {
-            output.append(blockContent);
+            output.append(trueBlock);
+        } else {
+            output.append(falseBlock);
         }
 
         position = blockEnd + std::string_view("@endif").size();

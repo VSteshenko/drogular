@@ -261,3 +261,43 @@ TEST(TemplateEngineTests, LeavesBrokenIfBlockAsText) {
 
     EXPECT_EQ(html, "@if(showTitle)<h1>Hello</h1>");
 }
+
+TEST(TemplateEngineTests, RendersIfElseTrueBlock) {
+    drogular::RenderContext context;
+
+    context.set("isLoggedIn", true);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(isLoggedIn)<p>Hello</p>@else<p>Please log in</p>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "<p>Hello</p>");
+}
+
+TEST(TemplateEngineTests, RendersIfElseFalseBlock) {
+    drogular::RenderContext context;
+
+    context.set("isLoggedIn", false);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(isLoggedIn)<p>Hello</p>@else<p>Please log in</p>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "<p>Please log in</p>");
+}
+
+TEST(TemplateEngineTests, RendersElseBlockWhenConditionIsMissing) {
+    drogular::RenderContext context;
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(isLoggedIn)<p>Hello</p>@else<p>Please log in</p>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "<p>Please log in</p>");
+}
