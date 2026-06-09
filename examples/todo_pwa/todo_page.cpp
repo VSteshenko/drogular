@@ -9,6 +9,22 @@ void TodoPage::onInit(drogular::RenderContext& context) {
     if (pageQuery.has_value()) {
         context.executeGraphQL(*pageQuery);
     }
+
+    const auto todos =
+        context.graphql()
+            .require<std::vector<Todo>>("todos");
+
+    std::vector<std::string> todoTitles;
+
+    for (const auto& todo : todos) {
+        todoTitles.push_back(
+            (todo.done ? "[x] " : "[ ] ") + todo.title
+        );
+    }
+
+    context.set("title", std::string("Drogular Todo PWA"));
+    context.set("subtitle", std::string("Angular-inspired C++ web framework for Drogon."));
+    context.set("todoItems", todoTitles);
 }
 
 std::optional<drogular::gql::Query> TodoPage::query() const {
@@ -23,38 +39,28 @@ std::optional<drogular::gql::Query> TodoPage::query() const {
         );
 }
 
-std::string TodoPage::render(drogular::RenderContext& context) {
-    const auto todos = context.graphql().require<std::vector<Todo>>("todos");
-
-    std::string html = R"(
+std::string TodoPage::templateHtml() const {
+    return R"(
 <!doctype html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Drogular Todo PWA</title>
+    <title>{{ title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <main>
-        <h1>Drogular Todo PWA</h1>
-        <p>Angular-inspired C++ web framework for Drogon.</p>
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
 
         <h2>Todo list</h2>
         <ul>
-)";
-
-    for (const auto& todo : todos) {
-        html += "            <li>";
-        html += todo.done ? "[x] " : "[ ] ";
-        html += todo.title;
-        html += "</li>\n";
-    }
-
-    html += R"(        </ul>
+@foreach(item in todoItems)
+            <li>{{ item }}</li>
+@endforeach
+        </ul>
     </main>
 </body>
 </html>
 )";
-
-    return html;
 }
