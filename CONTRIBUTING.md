@@ -1,6 +1,5 @@
 ## `CONTRIBUTING.md`
 
-```md
 # Contributing to Drogular
 
 Thank you for your interest in Drogular.
@@ -25,3 +24,12 @@ cmake -S . -B build \
   -DDROGULAR_BUILD_EXAMPLES=ON
 
 cmake --build build
+```
+
+## Code Style
+
+- C++20
+- English comments only
+- One feature per pull request
+- Tests required for new functionality
+- Public APIs must be documented

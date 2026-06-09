@@ -35,32 +35,238 @@ GraphQLResult
 
 ## Status
 
-Version: 0.3
+**Version:** 0.4.0
 
-Current features:
+Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
-- CMake project skeleton
-- Drogon integration
-- Page and component base classes
-- Simple routing through `drogular::App`
-- GraphQL query builder
-    - Nested selections
-    - Typed values
-    - Arguments
-    - Variables
-    - Aliases
-    - Fragments
-    - Basic validation
-- GoogleTest-based test infrastructure
-- Todo PWA example
-- GitHub Actions CI for Ubuntu and macOS
-- GraphQL client abstraction
-- Static GraphQL client for tests and examples
-- HTTP GraphQL client MVP
-- RenderContext GraphQL result merging
-- ApplicationServices foundation for future DI
+Current architecture:
+
+```text
+Application
+    ↓
+ApplicationServices
+    ↓
+Router
+    ↓
+RenderContext
+    ↓
+Page / Component
+    ↓
+Template Engine
+    ↓
+HTML
+```
+
+Data pipeline:
+
+```text
+GraphQL Query
+        ↓
+GraphQL Client
+        ↓
+GraphQL Result
+        ↓
+RenderContext
+        ↓
+Template Rendering
+        ↓
+HTML
+```
+
+Current capabilities:
+
+### Application Layer
+
+- Application bootstrap
+- Routing
+- Application services
 - Component tree
-- Slot support via `<slot/>`
+- Named slots
+
+### GraphQL Layer
+
+- GraphQL query builder
+- Variables
+- Aliases
+- Fragments
+- Validation
+- StaticGraphQLClient
+- HttpGraphQLClient (MVP)
+- GraphQLResult
+- Result merging
+
+### Template Layer
+
+- TemplatePage
+- TemplateComponent
+- HTML escaping
+- Raw HTML output
+- Variables (`{{ variable }}`)
+- Conditions (`@if`)
+- If / Else (`@else`)
+- Loops (`@foreach`)
+- Component parameters
+
+### Testing
+
+- Page rendering helpers
+- Component rendering helpers
+- HTML assertions
+- Unit tests
+- GitHub Actions CI
+
+Project maturity:
+
+| Area | Status |
+|--------|--------|
+| Routing | Stable |
+| Components | Stable |
+| Templates | Stable |
+| GraphQL Builder | Stable |
+| GraphQL Clients | Experimental |
+| DI Container | Planned |
+| Object Templates | Planned |
+| Component Inputs | Planned |
+
+## Current Limitations
+
+The template engine is intentionally minimal in version 0.4.
+
+Currently supported:
+
+- `{{ variable }}`
+- `{{{ raw }}}`
+- `@if`
+- `@else`
+- `@foreach(item in items)`
+
+Current loop support is limited to:
+
+```cpp
+std::vector<std::string>
+```
+
+Object access is planned for version 0.5:
+
+```html
+{{ user.name }}
+{{ todo.title }}
+```
+
+## Example
+
+A page can declare a GraphQL query, load data through the configured GraphQL client, and render HTML using Drogular templates.
+
+```cpp
+#include <drogular/app.hpp>
+#include <drogular/graphql_client.hpp>
+#include <drogular/page.hpp>
+
+class TodoPage final : public drogular::TemplatePage {
+public:
+    void onInit(drogular::RenderContext& context) override {
+        const auto pageQuery = query();
+
+        if (pageQuery.has_value()) {
+            context.executeGraphQL(*pageQuery);
+        }
+
+        context.set(
+            "title",
+            std::string("Drogular Todo PWA")
+        );
+
+        context.set(
+            "showTodos",
+            true
+        );
+
+        context.set(
+            "items",
+            std::vector<std::string>{
+                "Learn Drogular",
+                "Build a PWA"
+            }
+        );
+    }
+
+    std::optional<drogular::gql::Query> query() const override {
+        return drogular::gql::query("TodoPage")
+            .select(
+                drogular::gql::field("todos")
+                    .children({
+                        drogular::gql::field("id"),
+                        drogular::gql::field("title")
+                    })
+            );
+    }
+
+    std::string templateHtml() const override {
+        return R"(
+<h1>{{ title }}</h1>
+
+@if(showTodos)
+<ul>
+@foreach(item in items)
+    <li>{{ item }}</li>
+@endforeach
+</ul>
+@endif
+)";
+    }
+};
+```
+
+Data flow:
+
+```text
+GraphQL Query
+        ↓
+GraphQL Client
+        ↓
+GraphQL Result
+        ↓
+RenderContext
+        ↓
+TemplatePage
+        ↓
+@if
+@foreach
+{{ variable }}
+        ↓
+HTML
+```
+
+Application setup:
+
+```cpp
+drogular::GraphQLResult result;
+
+auto client =
+    std::make_shared<
+        drogular::StaticGraphQLClient
+    >(std::move(result));
+
+drogular::App app;
+
+app.graphQLClient(client);
+
+app.page<TodoPage>("/");
+
+app.run(8080);
+```
+
+Run the Todo PWA example:
+
+```bash
+./build/examples/todo_pwa/todo_pwa
+```
+
+Open:
+
+```text
+http://localhost:8080
+```
 
 ## GraphQL builder
 
@@ -112,110 +318,75 @@ app.run(8080);
 
 ```
 
-## Example
+## Template Engine
 
-A page can declare a GraphQL query, load data through the configured GraphQL client, and render HTML using the render context.
+### Variables
 
+```html
+<h1>{{ title }}</h1>
+```
+
+### Raw Output
+
+```html
+{{{ content }}}
+```
+
+### Conditions
+
+```html
+@if(showTitle)
+<h1>{{ title }}</h1>
+@endif
+```
+
+### If / Else
+
+```html
+@if(isLoggedIn)
+<p>Welcome</p>
+@else
+<p>Please log in</p>
+@endif
+```
+
+### Loops
+
+```html
+<ul>
+@foreach(item in items)
+<li>{{ item }}</li>
+@endforeach
+</ul>
+```
+## Layouts
+
+```html
+<header>
+    <slot name="header"/>
+</header>
+
+<main>
+    <slot name="content"/>
+</main>
+```
 ```cpp
-#include <drogular/app.hpp>
-#include <drogular/graphql_client.hpp>
-#include <drogular/page.hpp>
-
-struct Todo {
-    int id;
-    std::string title;
-    bool done;
-};
-
-class TodoPage final : public drogular::Page {
+class HeaderComponent : public drogular::TemplateComponent {
 public:
-    void onInit(drogular::RenderContext& context) override {
-        const auto pageQuery = query();
-
-        if (pageQuery.has_value()) {
-            context.executeGraphQL(*pageQuery);
-        }
-    }
-
-    std::optional<drogular::gql::Query> query() const override {
-        return drogular::gql::query("TodoPage")
-            .select(
-                drogular::gql::field("todos")
-                    .children({
-                        drogular::gql::field("id"),
-                        drogular::gql::field("title"),
-                        drogular::gql::field("done")
-                    })
-            );
-    }
-
-    std::string render(drogular::RenderContext& context) override {
-        const auto todos =
-            context.graphql()
-                .require<std::vector<Todo>>("todos");
-
-        std::string html = "<h1>Todo List</h1><ul>";
-
-        for (const auto& todo : todos) {
-            html += "<li>";
-            html += todo.title;
-            html += "</li>";
-        }
-
-        html += "</ul>";
-
-        return html;
+    std::string slot() const override {
+        return "header";
     }
 };
-
-int main() {
-    std::vector<Todo> todos = {
-        {1, "Learn Drogular", true},
-        {2, "Build a PWA", false}
-    };
-
-    drogular::GraphQLResult result;
-    result.set("todos", todos);
-
-    auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            std::move(result)
-        );
-
-    drogular::App app;
-
-    app.graphQLClient(client);
-
-    app.page<TodoPage>("/");
-
-    app.run(8080);
-}
 ```
 
-Data flow:
+## Roadmap
 
 ```text
-GraphQL Query
-        ↓
-GraphQL Client
-        ↓
-GraphQL Result
-        ↓
-RenderContext
-        ↓
-Page
-        ↓
-HTML
-```
+0.5
 
-Run the Todo PWA example:
-
-```bash
-./build/examples/todo_pwa/todo_pwa
-```
-
-Open:
-
-```text
-http://localhost:8080
+- Scoped RenderContext
+- Object access
+- Component inputs
+- Service container
+- Dependency injection
 ```

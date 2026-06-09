@@ -89,7 +89,15 @@ std::string Component::slot() const {
     return "";
 }
 
+void Component::applyParams(RenderContext& context) const {
+    for (const auto& [key, value] : params_) {
+        context.set(key, value);
+    }
+}
+
 std::string TemplateComponent::render(RenderContext& context) {
+    applyParams(context);
+
     return template_engine::render(
         templateHtml(),
         context

@@ -263,6 +263,11 @@ public:
         return *value;
     }
 
+    /**
+     * Copies component parameters into the render context.
+     */
+    void applyParams(RenderContext& context) const;
+
 private:
     std::unordered_map<std::string, std::any> params_;
 };

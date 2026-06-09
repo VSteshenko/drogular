@@ -21,8 +21,21 @@ TEST(TemplateComponentTests, RendersTemplateWithContext) {
 
     component.onInit(context);
 
-    EXPECT_EQ(
-        component.render(context),
-        "<h1>Hello TemplateComponent</h1>"
-    );
+    EXPECT_EQ(component.render(context), "<h1>Hello TemplateComponent</h1>");
+}
+
+class ParamTemplateComponent final : public drogular::TemplateComponent {
+public:
+    std::string templateHtml() const override {
+        return "<h2>{{ title }}</h2>";
+    }
+};
+
+TEST(TemplateComponentTests, RendersComponentParams) {
+    ParamTemplateComponent component;
+    drogular::RenderContext context;
+
+    component.setParam("title", std::string("Hello Card"));
+
+    EXPECT_EQ(component.render(context), "<h2>Hello Card</h2>");
 }
