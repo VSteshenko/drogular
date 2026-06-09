@@ -234,6 +234,37 @@ public:
      * Returns the slot name used by the parent component.
      */
     virtual std::string slot() const;
+
+    /**
+     * Stores a typed component parameter.
+     */
+    template <typename T>
+    void setParam(std::string key, T value) {
+        params_[std::move(key)] = std::move(value);
+    }
+
+    /**
+     * Returns a typed component parameter.
+     */
+    template <typename T>
+    std::optional<T> param(const std::string& key) const {
+        const auto it = params_.find(key);
+
+        if (it == params_.end()) {
+            return std::nullopt;
+        }
+
+        const auto value = std::any_cast<T>(&it->second);
+
+        if (value == nullptr) {
+            return std::nullopt;
+        }
+
+        return *value;
+    }
+
+private:
+    std::unordered_map<std::string, std::any> params_;
 };
 
 /**
