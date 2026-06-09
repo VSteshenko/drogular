@@ -83,6 +83,12 @@ class Query;
 class RenderContext {
 public:
     RenderContext() = default;
+    explicit RenderContext(const RenderContext* parent);
+
+    /**
+     * Creates a child render context.
+     */
+    RenderContext createChild() const;
 
     /**
      * Stores a typed value by key.
@@ -101,19 +107,23 @@ public:
     std::optional<T> get(const std::string& key) const {
         const auto it = values_.find(key);
 
-        if (it == values_.end()) {
+        if (it != values_.end()) {
+            const auto value = std::any_cast<T>(&it->second);
+
+            if (value != nullptr) {
+                return *value;
+            }
+
             return std::nullopt;
         }
 
-        const auto value = std::any_cast<T>(&it->second);
-
-        if (value == nullptr) {
-            return std::nullopt;
+        if (parent_ != nullptr) {
+            return parent_->get<T>(key);
         }
 
-        return *value;
+        return std::nullopt;
     }
-
+    
     /**
      * Checks whether the context contains a value for the given key.
      */
@@ -200,6 +210,7 @@ public:
     void mergeGraphQL(GraphQLResult result);
 
 private:
+    const RenderContext* parent_ = nullptr;
     std::unordered_map<std::string, std::any> values_;
     GraphQLClient* graphqlClient_ = nullptr;
     ApplicationServices* services_ = nullptr;

@@ -45,7 +45,10 @@ inline std::string renderComponentTree(
     std::unordered_map<std::string, std::string> namedChildrenHtml;
 
     for (const auto& child : component.children()) {
-        const auto childHtml = renderComponentTree(*child, context);
+        auto childContext = context.createChild();
+
+        const auto childHtml =
+            renderComponentTree(*child, childContext);
 
         if (child->slot().empty()) {
             defaultChildrenHtml += childHtml;

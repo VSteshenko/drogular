@@ -121,3 +121,35 @@ TEST(RenderContextTests, ReturnsStoredValueInsteadOfDefaultValue) {
 
     EXPECT_EQ(count, 42);
 }
+
+TEST(RenderContextTests, ChildContextReadsParentValue) {
+    drogular::RenderContext parent;
+
+    parent.set("title", std::string("Parent"));
+
+    auto child = parent.createChild();
+
+    EXPECT_EQ(child.require<std::string>("title"), "Parent");
+}
+
+TEST(RenderContextTests, ChildContextOverridesParentValue) {
+    drogular::RenderContext parent;
+
+    parent.set("title", std::string("Parent"));
+
+    auto child = parent.createChild();
+    child.set("title", std::string("Child"));
+
+    EXPECT_EQ(child.require<std::string>("title"), "Child");
+    EXPECT_EQ(parent.require<std::string>("title"), "Parent");
+}
+
+TEST(RenderContextTests, ChildContextContainsParentValue) {
+    drogular::RenderContext parent;
+
+    parent.set("title", std::string("Parent"));
+
+    auto child = parent.createChild();
+
+    EXPECT_TRUE(child.contains("title"));
+}

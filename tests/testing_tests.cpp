@@ -130,3 +130,38 @@ TEST(TestingTests, RendersNamedSlots) {
 
     EXPECT_EQ(html, "<header><h1>Header</h1></header><main><p>Content</p></main>");
 }
+
+class ScopedParentComponent final : public drogular::TemplateComponent {
+public:
+    void onInit(drogular::RenderContext& context) override {
+        context.set("title", std::string("Parent"));
+    }
+
+    std::string templateHtml() const override {
+        return "<section>{{ title }}<slot/></section>";
+    }
+
+    std::vector<std::shared_ptr<drogular::Component>> children() override {
+        auto child = std::make_shared<ScopedChildComponent>();
+        child->setParam("title", std::string("Child"));
+        return {child};
+    }
+
+private:
+    class ScopedChildComponent final : public drogular::TemplateComponent {
+    public:
+        std::string templateHtml() const override {
+            return "<p>{{ title }}</p>";
+        }
+    };
+};
+
+TEST(TestingTests, ChildComponentParamsDoNotOverwriteParentContext) {
+    ScopedParentComponent component;
+    drogular::RenderContext context;
+
+    const auto html =
+        drogular::test::renderComponentTree(component, context);
+
+    EXPECT_EQ(html, "<section>Parent<p>Child</p></section>");
+}

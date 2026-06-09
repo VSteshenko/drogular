@@ -19,6 +19,23 @@ void GraphQLResult::clear() {
     values_.clear();
 }
 
+RenderContextError::RenderContextError(const std::string& message)
+    : std::runtime_error(message) {
+}
+
+RenderContext::RenderContext(const RenderContext* parent)
+    : parent_(parent) {
+}
+
+RenderContext RenderContext::createChild() const {
+    RenderContext child(this);
+
+    child.setServices(services_);
+    child.setGraphQLClient(graphqlClient_);
+
+    return child;
+}
+
 void RenderContext::setGraphQLClient(GraphQLClient* client) {
     graphqlClient_ = client;
 }
@@ -61,12 +78,16 @@ void RenderContext::mergeGraphQL(GraphQLResult result) {
     graphql_.merge(std::move(result));
 }
 
-RenderContextError::RenderContextError(const std::string& message)
-    : std::runtime_error(message) {
-}
-
 bool RenderContext::contains(const std::string& key) const {
-    return values_.contains(key);
+    if (values_.contains(key)) {
+        return true;
+    }
+
+    if (parent_ != nullptr) {
+        return parent_->contains(key);
+    }
+
+    return false;
 }
 
 void RenderContext::remove(const std::string& key) {
@@ -98,10 +119,7 @@ void Component::applyParams(RenderContext& context) const {
 std::string TemplateComponent::render(RenderContext& context) {
     applyParams(context);
 
-    return template_engine::render(
-        templateHtml(),
-        context
-    );
+    return template_engine::render(templateHtml(), context);
 }
 
 } // namespace drogular
