@@ -55,3 +55,52 @@ TEST(ServicesTests, ReturnsNullptrForMissingService) {
 
     EXPECT_EQ(resolved, nullptr);
 }
+
+class ConfigurableService {
+public:
+    explicit ConfigurableService(std::string name)
+        : name_(std::move(name)) {
+    }
+
+    const std::string& name() const {
+        return name_;
+    }
+
+private:
+    std::string name_;
+};
+
+TEST(ServicesTests, AddsServiceWithDefaultConstructor) {
+    class DefaultService {
+    public:
+        int value() const {
+            return 42;
+        }
+    };
+
+    drogular::ApplicationServices services;
+
+    const auto added =
+        services.add<DefaultService>();
+
+    const auto resolved =
+        services.service<DefaultService>();
+
+    ASSERT_NE(added, nullptr);
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->value(), 42);
+}
+
+TEST(ServicesTests, AddsServiceWithConstructorArguments) {
+    drogular::ApplicationServices services;
+
+    const auto added =
+        services.add<ConfigurableService>("main");
+
+    const auto resolved =
+        services.service<ConfigurableService>();
+
+    ASSERT_NE(added, nullptr);
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->name(), "main");
+}

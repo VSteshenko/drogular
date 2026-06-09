@@ -3,6 +3,7 @@
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
+#include <utility>
 
 namespace drogular {
 
@@ -33,6 +34,20 @@ public:
         }
 
         return std::static_pointer_cast<T>(it->second);
+    }
+
+    /**
+     * Creates and registers an application service by type.
+     */
+    template <typename T, typename... Args>
+    std::shared_ptr<T> add(Args&&... args) {
+        auto service = std::make_shared<T>(
+            std::forward<Args>(args)...
+        );
+
+        registerService<T>(service);
+
+        return service;
     }
 
 private:
