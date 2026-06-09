@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "services.hpp"
+
 namespace drogular {
 
 /**
@@ -94,6 +96,16 @@ public:
      * Returns read-only application services.
      */
     const ApplicationServices* services() const;
+
+
+    template <typename T>
+    std::shared_ptr<T> service() const {
+        if (services_ == nullptr) {
+            return nullptr;
+        }
+
+        return services_->service<T>();
+    }
 
     /**
      * Creates a child render context.

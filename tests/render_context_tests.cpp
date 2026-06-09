@@ -14,6 +14,38 @@ TEST(RenderContextTests, ReturnsApplicationServices) {
     EXPECT_EQ(context.services(), &services);
 }
 
+class RenderContextTestLogger {
+public:
+    explicit RenderContextTestLogger(std::string name)
+        : name_(std::move(name)) {
+    }
+
+    const std::string& name() const {
+        return name_;
+    }
+
+private:
+    std::string name_;
+};
+
+TEST(RenderContextTests, ResolvesTypedService) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext context;
+
+    auto logger =
+        std::make_shared<RenderContextTestLogger>("main");
+
+    services.registerService<RenderContextTestLogger>(logger);
+
+    context.setServices(&services);
+
+    const auto resolved =
+        context.service<RenderContextTestLogger>();
+
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->name(), "main");
+}
+
 TEST(RenderContextTests, StoresAndReadsStringValue) {
     drogular::RenderContext context;
 

@@ -35,7 +35,7 @@ GraphQLResult
 
 ## Status
 
-**Version:** 0.4.0
+**Version:** 0.5.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -46,11 +46,15 @@ Application
     ↓
 ApplicationServices
     ↓
+Service Container
+    ↓
 Router
     ↓
 RenderContext
     ↓
-Page / Component
+Scoped Component Contexts
+    ↓
+TemplatePage / TemplateComponent
     ↓
 Template Engine
     ↓
@@ -101,11 +105,14 @@ Current capabilities:
 - TemplateComponent
 - HTML escaping
 - Raw HTML output
-- Variables (`{{ variable }}`)
+- HTML escaping
 - Conditions (`@if`)
 - If / Else (`@else`)
 - Loops (`@foreach`)
 - Component parameters
+- Json object access: {{ user.name }} 
+- Json conditions: @if(user.active)
+- Json loops: @foreach(todo in todos)
 
 ### Testing
 
@@ -115,53 +122,37 @@ Current capabilities:
 - Unit tests
 - GitHub Actions CI
 
-Project maturity:
+## Project Maturity
 
 | Area | Status |
 |--------|--------|
+| Application Bootstrap | Stable |
 | Routing | Stable |
 | Components | Stable |
-| Templates | Stable |
-| GraphQL Builder | Stable |
-| GraphQL Clients | Experimental |
-| DI Container | Planned |
-| Object Templates | Planned |
-| Component Inputs | Planned |
-
-## Current Limitations
-
-The template engine is intentionally minimal in version 0.4.
-
-Currently supported:
-
-- `{{ variable }}`
-- `{{{ raw }}}`
-- `@if`
-- `@else`
-- `@foreach(item in items)`
-
-Current loop support is limited to:
-
-```cpp
-std::vector<std::string>
-```
-
-Object access is planned for version 0.5:
-
-```html
-{{ user.name }}
-{{ todo.title }}
-```
-
+| Component Tree | Stable |
+| Named Slots | Stable |
+| Component Inputs | Stable |
+| Scoped RenderContext | Stable |
+| Template Engine | Stable |
+| Variables (`{{ }}`) | Stable |
+| Raw Output (`{{{ }}}`) | Stable |
+| Conditions (`@if`) | Stable |
+| Loops (`@foreach`) | Stable |
+| Json Object Access | Stable |
+| GraphQL Query Builder | Stable |
+| GraphQL Validation | Stable |
+| GraphQLResult | Stable |
+| StaticGraphQLClient | Stable |
+| HttpGraphQLClient | Experimental |
+| Service Container | Experimental |
+| Dependency Injection | Planned |
+| Component Tags | Planned |
+| Template Compilation | Planned |
 ## Example
 
 A page can declare a GraphQL query, load data through the configured GraphQL client, and render HTML using Drogular templates.
 
 ```cpp
-#include <drogular/app.hpp>
-#include <drogular/graphql_client.hpp>
-#include <drogular/page.hpp>
-
 class TodoPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
@@ -171,23 +162,24 @@ public:
             context.executeGraphQL(*pageQuery);
         }
 
-        context.set(
-            "title",
-            std::string("Drogular Todo PWA")
-        );
+        const auto sourceTodos =
+            context.graphql()
+                .require<std::vector<Todo>>("todos");
 
-        context.set(
-            "showTodos",
-            true
-        );
+        Json::Value todos(Json::arrayValue);
 
-        context.set(
-            "items",
-            std::vector<std::string>{
-                "Learn Drogular",
-                "Build a PWA"
-            }
-        );
+        for (const auto& sourceTodo : sourceTodos) {
+            Json::Value todo;
+
+            todo["id"] = sourceTodo.id;
+            todo["title"] = sourceTodo.title;
+            todo["done"] = sourceTodo.done;
+
+            todos.append(todo);
+        }
+
+        context.set("title", std::string("Drogular Todo PWA"));
+        context.set("todos", todos);
     }
 
     std::optional<drogular::gql::Query> query() const override {
@@ -196,7 +188,8 @@ public:
                 drogular::gql::field("todos")
                     .children({
                         drogular::gql::field("id"),
-                        drogular::gql::field("title")
+                        drogular::gql::field("title"),
+                        drogular::gql::field("done")
                     })
             );
     }
@@ -205,13 +198,15 @@ public:
         return R"(
 <h1>{{ title }}</h1>
 
-@if(showTodos)
 <ul>
-@foreach(item in items)
-    <li>{{ item }}</li>
+@foreach(todo in todos)
+@if(todo.done)
+    <li>[x] {{ todo.title }}</li>
+@else
+    <li>[ ] {{ todo.title }}</li>
+@endif
 @endforeach
 </ul>
-@endif
 )";
     }
 };
@@ -226,13 +221,13 @@ GraphQL Client
         ↓
 GraphQL Result
         ↓
+Json data
+        ↓
 RenderContext
         ↓
 TemplatePage
         ↓
-@if
-@foreach
-{{ variable }}
+@if / @else / @foreach / {{ todo.title }}
         ↓
 HTML
 ```
@@ -381,12 +376,57 @@ public:
 
 ## Roadmap
 
-```text
-0.5
+### 0.6 — Dependency Injection
 
-- Scoped RenderContext
-- Object access
-- Component inputs
-- Service container
-- Dependency injection
+- Constructor injection
+- Service lifetimes
+- Scoped services
+- Service factories
+- Typed service registration helpers
+- Dependency validation
+
+Example:
+
+```cpp
+class TodoPage : public drogular::TemplatePage {
+public:
+    explicit TodoPage(
+        std::shared_ptr<TodoService> service
+    );
+};
 ```
+
+### 0.7 — Component System
+
+- Component tags
+- Component registry
+- Template component composition
+- Dynamic component rendering
+- Component discovery
+
+Example:
+
+```html
+<Card title="Welcome"/>
+
+<UserProfile user="{{ user }}"/>
+```
+
+### 0.8 — Template Compiler
+
+- Template AST
+- Compiled templates
+- Faster rendering
+- Template diagnostics
+- Better error reporting
+
+### Future
+
+- GraphQL code generation
+- GraphQL subscriptions
+- WebSocket support
+- Server-side hydration
+- PWA tooling
+- CLI
+- Hot reload
+- Static site generation
