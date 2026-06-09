@@ -85,12 +85,71 @@ std::string escapeHtml(std::string_view value) {
     return output;
 }
 
+/**
+ * Renders simple @if(condition) ... @endif blocks.
+ */
+std::string renderIfBlocks(
+    std::string_view html,
+    const RenderContext& context
+) {
+    std::string output;
+    size_t position = 0;
+
+    while (position < html.size()) {
+        const auto ifStart = html.find("@if(", position);
+
+        if (ifStart == std::string_view::npos) {
+            output.append(html.substr(position));
+            break;
+        }
+
+        output.append(html.substr(position, ifStart - position));
+
+        const auto conditionEnd = html.find(")", ifStart + 4);
+
+        if (conditionEnd == std::string_view::npos) {
+            output.append(html.substr(ifStart));
+            break;
+        }
+
+        const auto blockEnd = html.find("@endif", conditionEnd + 1);
+
+        if (blockEnd == std::string_view::npos) {
+            output.append(html.substr(ifStart));
+            break;
+        }
+
+        const auto conditionName = trim(
+            html.substr(ifStart + 4, conditionEnd - ifStart - 4)
+        );
+
+        const auto blockContent = html.substr(
+            conditionEnd + 1,
+            blockEnd - conditionEnd - 1
+        );
+
+        const auto condition =
+            context.get<bool>(conditionName).value_or(false);
+
+        if (condition) {
+            output.append(blockContent);
+        }
+
+        position = blockEnd + std::string_view("@endif").size();
+    }
+
+    return output;
+}
+
 } // namespace
 
 std::string render(
     std::string_view html,
     const RenderContext& context
 ) {
+    const auto processedIfBlocks = renderIfBlocks(html, context);
+    html = processedIfBlocks;
+
     std::string output;
     size_t position = 0;
 

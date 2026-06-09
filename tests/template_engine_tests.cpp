@@ -203,3 +203,61 @@ TEST(TemplateEngineTests, LeavesBrokenRawExpressionAsText) {
         "<div>{{{ content }}</div>"
     );
 }
+
+TEST(TemplateEngineTests, RendersIfBlockWhenConditionIsTrue) {
+    drogular::RenderContext context;
+
+    context.set("showTitle", true);
+    context.set("title", std::string("Hello"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(showTitle)<h1>{{ title }}</h1>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "<h1>Hello</h1>");
+}
+
+TEST(TemplateEngineTests, SkipsIfBlockWhenConditionIsFalse) {
+    drogular::RenderContext context;
+
+    context.set("showTitle", false);
+    context.set("title", std::string("Hello"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(showTitle)<h1>{{ title }}</h1>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "");
+}
+
+TEST(TemplateEngineTests, SkipsIfBlockWhenConditionIsMissing) {
+    drogular::RenderContext context;
+
+    context.set("title", std::string("Hello"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(showTitle)<h1>{{ title }}</h1>@endif",
+            context
+        );
+
+    EXPECT_EQ(html, "");
+}
+
+TEST(TemplateEngineTests, LeavesBrokenIfBlockAsText) {
+    drogular::RenderContext context;
+
+    context.set("showTitle", true);
+
+    const auto html =
+        drogular::template_engine::render(
+            "@if(showTitle)<h1>Hello</h1>",
+            context
+        );
+
+    EXPECT_EQ(html, "@if(showTitle)<h1>Hello</h1>");
+}
