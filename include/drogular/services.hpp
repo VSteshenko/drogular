@@ -162,11 +162,41 @@ public:
         };
     }
 
+    template <typename T>
+    void addScoped(std::function<std::shared_ptr<T>()> factory) {
+        scopedFactories_[std::type_index(typeid(T))] =
+            [factory = std::move(factory)]() {
+                auto service = factory();
+
+                if (service == nullptr) {
+                    throw std::runtime_error(
+                        "Scoped factory returned nullptr"
+                    );
+                }
+
+                return std::static_pointer_cast<void>(service);
+        };
+    }
+
+    template <typename T>
+    std::shared_ptr<T> createScoped() {
+        const auto type = std::type_index(typeid(T));
+
+        const auto it = scopedFactories_.find(type);
+
+        if (it == scopedFactories_.end()) {
+            return nullptr;
+        }
+
+        return std::static_pointer_cast<T>(it->second());
+    }
+
 private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> transientFactories_;
+    std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
 };
 
 } // namespace drogular

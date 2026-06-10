@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <memory>
 #include <vector>
+#include <typeindex>
 
 #include "services.hpp"
 
@@ -103,18 +104,36 @@ public:
             return nullptr;
         }
 
+        const auto type = std::type_index(typeid(T));
+
+        const auto scopedIt = scopedServices_.find(type);
+
+        if (scopedIt != scopedServices_.end()) {
+            return std::static_pointer_cast<T>(scopedIt->second);
+        }
+
+        auto scoped = services_->createScoped<T>();
+
+        if (scoped != nullptr) {
+            scopedServices_[type] = scoped;
+            return scoped;
+        }
+
         return services_->service<T>();
     }
 
     template <typename T>
     std::shared_ptr<T> requireService() {
-        if (services_ == nullptr) {
+        auto resolved = service<T>();
+
+        if (resolved == nullptr) {
             throw std::runtime_error(
-                "ApplicationServices not set"
+                std::string("Service not registered: ") +
+                typeid(T).name()
             );
         }
 
-        return services_->requireService<T>();
+        return resolved;
     }
 
     template <typename T>
@@ -257,6 +276,7 @@ private:
     std::unordered_map<std::string, std::any> values_;
     GraphQLClient* graphqlClient_ = nullptr;
     ApplicationServices* services_ = nullptr;
+    std::unordered_map<std::type_index, std::shared_ptr<void>> scopedServices_;
     GraphQLResult graphql_;
 };
 

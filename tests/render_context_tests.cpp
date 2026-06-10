@@ -231,3 +231,79 @@ TEST(RenderContextTests, ChildContextContainsParentValue) {
 
     EXPECT_TRUE(child.contains("title"));
 }
+
+class ScopedCounterService {
+public:
+    ScopedCounterService() {
+        ++createdCount;
+    }
+
+    static inline int createdCount = 0;
+};
+
+TEST(RenderContextTests, ScopedServiceReturnsSameInstanceInsideScope) {
+    ScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+
+    services.addScoped<ScopedCounterService>(
+        []() {
+            return std::make_shared<ScopedCounterService>();
+        }
+    );
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto first = context.service<ScopedCounterService>();
+    const auto second = context.service<ScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+    EXPECT_EQ(ScopedCounterService::createdCount, 1);
+}
+
+TEST(RenderContextTests, ScopedServiceCreatesNewInstanceForChildScope) {
+    ScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+
+    services.addScoped<ScopedCounterService>(
+        []() {
+            return std::make_shared<ScopedCounterService>();
+        }
+    );
+
+    drogular::RenderContext parent;
+    parent.setServices(&services);
+
+    auto child = parent.createChild();
+
+    const auto parentService = parent.service<ScopedCounterService>();
+    const auto childService = child.service<ScopedCounterService>();
+
+    ASSERT_NE(parentService, nullptr);
+    ASSERT_NE(childService, nullptr);
+
+    EXPECT_NE(parentService.get(), childService.get());
+    EXPECT_EQ(ScopedCounterService::createdCount, 2);
+}
+
+TEST(RenderContextTests, RequireServiceSupportsScopedService) {
+    drogular::ApplicationServices services;
+
+    services.addScoped<ScopedCounterService>(
+        []() {
+            return std::make_shared<ScopedCounterService>();
+        }
+    );
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto service = context.requireService<ScopedCounterService>();
+
+    ASSERT_NE(service, nullptr);
+}
