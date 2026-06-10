@@ -170,6 +170,59 @@ TEST(ServicesTests, RequireServiceThrowsWhenMissing) {
     );
 }
 
+TEST(ServicesTests, TransientCreatesNewInstances) {
+    drogular::ApplicationServices services;
+
+    services.addTransient<DefaultService>(
+        []() {
+            return std::make_shared<
+                DefaultService
+            >();
+        }
+    );
+
+    const auto first =
+        services.service<
+            DefaultService
+        >();
+
+    const auto second =
+        services.service<
+            DefaultService
+        >();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_NE(first.get(), second.get());
+}
+
+TEST(ServicesTests, LazySingletonStillReturnsSameInstance) {
+    drogular::ApplicationServices services;
+
+    services.addLazy<
+        DefaultService
+    >(
+        []() {
+            return std::make_shared<
+                DefaultService
+            >();
+        }
+    );
+
+    const auto first =
+        services.service<
+            DefaultService
+        >();
+
+    const auto second =
+        services.service<
+            DefaultService
+        >();
+
+    EXPECT_EQ(first.get(), second.get());
+}
+
 TEST(ServicesTests, AddsServiceWithConstructorArguments) {
     drogular::ApplicationServices services;
 

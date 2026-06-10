@@ -53,15 +53,22 @@ public:
 
         const auto factoryIt = factories_.find(type);
 
-        if (factoryIt == factories_.end()) {
-            return nullptr;
+        if (factoryIt != factories_.end()) {
+            auto service = factoryIt->second();
+            services_[type] = service;
+
+            return std::static_pointer_cast<T>(service);
         }
 
-        auto service = factoryIt->second();
+        const auto transientIt = transientFactories_.find(type);
 
-        services_[type] = service;
+        if (transientIt != transientFactories_.end()) {
+            auto service = transientIt->second();
 
-        return std::static_pointer_cast<T>(service);
+            return std::static_pointer_cast<T>(service);
+        }
+
+        return nullptr;
     }
 
     /**
@@ -133,10 +140,33 @@ public:
         };
     }
 
+    template <typename T>
+    void addTransient(
+        std::function<std::shared_ptr<T>()> factory
+    ) {
+        transientFactories_[
+            std::type_index(typeid(T))
+        ] =
+            [factory = std::move(factory)]() {
+                auto service = factory();
+
+                if (service == nullptr) {
+                    throw std::runtime_error(
+                        "Transient factory returned nullptr"
+                    );
+                }
+
+                return std::static_pointer_cast<void>(
+                    service
+                );
+        };
+    }
+
 private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
+    std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> transientFactories_;
 };
 
 } // namespace drogular
