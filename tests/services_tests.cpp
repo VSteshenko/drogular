@@ -296,3 +296,51 @@ TEST(ServicesTests, ThrowsWhenFactoryReturnsNullptr) {
         std::runtime_error
     );
 }
+
+TEST(ServicesTests, AddsSingletonUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.add<DefaultService>(
+        drogular::ServiceLifetime::Singleton
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+}
+
+TEST(ServicesTests, AddsLazySingletonUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.add<DefaultService>(
+        drogular::ServiceLifetime::LazySingleton
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+}
+
+TEST(ServicesTests, AddsTransientUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.add<DefaultService>(
+        drogular::ServiceLifetime::Transient
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_NE(first.get(), second.get());
+}

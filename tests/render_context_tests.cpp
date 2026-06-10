@@ -307,3 +307,22 @@ TEST(RenderContextTests, RequireServiceSupportsScopedService) {
 
     ASSERT_NE(service, nullptr);
 }
+
+TEST(RenderContextTests, AddsScopedUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.add<ScopedCounterService>(
+        drogular::ServiceLifetime::Scoped
+    );
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto first = context.service<ScopedCounterService>();
+    const auto second = context.service<ScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+}

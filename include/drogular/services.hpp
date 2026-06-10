@@ -12,6 +12,13 @@ namespace drogular {
 
 class GraphQLClient;
 
+enum class ServiceLifetime {
+    Singleton,
+    LazySingleton,
+    Transient,
+    Scoped
+};
+
 class ApplicationServices {
 public:
     void setGraphQLClient(std::shared_ptr<GraphQLClient> client);
@@ -163,7 +170,9 @@ public:
     }
 
     template <typename T>
-    void addScoped(std::function<std::shared_ptr<T>()> factory) {
+    void addScoped(
+        std::function<std::shared_ptr<T>()> factory
+    ) {
         scopedFactories_[std::type_index(typeid(T))] =
             [factory = std::move(factory)]() {
                 auto service = factory();
@@ -189,6 +198,43 @@ public:
         }
 
         return std::static_pointer_cast<T>(it->second());
+    }
+
+    template <typename T, typename... Args>
+    std::shared_ptr<T> add(
+        ServiceLifetime lifetime,
+        Args&&... args
+    ) {
+        switch (lifetime) {
+        case ServiceLifetime::Singleton:
+            return add<T>(std::forward<Args>(args)...);
+
+        case ServiceLifetime::LazySingleton:
+            addLazy<T>(
+                [args...]() {
+                    return std::make_shared<T>(args...);
+                }
+            );
+            return nullptr;
+
+        case ServiceLifetime::Transient:
+            addTransient<T>(
+                [args...]() {
+                    return std::make_shared<T>(args...);
+                }
+            );
+            return nullptr;
+
+        case ServiceLifetime::Scoped:
+            addScoped<T>(
+                [args...]() {
+                    return std::make_shared<T>(args...);
+                }
+            );
+            return nullptr;
+        }
+
+        return nullptr;
     }
 
 private:
