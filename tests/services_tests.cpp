@@ -1,6 +1,9 @@
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
 
+#include <memory>
+#include <string>
+
 #include <gtest/gtest.h>
 
 TEST(ServicesTests, StoresGraphQLClient) {
@@ -13,13 +16,6 @@ TEST(ServicesTests, StoresGraphQLClient) {
 
     EXPECT_NE(services.graphQLClient(), nullptr);
 }
-
-#include <drogular/services.hpp>
-
-#include <gtest/gtest.h>
-
-#include <memory>
-#include <string>
 
 class TestLogger {
 public:
@@ -70,14 +66,14 @@ private:
     std::string name_;
 };
 
-TEST(ServicesTests, AddsServiceWithDefaultConstructor) {
-    class DefaultService {
-    public:
-        int value() const {
-            return 42;
-        }
-    };
+class DefaultService {
+public:
+    int value() const {
+        return 42;
+    }
+};
 
+TEST(ServicesTests, AddsServiceWithDefaultConstructor) {
     drogular::ApplicationServices services;
 
     const auto added =
@@ -89,6 +85,64 @@ TEST(ServicesTests, AddsServiceWithDefaultConstructor) {
     ASSERT_NE(added, nullptr);
     ASSERT_NE(resolved, nullptr);
     EXPECT_EQ(resolved->value(), 42);
+}
+
+TEST(ServicesTests, AddsLazyService) {
+    drogular::ApplicationServices services;
+
+    bool created = false;
+
+    services.addLazy<DefaultService>(
+        [&created]() {
+            created = true;
+            return std::make_shared<DefaultService>();
+        }
+    );
+
+    EXPECT_FALSE(created);
+
+    const auto resolved = services.service<DefaultService>();
+
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_TRUE(created);
+    EXPECT_EQ(resolved->value(), 42);
+}
+
+TEST(ServicesTests, LazyServiceIsCreatedOnlyOnce) {
+    drogular::ApplicationServices services;
+
+    int createdCount = 0;
+
+    services.addLazy<DefaultService>(
+        [&createdCount]() {
+            ++createdCount;
+            return std::make_shared<DefaultService>();
+        }
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first, second);
+    EXPECT_EQ(createdCount, 1);
+}
+
+TEST(ServicesTests, LazyFactoryThrowsWhenReturningNullptr) {
+    drogular::ApplicationServices services;
+
+    services.addLazy<DefaultService>(
+        []() {
+            return nullptr;
+        }
+    );
+
+    EXPECT_THROW(
+        services.service<DefaultService>(),
+        std::runtime_error
+    );
 }
 
 TEST(ServicesTests, AddsServiceWithConstructorArguments) {

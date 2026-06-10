@@ -97,9 +97,8 @@ public:
      */
     const ApplicationServices* services() const;
 
-
     template <typename T>
-    std::shared_ptr<T> service() const {
+    std::shared_ptr<T> service() {
         if (services_ == nullptr) {
             return nullptr;
         }

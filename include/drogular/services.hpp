@@ -29,13 +29,38 @@ public:
      */
     template <typename T>
     std::shared_ptr<T> service() const {
-        const auto it = services_.find(std::type_index(typeid(T)));
+        const auto type = std::type_index(typeid(T));
 
-        if (it == services_.end()) {
+        const auto serviceIt = services_.find(type);
+
+        if (serviceIt == services_.end()) {
             return nullptr;
         }
 
-        return std::static_pointer_cast<T>(it->second);
+        return std::static_pointer_cast<T>(serviceIt->second);
+    }
+
+    template <typename T>
+    std::shared_ptr<T> service() {
+        const auto type = std::type_index(typeid(T));
+
+        const auto serviceIt = services_.find(type);
+
+        if (serviceIt != services_.end()) {
+            return std::static_pointer_cast<T>(serviceIt->second);
+        }
+
+        const auto factoryIt = factories_.find(type);
+
+        if (factoryIt == factories_.end()) {
+            return nullptr;
+        }
+
+        auto service = factoryIt->second();
+
+        services_[type] = service;
+
+        return std::static_pointer_cast<T>(service);
     }
 
     /**
@@ -72,9 +97,28 @@ public:
         return service;
     }
 
+    template <typename T>
+    void addLazy(
+        std::function<std::shared_ptr<T>()> factory
+    ) {
+        factories_[std::type_index(typeid(T))] =
+            [factory = std::move(factory)]() {
+                auto service = factory();
+
+                if (service == nullptr) {
+                    throw std::runtime_error(
+                        "Lazy service factory returned nullptr"
+                    );
+                }
+
+                return std::static_pointer_cast<void>(service);
+        };
+    }
+
 private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
+    std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
 };
 
 } // namespace drogular
