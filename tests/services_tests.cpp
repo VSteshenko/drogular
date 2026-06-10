@@ -145,6 +145,31 @@ TEST(ServicesTests, LazyFactoryThrowsWhenReturningNullptr) {
     );
 }
 
+TEST(ServicesTests, RequireServiceReturnsRegisteredService) {
+    drogular::ApplicationServices services;
+
+    services.add<DefaultService>();
+
+    const auto resolved =
+        services.requireService<
+            DefaultService
+        >();
+
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->value(), 42);
+}
+
+TEST(ServicesTests, RequireServiceThrowsWhenMissing) {
+    drogular::ApplicationServices services;
+
+    EXPECT_THROW(
+        services.requireService<
+            DefaultService
+        >(),
+        std::runtime_error
+    );
+}
+
 TEST(ServicesTests, AddsServiceWithConstructorArguments) {
     drogular::ApplicationServices services;
 

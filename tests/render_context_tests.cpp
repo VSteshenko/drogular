@@ -14,6 +14,42 @@ TEST(RenderContextTests, ReturnsApplicationServices) {
     EXPECT_EQ(context.services(), &services);
 }
 
+class DefaultService {
+public:
+    int value() const {
+        return 42;
+    }
+};
+
+TEST(RenderContextTests, RequireServiceResolvesRegisteredService) {
+    drogular::ApplicationServices services;
+
+    services.add<DefaultService>();
+
+    drogular::RenderContext context;
+
+    context.setServices(&services);
+
+    const auto resolved =
+        context.requireService<
+            DefaultService
+        >();
+
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->value(), 42);
+}
+
+TEST(RenderContextTests, RequireServiceThrowsWhenServicesMissing) {
+    drogular::RenderContext context;
+
+    EXPECT_THROW(
+        context.requireService<
+            DefaultService
+        >(),
+        std::runtime_error
+    );
+}
+
 class RenderContextTestLogger {
 public:
     explicit RenderContextTestLogger(std::string name)

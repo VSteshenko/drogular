@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <typeinfo>
 #include <typeindex>
 #include <unordered_map>
 #include <utility>
@@ -61,6 +62,23 @@ public:
         services_[type] = service;
 
         return std::static_pointer_cast<T>(service);
+    }
+
+    /**
+     * Returns a registered service or throws.
+     */
+    template <typename T>
+    std::shared_ptr<T> requireService() {
+        auto resolved = service<T>();
+
+        if (resolved == nullptr) {
+            throw std::runtime_error(
+                std::string("Service not registered: ") +
+                typeid(T).name()
+            );
+        }
+
+        return resolved;
     }
 
     /**

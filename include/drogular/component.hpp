@@ -106,6 +106,28 @@ public:
         return services_->service<T>();
     }
 
+    template <typename T>
+    std::shared_ptr<T> requireService() {
+        if (services_ == nullptr) {
+            throw std::runtime_error(
+                "ApplicationServices not set"
+            );
+        }
+
+        return services_->requireService<T>();
+    }
+
+    template <typename T>
+    std::shared_ptr<T> requireService() const {
+        if (services_ == nullptr) {
+            throw std::runtime_error(
+                "ApplicationServices not set"
+            );
+        }
+
+        return services_->requireService<T>();
+    }
+
     /**
      * Creates a child render context.
      */
