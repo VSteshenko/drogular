@@ -4,6 +4,8 @@
 #include <typeindex>
 #include <unordered_map>
 #include <utility>
+#include <functional>
+#include <stdexcept>
 
 namespace drogular {
 
@@ -44,6 +46,26 @@ public:
         auto service = std::make_shared<T>(
             std::forward<Args>(args)...
         );
+
+        registerService<T>(service);
+
+        return service;
+    }
+
+    /**
+     * Registers a service created by a factory.
+     *
+     * The factory is executed immediately.
+     */
+    template <typename T>
+    std::shared_ptr<T> addFactory(
+        std::function<std::shared_ptr<T>()> factory
+    ) {
+        auto service = factory();
+
+        if (service == nullptr) {
+            throw std::runtime_error("Service factory returned nullptr");
+        }
 
         registerService<T>(service);
 

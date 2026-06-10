@@ -104,3 +104,63 @@ TEST(ServicesTests, AddsServiceWithConstructorArguments) {
     ASSERT_NE(resolved, nullptr);
     EXPECT_EQ(resolved->name(), "main");
 }
+
+class RepositoryService {
+public:
+    std::string name() const {
+        return "repository";
+    }
+};
+
+class BusinessService {
+public:
+    explicit BusinessService(
+        std::shared_ptr<RepositoryService> repository
+    )
+        : repository_(std::move(repository)) {
+    }
+
+    std::string repositoryName() const {
+        return repository_->name();
+    }
+
+private:
+    std::shared_ptr<RepositoryService> repository_;
+};
+
+TEST(ServicesTests, AddsServiceUsingFactory) {
+    drogular::ApplicationServices services;
+
+    services.add<RepositoryService>();
+
+    const auto business =
+        services.addFactory<BusinessService>(
+            [&services]() {
+                return std::make_shared<BusinessService>(
+                    services.service<RepositoryService>()
+                );
+            }
+        );
+
+    ASSERT_NE(business, nullptr);
+    EXPECT_EQ(business->repositoryName(), "repository");
+
+    const auto resolved =
+        services.service<BusinessService>();
+
+    ASSERT_NE(resolved, nullptr);
+    EXPECT_EQ(resolved->repositoryName(), "repository");
+}
+
+TEST(ServicesTests, ThrowsWhenFactoryReturnsNullptr) {
+    drogular::ApplicationServices services;
+
+    EXPECT_THROW(
+        services.addFactory<BusinessService>(
+            []() {
+                return nullptr;
+            }
+        ),
+        std::runtime_error
+    );
+}
