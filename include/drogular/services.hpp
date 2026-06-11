@@ -130,6 +130,31 @@ public:
     }
 
     template <typename T>
+    std::shared_ptr<T> addFactory(
+        ServiceLifetime lifetime,
+        std::function<std::shared_ptr<T>()> factory
+    ) {
+        switch (lifetime) {
+        case ServiceLifetime::Singleton:
+            return addFactory<T>(std::move(factory));
+
+        case ServiceLifetime::LazySingleton:
+            addLazy<T>(std::move(factory));
+            return nullptr;
+
+        case ServiceLifetime::Transient:
+            addTransient<T>(std::move(factory));
+            return nullptr;
+
+        case ServiceLifetime::Scoped:
+            addScoped<T>(std::move(factory));
+            return nullptr;
+        }
+
+        return nullptr;
+    }
+
+    template <typename T>
     void addLazy(
         std::function<std::shared_ptr<T>()> factory
     ) {

@@ -145,6 +145,62 @@ TEST(ServicesTests, LazyFactoryThrowsWhenReturningNullptr) {
     );
 }
 
+TEST(ServicesTests, AddsFactorySingletonUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.addFactory<DefaultService>(
+        drogular::ServiceLifetime::Singleton,
+        []() {
+            return std::make_shared<DefaultService>();
+        }
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+}
+
+TEST(ServicesTests, AddsFactoryLazySingletonUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.addFactory<DefaultService>(
+        drogular::ServiceLifetime::LazySingleton,
+        []() {
+            return std::make_shared<DefaultService>();
+        }
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+}
+
+TEST(ServicesTests, AddsFactoryTransientUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.addFactory<DefaultService>(
+        drogular::ServiceLifetime::Transient,
+        []() {
+            return std::make_shared<DefaultService>();
+        }
+    );
+
+    const auto first = services.service<DefaultService>();
+    const auto second = services.service<DefaultService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_NE(first.get(), second.get());
+}
 TEST(ServicesTests, RequireServiceReturnsRegisteredService) {
     drogular::ApplicationServices services;
 

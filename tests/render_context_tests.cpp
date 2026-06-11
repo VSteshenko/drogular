@@ -326,3 +326,25 @@ TEST(RenderContextTests, AddsScopedUsingLifetime) {
 
     EXPECT_EQ(first.get(), second.get());
 }
+
+TEST(RenderContextTests, AddsFactoryScopedUsingLifetime) {
+    drogular::ApplicationServices services;
+
+    services.addFactory<ScopedCounterService>(
+        drogular::ServiceLifetime::Scoped,
+        []() {
+            return std::make_shared<ScopedCounterService>();
+        }
+    );
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto first = context.service<ScopedCounterService>();
+    const auto second = context.service<ScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_EQ(first.get(), second.get());
+}
