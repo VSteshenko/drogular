@@ -1,9 +1,11 @@
 #include <drogular/page.hpp>
 #include <drogular/services.hpp>
+#include <drogular/testing.hpp>
 
 #include <gtest/gtest.h>
 
 #include <string>
+#include <json/json.h>
 
 class TestTemplatePage final : public drogular::TemplatePage {
 public:
@@ -85,5 +87,70 @@ TEST(TemplatePageTests, RendersComponentTagsWithStringInputs) {
     EXPECT_EQ(
         page.render(context),
         "<main><article>Welcome from Page</article></main>"
+    );
+}
+
+class TodoItemComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "TodoItem";
+
+    std::string templateHtml() const override {
+        return "<li>{{ title }}</li>";
+    }
+};
+
+class ComponentBindingForeachPage final : public drogular::TemplatePage {
+public:
+    void onInit(drogular::RenderContext& context) override {
+        Json::Value todos(Json::arrayValue);
+
+        Json::Value first;
+        first["title"] = "Learn Drogular";
+
+        Json::Value second;
+        second["title"] = "Build Components";
+
+        todos.append(first);
+        todos.append(second);
+
+        context.set("todos", todos);
+    }
+
+    std::string templateHtml() const override {
+        return R"(
+<ul>
+@foreach(todo in todos)
+<TodoItem title="{{ todo.title }}" />
+@endforeach
+</ul>
+)";
+    }
+};
+
+TEST(TemplatePageTests, RendersComponentBindingsInsideForeach) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<TodoItemComponent>();
+
+    ComponentBindingForeachPage page;
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    page.onInit(context);
+
+    const auto html = page.render(context);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<li>Learn Drogular</li>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<li>Build Components</li>"
+        )
     );
 }

@@ -1,4 +1,5 @@
 #include <drogular/component_renderer.hpp>
+#include <drogular/template_engine.hpp>
 #include <drogular/testing.hpp>
 
 #include <string>
@@ -156,7 +157,10 @@ std::string render(
             const auto attributes = parseAttributes(attributesText);
 
             for (const auto& [name, value] : attributes) {
-                component->setInput(name, value);
+                const auto renderedValue =
+                    template_engine::render(value, context);
+
+                component->setInput(name, renderedValue);
             }
 
             auto childContext = context.createChild();

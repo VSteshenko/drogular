@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include <json/json.h>
+
 class CardComponent final : public drogular::Component {
 public:
     static constexpr auto tag = "Card";
@@ -74,5 +76,38 @@ TEST(ComponentRendererTests, PassesStringAttributesAsInputs) {
     EXPECT_EQ(
         html,
         "<article><h2>Welcome</h2><p>Hello</p></article>"
+    );
+}
+
+class CardWithBoundTitleComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "BoundCard";
+
+    std::string templateHtml() const override {
+        return "<article>{{ title }}</article>";
+    }
+};
+
+TEST(ComponentRendererTests, RendersAttributeBindings) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CardWithBoundTitleComponent>();
+
+    drogular::RenderContext context;
+
+    Json::Value user;
+    user["name"] = "Vadim";
+
+    context.set("user", user);
+
+    const auto html =
+        drogular::component_renderer::render(
+            R"(<BoundCard title="{{ user.name }}" />)",
+            registry,
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<article>Vadim</article>"
     );
 }
