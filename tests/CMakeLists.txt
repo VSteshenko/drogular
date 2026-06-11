@@ -1,5 +1,6 @@
 add_executable(drogular_tests
     app_tests.cpp
+    component_registry.cpp
     component_tests.cpp
     graphql_result_tests.cpp
     graphql_tests.cpp

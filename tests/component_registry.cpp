@@ -1,0 +1,38 @@
+#include <drogular/component_registry.hpp>
+
+#include <gtest/gtest.h>
+
+#include <string>
+
+class RegistryTestComponent final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        return "<p>Registry Test</p>";
+    }
+};
+
+TEST(ComponentRegistryTests, RegistersComponent) {
+    drogular::ComponentRegistry registry;
+
+    registry.registerComponent<RegistryTestComponent>("RegistryTest");
+
+    EXPECT_TRUE(registry.contains("RegistryTest"));
+}
+
+TEST(ComponentRegistryTests, CreatesRegisteredComponent) {
+    drogular::ComponentRegistry registry;
+
+    registry.registerComponent<RegistryTestComponent>("RegistryTest");
+
+    const auto component = registry.create("RegistryTest");
+
+    ASSERT_NE(component, nullptr);
+}
+
+TEST(ComponentRegistryTests, ReturnsNullptrForMissingComponent) {
+    drogular::ComponentRegistry registry;
+
+    const auto component = registry.create("Missing");
+
+    EXPECT_EQ(component, nullptr);
+}
