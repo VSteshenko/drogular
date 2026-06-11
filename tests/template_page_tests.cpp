@@ -57,3 +57,33 @@ TEST(TemplatePageTests, RendersComponentTags) {
         "<main><article>Card from TemplatePage</article></main>"
     );
 }
+
+class TemplatePageCardWithInput final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CardWithInput";
+
+    std::string templateHtml() const override {
+        return "<article>{{ title }}</article>";
+    }
+};
+
+class ComponentInputTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(<main><CardWithInput title="Welcome from Page" /></main>)";
+    }
+};
+
+TEST(TemplatePageTests, RendersComponentTagsWithStringInputs) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<TemplatePageCardWithInput>();
+
+    ComponentInputTemplatePage page;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<main><article>Welcome from Page</article></main>"
+    );
+}

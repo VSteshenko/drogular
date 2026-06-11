@@ -1,7 +1,8 @@
 #include <drogular/component_renderer.hpp>
 #include <drogular/testing.hpp>
 
-#include <cctype>
+#include <string>
+#include <unordered_map>
 
 namespace drogular::component_renderer {
 
@@ -15,6 +16,70 @@ bool isTagNameChar(char ch) {
     return std::isalnum(static_cast<unsigned char>(ch)) ||
            ch == '_' ||
            ch == '-';
+}
+
+std::unordered_map<std::string, std::string> parseAttributes(std::string_view value) {
+    std::unordered_map<std::string, std::string> attributes;
+    size_t position = 0;
+
+    while (position < value.size()) {
+        while (position < value.size() &&
+               std::isspace(static_cast<unsigned char>(value[position]))) {
+            ++position;
+        }
+
+        size_t keyStart = position;
+
+        while (position < value.size() &&
+               isTagNameChar(value[position])) {
+            ++position;
+        }
+
+        if (keyStart == position) {
+            break;
+        }
+
+        const auto key =
+            std::string(value.substr(keyStart, position - keyStart));
+
+        while (position < value.size() &&
+               std::isspace(static_cast<unsigned char>(value[position]))) {
+            ++position;
+        }
+
+        if (position >= value.size() || value[position] != '=') {
+            break;
+        }
+
+        ++position;
+
+        while (position < value.size() &&
+               std::isspace(static_cast<unsigned char>(value[position]))) {
+            ++position;
+        }
+
+        if (position >= value.size() || value[position] != '"') {
+            break;
+        }
+
+        ++position;
+
+        const auto valueStart = position;
+
+        while (position < value.size() && value[position] != '"') {
+            ++position;
+        }
+
+        if (position >= value.size()) {
+            break;
+        }
+
+        attributes[key] = std::string(value.substr(valueStart, position - valueStart));
+
+        ++position;
+    }
+
+    return attributes;
 }
 
 } // namespace
@@ -58,8 +123,15 @@ std::string render(
 
         size_t cursor = nameEnd;
 
-        while (cursor < html.size() &&
-               std::isspace(static_cast<unsigned char>(html[cursor]))) {
+        const auto attributesStart = cursor;
+
+        while (cursor < html.size()) {
+            if (cursor + 1 < html.size() &&
+                html[cursor] == '/' &&
+                html[cursor + 1] == '>') {
+                break;
+            }
+
             ++cursor;
         }
 
@@ -71,6 +143,9 @@ std::string render(
             continue;
         }
 
+        const auto attributesText =
+            html.substr(attributesStart, cursor - attributesStart);
+
         const auto tagEnd = cursor + 2;
 
         const auto component = registry.create(tagName);
@@ -78,6 +153,12 @@ std::string render(
         if (component == nullptr) {
             output.append(html.substr(tagStart, tagEnd - tagStart));
         } else {
+            const auto attributes = parseAttributes(attributesText);
+
+            for (const auto& [name, value] : attributes) {
+                component->setInput(name, value);
+            }
+
             auto childContext = context.createChild();
 
             output += drogular::test::renderComponentTree(
