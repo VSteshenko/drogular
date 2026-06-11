@@ -1,4 +1,5 @@
 #include <drogular/component.hpp>
+#include <drogular/services.hpp>
 
 #include <gtest/gtest.h>
 
@@ -57,5 +58,35 @@ TEST(TemplateComponentTests, RendersComponentInputs) {
     EXPECT_EQ(
         component.render(context),
         "<article><h2>Card Title</h2><p>Card Subtitle</p></article>"
+    );
+}
+
+class TemplateComponentCard final : public drogular::Component {
+public:
+    static constexpr auto tag = "Card";
+
+    std::string render(drogular::RenderContext&) override {
+        return "<article>Card from TemplateComponent</article>";
+    }
+};
+
+class ComponentTagTemplateComponent final : public drogular::TemplateComponent {
+public:
+    std::string templateHtml() const override {
+        return "<section><Card /></section>";
+    }
+};
+
+TEST(TemplateComponentTests, RendersComponentTags) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<TemplateComponentCard>();
+
+    ComponentTagTemplateComponent component;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        component.render(context),
+        "<section><article>Card from TemplateComponent</article></section>"
     );
 }

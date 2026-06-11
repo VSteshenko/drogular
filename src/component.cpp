@@ -1,4 +1,5 @@
 #include <drogular/component.hpp>
+#include <drogular/component_renderer.hpp>
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
 #include <drogular/template_engine.hpp>
@@ -127,7 +128,17 @@ void Component::applyParams(RenderContext& context) const {
 std::string TemplateComponent::render(RenderContext& context) {
     applyParams(context);
 
-    return template_engine::render(templateHtml(), context);
+    auto html = template_engine::render(templateHtml(), context);
+
+    if (context.services() != nullptr) {
+        html = component_renderer::render(
+            html,
+            context.services()->components(),
+            context
+        );
+    }
+
+    return html;
 }
 
 } // namespace drogular
