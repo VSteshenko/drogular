@@ -1,10 +1,11 @@
 add_executable(drogular_tests
     app_tests.cpp
-    component_registry.cpp
+    component_registry_tests.cpp
+    component_renderer_tests.cpp
     component_tests.cpp
+    graphql_client_tests.cpp
     graphql_result_tests.cpp
     graphql_tests.cpp
-    graphql_client_tests.cpp
     render_context_tests.cpp
     services_tests.cpp
     template_component_tests.cpp

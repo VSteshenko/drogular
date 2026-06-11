@@ -22,10 +22,11 @@ add_library(drogular
     src/app.cpp
     src/component.cpp
     src/component_registry.cpp
-    src/page.cpp
-    src/router.cpp
+    src/component_renderer.cpp
     src/graphql.cpp
     src/graphql_client.cpp
+    src/page.cpp
+    src/router.cpp
     src/services.cpp
     src/template_engine.cpp
 )
