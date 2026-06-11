@@ -52,6 +52,15 @@ public:
     }
 
     /**
+     * Registers a component type using ComponentType::tag.
+     */
+    template <typename ComponentType>
+    App& component() {
+        services_.components().registerComponent<ComponentType>();
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);

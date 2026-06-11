@@ -37,3 +37,25 @@ TEST(ComponentRegistryTests, ReturnsNullptrForMissingComponent) {
 
     EXPECT_EQ(component, nullptr);
 }
+
+class MetadataComponent final : public drogular::Component {
+public:
+    static constexpr auto tag = "MetadataComponent";
+
+    std::string render(drogular::RenderContext&) override {
+        return "<p>Metadata Component</p>";
+    }
+};
+
+TEST(ComponentRegistryTests, RegistersComponentUsingMetadataTag) {
+    drogular::ComponentRegistry registry;
+
+    registry.registerComponent<MetadataComponent>();
+
+    EXPECT_TRUE(registry.contains("MetadataComponent"));
+
+    const auto component =
+        registry.create("MetadataComponent");
+
+    ASSERT_NE(component, nullptr);
+}

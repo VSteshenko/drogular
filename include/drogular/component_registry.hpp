@@ -25,6 +25,16 @@ public:
     }
 
     /**
+     * Registers a component type using ComponentType::tag.
+     */
+    template <typename ComponentType>
+    void registerComponent() {
+        registerComponent<ComponentType>(
+            ComponentType::tag
+        );
+    }
+
+    /**
      * Creates a component by tag name.
      *
      * Returns nullptr when the component is not registered.

@@ -34,3 +34,20 @@ TEST(AppTests, AppCanRegisterComponent) {
         app.component<AppRegisteredComponent>("AppRegisteredComponent");
     });
 }
+
+class AppMetadataComponent final : public drogular::Component {
+public:
+    static constexpr auto tag = "AppMetadataComponent";
+
+    std::string render(drogular::RenderContext&) override {
+        return "<p>App Metadata Component</p>";
+    }
+};
+
+TEST(AppTests, AppCanRegisterComponentUsingMetadataTag) {
+    drogular::App app;
+
+    EXPECT_NO_THROW({
+        app.component<AppMetadataComponent>();
+    });
+}
