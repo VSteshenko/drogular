@@ -38,7 +38,7 @@ GraphQLResult
 
 ## Status
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -88,7 +88,18 @@ Current capabilities:
 - Routing
 - Application services
 - Component tree
-- Named slots
+- Default and named slots
+- Component inputs
+- Scoped render contexts
+- Service container
+- Typed service helpers
+- Dependency validation
+- Service lifetimes:
+    - Singleton
+    - Lazy singleton
+    - Transient
+    - Scoped
+- Factory registration with lifetimes
 
 ### GraphQL Layer
 
@@ -128,7 +139,7 @@ Current capabilities:
 ## Project Maturity
 
 | Area | Status |
-|--------|--------|
+|---|---|
 | Application Bootstrap | Stable |
 | Routing | Stable |
 | Components | Stable |
@@ -147,10 +158,13 @@ Current capabilities:
 | GraphQLResult | Stable |
 | StaticGraphQLClient | Stable |
 | HttpGraphQLClient | Experimental |
-| Service Container | Experimental |
-| Dependency Injection | Planned |
+| Service Container | Stable |
+| Service Lifetimes | Stable |
+| Dependency Validation | Stable |
+| Constructor Injection | Planned |
 | Component Tags | Planned |
 | Template Compilation | Planned |
+
 ## Example
 
 A page can declare a GraphQL query, load data through the configured GraphQL client, and render HTML using Drogular templates.
@@ -266,6 +280,61 @@ Open:
 http://localhost:8080
 ```
 
+## Dependency Injection
+
+Drogular includes a small dependency injection container through `ApplicationServices`.
+
+### Register a singleton
+
+```cpp
+services.add<Logger>(
+    drogular::ServiceLifetime::Singleton
+);
+```
+
+### Register a scoped service
+
+```cpp
+services.add<RequestContext>(
+    drogular::ServiceLifetime::Scoped
+);
+```
+
+### Register a transient service
+
+```cpp
+services.add<CommandHandler>(
+    drogular::ServiceLifetime::Transient
+);
+```
+
+### Register with a factory
+
+```cpp
+services.addFactory<TodoService>(
+    drogular::ServiceLifetime::Scoped,
+    [&services]() {
+        return std::make_shared<TodoService>(
+            services.requireService<TodoRepository>()
+        );
+    }
+);
+```
+
+### Resolve from RenderContext
+
+```cpp
+auto logger =
+    context.requireService<Logger>();
+```
+
+| Lifetime | Behavior                             |
+|---|--------------------------------------|
+| Singleton | Created once and reused              |
+| LazySingleton | Created on first request and reused  |
+| Transient | New instance on every request        |
+| Scoped | One instance per RenderContext scope |
+
 ## GraphQL builder
 
 Drogular includes a small GraphQL query builder.
@@ -379,26 +448,6 @@ public:
 
 ## Roadmap
 
-### 0.6 — Dependency Injection
-
-- Constructor injection
-- Service lifetimes
-- Scoped services
-- Service factories
-- Typed service registration helpers
-- Dependency validation
-
-Example:
-
-```cpp
-class TodoPage : public drogular::TemplatePage {
-public:
-    explicit TodoPage(
-        std::shared_ptr<TodoService> service
-    );
-};
-```
-
 ### 0.7 — Component System
 
 - Component tags
@@ -415,7 +464,15 @@ Example:
 <UserProfile user="{{ user }}"/>
 ```
 
-### 0.8 — Template Compiler
+### 0.8 — Constructor Injection
+
+- Constructor injection
+- Service dependency graph
+- Dependency validation
+- Circular dependency detection
+- Service factories cleanup
+
+### 0.9 — Template Compiler
 
 - Template AST
 - Compiled templates
