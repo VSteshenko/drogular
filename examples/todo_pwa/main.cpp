@@ -1,5 +1,6 @@
 #include "todo.hpp"
 #include "todo_page.hpp"
+#include <todo_item_component.hpp>
 
 #include <drogular/app.hpp>
 #include <drogular/graphql_client.hpp>
@@ -32,6 +33,7 @@ int main() {
     drogular::App app;
 
     app.graphQLClient(client);
+    app.component<TodoItemComponent>();
     app.page<TodoPage>("/");
 
     app.run(8080);

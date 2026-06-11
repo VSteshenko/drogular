@@ -64,11 +64,7 @@ std::string TodoPage::templateHtml() const {
         <h2>Todo list</h2>
         <ul>
 @foreach(todo in todos)
-@if(todo.done)
-            <li>[x] {{ todo.title }}</li>
-@else
-            <li>[ ] {{ todo.title }}</li>
-@endif
+            <TodoItem title="{{ todo.title }}" done="{{ todo.done }}" />
 @endforeach
         </ul>
     </main>

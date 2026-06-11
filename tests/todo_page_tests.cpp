@@ -1,5 +1,6 @@
 #include "todo.hpp"
 #include "todo_page.hpp"
+#include "todo_item_component.hpp"
 
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
@@ -25,6 +26,7 @@ TEST(TodoPageTests, RendersTodoList) {
 
     drogular::ApplicationServices services;
     services.setGraphQLClient(client);
+    services.components().registerComponent<TodoItemComponent>();
 
     const auto renderResult =
         drogular::test::renderPage<TodoPage>(&services);
