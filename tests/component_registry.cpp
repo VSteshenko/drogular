@@ -1,4 +1,5 @@
 #include <drogular/component_registry.hpp>
+#include <drogular/component.hpp>
 
 #include <gtest/gtest.h>
 

@@ -19,3 +19,18 @@ TEST(AppTests, AppCanRegisterPageType) {
         app.page<AppTestPage>("/app-test");
     });
 }
+
+class AppRegisteredComponent final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        return "<p>App Registered Component</p>";
+    }
+};
+
+TEST(AppTests, AppCanRegisterComponent) {
+    drogular::App app;
+
+    EXPECT_NO_THROW({
+        app.component<AppRegisteredComponent>("AppRegisteredComponent");
+    });
+}

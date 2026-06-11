@@ -400,3 +400,23 @@ TEST(ServicesTests, AddsTransientUsingLifetime) {
 
     EXPECT_NE(first.get(), second.get());
 }
+
+class ServiceRegistryComponent final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        return "<p>Service Registry Component</p>";
+    }
+};
+
+TEST(ServicesTests, ProvidesComponentRegistry) {
+    drogular::ApplicationServices services;
+
+    services.components().registerComponent<ServiceRegistryComponent>(
+        "ServiceRegistryComponent"
+    );
+
+    const auto component =
+        services.components().create("ServiceRegistryComponent");
+
+    ASSERT_NE(component, nullptr);
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/component_registry.hpp>
+
 #include <memory>
 #include <typeinfo>
 #include <typeindex>
@@ -262,12 +264,23 @@ public:
         return nullptr;
     }
 
+    /**
+     * Returns mutable component registry.
+     */
+    ComponentRegistry& components();
+
+    /**
+     * Returns read-only component registry.
+     */
+    const ComponentRegistry& components() const;
+
 private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> transientFactories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
+    ComponentRegistry componentRegistry_;
 };
 
 } // namespace drogular

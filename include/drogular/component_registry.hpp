@@ -1,13 +1,13 @@
 #pragma once
 
-#include <drogular/component.hpp>
-
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 
 namespace drogular {
+
+class Component;
 
 /**
  * Creates components dynamically by tag name.

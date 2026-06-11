@@ -43,6 +43,15 @@ public:
     }
 
     /**
+     * Registers a component type by tag name.
+     */
+    template <typename ComponentType>
+    App& component(const std::string& tag) {
+        services_.components().registerComponent<ComponentType>(tag);
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);

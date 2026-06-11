@@ -14,4 +14,12 @@ GraphQLClient* ApplicationServices::graphQLClient() const {
     return graphQLClient_.get();
 }
 
+ComponentRegistry& ApplicationServices::components() {
+    return componentRegistry_;
+}
+
+const ComponentRegistry& ApplicationServices::components() const {
+    return componentRegistry_;
+}
+
 } // namespace drogular
