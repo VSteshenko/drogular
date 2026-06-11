@@ -111,3 +111,31 @@ TEST(ComponentRendererTests, RendersAttributeBindings) {
         "<article>Vadim</article>"
     );
 }
+
+class CardWithSlotComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CardWithSlot";
+
+    std::string templateHtml() const override {
+        return "<article><h2>{{ title }}</h2><slot/></article>";
+    }
+};
+
+TEST(ComponentRendererTests, RendersComponentWithDefaultSlot) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CardWithSlotComponent>();
+
+    drogular::RenderContext context;
+
+    const auto html =
+        drogular::component_renderer::render(
+            R"(<CardWithSlot title="Welcome"><p>Hello</p></CardWithSlot>)",
+            registry,
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<article><h2>Welcome</h2><p>Hello</p></article>"
+    );
+}

@@ -154,3 +154,33 @@ TEST(TemplatePageTests, RendersComponentBindingsInsideForeach) {
         )
     );
 }
+
+class SlotCardComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "SlotCard";
+
+    std::string templateHtml() const override {
+        return "<article><slot/></article>";
+    }
+};
+
+class ComponentSlotTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(<main><SlotCard><p>Hello from page</p></SlotCard></main>)";
+    }
+};
+
+TEST(TemplatePageTests, RendersComponentTagsWithDefaultSlot) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<SlotCardComponent>();
+
+    ComponentSlotTemplatePage page;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<main><article><p>Hello from page</p></article></main>"
+    );
+}

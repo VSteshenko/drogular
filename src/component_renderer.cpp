@@ -124,35 +124,86 @@ std::string render(
 
         size_t cursor = nameEnd;
 
+        while (cursor < html.size() &&
+               std::isspace(static_cast<unsigned char>(html[cursor]))) {
+            ++cursor;
+               }
+
         const auto attributesStart = cursor;
 
-        while (cursor < html.size()) {
-            if (cursor + 1 < html.size() &&
-                html[cursor] == '/' &&
-                html[cursor + 1] == '>') {
-                break;
-            }
-
+        // Find the end of the opening tag.
+        while (cursor < html.size() &&
+               html[cursor] != '>') {
             ++cursor;
+               }
+
+        if (cursor >= html.size()) {
+            output.append(html.substr(tagStart));
+            break;
         }
 
-        if (cursor + 1 >= html.size() ||
-            html[cursor] != '/' ||
-            html[cursor + 1] != '>') {
-            output.append(html.substr(tagStart, nameEnd - tagStart));
-            position = nameEnd;
+        const bool selfClosing =
+            cursor > tagStart &&
+            html[cursor - 1] == '/';
+
+        const auto tagEnd = cursor + 1;
+
+        std::string_view attributesText;
+
+        if (selfClosing) {
+            attributesText = html.substr(
+                attributesStart,
+                cursor - attributesStart - 1
+            );
+        } else {
+            attributesText = html.substr(
+                attributesStart,
+                cursor - attributesStart
+            );
+        }
+
+        if (selfClosing) {
+            const auto component = registry.create(tagName);
+
+            if (component == nullptr) {
+                output.append(html.substr(tagStart, tagEnd - tagStart));
+            } else {
+                const auto attributes = parseAttributes(attributesText);
+
+                for (const auto& [name, value] : attributes) {
+                    const auto renderedValue =
+                        template_engine::render(value, context);
+
+                    component->setInput(name, renderedValue);
+                }
+
+                auto childContext = context.createChild();
+
+                output += drogular::test::renderComponentTree(
+                    *component,
+                    childContext
+                );
+            }
+
+            position = tagEnd;
             continue;
         }
 
-        const auto attributesText =
-            html.substr(attributesStart, cursor - attributesStart);
+        const auto closeTag = "</" + tagName + ">";
+        const auto closeTagStart = html.find(closeTag, tagEnd);
 
-        const auto tagEnd = cursor + 2;
+        if (closeTagStart == std::string_view::npos) {
+            output.append(html.substr(tagStart, tagEnd - tagStart));
+            position = tagEnd;
+            continue;
+        }
+
+        const auto closeTagEnd = closeTagStart + closeTag.size();
 
         const auto component = registry.create(tagName);
 
         if (component == nullptr) {
-            output.append(html.substr(tagStart, tagEnd - tagStart));
+            output.append(html.substr(tagStart, closeTagEnd - tagStart));
         } else {
             const auto attributes = parseAttributes(attributesText);
 
@@ -163,6 +214,12 @@ std::string render(
                 component->setInput(name, renderedValue);
             }
 
+            const auto innerHtml = std::string(
+                html.substr(tagEnd, closeTagStart - tagEnd)
+            );
+
+            component->setInput("__slot", innerHtml);
+
             auto childContext = context.createChild();
 
             output += drogular::test::renderComponentTree(
@@ -171,7 +228,7 @@ std::string render(
             );
         }
 
-        position = tagEnd;
+        position = closeTagEnd;
     }
 
     return output;

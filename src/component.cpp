@@ -141,4 +141,12 @@ std::string TemplateComponent::render(RenderContext& context) {
     return html;
 }
 
+HtmlComponent::HtmlComponent(std::string html)
+    : html_(std::move(html)) {
+}
+
+std::string HtmlComponent::render(RenderContext&) {
+    return html_;
+}
+
 } // namespace drogular

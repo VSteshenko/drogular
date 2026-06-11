@@ -42,6 +42,12 @@ inline std::string renderComponentTree(
     auto html = component.render(context);
 
     std::string defaultChildrenHtml;
+
+    if (const auto slotHtml =
+    component.param<std::string>("__slot")) {
+        defaultChildrenHtml += *slotHtml;
+    }
+
     std::unordered_map<std::string, std::string> namedChildrenHtml;
 
     for (const auto& child : component.children()) {

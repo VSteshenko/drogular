@@ -378,4 +378,17 @@ public:
     std::string render(RenderContext& context) override;
 };
 
+/**
+ * Simple component that renders static HTML.
+ */
+class HtmlComponent final : public Component {
+public:
+    explicit HtmlComponent(std::string html);
+
+    std::string render(RenderContext& context) override;
+
+private:
+    std::string html_;
+};
+
 } // namespace drogular
