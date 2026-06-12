@@ -38,7 +38,7 @@ GraphQLResult
 
 ## Status
 
-**Version:** 0.6.0
+**Version:** 0.7.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -61,6 +61,8 @@ TemplatePage / TemplateComponent
     ↓
 Template Engine
     ↓
+Component Renderer
+    ↓
 HTML
 ```
 
@@ -68,15 +70,15 @@ Data pipeline:
 
 ```text
 GraphQL Query
-        ↓
+    ↓
 GraphQL Client
-        ↓
+    ↓
 GraphQL Result
-        ↓
+    ↓
 RenderContext
-        ↓
+    ↓
 Template Rendering
-        ↓
+    ↓
 HTML
 ```
 
@@ -86,13 +88,17 @@ Current capabilities:
 
 - Application bootstrap
 - Routing
-- Application services
-- Component tree
+- Component registry
+- Dynamic component creation
+- Component metadata tags
+- Self-closing component tags
+- Component tags with children
+- Recursive component rendering
 - Default and named slots
 - Component inputs
+- Attribute bindings
 - Scoped render contexts
 - Service container
-- Typed service helpers
 - Dependency validation
 - Service lifetimes:
     - Singleton
@@ -143,9 +149,10 @@ Current capabilities:
 | Application Bootstrap | Stable |
 | Routing | Stable |
 | Components | Stable |
-| Component Tree | Stable |
-| Named Slots | Stable |
+| Component Registry | Stable |
+| Component Tags | Stable |
 | Component Inputs | Stable |
+| Slots | Stable |
 | Scoped RenderContext | Stable |
 | Template Engine | Stable |
 | Variables (`{{ }}`) | Stable |
@@ -158,75 +165,34 @@ Current capabilities:
 | GraphQLResult | Stable |
 | StaticGraphQLClient | Stable |
 | HttpGraphQLClient | Experimental |
-| Service Container | Stable |
+| Dependency Injection | Stable |
 | Service Lifetimes | Stable |
-| Dependency Validation | Stable |
 | Constructor Injection | Planned |
-| Component Tags | Planned |
+| Circular Dependency Detection | Planned |
 | Template Compilation | Planned |
 
 ## Example
 
 A page can declare a GraphQL query, load data through the configured GraphQL client, and render HTML using Drogular templates.
 
+```html
+<AppLayout>
+    <Card title="Todos">
+        @foreach(todo in todos)
+            <TodoItem
+                title="{{ todo.title }}"
+                done="{{ todo.done }}" />
+        @endforeach
+    </Card>
+</AppLayout>
+```
+
 ```cpp
-class TodoPage final : public drogular::TemplatePage {
-public:
-    void onInit(drogular::RenderContext& context) override {
-        const auto pageQuery = query();
+app.component<AppLayout>();
+app.component<CardComponent>();
+app.component<TodoItemComponent>();
 
-        if (pageQuery.has_value()) {
-            context.executeGraphQL(*pageQuery);
-        }
-
-        const auto sourceTodos =
-            context.graphql()
-                .require<std::vector<Todo>>("todos");
-
-        Json::Value todos(Json::arrayValue);
-
-        for (const auto& sourceTodo : sourceTodos) {
-            Json::Value todo;
-
-            todo["id"] = sourceTodo.id;
-            todo["title"] = sourceTodo.title;
-            todo["done"] = sourceTodo.done;
-
-            todos.append(todo);
-        }
-
-        context.set("title", std::string("Drogular Todo PWA"));
-        context.set("todos", todos);
-    }
-
-    std::optional<drogular::gql::Query> query() const override {
-        return drogular::gql::query("TodoPage")
-            .select(
-                drogular::gql::field("todos")
-                    .children({
-                        drogular::gql::field("id"),
-                        drogular::gql::field("title"),
-                        drogular::gql::field("done")
-                    })
-            );
-    }
-
-    std::string templateHtml() const override {
-        return R"(
-<h1>{{ title }}</h1>
-
-<ul>
-@foreach(todo in todos)
-@if(todo.done)
-    <li>[x] {{ todo.title }}</li>
-@else
-    <li>[ ] {{ todo.title }}</li>
-@endif
-@endforeach
-</ul>
-)";
-    }
-};
+app.page<TodoPage>("/");
 ```
 
 Data flow:
@@ -244,7 +210,7 @@ RenderContext
         ↓
 TemplatePage
         ↓
-@if / @else / @foreach / {{ todo.title }}
+Component Renderer
         ↓
 HTML
 ```
@@ -448,22 +414,6 @@ public:
 
 ## Roadmap
 
-### 0.7 — Component System
-
-- Component tags
-- Component registry
-- Template component composition
-- Dynamic component rendering
-- Component discovery
-
-Example:
-
-```html
-<Card title="Welcome"/>
-
-<UserProfile user="{{ user }}"/>
-```
-
 ### 0.8 — Constructor Injection
 
 - Constructor injection
@@ -479,6 +429,13 @@ Example:
 - Faster rendering
 - Template diagnostics
 - Better error reporting
+
+### 1.0 Stable Release
+
+- API Stabilization
+- Documentation
+- Examples
+- Production Readiness
 
 ### Future
 
