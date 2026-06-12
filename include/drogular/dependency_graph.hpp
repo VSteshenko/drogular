@@ -31,6 +31,11 @@ public:
         std::type_index dependency
     ) const;
 
+    const std::unordered_map<
+        std::type_index,
+        std::vector<std::type_index>
+    >& allDependencies() const;
+
 private:
     std::unordered_map<
         std::type_index,

@@ -29,4 +29,11 @@ bool DependencyGraph::dependsOn(
     ) != serviceDependencies.end();
 }
 
+const std::unordered_map<
+    std::type_index,
+    std::vector<std::type_index>
+>& DependencyGraph::allDependencies() const {
+    return dependencies_;
+}
+
 } // namespace drogular

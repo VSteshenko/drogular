@@ -10,6 +10,8 @@
 #include <utility>
 #include <functional>
 #include <stdexcept>
+#include <vector>
+#include <string>
 
 namespace drogular {
 
@@ -20,6 +22,24 @@ enum class ServiceLifetime {
     LazySingleton,
     Transient,
     Scoped
+};
+
+class DependencyValidationResult {
+public:
+    void addError(std::string error) {
+        errors_.push_back(std::move(error));
+    }
+
+    bool valid() const {
+        return errors_.empty();
+    }
+
+    const std::vector<std::string>& errors() const {
+        return errors_;
+    }
+
+private:
+    std::vector<std::string> errors_;
 };
 
 class ApplicationServices {
@@ -107,6 +127,26 @@ public:
      * Returns read-only dependency graph.
      */
     const DependencyGraph& dependencyGraph() const;
+
+    /**
+     * Validates registered service dependencies.
+     *
+     * Checks that all dependencies recorded in the
+     * dependency graph are registered in the
+     * service container.
+     *
+     * Returns validation errors when required
+     * dependencies are missing.
+     */
+    DependencyValidationResult validateDependencies() const;
+
+    /**
+     * Returns true when a service is registered.
+     *
+     * Checks singleton, lazy singleton,
+     * transient and scoped registrations.
+     */
+    bool hasService(std::type_index type) const;
 
     /**
      * Creates and registers an application service by type.

@@ -1,5 +1,6 @@
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
+#include <drogular/inject.hpp>
 
 #include <memory>
 #include <string>
@@ -419,4 +420,66 @@ TEST(ServicesTests, ProvidesComponentRegistry) {
         services.components().create("ServiceRegistryComponent");
 
     ASSERT_NE(component, nullptr);
+}
+
+class InjectRepository {
+public:
+    std::string name() const {
+        return "repository";
+    }
+};
+
+class InjectService {
+public:
+    explicit InjectService(
+        std::shared_ptr<InjectRepository> repository
+    )
+        : repository_(std::move(repository)) {
+    }
+
+    std::string repositoryName() const {
+        return repository_->name();
+    }
+
+private:
+    std::shared_ptr<InjectRepository> repository_;
+};
+
+TEST(ServicesTests, ValidatesRegisteredDependencies) {
+    drogular::ApplicationServices services;
+
+    services.add<InjectRepository>();
+
+    services.addFactory<InjectService>(
+        drogular::ServiceLifetime::Singleton,
+        drogular::inject<InjectService, InjectRepository>(services)
+    );
+
+    const auto result = services.validateDependencies();
+
+    EXPECT_TRUE(result.valid());
+}
+
+class ValidationRepository {};
+
+class ValidationService {
+public:
+    explicit ValidationService(
+        std::shared_ptr<ValidationRepository>
+    ) {
+    }
+};
+
+TEST(ServicesTests, DetectsMissingDependency) {
+    drogular::ApplicationServices services;
+
+    services.addFactory<ValidationService>(
+        drogular::ServiceLifetime::LazySingleton,
+        drogular::inject<ValidationService, ValidationRepository>(services)
+    );
+
+    const auto result = services.validateDependencies();
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.errors().size(), 1);
 }

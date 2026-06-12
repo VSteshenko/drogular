@@ -22,6 +22,30 @@ const DependencyGraph& ApplicationServices::dependencyGraph() const {
     return dependencyGraph_;
 }
 
+bool ApplicationServices::hasService(std::type_index type) const {
+    return services_.contains(type) ||
+           factories_.contains(type) ||
+           transientFactories_.contains(type) ||
+           scopedFactories_.contains(type);
+}
+
+DependencyValidationResult ApplicationServices::validateDependencies() const {
+    DependencyValidationResult result;
+
+    for (const auto& [serviceType, dependencies] :
+         dependencyGraph_.allDependencies()) {
+        for (const auto& dependencyType : dependencies) {
+            if (!hasService(dependencyType)) {
+                result.addError(
+                    std::string("Service dependency is not registered")
+                );
+            }
+        }
+         }
+
+    return result;
+}
+
 ComponentRegistry& ApplicationServices::components() {
     return componentRegistry_;
 }
