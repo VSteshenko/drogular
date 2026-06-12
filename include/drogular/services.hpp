@@ -208,61 +208,30 @@ public:
     }
 
     template <typename T>
-    void addLazy(
-        std::function<std::shared_ptr<T>()> factory
-    ) {
+    void addLazy(std::function<std::shared_ptr<T>()> factory) {
         factories_[std::type_index(typeid(T))] =
-            [factory = std::move(factory)]() {
-                auto service = factory();
-
-                if (service == nullptr) {
-                    throw std::runtime_error(
-                        "Lazy service factory returned nullptr"
-                    );
-                }
-
-                return std::static_pointer_cast<void>(service);
-        };
+            wrapFactory<T>(
+                std::move(factory),
+                "Lazy service factory returned nullptr"
+            );
     }
 
     template <typename T>
-    void addTransient(
-        std::function<std::shared_ptr<T>()> factory
-    ) {
-        transientFactories_[
-            std::type_index(typeid(T))
-        ] =
-            [factory = std::move(factory)]() {
-                auto service = factory();
-
-                if (service == nullptr) {
-                    throw std::runtime_error(
-                        "Transient factory returned nullptr"
-                    );
-                }
-
-                return std::static_pointer_cast<void>(
-                    service
-                );
-        };
+    void addTransient(std::function<std::shared_ptr<T>()> factory) {
+        transientFactories_[std::type_index(typeid(T))] =
+            wrapFactory<T>(
+                std::move(factory),
+                "Transient factory returned nullptr"
+            );
     }
 
     template <typename T>
-    void addScoped(
-        std::function<std::shared_ptr<T>()> factory
-    ) {
+    void addScoped(std::function<std::shared_ptr<T>()> factory) {
         scopedFactories_[std::type_index(typeid(T))] =
-            [factory = std::move(factory)]() {
-                auto service = factory();
-
-                if (service == nullptr) {
-                    throw std::runtime_error(
-                        "Scoped factory returned nullptr"
-                    );
-                }
-
-                return std::static_pointer_cast<void>(service);
-        };
+            wrapFactory<T>(
+                std::move(factory),
+                "Scoped factory returned nullptr"
+            );
     }
 
     template <typename T>
@@ -333,6 +302,23 @@ private:
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
     DependencyGraph dependencyGraph_;
     ComponentRegistry componentRegistry_;
+
+    template <typename T>
+    std::function<std::shared_ptr<void>()> wrapFactory(
+        std::function<std::shared_ptr<T>()> factory,
+        std::string errorMessage
+    ) {
+        return [factory = std::move(factory),
+                errorMessage = std::move(errorMessage)]() {
+            auto service = factory();
+
+            if (service == nullptr) {
+                throw std::runtime_error(errorMessage);
+            }
+
+            return std::static_pointer_cast<void>(service);
+        };
+    }
 };
 
 } // namespace drogular
