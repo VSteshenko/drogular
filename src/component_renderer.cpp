@@ -179,10 +179,19 @@ std::string render(
 
                 auto childContext = context.createChild();
 
-                output += drogular::test::renderComponentTree(
-                    *component,
+                auto componentHtml =
+                    drogular::test::renderComponentTree(
+                        *component,
+                        childContext
+                    );
+
+                componentHtml = render(
+                    componentHtml,
+                    registry,
                     childContext
                 );
+
+                output += componentHtml;
             }
 
             position = tagEnd;
@@ -214,9 +223,11 @@ std::string render(
                 component->setInput(name, renderedValue);
             }
 
-            const auto innerHtml = std::string(
+            auto innerHtml = std::string(
                 html.substr(tagEnd, closeTagStart - tagEnd)
             );
+
+            innerHtml = render(innerHtml, registry, context);
 
             component->setInput("__slot", innerHtml);
 

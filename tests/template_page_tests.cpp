@@ -184,3 +184,62 @@ TEST(TemplatePageTests, RendersComponentTagsWithDefaultSlot) {
         "<main><article><p>Hello from page</p></article></main>"
     );
 }
+
+class NestedPageCardComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "NestedPageCard";
+
+    std::string templateHtml() const override {
+        return "<article><slot/></article>";
+    }
+};
+
+class NestedPageButtonComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "NestedPageButton";
+
+    std::string templateHtml() const override {
+        return "<button>{{ title }}</button>";
+    }
+};
+
+class NestedComponentTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(
+<main>
+<NestedPageCard>
+<NestedPageButton title="Save" />
+</NestedPageCard>
+</main>
+)";
+    }
+};
+
+TEST(TemplatePageTests, RendersNestedComponentTags) {
+    drogular::ApplicationServices services;
+
+    services.components().registerComponent<NestedPageCardComponent>();
+    services.components().registerComponent<NestedPageButtonComponent>();
+
+    NestedComponentTemplatePage page;
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto html = page.render(context);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<article>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<button>Save</button>"
+        )
+    );
+}

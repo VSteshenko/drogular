@@ -139,3 +139,42 @@ TEST(ComponentRendererTests, RendersComponentWithDefaultSlot) {
         "<article><h2>Welcome</h2><p>Hello</p></article>"
     );
 }
+
+class NestedCardComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "NestedCard";
+
+    std::string templateHtml() const override {
+        return "<article><slot/></article>";
+    }
+};
+
+class NestedButtonComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "NestedButton";
+
+    std::string templateHtml() const override {
+        return "<button>{{ title }}</button>";
+    }
+};
+
+TEST(ComponentRendererTests, RendersNestedComponentInsideSlot) {
+    drogular::ComponentRegistry registry;
+
+    registry.registerComponent<NestedCardComponent>();
+    registry.registerComponent<NestedButtonComponent>();
+
+    drogular::RenderContext context;
+
+    const auto html =
+        drogular::component_renderer::render(
+            R"(<NestedCard><NestedButton title="Click" /></NestedCard>)",
+            registry,
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<article><button>Click</button></article>"
+    );
+}
