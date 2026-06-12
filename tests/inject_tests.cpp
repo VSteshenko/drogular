@@ -138,3 +138,30 @@ TEST(InjectTests, RegistersInjectedFactoryWithMultipleDependencies) {
     ASSERT_NE(service, nullptr);
     EXPECT_EQ(service->description(), "repository + logger");
 }
+
+TEST(InjectTests, RegistersDependencyMetadata) {
+    drogular::ApplicationServices services;
+
+    const auto factory =
+        drogular::inject<
+            InjectComplexService,
+            InjectRepository,
+            InjectLogger
+        >(services);
+
+    (void)factory;
+
+    EXPECT_TRUE(
+        services.dependencyGraph().dependsOn(
+            std::type_index(typeid(InjectComplexService)),
+            std::type_index(typeid(InjectRepository))
+        )
+    );
+
+    EXPECT_TRUE(
+        services.dependencyGraph().dependsOn(
+            std::type_index(typeid(InjectComplexService)),
+            std::type_index(typeid(InjectLogger))
+        )
+    );
+}

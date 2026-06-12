@@ -14,6 +14,14 @@ GraphQLClient* ApplicationServices::graphQLClient() const {
     return graphQLClient_.get();
 }
 
+DependencyGraph& ApplicationServices::dependencyGraph() {
+    return dependencyGraph_;
+}
+
+const DependencyGraph& ApplicationServices::dependencyGraph() const {
+    return dependencyGraph_;
+}
+
 ComponentRegistry& ApplicationServices::components() {
     return componentRegistry_;
 }

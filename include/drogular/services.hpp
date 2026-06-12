@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/component_registry.hpp>
+#include <drogular/dependency_graph.hpp>
 
 #include <memory>
 #include <typeinfo>
@@ -96,6 +97,16 @@ public:
 
         return resolved;
     }
+
+    /**
+     * Returns mutable dependency graph.
+     */
+    DependencyGraph& dependencyGraph();
+
+    /**
+     * Returns read-only dependency graph.
+     */
+    const DependencyGraph& dependencyGraph() const;
 
     /**
      * Creates and registers an application service by type.
@@ -280,6 +291,7 @@ private:
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> transientFactories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
+    DependencyGraph dependencyGraph_;
     ComponentRegistry componentRegistry_;
 };
 
