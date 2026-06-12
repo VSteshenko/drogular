@@ -483,3 +483,25 @@ TEST(ServicesTests, DetectsMissingDependency) {
     ASSERT_FALSE(result.valid());
     ASSERT_EQ(result.errors().size(), 1);
 }
+
+class CircularA {};
+class CircularB {};
+class CircularC {};
+
+TEST(ServicesTests, ValidatesCircularDependencies) {
+    drogular::ApplicationServices services;
+
+    services.add<CircularA>();
+    services.add<CircularB>();
+    services.add<CircularC>();
+
+    services.dependencyGraph().addDependency<CircularA, CircularB>();
+    services.dependencyGraph().addDependency<CircularB, CircularC>();
+    services.dependencyGraph().addDependency<CircularC, CircularA>();
+
+    const auto result = services.validateDependencies();
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.errors().size(), 1);
+    EXPECT_EQ(result.errors()[0], "Circular dependency detected");
+}

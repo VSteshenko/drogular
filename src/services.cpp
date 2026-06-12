@@ -37,11 +37,17 @@ DependencyValidationResult ApplicationServices::validateDependencies() const {
         for (const auto& dependencyType : dependencies) {
             if (!hasService(dependencyType)) {
                 result.addError(
-                    std::string("Service dependency is not registered")
+                    "Service dependency is not registered"
                 );
             }
         }
          }
+
+    if (dependencyGraph_.hasCircularDependencies()) {
+        result.addError(
+            "Circular dependency detected"
+        );
+    }
 
     return result;
 }
