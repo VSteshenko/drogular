@@ -30,3 +30,26 @@ TEST(DependencyGraphTests, ReturnsDependencies) {
 
     EXPECT_EQ(dependencies.size(), 2);
 }
+
+class GraphA {};
+class GraphB {};
+class GraphC {};
+
+TEST(DependencyGraphTests, DetectsCircularDependency) {
+    drogular::DependencyGraph graph;
+
+    graph.addDependency<GraphA, GraphB>();
+    graph.addDependency<GraphB, GraphC>();
+    graph.addDependency<GraphC, GraphA>();
+
+    EXPECT_TRUE(graph.hasCircularDependencies());
+}
+
+TEST(DependencyGraphTests, ReturnsFalseWhenGraphHasNoCycle) {
+    drogular::DependencyGraph graph;
+
+    graph.addDependency<GraphA, GraphB>();
+    graph.addDependency<GraphB, GraphC>();
+
+    EXPECT_FALSE(graph.hasCircularDependencies());
+}

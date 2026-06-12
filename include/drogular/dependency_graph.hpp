@@ -36,6 +36,11 @@ public:
         std::vector<std::type_index>
     >& allDependencies() const;
 
+    /**
+     * Returns true when the dependency graph contains a cycle.
+     */
+    bool hasCircularDependencies() const;
+
 private:
     std::unordered_map<
         std::type_index,

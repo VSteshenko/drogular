@@ -1,8 +1,53 @@
 #include <drogular/dependency_graph.hpp>
 
 #include <algorithm>
+#include <unordered_set>
 
 namespace drogular {
+
+namespace {
+
+bool hasCycleFrom(
+    std::type_index node,
+    const std::unordered_map<
+        std::type_index,
+        std::vector<std::type_index>
+    >& graph,
+    std::unordered_set<std::type_index>& visiting,
+    std::unordered_set<std::type_index>& visited
+) {
+    if (visited.contains(node)) {
+        return false;
+    }
+
+    if (visiting.contains(node)) {
+        return true;
+    }
+
+    visiting.insert(node);
+
+    const auto it = graph.find(node);
+
+    if (it != graph.end()) {
+        for (const auto& dependency : it->second) {
+            if (hasCycleFrom(
+                    dependency,
+                    graph,
+                    visiting,
+                    visited
+                )) {
+                return true;
+                }
+        }
+    }
+
+    visiting.erase(node);
+    visited.insert(node);
+
+    return false;
+}
+
+} // namespace
 
 std::vector<std::type_index> DependencyGraph::dependencies(
     std::type_index service
@@ -34,6 +79,24 @@ const std::unordered_map<
     std::vector<std::type_index>
 >& DependencyGraph::allDependencies() const {
     return dependencies_;
+}
+
+bool DependencyGraph::hasCircularDependencies() const {
+    std::unordered_set<std::type_index> visiting;
+    std::unordered_set<std::type_index> visited;
+
+    for (const auto& [service, _] : dependencies_) {
+        if (hasCycleFrom(
+                service,
+                dependencies_,
+                visiting,
+                visited
+            )) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 } // namespace drogular
