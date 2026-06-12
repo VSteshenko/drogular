@@ -13,6 +13,7 @@ add_executable(drogular_tests
     template_component_tests.cpp
     template_engine_tests.cpp
     template_page_tests.cpp
+    template_tokenizer_tests.cpp
     testing_tests.cpp
     todo_page_tests.cpp
     ../examples/todo_pwa/todo_page.cpp

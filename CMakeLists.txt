@@ -5,7 +5,7 @@ if(POLICY CMP0135)
 endif()
 
 project(Drogular
-    VERSION 0.8.0
+    VERSION 0.9.0
     LANGUAGES CXX
 )
 
@@ -30,6 +30,7 @@ add_library(drogular
     src/router.cpp
     src/services.cpp
     src/template_engine.cpp
+    src/template_tokenizer.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
