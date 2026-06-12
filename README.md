@@ -38,7 +38,7 @@ GraphQLResult
 
 ## Status
 
-**Version:** 0.7.0
+**Version:** 0.8.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -99,13 +99,19 @@ Current capabilities:
 - Attribute bindings
 - Scoped render contexts
 - Service container
-- Dependency validation
 - Service lifetimes:
     - Singleton
     - Lazy singleton
     - Transient
     - Scoped
 - Factory registration with lifetimes
+- Constructor injection factories
+- Multiple dependency injection
+- Dependency graph metadata
+- Missing dependency validation
+- Circular dependency detection
+- Circular dependency path diagnostics
+- Service factory cleanup
 
 ### GraphQL Layer
 
@@ -152,13 +158,15 @@ Current capabilities:
 | Component Registry | Stable |
 | Component Tags | Stable |
 | Component Inputs | Stable |
+| Attribute Bindings | Stable |
 | Slots | Stable |
+| Recursive Component Rendering | Stable |
 | Scoped RenderContext | Stable |
 | Template Engine | Stable |
-| Variables (`{{ }}`) | Stable |
-| Raw Output (`{{{ }}}`) | Stable |
-| Conditions (`@if`) | Stable |
-| Loops (`@foreach`) | Stable |
+| Variables ({{ }}) | Stable |
+| Raw Output ({{{ }}}) | Stable |
+| Conditions (@if) | Stable |
+| Loops (@foreach) | Stable |
 | Json Object Access | Stable |
 | GraphQL Query Builder | Stable |
 | GraphQL Validation | Stable |
@@ -167,9 +175,17 @@ Current capabilities:
 | HttpGraphQLClient | Experimental |
 | Dependency Injection | Stable |
 | Service Lifetimes | Stable |
-| Constructor Injection | Planned |
-| Circular Dependency Detection | Planned |
+| Constructor Injection Factories | Stable |
+| Dependency Graph | Stable |
+| Dependency Validation | Stable |
+| Circular Dependency Detection | Stable |
+| Testing Helpers | Stable |
 | Template Compilation | Planned |
+| Template AST | Planned |
+| Build-time Diagnostics | Planned |
+| Performance Optimizations | Planned |
+| Documentation	In | Progress |
+| Production Readiness | In Progress |
 
 ## Example
 
@@ -413,14 +429,6 @@ public:
 ```
 
 ## Roadmap
-
-### 0.8 — Constructor Injection
-
-- Constructor injection
-- Service dependency graph
-- Dependency validation
-- Circular dependency detection
-- Service factories cleanup
 
 ### 0.9 — Template Compiler
 
