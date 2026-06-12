@@ -37,6 +37,13 @@ public:
     >& allDependencies() const;
 
     /**
+     * Returns one detected circular dependency path.
+     *
+     * Returns an empty vector when no circular dependency exists.
+     */
+    std::vector<std::type_index> circularDependencyPath() const;
+
+    /**
      * Returns true when the dependency graph contains a cycle.
      */
     bool hasCircularDependencies() const;

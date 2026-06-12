@@ -53,3 +53,15 @@ TEST(DependencyGraphTests, ReturnsFalseWhenGraphHasNoCycle) {
 
     EXPECT_FALSE(graph.hasCircularDependencies());
 }
+
+TEST(DependencyGraphTests, ReturnsCircularDependencyPath) {
+    drogular::DependencyGraph graph;
+
+    graph.addDependency<GraphA, GraphB>();
+    graph.addDependency<GraphB, GraphC>();
+    graph.addDependency<GraphC, GraphA>();
+
+    const auto path = graph.circularDependencyPath();
+
+    EXPECT_FALSE(path.empty());
+}
