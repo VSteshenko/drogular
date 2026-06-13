@@ -41,3 +41,57 @@ TEST(CompiledTemplateTests, RendersRawVariable) {
         "<strong>Hello</strong>"
     );
 }
+
+TEST(CompiledTemplateTests, RendersIfTrueBranch) {
+    drogular::RenderContext context;
+
+    context.set("show", true);
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "@if(show)<p>Yes</p>@else<p>No</p>@endif"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<p>Yes</p>"
+    );
+}
+
+TEST(CompiledTemplateTests, RendersIfFalseBranch) {
+    drogular::RenderContext context;
+
+    context.set("show", false);
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "@if(show)<p>Yes</p>@else<p>No</p>@endif"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<p>No</p>"
+    );
+}
+
+TEST(CompiledTemplateTests, RendersForeach) {
+    drogular::RenderContext context;
+
+    context.set(
+        "items",
+        std::vector<std::string>{
+            "A",
+            "B"
+        }
+    );
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "@foreach(item in items)<p>{{ item }}</p>@endforeach"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<p>A</p><p>B</p>"
+    );
+}
