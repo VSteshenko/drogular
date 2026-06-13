@@ -38,7 +38,7 @@ GraphQLResult
 
 ## Status
 
-**Version:** 0.8.0
+**Version:** 0.9.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -49,17 +49,21 @@ Application
     ↓
 ApplicationServices
     ↓
-Service Container
+Dependency Injection
     ↓
 Router
     ↓
 RenderContext
     ↓
-Scoped Component Contexts
+Component Registry
     ↓
 TemplatePage / TemplateComponent
     ↓
-Template Engine
+Template Cache
+    ↓
+Compiled Template
+    ↓
+Template Runtime
     ↓
 Component Renderer
     ↓
@@ -127,8 +131,14 @@ Current capabilities:
 
 ### Template Layer
 
-- TemplatePage
-- TemplateComponent
+- Template tokenizer
+- Template AST
+- Template parser
+- Template runtime
+- Template cache
+- Template diagnostics
+- Compiled templates
+- Template variables
 - HTML escaping
 - Raw HTML output
 - HTML escaping
@@ -150,42 +160,43 @@ Current capabilities:
 
 ## Project Maturity
 
-| Area | Status |
-|---|---|
-| Application Bootstrap | Stable |
-| Routing | Stable |
-| Components | Stable |
-| Component Registry | Stable |
-| Component Tags | Stable |
-| Component Inputs | Stable |
-| Attribute Bindings | Stable |
-| Slots | Stable |
-| Recursive Component Rendering | Stable |
-| Scoped RenderContext | Stable |
-| Template Engine | Stable |
-| Variables ({{ }}) | Stable |
-| Raw Output ({{{ }}}) | Stable |
-| Conditions (@if) | Stable |
-| Loops (@foreach) | Stable |
-| Json Object Access | Stable |
-| GraphQL Query Builder | Stable |
-| GraphQL Validation | Stable |
-| GraphQLResult | Stable |
-| StaticGraphQLClient | Stable |
-| HttpGraphQLClient | Experimental |
-| Dependency Injection | Stable |
-| Service Lifetimes | Stable |
-| Constructor Injection Factories | Stable |
-| Dependency Graph | Stable |
-| Dependency Validation | Stable |
-| Circular Dependency Detection | Stable |
-| Testing Helpers | Stable |
-| Template Compilation | Planned |
-| Template AST | Planned |
-| Build-time Diagnostics | Planned |
-| Performance Optimizations | Planned |
-| Documentation	In | Progress |
-| Production Readiness | In Progress |
+| Area                            | Status       |
+|---------------------------------|--------------|
+| Application Bootstrap           | Stable       |
+| Routing                         | Stable       |
+| Components                      | Stable       |
+| Component Registry              | Stable       |
+| Component Tags                  | Stable       |
+| Component Inputs                | Stable       |
+| Attribute Bindings              | Stable       |
+| Slots                           | Stable       |
+| Recursive Component Rendering   | Stable       |
+| Scoped RenderContext            | Stable       |
+| Template Compiler               | Stable       |
+| Template AST                    | Stable       |
+| Template Parser                 | Stable       |
+| Template Runtime                | Stable       |
+| Template Cache                  | Stable       |
+| Template Diagnostics            | Stable       |
+| Variables ({{ }})               | Stable       |
+| Raw Output ({{{ }}})            | Stable       |
+| Conditions (@if)                | Stable       |
+| Loops (@foreach)                | Stable       |
+| Json Object Access              | Stable       |
+| GraphQL Query Builder           | Stable       |
+| GraphQL Validation              | Stable       |
+| GraphQLResult                   | Stable       |
+| StaticGraphQLClient             | Stable       |
+| HttpGraphQLClient               | Experimental |
+| Dependency Injection            | Stable       |
+| Service Lifetimes               | Stable       |
+| Constructor Injection Factories | Stable       |
+| Dependency Graph                | Stable       |
+| Dependency Validation           | Stable       |
+| Circular Dependency Detection   | Stable       |
+| Testing Helpers                 | Stable       |
+| Documentation                   | In Progress  |
+| Production Readiness            | In Progress  |
 
 ## Example
 
@@ -310,12 +321,12 @@ auto logger =
     context.requireService<Logger>();
 ```
 
-| Lifetime | Behavior                             |
-|---|--------------------------------------|
-| Singleton | Created once and reused              |
+| Lifetime      | Behavior                             |
+|---------------|--------------------------------------|
+| Singleton     | Created once and reused              |
 | LazySingleton | Created on first request and reused  |
-| Transient | New instance on every request        |
-| Scoped | One instance per RenderContext scope |
+| Transient     | New instance on every request        |
+| Scoped        | One instance per RenderContext scope |
 
 ## GraphQL builder
 
@@ -430,13 +441,25 @@ public:
 
 ## Roadmap
 
-### 0.9 — Template Compiler
+### 0.10 — Production GraphQL Client
 
-- Template AST
-- Compiled templates
-- Faster rendering
-- Template diagnostics
-- Better error reporting
+- GraphQLRequest
+- GraphQLResponse
+- Variables support
+- GraphQL error handling
+- HTTP error handling
+- Json data extraction
+- Integration tests
+- HttpGraphQLClient stabilization
+
+### 0.11 — Developer Experience & Validation
+
+- Startup validation
+- Service diagnostics
+- Improved error messages
+- Better template diagnostics
+- Application validation
+- Developer tooling
 
 ### 1.0 Stable Release
 
@@ -444,6 +467,7 @@ public:
 - Documentation
 - Examples
 - Production Readiness
+- Release packaging
 
 ### Future
 
