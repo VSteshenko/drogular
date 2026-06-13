@@ -23,6 +23,7 @@ add_library(drogular
     src/component.cpp
     src/component_registry.cpp
     src/component_renderer.cpp
+    src/compiled_template.cpp
     src/dependency_graph.cpp
     src/graphql.cpp
     src/graphql_client.cpp
