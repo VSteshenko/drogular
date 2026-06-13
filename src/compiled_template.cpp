@@ -3,6 +3,7 @@
 #include <drogular/template_engine.hpp>
 #include <drogular/template_parser.hpp>
 #include <drogular/template_tokenizer.hpp>
+#include <drogular/template_runtime.hpp>
 
 namespace drogular::template_compiler {
 
@@ -99,20 +100,20 @@ std::string renderNode(
             const auto variableNode =
                 std::dynamic_pointer_cast<VariableNode>(node);
 
-            return template_engine::render(
-                "{{ " + variableNode->expression() + " }}",
+            return resolveVariable(
+                variableNode->expression(),
                 context
-            );
+            ).value_or("");
         }
 
         case NodeType::RawVariable: {
             const auto rawNode =
                 std::dynamic_pointer_cast<RawVariableNode>(node);
 
-            return template_engine::render(
-                "{{{ " + rawNode->expression() + " }}}",
+            return resolveRawVariable(
+                rawNode->expression(),
                 context
-            );
+            ).value_or("");
         }
 
         case NodeType::If: {
@@ -126,6 +127,10 @@ std::string renderNode(
                 );
 
             if (conditionHtml == "1") {
+                return renderNodes(ifNode->trueBranch(), context);
+            }
+
+            if (evaluateCondition(ifNode->condition(), context)) {
                 return renderNodes(ifNode->trueBranch(), context);
             }
 

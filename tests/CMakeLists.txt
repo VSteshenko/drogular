@@ -17,6 +17,7 @@ add_executable(drogular_tests
     template_tokenizer_tests.cpp
     template_ast_tests.cpp
     template_parser_tests.cpp
+    template_runtime.cpp
     testing_tests.cpp
     todo_page_tests.cpp
     ../examples/todo_pwa/todo_page.cpp
