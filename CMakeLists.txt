@@ -32,6 +32,7 @@ add_library(drogular
     src/template_engine.cpp
     src/template_tokenizer.cpp
     src/template_ast.cpp
+    src/template_parser.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
