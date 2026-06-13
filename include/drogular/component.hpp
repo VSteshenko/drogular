@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/template_cache.hpp>
+
 #include <any>
 #include <optional>
 #include <string>
@@ -376,6 +378,9 @@ public:
      * Renders the template using RenderContext.
      */
     std::string render(RenderContext& context) override;
+
+private:
+    mutable template_compiler::TemplateCache templateCache_;
 };
 
 /**

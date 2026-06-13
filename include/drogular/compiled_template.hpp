@@ -1,11 +1,14 @@
 #pragma once
 
-#include <drogular/component.hpp>
 #include <drogular/template_ast.hpp>
 
 #include <string>
 #include <string_view>
 #include <vector>
+
+namespace drogular {
+class RenderContext;
+}
 
 namespace drogular::template_compiler {
 

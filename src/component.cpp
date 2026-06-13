@@ -128,7 +128,10 @@ void Component::applyParams(RenderContext& context) const {
 std::string TemplateComponent::render(RenderContext& context) {
     applyParams(context);
 
-    auto html = template_engine::render(templateHtml(), context);
+    auto html = template_engine::render(
+        templateHtml(),
+        context
+    );
 
     if (context.services() != nullptr) {
         html = component_renderer::render(

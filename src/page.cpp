@@ -8,7 +8,10 @@ std::optional<gql::Query> Page::query() const {
 }
 
 std::string TemplatePage::render(RenderContext& context) {
-    auto html = template_engine::render(templateHtml(), context);
+    const auto compiled =
+        templateCache_.getOrCompile(templateHtml());
+
+    auto html = compiled->render(context);
 
     if (context.services() != nullptr) {
         html = component_renderer::render(

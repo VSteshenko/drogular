@@ -2,7 +2,7 @@
 
 #include <drogular/component.hpp>
 #include <drogular/graphql.hpp>
-#include <drogular/template_engine.hpp>
+#include <drogular/template_cache.hpp>
 
 #include <optional>
 
@@ -37,6 +37,9 @@ public:
      * Renders the template using RenderContext.
      */
     std::string render(RenderContext& context) override;
+
+private:
+    mutable template_compiler::TemplateCache templateCache_;
 };
 
 } // namespace drogular

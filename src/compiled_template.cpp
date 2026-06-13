@@ -4,14 +4,13 @@
 #include <drogular/template_parser.hpp>
 #include <drogular/template_tokenizer.hpp>
 #include <drogular/template_runtime.hpp>
+#include <drogular/component.hpp>
 
-#include <cctype>
 #include <optional>
 
 namespace drogular::template_compiler {
 
 namespace {
-
 
 struct ForeachExpression {
     std::string variable;
