@@ -272,9 +272,29 @@ std::string CompiledTemplate::render(RenderContext& context) const {
 }
 
 CompiledTemplate compile(std::string_view html) {
+    TemplateDiagnostics diagnostics;
+
     return CompiledTemplate(
-        parse(tokenize(html))
+        parse(
+            tokenize(html),
+            diagnostics
+        )
     );
+}
+
+CompileResult compileWithDiagnostics(std::string_view html) {
+    TemplateDiagnostics diagnostics;
+
+    auto nodes =
+        parse(
+            tokenize(html),
+            diagnostics
+        );
+
+    return {
+        .compiledTemplate = CompiledTemplate(std::move(nodes)),
+        .diagnostics = std::move(diagnostics)
+    };
 }
 
 } // namespace drogular::template_compiler

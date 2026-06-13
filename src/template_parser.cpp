@@ -22,12 +22,14 @@ bool isStopToken(
 std::vector<NodePtr> parseUntil(
     const std::vector<Token>& tokens,
     size_t& position,
-    const std::vector<TokenType>& stopTokens
+    const std::vector<TokenType>& stopTokens,
+    TemplateDiagnostics& diagnostics
 );
 
 NodePtr parseNode(
     const std::vector<Token>& tokens,
-    size_t& position
+    size_t& position,
+    TemplateDiagnostics& diagnostics
 ) {
     const auto& token = tokens[position];
 
@@ -49,6 +51,8 @@ NodePtr parseNode(
             return std::make_shared<ComponentNode>(token.value);
 
         case TokenType::If: {
+            const auto ifPosition = token.position;
+
             auto ifNode =
                 std::make_shared<IfNode>(token.value);
 
@@ -58,10 +62,11 @@ NodePtr parseNode(
                 parseUntil(
                     tokens,
                     position,
-                    {
+        {
                         TokenType::Else,
                         TokenType::EndIf
-                    }
+                    },
+                    diagnostics
                 );
 
             if (position < tokens.size() &&
@@ -72,21 +77,29 @@ NodePtr parseNode(
                     parseUntil(
                         tokens,
                         position,
-                        {
+            {
                             TokenType::EndIf
-                        }
+                        },
+                        diagnostics
                     );
             }
 
             if (position < tokens.size() &&
                 tokens[position].type == TokenType::EndIf) {
                 ++position;
+            } else {
+                diagnostics.addError(
+                    "Unclosed @if",
+                    ifPosition
+                );
             }
 
             return ifNode;
         }
 
         case TokenType::Foreach: {
+            const auto foreachPosition = token.position;
+
             auto foreachNode =
                 std::make_shared<ForeachNode>(token.value);
 
@@ -98,12 +111,18 @@ NodePtr parseNode(
                     position,
                     {
                         TokenType::EndForeach
-                    }
+                    },
+                    diagnostics
                 );
 
             if (position < tokens.size() &&
                 tokens[position].type == TokenType::EndForeach) {
                 ++position;
+                } else {
+                    diagnostics.addError(
+                        "Unclosed @foreach",
+                        foreachPosition
+                    );
             }
 
             return foreachNode;
@@ -121,7 +140,8 @@ NodePtr parseNode(
 std::vector<NodePtr> parseUntil(
     const std::vector<Token>& tokens,
     size_t& position,
-    const std::vector<TokenType>& stopTokens
+    const std::vector<TokenType>& stopTokens,
+    TemplateDiagnostics& diagnostics
 ) {
     std::vector<NodePtr> nodes;
 
@@ -130,7 +150,7 @@ std::vector<NodePtr> parseUntil(
             break;
         }
 
-        auto node = parseNode(tokens, position);
+        auto node = parseNode(tokens, position, diagnostics);
 
         if (node != nullptr) {
             nodes.push_back(std::move(node));
@@ -145,13 +165,40 @@ std::vector<NodePtr> parseUntil(
 } // namespace
 
 std::vector<NodePtr> parse(const std::vector<Token>& tokens) {
+    TemplateDiagnostics diagnostics;
+
+    return parse(tokens, diagnostics);
+}
+
+std::vector<NodePtr> parse(
+    const std::vector<Token>& tokens,
+    TemplateDiagnostics& diagnostics
+) {
     size_t position = 0;
 
-    return parseUntil(
-        tokens,
-        position,
-        {}
-    );
+    auto nodes =
+        parseUntil(
+            tokens,
+            position,
+            {},
+            diagnostics
+        );
+
+    while (position < tokens.size()) {
+        const auto& token = tokens[position];
+
+        if (token.type == TokenType::Else) {
+            diagnostics.addError("Unexpected @else", token.position);
+        } else if (token.type == TokenType::EndIf) {
+            diagnostics.addError("Unexpected @endif", token.position);
+        } else if (token.type == TokenType::EndForeach) {
+            diagnostics.addError("Unexpected @endforeach", token.position);
+        }
+
+        ++position;
+    }
+
+    return nodes;
 }
 
 } // namespace drogular::template_compiler

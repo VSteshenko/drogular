@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/template_ast.hpp>
+#include <drogular/template_diagnostics.hpp>
 
 #include <string>
 #include <string_view>
@@ -29,5 +30,19 @@ private:
  * Compiles template text into a reusable template object.
  */
 CompiledTemplate compile(std::string_view html);
+
+struct CompileResult {
+    CompiledTemplate compiledTemplate;
+    TemplateDiagnostics diagnostics;
+
+    bool valid() const {
+        return diagnostics.valid();
+    }
+};
+
+/**
+ * Compiles template text and returns diagnostics.
+ */
+CompileResult compileWithDiagnostics(std::string_view html);
 
 } // namespace drogular::template_compiler
