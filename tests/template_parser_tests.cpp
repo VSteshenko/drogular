@@ -61,3 +61,55 @@ TEST(TemplateParserTests, ParsesForeachNode) {
     EXPECT_EQ(foreachNode->expression(), "item in items");
     EXPECT_EQ(foreachNode->body().size(), 1);
 }
+
+TEST(TemplateParserTests, ParsesIfElseNode) {
+    const auto nodes =
+        parse(tokenize("@if(show)Yes@elseNo@endif"));
+
+    ASSERT_EQ(nodes.size(), 1);
+    ASSERT_EQ(nodes[0]->type(), NodeType::If);
+
+    const auto ifNode =
+        std::dynamic_pointer_cast<IfNode>(nodes[0]);
+
+    ASSERT_NE(ifNode, nullptr);
+    EXPECT_EQ(ifNode->condition(), "show");
+    EXPECT_EQ(ifNode->trueBranch().size(), 1);
+    EXPECT_EQ(ifNode->falseBranch().size(), 1);
+}
+
+TEST(TemplateParserTests, ParsesNestedIfNode) {
+    const auto nodes =
+        parse(tokenize("@if(parent)A@if(child)B@endif@endif"));
+
+    ASSERT_EQ(nodes.size(), 1);
+
+    const auto parent =
+        std::dynamic_pointer_cast<IfNode>(nodes[0]);
+
+    ASSERT_NE(parent, nullptr);
+    ASSERT_EQ(parent->trueBranch().size(), 2);
+
+    EXPECT_EQ(parent->trueBranch()[1]->type(), NodeType::If);
+}
+
+TEST(TemplateParserTests, ParsesForeachWithIfNode) {
+    const auto nodes =
+        parse(
+            tokenize(
+                "@foreach(todo in todos)"
+                "@if(todo.done)Done@endif"
+                "@endforeach"
+            )
+        );
+
+    ASSERT_EQ(nodes.size(), 1);
+    ASSERT_EQ(nodes[0]->type(), NodeType::Foreach);
+
+    const auto foreachNode =
+        std::dynamic_pointer_cast<ForeachNode>(nodes[0]);
+
+    ASSERT_NE(foreachNode, nullptr);
+    ASSERT_EQ(foreachNode->body().size(), 1);
+    EXPECT_EQ(foreachNode->body()[0]->type(), NodeType::If);
+}
