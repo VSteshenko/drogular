@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <json/json.h>
 
 namespace drogular::template_compiler {
 
@@ -28,6 +29,20 @@ std::optional<std::string> resolveRawVariable(
  * Evaluates a template condition.
  */
 bool evaluateCondition(
+    std::string_view expression,
+    const RenderContext& context
+    );
+
+/**
+ * Resolves a template expression into Json::Value.
+ *
+ * Supports direct Json values and dotted paths:
+ *
+ * user
+ * user.name
+ * todo.author.profile.name
+ */
+std::optional<Json::Value> resolveJsonValue(
     std::string_view expression,
     const RenderContext& context
 );

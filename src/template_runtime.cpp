@@ -71,39 +71,6 @@ std::optional<std::string> jsonValueToString(const Json::Value& value) {
     return std::nullopt;
 }
 
-std::optional<Json::Value> resolveJson(
-    const std::string& expression,
-    const RenderContext& context
-) {
-    const auto parts = splitPath(expression);
-
-    if (parts.empty()) {
-        return std::nullopt;
-    }
-
-    const auto root = context.get<Json::Value>(parts[0]);
-
-    if (!root.has_value()) {
-        return std::nullopt;
-    }
-
-    if (parts.size() == 1) {
-        return *root;
-    }
-
-    Json::Value current = *root;
-
-    for (size_t i = 1; i < parts.size(); ++i) {
-        if (!current.isObject() || !current.isMember(parts[i])) {
-            return std::nullopt;
-        }
-
-        current = current[parts[i]];
-    }
-
-    return current;
-}
-
 std::optional<std::string> resolveToString(
     std::string_view expression,
     const RenderContext& context
@@ -126,7 +93,7 @@ std::optional<std::string> resolveToString(
         return *value ? "true" : "false";
     }
 
-    if (const auto json = resolveJson(key, context)) {
+    if (const auto json = resolveJsonValue(key, context)) {
         return jsonValueToString(*json);
     }
 
@@ -165,7 +132,7 @@ bool evaluateCondition(
         return *value;
     }
 
-    if (const auto json = resolveJson(key, context)) {
+    if (const auto json = resolveJsonValue(key, context)) {
         if (json->isBool()) return json->asBool();
         if (json->isString()) return !json->asString().empty();
         if (json->isInt()) return json->asInt() != 0;
@@ -181,6 +148,41 @@ bool evaluateCondition(
     }
 
     return false;
+}
+
+std::optional<Json::Value> resolveJsonValue(
+    std::string_view expression,
+    const RenderContext& context
+) {
+    const auto key = trim(expression);
+
+    const auto parts = splitPath(key);
+
+    if (parts.empty()) {
+        return std::nullopt;
+    }
+
+    const auto root = context.get<Json::Value>(parts[0]);
+
+    if (!root.has_value()) {
+        return std::nullopt;
+    }
+
+    if (parts.size() == 1) {
+        return *root;
+    }
+
+    Json::Value current = *root;
+
+    for (size_t i = 1; i < parts.size(); ++i) {
+        if (!current.isObject() || !current.isMember(parts[i])) {
+            return std::nullopt;
+        }
+
+        current = current[parts[i]];
+    }
+
+    return current;
 }
 
 } // namespace drogular::template_compiler

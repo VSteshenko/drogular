@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <json/json.h>
+
 TEST(CompiledTemplateTests, RendersText) {
     drogular::RenderContext context;
 
@@ -93,5 +95,57 @@ TEST(CompiledTemplateTests, RendersForeach) {
     EXPECT_EQ(
         compiled.render(context),
         "<p>A</p><p>B</p>"
+    );
+}
+
+TEST(CompiledTemplateTests, RendersForeachJsonArrayValues) {
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    items.append("A");
+    items.append("B");
+    items.append("C");
+
+    context.set("items", items);
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "@foreach(item in items)"
+            "<p>{{ item }}</p>"
+            "@endforeach"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<p>A</p><p>B</p><p>C</p>"
+    );
+}
+
+TEST(CompiledTemplateTests, RendersForeachJsonObjects) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value first;
+    first["title"] = "Learn";
+
+    Json::Value second;
+    second["title"] = "Build";
+
+    todos.append(first);
+    todos.append(second);
+
+    context.set("todos", todos);
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "@foreach(todo in todos)"
+            "<p>{{ todo.title }}</p>"
+            "@endforeach"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<p>Learn</p><p>Build</p>"
     );
 }

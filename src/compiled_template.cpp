@@ -5,9 +5,50 @@
 #include <drogular/template_tokenizer.hpp>
 #include <drogular/template_runtime.hpp>
 
+#include <cctype>
+#include <optional>
+
 namespace drogular::template_compiler {
 
 namespace {
+
+
+struct ForeachExpression {
+    std::string variable;
+    std::string collection;
+};
+
+std::string trim(std::string_view value) {
+    size_t start = 0;
+    size_t end = value.size();
+
+    while (start < end &&
+           std::isspace(static_cast<unsigned char>(value[start]))) {
+        ++start;
+           }
+
+    while (end > start &&
+           std::isspace(static_cast<unsigned char>(value[end - 1]))) {
+        --end;
+           }
+
+    return std::string(value.substr(start, end - start));
+}
+
+std::optional<ForeachExpression> parseForeachExpression(
+    std::string_view expression
+) {
+    const auto separator = expression.find(" in ");
+
+    if (separator == std::string_view::npos) {
+        return std::nullopt;
+    }
+
+    return ForeachExpression{
+        .variable = trim(expression.substr(0, separator)),
+        .collection = trim(expression.substr(separator + 4))
+    };
+}
 
 std::string nodesToTemplate(
     const std::vector<NodePtr>& nodes
@@ -141,12 +182,52 @@ std::string renderNode(
             const auto foreachNode =
                 std::dynamic_pointer_cast<ForeachNode>(node);
 
-            const auto html =
-                "@foreach(" + foreachNode->expression() + ")" +
-                nodesToTemplate(foreachNode->body()) +
-                "@endforeach";
+            const auto expression =
+                parseForeachExpression(foreachNode->expression());
 
-            return template_engine::render(html, context);
+            if (!expression.has_value()) {
+                return "";
+            }
+
+            if (const auto stringValues =
+                context.get<std::vector<std::string>>(expression->collection)) {
+                std::string output;
+
+                for (const auto& item : *stringValues) {
+                    auto childContext = context.createChild();
+
+                    childContext.set(expression->variable, item);
+
+                    output += renderNodes(
+                        foreachNode->body(),
+                        childContext
+                    );
+                }
+
+                return output;
+            }
+
+            const auto collection =
+                resolveJsonValue(expression->collection, context);
+
+            if (!collection.has_value() || !collection->isArray()) {
+                return "";
+            }
+
+            std::string output;
+
+            for (const auto& item : *collection) {
+                auto childContext = context.createChild();
+
+                childContext.set(expression->variable, item);
+
+                output += renderNodes(
+                    foreachNode->body(),
+                    childContext
+                );
+            }
+
+            return output;
         }
 
         case NodeType::Component: {
