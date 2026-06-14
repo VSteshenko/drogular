@@ -5,8 +5,17 @@
 #include <drogular/graphql_response.hpp>
 
 #include <string>
+#include <stdexcept>
 
 namespace drogular {
+
+/**
+ * Thrown when GraphQL client execution fails.
+ */
+class GraphQLClientError : public std::runtime_error {
+public:
+    explicit GraphQLClientError(const std::string& message);
+};
 
 class GraphQLClient {
 public:

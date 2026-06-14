@@ -9,6 +9,12 @@
 
 namespace drogular {
 
+GraphQLClientError::GraphQLClientError(
+    const std::string& message
+)
+    : std::runtime_error(message) {
+}
+
 GraphQLResponse StaticGraphQLClient::executeRequest(
     const GraphQLRequest&
 ) {
@@ -46,14 +52,23 @@ GraphQLResult HttpGraphQLClient::execute(
 ) {
     GraphQLRequest request(query.toString());
 
-    const auto response =
-        executeRequest(request);
+    const auto response = executeRequest(request);
+
+    if (response.hasErrors()) {
+        const auto messages = response.errorMessages();
+
+        throw GraphQLClientError(
+            messages.empty()
+                ? "GraphQL response contains errors"
+                : messages[0]
+        );
+    }
 
     GraphQLResult result;
 
     result.set("__json", response.rawJson());
 
-    if (response.hasData()) {
+    if (response.hasData() && response.data().isObject()) {
         for (const auto& name : response.data().getMemberNames()) {
             result.set(name, response.data()[name]);
         }
@@ -90,7 +105,7 @@ GraphQLResponse HttpGraphQLClient::executeRequest(
                 response == nullptr) {
                 promise.set_exception(
                     std::make_exception_ptr(
-                        std::runtime_error(
+                        GraphQLClientError(
                             "GraphQL HTTP request failed"
                         )
                     )
@@ -106,15 +121,15 @@ GraphQLResponse HttpGraphQLClient::executeRequest(
 
     if (response->statusCode() < 200 ||
         response->statusCode() >= 300) {
-        throw std::runtime_error(
+        throw GraphQLClientError(
             "GraphQL HTTP response returned non-success status"
         );
-        }
+    }
 
     const auto json = response->getJsonObject();
 
     if (json == nullptr) {
-        throw std::runtime_error(
+        throw GraphQLClientError(
             "GraphQL HTTP response is not valid JSON"
         );
     }

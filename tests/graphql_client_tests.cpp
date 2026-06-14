@@ -179,3 +179,31 @@ TEST(GraphQLClientTests, CreatesHttpGraphQLRequest) {
 
     SUCCEED();
 }
+
+TEST(GraphQLClientTests, GraphQLClientErrorStoresMessage) {
+    drogular::GraphQLClientError error("Client failed");
+
+    EXPECT_STREQ(
+        error.what(),
+        "Client failed"
+    );
+}
+
+TEST(GraphQLClientTests, GraphQLResponseProvidesErrorMessages) {
+    Json::Value json;
+
+    Json::Value error;
+    error["message"] = "GraphQL validation failed";
+
+    json["errors"] = Json::arrayValue;
+    json["errors"].append(error);
+
+    drogular::GraphQLResponse response(json);
+
+    ASSERT_TRUE(response.hasErrors());
+
+    const auto messages = response.errorMessages();
+
+    ASSERT_EQ(messages.size(), 1);
+    EXPECT_EQ(messages[0], "GraphQL validation failed");
+}
