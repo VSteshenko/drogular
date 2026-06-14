@@ -28,6 +28,7 @@ add_library(drogular
     src/graphql.cpp
     src/graphql_client.cpp
     src/graphql_request.cpp
+    src/graphql_response.cpp
     src/page.cpp
     src/router.cpp
     src/services.cpp
