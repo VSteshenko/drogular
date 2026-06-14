@@ -81,6 +81,21 @@ std::vector<std::string> GraphQLResponse::errorMessages() const {
     return messages;
 }
 
+bool GraphQLResponse::hasExtensions() const {
+    return response_.isMember("extensions") &&
+           !response_["extensions"].isNull();
+}
+
+const Json::Value& GraphQLResponse::extensions() const {
+    static const Json::Value empty;
+
+    if (!response_.isMember("extensions")) {
+        return empty;
+    }
+
+    return response_["extensions"];
+}
+
 GraphQLResult GraphQLResponse::toResult() const {
     GraphQLResult result;
 

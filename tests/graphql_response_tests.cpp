@@ -172,3 +172,26 @@ TEST(GraphQLResponseTests, StoresRawJsonInGraphQLResult) {
         "Vadim"
     );
 }
+
+TEST(GraphQLResponseTests, DetectsExtensions) {
+    Json::Value json;
+
+    json["extensions"]["traceId"] = "abc-123";
+
+    drogular::GraphQLResponse response(json);
+
+    EXPECT_TRUE(response.hasExtensions());
+}
+
+TEST(GraphQLResponseTests, ReturnsExtensions) {
+    Json::Value json;
+
+    json["extensions"]["traceId"] = "abc-123";
+
+    drogular::GraphQLResponse response(json);
+
+    EXPECT_EQ(
+        response.extensions()["traceId"].asString(),
+        "abc-123"
+    );
+}

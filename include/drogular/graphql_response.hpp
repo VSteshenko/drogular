@@ -56,6 +56,16 @@ public:
     std::vector<std::string> errorMessages() const;
 
     /**
+     * Returns true when response contains extensions.
+     */
+    bool hasExtensions() const;
+
+    /**
+     * Returns GraphQL extensions object.
+     */
+    const Json::Value& extensions() const;
+
+    /**
      * Converts GraphQL response data to GraphQLResult.
      */
     GraphQLResult toResult() const;
