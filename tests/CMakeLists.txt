@@ -5,6 +5,7 @@ add_executable(drogular_tests
     component_tests.cpp
     compiled_template_tests.cpp
     dependency_graph_tests.cpp
+    http_graphql_client_tests.cpp
     graphql_client_tests.cpp
     graphql_result_tests.cpp
     graphql_tests.cpp
