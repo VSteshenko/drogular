@@ -136,3 +136,39 @@ TEST(GraphQLResponseTests, ReturnsObjectErrorMessages) {
     ASSERT_EQ(messages.size(), 1);
     EXPECT_EQ(messages[0], "GraphQL error");
 }
+
+TEST(GraphQLResponseTests, ConvertsDataToGraphQLResult) {
+    Json::Value json;
+
+    json["data"]["viewer"]["name"] = "Vadim";
+
+    drogular::GraphQLResponse response(json);
+
+    const auto result = response.toResult();
+
+    const auto viewer =
+        result.require<Json::Value>("viewer");
+
+    EXPECT_EQ(
+        viewer["name"].asString(),
+        "Vadim"
+    );
+}
+
+TEST(GraphQLResponseTests, StoresRawJsonInGraphQLResult) {
+    Json::Value json;
+
+    json["data"]["viewer"]["name"] = "Vadim";
+
+    drogular::GraphQLResponse response(json);
+
+    const auto result = response.toResult();
+
+    const auto rawJson =
+        result.require<Json::Value>("__json");
+
+    EXPECT_EQ(
+        rawJson["data"]["viewer"]["name"].asString(),
+        "Vadim"
+    );
+}

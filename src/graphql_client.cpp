@@ -64,17 +64,7 @@ GraphQLResult HttpGraphQLClient::execute(
         );
     }
 
-    GraphQLResult result;
-
-    result.set("__json", response.rawJson());
-
-    if (response.hasData() && response.data().isObject()) {
-        for (const auto& name : response.data().getMemberNames()) {
-            result.set(name, response.data()[name]);
-        }
-    }
-
-    return result;
+    return response.toResult();
 }
 
 GraphQLResponse HttpGraphQLClient::executeRequest(

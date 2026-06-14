@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/component.hpp>
+
 #include <optional>
 #include <string>
 #include <vector>
@@ -52,6 +54,11 @@ public:
      * Returns GraphQL error messages.
      */
     std::vector<std::string> errorMessages() const;
+
+    /**
+     * Converts GraphQL response data to GraphQLResult.
+     */
+    GraphQLResult toResult() const;
 
 private:
     Json::Value response_;

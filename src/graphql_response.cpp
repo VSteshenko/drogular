@@ -34,7 +34,7 @@ std::optional<Json::Value> GraphQLResponse::field(
     if (!response_["data"].isObject() ||
         !response_["data"].isMember(name)) {
         return std::nullopt;
-        }
+    }
 
     return response_["data"][name];
 }
@@ -75,10 +75,27 @@ std::vector<std::string> GraphQLResponse::errorMessages() const {
                    error.isMember("message") &&
                    error["message"].isString()) {
             messages.push_back(error["message"].asString());
-                   }
+        }
     }
 
     return messages;
+}
+
+GraphQLResult GraphQLResponse::toResult() const {
+    GraphQLResult result;
+
+    result.set("__json", rawJson());
+
+    if (hasData() && data().isObject()) {
+        for (const auto& name : data().getMemberNames()) {
+            result.set(
+                name,
+                data()[name]
+            );
+        }
+    }
+
+    return result;
 }
 
 } // namespace drogular
