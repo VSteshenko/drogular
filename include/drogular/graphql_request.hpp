@@ -34,6 +34,16 @@ public:
     const Json::Value& variables() const;
 
     /**
+     * Sets GraphQL query text and returns this request.
+     */
+    GraphQLRequest& query(std::string query);
+
+    /**
+     * Sets GraphQL variable value and returns this request.
+     */
+    GraphQLRequest& variable(std::string name, Json::Value value);
+
+    /**
      * Converts the request to JSON body.
      */
     Json::Value toJson() const;

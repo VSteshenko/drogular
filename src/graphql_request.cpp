@@ -27,6 +27,23 @@ const Json::Value& GraphQLRequest::variables() const {
     return variables_;
 }
 
+GraphQLRequest& GraphQLRequest::query(std::string query) {
+    setQuery(std::move(query));
+    return *this;
+}
+
+GraphQLRequest& GraphQLRequest::variable(
+    std::string name,
+    Json::Value value
+) {
+    setVariable(
+        std::move(name),
+        std::move(value)
+    );
+
+    return *this;
+}
+
 Json::Value GraphQLRequest::toJson() const {
     Json::Value body(Json::objectValue);
 

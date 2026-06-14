@@ -61,3 +61,27 @@ TEST(GraphQLRequestTests, ConvertsToJson) {
         "42"
     );
 }
+
+TEST(GraphQLRequestTests, SupportsFluentApi) {
+    drogular::GraphQLRequest request;
+
+    request
+        .query("query User($id: ID!) { user(id: $id) { name } }")
+        .variable("id", "42")
+        .variable("limit", 10);
+
+    EXPECT_EQ(
+        request.query(),
+        "query User($id: ID!) { user(id: $id) { name } }"
+    );
+
+    EXPECT_EQ(
+        request.variables()["id"].asString(),
+        "42"
+    );
+
+    EXPECT_EQ(
+        request.variables()["limit"].asInt(),
+        10
+    );
+}
