@@ -48,6 +48,25 @@ protected:
             {drogon::Post}
         );
 
+        drogon::app().registerHandler(
+            "/graphql-variables",
+            [](
+                const drogon::HttpRequestPtr& request,
+                std::function<void(const drogon::HttpResponsePtr&)>&& callback
+            ) {
+                const auto json = request->getJsonObject();
+
+                Json::Value response;
+
+                response["data"]["receivedId"] = (*json)["variables"]["id"].asString();
+
+                callback(
+                    drogon::HttpResponse::newHttpJsonResponse(response)
+                );
+            },
+            {drogon::Post}
+        );
+
         serverThread_ = std::thread([]() {
             drogon::app()
                 .addListener(TestHost, TestPort)
@@ -132,5 +151,57 @@ TEST_F(HttpGraphQLClientTestFixture, ExecuteThrowsOnGraphQLErrors) {
     EXPECT_THROW(
         client.execute(query),
         drogular::GraphQLClientError
+    );
+}
+
+TEST_F(HttpGraphQLClientTestFixture, SendsVariablesToServer) {
+    drogular::HttpGraphQLClient client(
+        TestHost,
+        TestPort,
+        "/graphql-variables"
+    );
+
+    drogular::GraphQLRequest request(
+        "query User($id: ID!) { user(id: $id) { name } }"
+    );
+
+    request.setVariable("id", "123");
+
+    const auto response =
+        client.executeRequest(request);
+
+    ASSERT_TRUE(response.hasData());
+
+    EXPECT_EQ(
+        response.data()["receivedId"].asString(),
+        "123"
+    );
+}
+
+TEST_F(HttpGraphQLClientTestFixture, ExecuteMapsResponseDataToGraphQLResult) {
+    drogular::HttpGraphQLClient client(
+        TestHost,
+        TestPort,
+        "/graphql-success"
+    );
+
+    const auto query =
+        drogular::gql::query("Viewer")
+            .select(
+                drogular::gql::field("viewer")
+                    .children({
+                        drogular::gql::field("name")
+                    })
+            );
+
+    const auto result =
+        client.execute(query);
+
+    const auto viewer =
+        result.require<Json::Value>("viewer");
+
+    EXPECT_EQ(
+        viewer["name"].asString(),
+        "Vadim"
     );
 }
