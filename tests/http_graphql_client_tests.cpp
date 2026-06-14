@@ -67,6 +67,39 @@ protected:
             {drogon::Post}
         );
 
+        drogon::app().registerHandler(
+            "/graphql-http-error",
+            [](
+                const drogon::HttpRequestPtr&,
+                std::function<void(const drogon::HttpResponsePtr&)>&& callback
+            ) {
+                auto response = drogon::HttpResponse::newHttpResponse();
+
+                response->setStatusCode(drogon::k500InternalServerError);
+                response->setBody("Internal Server Error");
+
+                callback(response);
+            },
+            {drogon::Post}
+        );
+
+        drogon::app().registerHandler(
+            "/graphql-invalid-json",
+            [](
+                const drogon::HttpRequestPtr&,
+                std::function<void(const drogon::HttpResponsePtr&)>&& callback
+            ) {
+                auto response = drogon::HttpResponse::newHttpResponse();
+
+                response->setStatusCode(drogon::k200OK);
+                response->setContentTypeCode(drogon::CT_TEXT_PLAIN);
+                response->setBody("not json");
+
+                callback(response);
+            },
+            {drogon::Post}
+        );
+
         serverThread_ = std::thread([]() {
             drogon::app()
                 .addListener(TestHost, TestPort)
@@ -203,5 +236,39 @@ TEST_F(HttpGraphQLClientTestFixture, ExecuteMapsResponseDataToGraphQLResult) {
     EXPECT_EQ(
         viewer["name"].asString(),
         "Vadim"
+    );
+}
+
+TEST_F(HttpGraphQLClientTestFixture, ThrowsOnHttpErrorStatus) {
+    drogular::HttpGraphQLClient client(
+        TestHost,
+        TestPort,
+        "/graphql-http-error"
+    );
+
+    drogular::GraphQLRequest request(
+        "query { viewer { name } }"
+    );
+
+    EXPECT_THROW(
+        client.executeRequest(request),
+        drogular::GraphQLClientError
+    );
+}
+
+TEST_F(HttpGraphQLClientTestFixture, ThrowsOnInvalidJsonResponse) {
+    drogular::HttpGraphQLClient client(
+        TestHost,
+        TestPort,
+        "/graphql-invalid-json"
+    );
+
+    drogular::GraphQLRequest request(
+        "query { viewer { name } }"
+    );
+
+    EXPECT_THROW(
+        client.executeRequest(request),
+        drogular::GraphQLClientError
     );
 }
