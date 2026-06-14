@@ -1,6 +1,7 @@
 #include <drogular/component.hpp>
 #include <drogular/services.hpp>
 #include <drogular/graphql_client.hpp>
+#include <drogular/graphql.hpp>
 
 #include <gtest/gtest.h>
 
@@ -150,6 +151,31 @@ TEST(GraphQLClientTests, CreatesHttpGraphQLClient) {
         8080,
         "/graphql"
     );
+
+    SUCCEED();
+}
+
+TEST(GraphQLClientTests, StaticClientExecutesRequest) {
+    drogular::GraphQLResult result;
+    result.set("viewer", std::string("Vadim"));
+
+    drogular::StaticGraphQLClient client(result);
+
+    drogular::GraphQLRequest request("query { viewer { name } }");
+
+    const auto response = client.executeRequest(request);
+
+    EXPECT_FALSE(response.hasErrors());
+}
+
+TEST(GraphQLClientTests, CreatesHttpGraphQLRequest) {
+    drogular::HttpGraphQLClient client(
+        "localhost",
+        8080,
+        "/graphql"
+    );
+
+    drogular::GraphQLRequest request("query { viewer { name } }");
 
     SUCCEED();
 }

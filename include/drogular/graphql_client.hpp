@@ -1,9 +1,9 @@
 #pragma once
 
 #include <drogular/component.hpp>
-#include <drogular/graphql.hpp>
+#include <drogular/graphql_request.hpp>
+#include <drogular/graphql_response.hpp>
 
-#include <cstdint>
 #include <string>
 
 namespace drogular {
@@ -13,6 +13,11 @@ public:
     virtual ~GraphQLClient() = default;
 
     virtual GraphQLResult execute(const gql::Query& query) = 0;
+
+    /**
+     * Executes a GraphQL request.
+     */
+    virtual GraphQLResponse executeRequest(const GraphQLRequest& request) = 0;
 };
 
 class StaticGraphQLClient final : public GraphQLClient {
@@ -20,6 +25,8 @@ public:
     explicit StaticGraphQLClient(GraphQLResult result);
 
     GraphQLResult execute(const gql::Query& query) override;
+
+    GraphQLResponse executeRequest(const GraphQLRequest& request) override;
 
 private:
     GraphQLResult result_;
@@ -34,6 +41,8 @@ public:
     );
 
     GraphQLResult execute(const gql::Query& query) override;
+
+    GraphQLResponse executeRequest(const GraphQLRequest& request) override;
 
 private:
     std::string host_;
