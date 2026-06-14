@@ -15,6 +15,49 @@ TEST(GraphQLResponseTests, ReturnsData) {
     );
 }
 
+TEST(GraphQLResponseTests, DetectsData) {
+    Json::Value json;
+
+    json["data"]["viewer"]["name"] = "Vadim";
+
+    drogular::GraphQLResponse response(json);
+
+    EXPECT_TRUE(response.hasData());
+}
+
+TEST(GraphQLResponseTests, DetectsMissingData) {
+    Json::Value json;
+
+    drogular::GraphQLResponse response(json);
+
+    EXPECT_FALSE(response.hasData());
+}
+
+TEST(GraphQLResponseTests, ReturnsDataField) {
+    Json::Value json;
+
+    json["data"]["viewer"]["name"] = "Vadim";
+
+    drogular::GraphQLResponse response(json);
+
+    const auto field = response.field("viewer");
+
+    ASSERT_TRUE(field.has_value());
+    EXPECT_EQ((*field)["name"].asString(), "Vadim");
+}
+
+TEST(GraphQLResponseTests, ReturnsNulloptForMissingDataField) {
+    Json::Value json;
+
+    json["data"]["viewer"]["name"] = "Vadim";
+
+    drogular::GraphQLResponse response(json);
+
+    const auto field = response.field("missing");
+
+    EXPECT_FALSE(field.has_value());
+}
+
 TEST(GraphQLResponseTests, ReturnsErrors) {
     Json::Value json;
 
@@ -61,4 +104,35 @@ TEST(GraphQLResponseTests, ReturnsRawJson) {
         response.rawJson()["data"]["version"].asString(),
         "1.0"
     );
+}
+
+TEST(GraphQLResponseTests, ReturnsStringErrorMessages) {
+    Json::Value json;
+
+    json["errors"] = Json::arrayValue;
+    json["errors"].append("Plain error");
+
+    drogular::GraphQLResponse response(json);
+
+    const auto messages = response.errorMessages();
+
+    ASSERT_EQ(messages.size(), 1);
+    EXPECT_EQ(messages[0], "Plain error");
+}
+
+TEST(GraphQLResponseTests, ReturnsObjectErrorMessages) {
+    Json::Value json;
+
+    Json::Value error;
+    error["message"] = "GraphQL error";
+
+    json["errors"] = Json::arrayValue;
+    json["errors"].append(error);
+
+    drogular::GraphQLResponse response(json);
+
+    const auto messages = response.errorMessages();
+
+    ASSERT_EQ(messages.size(), 1);
+    EXPECT_EQ(messages[0], "GraphQL error");
 }
