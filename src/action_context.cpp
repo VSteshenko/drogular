@@ -34,4 +34,18 @@ std::optional<std::string> ActionContext::formValue(
     return value;
 }
 
+std::string ActionContext::requireFormValue(
+    const std::string& name
+) const {
+    const auto value = formValue(name);
+
+    if (!value.has_value()) {
+        throw std::runtime_error(
+            "Missing required form value: " + name
+        );
+    }
+
+    return *value;
+}
+
 } // namespace drogular

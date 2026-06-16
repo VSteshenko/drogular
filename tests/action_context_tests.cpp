@@ -47,3 +47,14 @@ TEST(ActionContextTests, RequiresService) {
     ASSERT_NE(service, nullptr);
     EXPECT_EQ(service->value(), 42);
 }
+
+TEST(ActionContextTests, ThrowsWhenRequiredFormValueMissing) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_THROW(
+        context.requireFormValue("title"),
+        std::runtime_error
+    );
+}

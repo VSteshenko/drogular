@@ -4,21 +4,18 @@
 
 #include <drogular/action_handler.hpp>
 
-#include <cstdlib>
-
 class ToggleTodoAction final : public drogular::ActionHandler {
 public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
     ) override {
-        const auto idValue =
-            context.formValue("id").value_or("");
+        const auto id = context.form<int>("id");
 
-        if (!idValue.empty()) {
+        if (id.has_value()) {
             auto service =
                 context.requireService<TodoService>();
 
-            service->toggle(std::atoi(idValue.c_str()));
+            service->toggle(*id);
         }
 
         return drogular::ActionResult::redirect("/");

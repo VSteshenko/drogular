@@ -10,7 +10,8 @@ public:
         drogular::ActionContext& context
     ) override {
         const auto title =
-            context.formValue("title").value_or("");
+            context.form<std::string>("title")
+                .value_or("");
 
         auto service =
             context.requireService<TodoService>();

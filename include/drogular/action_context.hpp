@@ -7,6 +7,8 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <stdexcept>
+#include <type_traits>
 
 namespace drogular {
 
@@ -51,6 +53,55 @@ public:
     std::optional<std::string> formValue(
         const std::string& name
     ) const;
+
+    /**
+     * Returns a required form parameter value.
+     *
+     * Throws when the parameter is missing or empty.
+     */
+    std::string requireFormValue(
+        const std::string& name
+    ) const;
+
+    /**
+     * Returns a typed form parameter value.
+     */
+    template <typename T>
+    std::optional<T> form(const std::string& name) const {
+        const auto value = formValue(name);
+
+        if (!value.has_value()) {
+            return std::nullopt;
+        }
+
+        if constexpr (std::is_same_v<T, std::string>) {
+            return *value;
+        } else if constexpr (std::is_same_v<T, int>) {
+            try {
+                return std::stoi(*value);
+            } catch (...) {
+                return std::nullopt;
+            }
+        } else if constexpr (std::is_same_v<T, double>) {
+            try {
+                return std::stod(*value);
+            } catch (...) {
+                return std::nullopt;
+            }
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return *value == "true" ||
+                   *value == "1" ||
+                   *value == "on";
+        } else {
+            static_assert(
+                std::is_same_v<T, std::string> ||
+                std::is_same_v<T, int> ||
+                std::is_same_v<T, double> ||
+                std::is_same_v<T, bool>,
+                "Unsupported form value type"
+            );
+        }
+    }
 
 private:
     drogon::HttpRequestPtr request_;
