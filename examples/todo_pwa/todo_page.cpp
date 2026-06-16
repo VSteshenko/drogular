@@ -33,6 +33,7 @@ void TodoPage::onInit(drogular::RenderContext& context) {
         std::string("Angular-inspired C++ web framework for Drogon.")
     );
     context.set("todos", todos);
+    context.set("hasTodos", !todos.empty());
 }
 
 std::optional<drogular::gql::Query> TodoPage::query() const {
@@ -62,11 +63,18 @@ std::string TodoPage::templateHtml() const {
         <p>{{ subtitle }}</p>
 
         <h2>Todo list</h2>
+
+@if(hasTodos)
         <ul>
 @foreach(todo in todos)
-            <TodoItem title="{{ todo.title }}" done="{{ todo.done }}" />
+            <TodoItem
+                title="{{ todo.title }}"
+                done="{{ todo.done }}" />
 @endforeach
         </ul>
+@else
+        <p>No todos yet.</p>
+@endif
     </main>
 </body>
 </html>

@@ -59,3 +59,29 @@ TEST(TodoPageTests, RendersTodoList) {
         )
     );
 }
+
+TEST(TodoPageTests, RendersEmptyTodoState) {
+    const std::vector<Todo> todos = {};
+
+    drogular::GraphQLResult result;
+    result.set("todos", todos);
+
+    auto client =
+        std::make_shared<drogular::StaticGraphQLClient>(
+            std::move(result)
+        );
+
+    drogular::ApplicationServices services;
+    services.setGraphQLClient(client);
+    services.components().registerComponent<TodoItemComponent>();
+
+    const auto renderResult =
+        drogular::test::renderPage<TodoPage>(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            renderResult.html,
+            "No todos yet."
+        )
+    );
+}
