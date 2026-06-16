@@ -4,6 +4,7 @@
 #include <drogular/services.hpp>
 #include <drogular/page.hpp>
 #include <drogular/router.hpp>
+#include <drogular/action_handler.hpp>
 
 #include <memory>
 #include <string>
@@ -57,6 +58,24 @@ public:
     template <typename ComponentType>
     App& component() {
         services_.components().registerComponent<ComponentType>();
+        return *this;
+    }
+
+    /**
+     * Registers an action type for the given POST path.
+     */
+    template <typename ActionType>
+    App& action(const std::string& path) {
+        static_assert(
+            std::is_base_of_v<ActionHandler, ActionType>,
+            "ActionType must inherit from drogular::ActionHandler"
+        );
+
+        router_.action(
+            path,
+            std::make_shared<ActionType>()
+        );
+
         return *this;
     }
 

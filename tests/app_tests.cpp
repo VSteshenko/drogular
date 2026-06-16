@@ -51,3 +51,20 @@ TEST(AppTests, AppCanRegisterComponentUsingMetadataTag) {
         app.component<AppMetadataComponent>();
     });
 }
+
+class AppTestAction final : public drogular::ActionHandler {
+public:
+    drogular::ActionResult handle(
+        drogular::ActionContext&
+    ) override {
+        return drogular::ActionResult::redirect("/");
+    }
+};
+
+TEST(AppTests, AppCanRegisterAction) {
+    drogular::App app;
+
+    EXPECT_NO_THROW({
+        app.action<AppTestAction>("/test-action");
+    });
+}

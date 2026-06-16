@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/action_handler.hpp>
 
 #include <memory>
 #include <string>
@@ -21,6 +22,11 @@ public:
      * Registers a page instance for the given path.
      */
     void page(const std::string& path, std::shared_ptr<Page> page);
+
+    /**
+     * Registers an action instance for the given path.
+     */
+    void action(const std::string& path, std::shared_ptr<ActionHandler> action);
 
 private:
     ApplicationServices* services_ = nullptr;

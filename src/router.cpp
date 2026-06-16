@@ -1,6 +1,7 @@
 #include <drogular/router.hpp>
 #include <drogular/services.hpp>
 #include <drogular/page.hpp>
+#include <drogular/action_response.hpp>
 
 #include <drogon/drogon.h>
 
@@ -28,6 +29,31 @@ void Router::page(const std::string& path, std::shared_ptr<Page> page) {
 
             callback(response);
         }
+    );
+}
+
+void Router::action(const std::string& path, std::shared_ptr<ActionHandler> action) {
+    auto* services = services_;
+
+    drogon::app().registerHandler(
+        path,
+        [action, services](
+            const drogon::HttpRequestPtr& request,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            ActionContext context(
+                request,
+                services
+            );
+
+            const auto result =
+                action->handle(context);
+
+            callback(
+                toHttpResponse(result)
+            );
+        },
+        {drogon::Post}
     );
 }
 
