@@ -13,18 +13,6 @@
 #include <vector>
 
 TEST(TodoPageTests, RendersTodoList) {
-    const std::vector<Todo> todos = {
-        {1, "Create Drogular project skeleton", true},
-        {2, "Test TodoPage rendering", false}
-    };
-
-    drogular::GraphQLResult result;
-    result.set("todos", todos);
-
-    auto client = std::make_shared<drogular::StaticGraphQLClient>(
-        std::move(result)
-    );
-
     drogular::ApplicationServices services;
     services.add<TodoService>(
         drogular::ServiceLifetime::Singleton
@@ -54,26 +42,29 @@ TEST(TodoPageTests, RendersTodoList) {
             "Add actions and mutations"
         )
     );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            renderResult.html,
+            "/todos/toggle"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            renderResult.html,
+            "name=\"id\""
+        )
+    );
 }
 
 TEST(TodoPageTests, RendersEmptyTodoState) {
-    const std::vector<Todo> todos = {};
-
-    drogular::GraphQLResult result;
-    result.set("todos", todos);
-
-    auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            std::move(result)
-        );
-
     drogular::ApplicationServices services;
     services.registerService<TodoService>(
         std::make_shared<TodoService>(
             std::vector<Todo>{}
         )
     );
-    services.setGraphQLClient(client);
     services.components().registerComponent<TodoItemComponent>();
 
     const auto renderResult =
@@ -85,4 +76,19 @@ TEST(TodoPageTests, RendersEmptyTodoState) {
             "No todos yet."
         )
     );
+}
+
+TEST(TodoServiceTests, TogglesTodo) {
+    TodoService service({
+        {1, "Test", false}
+    });
+
+    service.toggle(1);
+
+    ASSERT_EQ(service.todos().size(), 1);
+    EXPECT_TRUE(service.todos()[0].done);
+
+    service.toggle(1);
+
+    EXPECT_FALSE(service.todos()[0].done);
 }

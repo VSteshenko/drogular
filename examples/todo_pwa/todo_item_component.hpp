@@ -7,7 +7,15 @@ public:
     static constexpr auto tag = "TodoItem";
 
     std::string templateHtml() const override {
-        return R"(<li>{{ marker }} {{ title }}</li>)";
+        return R"(
+<li>
+    <form method="post" action="/todos/toggle">
+        <input type="hidden" name="id" value="{{ id }}" />
+        <button type="submit">{{ marker }}</button>
+        <span>{{ title }}</span>
+    </form>
+</li>
+)";
     }
 
     void onInit(drogular::RenderContext& context) override {

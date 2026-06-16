@@ -15,6 +15,8 @@ public:
 
     void create(std::string title);
 
+    void toggle(int id);
+
 private:
     std::vector<Todo> todos_;
     int nextId_ = 1;

@@ -90,7 +90,7 @@ TEST(TemplatePageTests, RendersComponentTagsWithStringInputs) {
     );
 }
 
-class TodoItemComponent final : public drogular::TemplateComponent {
+class TemplateTodoItemComponent final : public drogular::TemplateComponent {
 public:
     static constexpr auto tag = "TodoItem";
 
@@ -129,7 +129,7 @@ public:
 
 TEST(TemplatePageTests, RendersComponentBindingsInsideForeach) {
     drogular::ApplicationServices services;
-    services.components().registerComponent<TodoItemComponent>();
+    services.components().registerComponent<TemplateTodoItemComponent>();
 
     ComponentBindingForeachPage page;
 

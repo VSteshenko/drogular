@@ -35,10 +35,6 @@ void TodoPage::onInit(drogular::RenderContext& context) {
     context.set("hasTodos", !sourceTodos.empty());
 }
 
-std::optional<drogular::gql::Query> TodoPage::query() const {
-    return std::nullopt;
-}
-
 std::string TodoPage::templateHtml() const {
     return R"(
 <!doctype html>
@@ -64,6 +60,7 @@ std::string TodoPage::templateHtml() const {
         <ul>
 @foreach(todo in todos)
             <TodoItem
+                id="{{ todo.id }}"
                 title="{{ todo.title }}"
                 done="{{ todo.done }}" />
 @endforeach

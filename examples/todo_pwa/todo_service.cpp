@@ -36,3 +36,12 @@ void TodoService::create(std::string title) {
         false
     });
 }
+
+void TodoService::toggle(int id) {
+    for (auto& todo : todos_) {
+        if (todo.id == id) {
+            todo.done = !todo.done;
+            return;
+        }
+    }
+}
