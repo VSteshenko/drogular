@@ -58,3 +58,14 @@ TEST(ActionContextTests, ThrowsWhenRequiredFormValueMissing) {
         std::runtime_error
     );
 }
+
+TEST(ActionContextTests, RequireFormThrowsWhenMissing) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_THROW(
+        context.requireForm<int>("id"),
+        drogular::ActionValidationError
+    );
+}

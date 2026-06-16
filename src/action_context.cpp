@@ -40,7 +40,7 @@ std::string ActionContext::requireFormValue(
     const auto value = formValue(name);
 
     if (!value.has_value()) {
-        throw std::runtime_error(
+        throw ActionValidationError(
             "Missing required form value: " + name
         );
     }

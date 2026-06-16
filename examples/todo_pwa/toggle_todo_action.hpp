@@ -9,14 +9,12 @@ public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
     ) override {
-        const auto id = context.form<int>("id");
+        auto service =
+            context.requireService<TodoService>();
 
-        if (id.has_value()) {
-            auto service =
-                context.requireService<TodoService>();
-
-            service->toggle(*id);
-        }
+        service->toggle(
+            context.requireForm<int>("id")
+        );
 
         return drogular::ActionResult::redirect("/");
     }

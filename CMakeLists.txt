@@ -23,6 +23,7 @@ add_library(drogular
     src/action_result.cpp
     src/action_context.cpp
     src/action_response.cpp
+    src/action_validation_error.cpp
     src/component.cpp
     src/component_registry.cpp
     src/component_renderer.cpp

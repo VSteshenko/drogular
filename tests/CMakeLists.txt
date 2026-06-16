@@ -5,6 +5,7 @@ add_executable(drogular_tests
     action_handler_tests.cpp
     action_response_tests.cpp
     action_integration_tests.cpp
+    action_validation_error_tests.cpp
     component_registry_tests.cpp
     component_renderer_tests.cpp
     component_tests.cpp

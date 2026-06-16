@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/action_validation_error.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -101,6 +102,25 @@ public:
                 "Unsupported form value type"
             );
         }
+    }
+
+    /**
+     * Returns a required typed form parameter value.
+     *
+     * Throws ActionValidationError when the value is missing
+     * or cannot be converted to the requested type.
+     */
+    template <typename T>
+    T requireForm(const std::string& name) const {
+        const auto value = form<T>(name);
+
+        if (!value.has_value()) {
+            throw ActionValidationError(
+                "Invalid or missing form value: " + name
+            );
+        }
+
+        return *value;
     }
 
 private:
