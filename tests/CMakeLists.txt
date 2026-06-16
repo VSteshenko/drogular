@@ -1,5 +1,6 @@
 add_executable(drogular_tests
     app_tests.cpp
+    action_result_tests.cpp
     component_registry_tests.cpp
     component_renderer_tests.cpp
     component_tests.cpp

@@ -5,7 +5,7 @@ if(POLICY CMP0135)
 endif()
 
 project(Drogular
-    VERSION 0.9.0
+    VERSION 0.11.0
     LANGUAGES CXX
 )
 
@@ -20,6 +20,7 @@ find_package(Drogon REQUIRED)
 
 add_library(drogular
     src/app.cpp
+    src/action_result.cpp
     src/component.cpp
     src/component_registry.cpp
     src/component_renderer.cpp
