@@ -38,7 +38,7 @@ GraphQLResult
 
 ## Status
 
-**Version:** 0.9.0
+**Version:** 0.10.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -86,117 +86,114 @@ Template Rendering
 HTML
 ```
 
-Current capabilities:
+### Features
 
-### Application Layer
+#### Application
 
 - Application bootstrap
 - Routing
+- Pages
+- Render contexts
+
+#### Components
+
 - Component registry
 - Dynamic component creation
-- Component metadata tags
-- Self-closing component tags
-- Component tags with children
 - Recursive component rendering
-- Default and named slots
+- Self-closing component tags
+- Component children
+- Default slots
+- Named slots
 - Component inputs
 - Attribute bindings
-- Scoped render contexts
-- Service container
-- Service lifetimes:
-    - Singleton
-    - Lazy singleton
-    - Transient
-    - Scoped
-- Factory registration with lifetimes
+
+#### Dependency Injection
+
+- Singleton services
+- Lazy singleton services
+- Transient services
+- Scoped services
 - Constructor injection factories
-- Multiple dependency injection
-- Dependency graph metadata
-- Missing dependency validation
+- Dependency graph
+- Dependency validation
 - Circular dependency detection
-- Circular dependency path diagnostics
-- Service factory cleanup
 
-### GraphQL Layer
-
-- GraphQL query builder
-- Variables
-- Aliases
-- Fragments
-- Validation
-- StaticGraphQLClient
-- HttpGraphQLClient (MVP)
-- GraphQLResult
-- Result merging
-
-### Template Layer
+#### Template Compiler
 
 - Template tokenizer
 - Template AST
 - Template parser
+- Compiled templates
 - Template runtime
 - Template cache
 - Template diagnostics
-- Compiled templates
-- Template variables
-- HTML escaping
-- Raw HTML output
-- HTML escaping
+- Variables (`{{ value }}`)
+- Raw HTML (`{{{ value }}}`)
 - Conditions (`@if`)
-- If / Else (`@else`)
 - Loops (`@foreach`)
-- Component parameters
-- Json object access: {{ user.name }} 
-- Json conditions: @if(user.active)
-- Json loops: @foreach(todo in todos)
+- Json path access
 
-### Testing
+#### GraphQL
 
-- Page rendering helpers
-- Component rendering helpers
-- HTML assertions
-- Unit tests
+- Query builder
+- Variables
+- Aliases
+- Fragments
+- Validation
+- GraphQLRequest
+- GraphQLResponse
+- GraphQLResult
+- StaticGraphQLClient
+- HttpGraphQLClient
+- Error handling
+- Integration tests
+
+#### Testing
+
+- Component testing
+- Page testing
+- Integration testing
 - GitHub Actions CI
 
 ## Project Maturity
 
-| Area                            | Status       |
-|---------------------------------|--------------|
-| Application Bootstrap           | Stable       |
-| Routing                         | Stable       |
-| Components                      | Stable       |
-| Component Registry              | Stable       |
-| Component Tags                  | Stable       |
-| Component Inputs                | Stable       |
-| Attribute Bindings              | Stable       |
-| Slots                           | Stable       |
-| Recursive Component Rendering   | Stable       |
-| Scoped RenderContext            | Stable       |
-| Template Compiler               | Stable       |
-| Template AST                    | Stable       |
-| Template Parser                 | Stable       |
-| Template Runtime                | Stable       |
-| Template Cache                  | Stable       |
-| Template Diagnostics            | Stable       |
-| Variables ({{ }})               | Stable       |
-| Raw Output ({{{ }}})            | Stable       |
-| Conditions (@if)                | Stable       |
-| Loops (@foreach)                | Stable       |
-| Json Object Access              | Stable       |
-| GraphQL Query Builder           | Stable       |
-| GraphQL Validation              | Stable       |
-| GraphQLResult                   | Stable       |
-| StaticGraphQLClient             | Stable       |
-| HttpGraphQLClient               | Experimental |
-| Dependency Injection            | Stable       |
-| Service Lifetimes               | Stable       |
-| Constructor Injection Factories | Stable       |
-| Dependency Graph                | Stable       |
-| Dependency Validation           | Stable       |
-| Circular Dependency Detection   | Stable       |
-| Testing Helpers                 | Stable       |
-| Documentation                   | In Progress  |
-| Production Readiness            | In Progress  |
+| Area                            | Status      |
+|---------------------------------|-------------|
+| Application Bootstrap           | Stable      |
+| Routing                         | Stable      |
+| Components                      | Stable      |
+| Component Registry              | Stable      |
+| Component Tags                  | Stable      |
+| Component Inputs                | Stable      |
+| Attribute Bindings              | Stable      |
+| Slots                           | Stable      |
+| Recursive Component Rendering   | Stable      |
+| Scoped RenderContext            | Stable      |
+| Template Compiler               | Stable      |
+| Template AST                    | Stable      |
+| Template Parser                 | Stable      |
+| Template Runtime                | Stable      |
+| Template Cache                  | Stable      |
+| Template Diagnostics            | Stable      |
+| Variables ({{ }})               | Stable      |
+| Raw Output ({{{ }}})            | Stable      |
+| Conditions (@if)                | Stable      |
+| Loops (@foreach)                | Stable      |
+| Json Object Access              | Stable      |
+| GraphQL Query Builder           | Stable      |
+| GraphQL Validation              | Stable      |
+| GraphQLResult                   | Stable      |
+| StaticGraphQLClient             | Stable      |
+| HttpGraphQLClient               | Stable      |
+| Dependency Injection            | Stable      |
+| Service Lifetimes               | Stable      |
+| Constructor Injection Factories | Stable      |
+| Dependency Graph                | Stable      |
+| Dependency Validation           | Stable      |
+| Circular Dependency Detection   | Stable      |
+| Testing Helpers                 | Stable      |
+| Documentation                   | In Progress |
+| Production Readiness            | In Progress |
 
 ## Example
 
@@ -214,7 +211,7 @@ A page can declare a GraphQL query, load data through the configured GraphQL cli
 </AppLayout>
 ```
 
-```cpp
+```c++
 app.component<AppLayout>();
 app.component<CardComponent>();
 app.component<TodoItemComponent>();
@@ -244,7 +241,7 @@ HTML
 
 Application setup:
 
-```cpp
+```c++
 drogular::GraphQLResult result;
 
 auto client =
@@ -279,7 +276,7 @@ Drogular includes a small dependency injection container through `ApplicationSer
 
 ### Register a singleton
 
-```cpp
+```c++
 services.add<Logger>(
     drogular::ServiceLifetime::Singleton
 );
@@ -287,7 +284,7 @@ services.add<Logger>(
 
 ### Register a scoped service
 
-```cpp
+```c++
 services.add<RequestContext>(
     drogular::ServiceLifetime::Scoped
 );
@@ -295,7 +292,7 @@ services.add<RequestContext>(
 
 ### Register a transient service
 
-```cpp
+```c++
 services.add<CommandHandler>(
     drogular::ServiceLifetime::Transient
 );
@@ -303,7 +300,7 @@ services.add<CommandHandler>(
 
 ### Register with a factory
 
-```cpp
+```c++
 services.addFactory<TodoService>(
     drogular::ServiceLifetime::Scoped,
     [&services]() {
@@ -316,7 +313,7 @@ services.addFactory<TodoService>(
 
 ### Resolve from RenderContext
 
-```cpp
+```c++
 auto logger =
     context.requireService<Logger>();
 ```
@@ -332,7 +329,7 @@ auto logger =
 
 Drogular includes a small GraphQL query builder.
 
-```cpp
+```c++
 const auto userFields = drogular::gql::fragment("UserFields", "User", {
     drogular::gql::field("id"),
     drogular::gql::field("name")
@@ -358,11 +355,11 @@ if (validation.valid()) {
 
 ```
 
-## GraphQL clients
+## GraphQL Client
 
 Drogular provides a small GraphQL client abstraction.
 
-```cpp
+```c++
 drogular::GraphQLResult result;
 result.set("todos", todos);
 
@@ -375,10 +372,46 @@ drogular::App app;
 app.graphQLClient(client);
 app.page<TodoPage>("/");
 app.run(8080);
-
 ```
 
-## Template Engine
+### GraphQLRequest
+
+```c++
+GraphQLRequest request(
+    query.toString()
+);
+
+request
+    .variable("id", "42")
+    .variable("limit", 10);
+```
+
+### Execute Request
+
+```c++
+auto response =
+    client.executeRequest(request);
+
+if (response.hasErrors()) {
+    for (const auto& message :
+         response.errorMessages()) {
+        std::cout << message << '\n';
+    }
+}
+```
+
+### GraphQLResponse
+
+```c++
+if (response.hasData()) {
+    auto viewer =
+        response.field("viewer");
+}
+```
+
+## Template Compiler
+
+Templates are compiled into an AST and cached for reuse.
 
 ### Variables
 
@@ -386,39 +419,35 @@ app.run(8080);
 <h1>{{ title }}</h1>
 ```
 
-### Raw Output
+### Raw HTML
 
 ```html
-{{{ content }}}
+{{{ html }}}
 ```
 
 ### Conditions
 
 ```html
-@if(showTitle)
-<h1>{{ title }}</h1>
-@endif
-```
-
-### If / Else
-
-```html
-@if(isLoggedIn)
-<p>Welcome</p>
+@if(showTodos)
+<p>Visible</p>
 @else
-<p>Please log in</p>
+<p>Hidden</p>
 @endif
 ```
 
 ### Loops
 
 ```html
-<ul>
-@foreach(item in items)
-<li>{{ item }}</li>
+@foreach(todo in todos)
+    <li>{{ todo.title }}</li>
 @endforeach
-</ul>
 ```
+### Json Paths
+
+```html
+{{ user.profile.name }}
+```
+
 ## Layouts
 
 ```html
@@ -430,7 +459,7 @@ app.run(8080);
     <slot name="content"/>
 </main>
 ```
-```cpp
+```c++
 class HeaderComponent : public drogular::TemplateComponent {
 public:
     std::string slot() const override {
@@ -441,33 +470,21 @@ public:
 
 ## Roadmap
 
-### 0.10 — Production GraphQL Client
-
-- GraphQLRequest
-- GraphQLResponse
-- Variables support
-- GraphQL error handling
-- HTTP error handling
-- Json data extraction
-- Integration tests
-- HttpGraphQLClient stabilization
-
 ### 0.11 — Developer Experience & Validation
 
 - Startup validation
 - Service diagnostics
-- Improved error messages
-- Better template diagnostics
 - Application validation
-- Developer tooling
+- Better template diagnostics
+- Improved error messages
+- Validation reports
 
-### 1.0 Stable Release
+### 1.0 — Stable Release
 
-- API Stabilization
+- API stabilization
 - Documentation
 - Examples
-- Production Readiness
-- Release packaging
+- Production readiness
 
 ### Future
 
