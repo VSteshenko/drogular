@@ -3,6 +3,7 @@ add_executable(drogular_tests
     action_result_tests.cpp
     action_context_tests.cpp
     action_handler_tests.cpp
+    action_response_tests.cpp
     component_registry_tests.cpp
     component_renderer_tests.cpp
     component_tests.cpp
