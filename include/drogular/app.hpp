@@ -84,6 +84,10 @@ public:
      */
     void run(unsigned short port);
 
+    ApplicationServices& services() {
+        return services_;
+    }
+
 private:
     ApplicationServices services_;
     Router router_{&services_};

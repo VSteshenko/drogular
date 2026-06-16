@@ -1,6 +1,8 @@
 #include "todo.hpp"
 #include "todo_page.hpp"
-#include <todo_item_component.hpp>
+#include "todo_item_component.hpp"
+#include "create_todo_action.hpp"
+#include "todo_service.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/graphql_client.hpp>
@@ -32,9 +34,14 @@ int main() {
 
     drogular::App app;
 
-    app.graphQLClient(client);
+    app.services().add<TodoService>(
+        drogular::ServiceLifetime::Singleton
+    );
+
     app.component<TodoItemComponent>();
+
     app.page<TodoPage>("/");
+    app.action<CreateTodoAction>("/todos/create");
 
     app.run(8080);
 }

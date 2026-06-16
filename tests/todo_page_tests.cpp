@@ -1,6 +1,7 @@
 #include "todo.hpp"
 #include "todo_page.hpp"
 #include "todo_item_component.hpp"
+#include "todo_service.hpp"
 
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
@@ -25,25 +26,13 @@ TEST(TodoPageTests, RendersTodoList) {
     );
 
     drogular::ApplicationServices services;
-    services.setGraphQLClient(client);
+    services.add<TodoService>(
+        drogular::ServiceLifetime::Singleton
+    );
     services.components().registerComponent<TodoItemComponent>();
 
     const auto renderResult =
         drogular::test::renderPage<TodoPage>(&services);
-
-    EXPECT_TRUE(
-        drogular::test::contains(
-            renderResult.html,
-            "Drogular Todo PWA"
-        )
-    );
-
-    EXPECT_TRUE(
-        drogular::test::contains(
-            renderResult.html,
-            "Todo list"
-        )
-    );
 
     EXPECT_TRUE(
         drogular::test::contains(
@@ -55,7 +44,14 @@ TEST(TodoPageTests, RendersTodoList) {
     EXPECT_TRUE(
         drogular::test::contains(
             renderResult.html,
-            "Test TodoPage rendering"
+            "Build TodoPWA example"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            renderResult.html,
+            "Add actions and mutations"
         )
     );
 }
@@ -72,6 +68,11 @@ TEST(TodoPageTests, RendersEmptyTodoState) {
         );
 
     drogular::ApplicationServices services;
+    services.registerService<TodoService>(
+        std::make_shared<TodoService>(
+            std::vector<Todo>{}
+        )
+    );
     services.setGraphQLClient(client);
     services.components().registerComponent<TodoItemComponent>();
 

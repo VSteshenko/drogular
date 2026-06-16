@@ -1,19 +1,16 @@
 #include "todo_page.hpp"
 #include "todo.hpp"
+#include "todo_service.hpp"
 
 #include <vector>
 #include <json/json.h>
 
 void TodoPage::onInit(drogular::RenderContext& context) {
-    const auto pageQuery = query();
+    auto service =
+        context.requireService<TodoService>();
 
-    if (pageQuery.has_value()) {
-        context.executeGraphQL(*pageQuery);
-    }
-
-    const auto sourceTodos =
-        context.graphql()
-            .require<std::vector<Todo>>("todos");
+    const auto& sourceTodos =
+        service->todos();
 
     Json::Value todos(Json::arrayValue);
 
@@ -28,24 +25,18 @@ void TodoPage::onInit(drogular::RenderContext& context) {
     }
 
     context.set("title", std::string("Drogular Todo PWA"));
+
     context.set(
         "subtitle",
         std::string("Angular-inspired C++ web framework for Drogon.")
     );
+
     context.set("todos", todos);
-    context.set("hasTodos", !todos.empty());
+    context.set("hasTodos", !sourceTodos.empty());
 }
 
 std::optional<drogular::gql::Query> TodoPage::query() const {
-    return drogular::gql::query("TodoPage")
-        .select(
-            drogular::gql::field("todos")
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("title"),
-                    drogular::gql::field("done")
-                })
-        );
+    return std::nullopt;
 }
 
 std::string TodoPage::templateHtml() const {
@@ -61,6 +52,11 @@ std::string TodoPage::templateHtml() const {
     <main>
         <h1>{{ title }}</h1>
         <p>{{ subtitle }}</p>
+
+        <form method="post" action="/todos/create">
+            <input name="title" placeholder="New todo" />
+            <button type="submit">Add</button>
+        </form>
 
         <h2>Todo list</h2>
 
