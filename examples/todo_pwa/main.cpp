@@ -4,6 +4,7 @@
 #include "create_todo_action.hpp"
 #include "todo_service.hpp"
 #include "toggle_todo_action.hpp"
+#include "delete_todo_action.hpp"
 
 #include <drogular/app.hpp>
 
@@ -21,6 +22,7 @@ int main() {
     app.page<TodoPage>("/");
     app.action<CreateTodoAction>("/todos/create");
     app.action<ToggleTodoAction>("/todos/toggle");
+    app.action<DeleteTodoAction>("/todos/delete");
 
     app.run(8080);
 }

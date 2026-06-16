@@ -17,6 +17,8 @@ public:
 
     void toggle(int id);
 
+    void remove(int id);
+
 private:
     std::vector<Todo> todos_;
     int nextId_ = 1;

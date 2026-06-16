@@ -45,3 +45,16 @@ void TodoService::toggle(int id) {
         }
     }
 }
+
+void TodoService::remove(int id) {
+    todos_.erase(
+        std::remove_if(
+            todos_.begin(),
+            todos_.end(),
+            [id](const Todo& todo) {
+                return todo.id == id;
+            }
+        ),
+        todos_.end()
+    );
+}

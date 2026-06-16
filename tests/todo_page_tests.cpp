@@ -56,6 +56,20 @@ TEST(TodoPageTests, RendersTodoList) {
             "name=\"id\""
         )
     );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            renderResult.html,
+            "/todos/delete"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            renderResult.html,
+            "Delete"
+        )
+    );
 }
 
 TEST(TodoPageTests, RendersEmptyTodoState) {
