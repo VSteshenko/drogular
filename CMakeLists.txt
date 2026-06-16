@@ -21,6 +21,7 @@ find_package(Drogon REQUIRED)
 add_library(drogular
     src/app.cpp
     src/action_result.cpp
+    src/action_context.cpp
     src/component.cpp
     src/component_registry.cpp
     src/component_renderer.cpp
