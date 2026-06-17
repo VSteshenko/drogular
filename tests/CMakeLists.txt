@@ -35,6 +35,7 @@ add_executable(drogular_tests
     template_runtime_tests.cpp
     template_cache_tests.cpp
     template_diagnostics_tests.cpp
+    validation_result_tests.cpp
     testing_tests.cpp
     todo_page_tests.cpp
     todo_store_tests.cpp
