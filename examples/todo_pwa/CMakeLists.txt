@@ -1,7 +1,6 @@
 add_executable(todo_pwa
     main.cpp
     todo_page.cpp
-    todo_service.cpp
 )
 
 target_link_libraries(todo_pwa
