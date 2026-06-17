@@ -1,16 +1,16 @@
 #include "todo_page.hpp"
 #include "todo.hpp"
-#include "todo_service.hpp"
+#include "todo_store.hpp"
 
 #include <vector>
 #include <json/json.h>
 
 void TodoPage::onInit(drogular::RenderContext& context) {
-    auto service =
-        context.requireService<TodoService>();
+    auto store =
+        context.service<TodoStore>();
 
     const auto& sourceTodos =
-        service->todos();
+        store->todos.value();
 
     Json::Value todos(Json::arrayValue);
 

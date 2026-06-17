@@ -9,15 +9,15 @@
 #include <vector>
 #include <json/json.h>
 
-struct StoreTodo {
+struct StorePatternStoreTodo {
     int id = 0;
     std::string title;
 };
 
-class TodoStore {
+class StorePatternTodoStore {
 public:
-    drogular::State<std::vector<StoreTodo>> todos{
-        std::vector<StoreTodo>{
+    drogular::State<std::vector<StorePatternStoreTodo>> todos{
+        std::vector<StorePatternStoreTodo>{
             {1, "Learn State"},
             {2, "Build Store"}
         }
@@ -34,7 +34,7 @@ public:
         drogular::RenderContext& context
     ) override {
         auto store =
-            context.requireService<TodoStore>();
+            context.requireService<StorePatternTodoStore>();
 
         Json::Value todos(Json::arrayValue);
 
@@ -64,7 +64,7 @@ public:
 TEST(StorePatternTests, ComponentCanRenderApplicationStore) {
     drogular::ApplicationServices services;
 
-    services.add<TodoStore>(
+    services.add<StorePatternTodoStore>(
         drogular::ServiceLifetime::Singleton
     );
 

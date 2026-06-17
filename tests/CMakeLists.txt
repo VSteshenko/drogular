@@ -37,8 +37,8 @@ add_executable(drogular_tests
     template_diagnostics_tests.cpp
     testing_tests.cpp
     todo_page_tests.cpp
+    todo_store_tests.cpp
     ../examples/todo_pwa/todo_page.cpp
-    ../examples/todo_pwa/todo_service.cpp
 )
 
 target_link_libraries(drogular_tests

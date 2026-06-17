@@ -1,7 +1,7 @@
 #include "todo.hpp"
 #include "todo_page.hpp"
 #include "todo_item_component.hpp"
-#include "todo_service.hpp"
+#include "todo_store.hpp"
 
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
@@ -14,10 +14,13 @@
 
 TEST(TodoPageTests, RendersTodoList) {
     drogular::ApplicationServices services;
-    services.add<TodoService>(
-        drogular::ServiceLifetime::Singleton
+
+    services.registerService<TodoStore>(
+        std::make_shared<TodoStore>()
     );
-    services.components().registerComponent<TodoItemComponent>();
+
+    services.components()
+        .registerComponent<TodoItemComponent>();
 
     const auto renderResult =
         drogular::test::renderPage<TodoPage>(&services);
@@ -74,11 +77,13 @@ TEST(TodoPageTests, RendersTodoList) {
 
 TEST(TodoPageTests, RendersEmptyTodoState) {
     drogular::ApplicationServices services;
-    services.registerService<TodoService>(
-        std::make_shared<TodoService>(
+
+    services.registerService<TodoStore>(
+        std::make_shared<TodoStore>(
             std::vector<Todo>{}
         )
     );
+
     services.components().registerComponent<TodoItemComponent>();
 
     const auto renderResult =
@@ -93,16 +98,16 @@ TEST(TodoPageTests, RendersEmptyTodoState) {
 }
 
 TEST(TodoServiceTests, TogglesTodo) {
-    TodoService service({
+    TodoStore store(std::vector<Todo>{
         {1, "Test", false}
     });
 
-    service.toggle(1);
+    store.toggle(1);
 
-    ASSERT_EQ(service.todos().size(), 1);
-    EXPECT_TRUE(service.todos()[0].done);
+    ASSERT_EQ(store.todos.value().size(), 1);
+    EXPECT_TRUE(store.todos.value()[0].done);
 
-    service.toggle(1);
+    store.toggle(1);
 
-    EXPECT_FALSE(service.todos()[0].done);
+    EXPECT_FALSE(store.todos.value()[0].done);
 }

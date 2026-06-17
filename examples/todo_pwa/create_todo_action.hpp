@@ -1,6 +1,6 @@
 #pragma once
 
-#include "todo_service.hpp"
+#include "todo_store.hpp"
 
 #include <drogular/action_handler.hpp>
 
@@ -13,10 +13,12 @@ public:
             context.form<std::string>("title")
                 .value_or("");
 
-        auto service =
-            context.requireService<TodoService>();
+        auto store =
+            context.requireService<TodoStore>();
 
-        service->create(title);
+        store->create(
+            context.form<std::string>("title").value_or("")
+        );
 
         return drogular::ActionResult::redirect("/");
     }

@@ -1,8 +1,7 @@
-#include "todo.hpp"
 #include "todo_page.hpp"
 #include "todo_item_component.hpp"
 #include "create_todo_action.hpp"
-#include "todo_service.hpp"
+#include "todo_store.hpp"
 #include "toggle_todo_action.hpp"
 #include "delete_todo_action.hpp"
 
@@ -13,7 +12,7 @@
 int main() {
     drogular::App app;
 
-    app.services().add<TodoService>(
+    app.services().add<TodoStore>(
         drogular::ServiceLifetime::Singleton
     );
 

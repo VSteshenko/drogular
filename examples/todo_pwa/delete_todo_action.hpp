@@ -1,6 +1,6 @@
 #pragma once
 
-#include "todo_service.hpp"
+#include "todo_store.hpp"
 
 #include <drogular/action_handler.hpp>
 
@@ -9,10 +9,10 @@ public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
     ) override {
-        auto service =
-            context.requireService<TodoService>();
+        auto store =
+            context.requireService<TodoStore>();
 
-        service->remove(
+        store->remove(
             context.requireForm<int>("id")
         );
 
