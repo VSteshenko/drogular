@@ -43,3 +43,81 @@ TEST(StateTests, AllowsMutableAccess) {
 
     EXPECT_EQ(state.value().size(), 2);
 }
+
+TEST(StateTests, NotifiesSubscriber) {
+    drogular::State<int> state(0);
+
+    int received = -1;
+
+    state.subscribe(
+        [&](const int& value) {
+            received = value;
+        }
+    );
+
+    state.set(42);
+
+    EXPECT_EQ(received, 42);
+}
+
+TEST(StateTests, NotifiesAllSubscribers) {
+    drogular::State<int> state(0);
+
+    int first = 0;
+    int second = 0;
+
+    state.subscribe(
+        [&](const int& value) {
+            first = value;
+        }
+    );
+
+    state.subscribe(
+        [&](const int& value) {
+            second = value;
+        }
+    );
+
+    state.set(100);
+
+    EXPECT_EQ(first, 100);
+    EXPECT_EQ(second, 100);
+}
+
+TEST(StateTests, DoesNotNotifyBeforeSet) {
+    drogular::State<int> state(0);
+
+    bool called = false;
+
+    state.subscribe(
+        [&](const int&) {
+            called = true;
+        }
+    );
+
+    EXPECT_FALSE(called);
+}
+
+TEST(StateTests, NotifiesForEveryChange) {
+    drogular::State<int> state(0);
+
+    std::vector<int> values;
+
+    state.subscribe(
+        [&](const int& value) {
+            values.push_back(value);
+        }
+    );
+
+    state.set(1);
+    state.set(2);
+    state.set(3);
+
+    const std::vector<int> expected = {
+        1,
+        2,
+        3
+    };
+
+    EXPECT_EQ(values, expected);
+}
