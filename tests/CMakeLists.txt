@@ -20,6 +20,7 @@ add_executable(drogular_tests
     graphql_tests.cpp
     graphql_request_tests.cpp
     graphql_response_tests.cpp
+    form_validator_tests.cpp
     inject_tests.cpp
     render_context_tests.cpp
     services_tests.cpp

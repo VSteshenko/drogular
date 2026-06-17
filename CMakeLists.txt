@@ -29,6 +29,7 @@ add_library(drogular
     src/component_renderer.cpp
     src/compiled_template.cpp
     src/dependency_graph.cpp
+    src/form_validator.cpp
     src/graphql.cpp
     src/graphql_client.cpp
     src/graphql_request.cpp
