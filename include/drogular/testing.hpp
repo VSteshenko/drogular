@@ -84,6 +84,8 @@ inline std::string renderComponentTree(
         }
     }
 
+    component.onDestroy(context);
+
     return html;
 }
 

@@ -111,6 +111,10 @@ void Component::onInit(RenderContext&) {
     // Default implementation does nothing.
 }
 
+void Component::onDestroy(RenderContext&) {
+    // Default implementation does nothing.
+}
+
 std::vector<std::shared_ptr<Component>> Component::children() {
     return {};
 }

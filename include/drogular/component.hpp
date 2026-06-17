@@ -297,6 +297,11 @@ public:
     virtual void onInit(RenderContext& context);
 
     /**
+     * Called after component rendering.
+     */
+    virtual void onDestroy(RenderContext& context);
+
+    /**
      * Renders the component into HTML.
      */
     virtual std::string render(RenderContext& context) = 0;
