@@ -53,3 +53,11 @@ TEST(TodoStoreTests, NotifiesSubscribersWhenTodoIsCreated) {
 
     EXPECT_TRUE(notified);
 }
+
+TEST(TodoStoreTests, DoesNotCreateEmptyTodo) {
+    TodoStore store(std::vector<Todo>{});
+
+    store.create("");
+
+    EXPECT_TRUE(store.todos.value().empty());
+}
