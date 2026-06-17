@@ -25,6 +25,7 @@ add_executable(drogular_tests
     services_tests.cpp
     state_tests.cpp
     shared_state_tests.cpp
+    store_pattern_tests.cpp
     template_component_tests.cpp
     template_engine_tests.cpp
     template_page_tests.cpp
