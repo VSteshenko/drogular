@@ -2,6 +2,30 @@
 
 namespace drogular {
 
+namespace {
+
+bool looksLikeEmail(const std::string& value) {
+    const auto at = value.find('@');
+
+    if (at == std::string::npos ||
+        at == 0 ||
+        at + 1 >= value.size()) {
+        return false;
+        }
+
+    const auto dot =
+        value.find('.', at + 1);
+
+    if (dot == std::string::npos ||
+        dot + 1 >= value.size()) {
+        return false;
+        }
+
+    return true;
+}
+
+} // namespace
+
 FormValidator::FormValidator(
     const ActionContext& context
 )
@@ -46,6 +70,18 @@ FormValidator& FormValidator::maxLength(
     return *this;
 }
 
+FormValidator& FormValidator::email(
+    std::string field
+) {
+    rules_.push_back({
+        .type = RuleType::Email,
+        .field = std::move(field),
+        .length = 0
+    });
+
+    return *this;
+}
+
 ValidationResult FormValidator::validate() const {
     ValidationResult result;
 
@@ -83,6 +119,17 @@ ValidationResult FormValidator::validate() const {
                     );
                 }
                 break;
+
+            case RuleType::Email:
+                if (value.has_value() &&
+                    !value->empty() &&
+                    !looksLikeEmail(*value)) {
+                    result.addError(
+                        rule.field,
+                        rule.field + " is not a valid email"
+                    );
+                }
+            break;
         }
     }
 

@@ -40,6 +40,13 @@ public:
     );
 
     /**
+     * Requires a form value to look like an email address.
+     */
+    FormValidator& email(
+        std::string field
+    );
+
+    /**
      * Executes validation rules.
      */
     ValidationResult validate() const;
@@ -48,7 +55,8 @@ private:
     enum class RuleType {
         Required,
         MinLength,
-        MaxLength
+        MaxLength,
+        Email
     };
 
     struct Rule {

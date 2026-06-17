@@ -129,3 +129,70 @@ TEST(FormValidatorTests, PassesMaxLengthWhenValueIsMissing) {
 
     EXPECT_TRUE(result.valid());
 }
+
+TEST(FormValidatorTests, PassesValidEmail) {
+    auto context =
+        makeContext("email=test@example.com");
+
+    const auto result =
+        drogular::FormValidator(context)
+            .email("email")
+            .validate();
+
+    EXPECT_TRUE(result.valid());
+}
+
+TEST(FormValidatorTests, FailsEmailWithoutAt) {
+    auto context =
+        makeContext("email=test.example.com");
+
+    const auto result =
+        drogular::FormValidator(context)
+            .email("email")
+            .validate();
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.errors().size(), 1);
+    EXPECT_EQ(result.errors()[0].field, "email");
+}
+
+TEST(FormValidatorTests, FailsEmailWithoutDomainDot) {
+    auto context =
+        makeContext("email=test@example");
+
+    const auto result =
+        drogular::FormValidator(context)
+            .email("email")
+            .validate();
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.errors().size(), 1);
+    EXPECT_EQ(result.errors()[0].field, "email");
+}
+
+TEST(FormValidatorTests, PassesEmailWhenValueIsMissing) {
+    auto context =
+        makeContext("");
+
+    const auto result =
+        drogular::FormValidator(context)
+            .email("email")
+            .validate();
+
+    EXPECT_TRUE(result.valid());
+}
+
+TEST(FormValidatorTests, RequiredEmailFailsWhenMissing) {
+    auto context =
+        makeContext("");
+
+    const auto result =
+        drogular::FormValidator(context)
+            .required("email")
+            .email("email")
+            .validate();
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.errors().size(), 1);
+    EXPECT_EQ(result.errors()[0].field, "email");
+}
