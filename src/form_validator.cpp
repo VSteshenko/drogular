@@ -33,6 +33,19 @@ FormValidator& FormValidator::minLength(
     return *this;
 }
 
+FormValidator& FormValidator::maxLength(
+    std::string field,
+    size_t length
+) {
+    rules_.push_back({
+        .type = RuleType::MaxLength,
+        .field = std::move(field),
+        .length = length
+    });
+
+    return *this;
+}
+
 ValidationResult FormValidator::validate() const {
     ValidationResult result;
 
@@ -57,6 +70,16 @@ ValidationResult FormValidator::validate() const {
                     result.addError(
                         rule.field,
                         rule.field + " is too short"
+                    );
+                }
+                break;
+
+            case RuleType::MaxLength:
+                if (value.has_value() &&
+                    value->size() > rule.length) {
+                    result.addError(
+                        rule.field,
+                        rule.field + " is too long"
                     );
                 }
                 break;

@@ -31,6 +31,15 @@ public:
     );
 
     /**
+     * Requires a form value to have at most
+     * the given number of characters.
+     */
+    FormValidator& maxLength(
+        std::string field,
+        size_t length
+    );
+
+    /**
      * Executes validation rules.
      */
     ValidationResult validate() const;
@@ -38,7 +47,8 @@ public:
 private:
     enum class RuleType {
         Required,
-        MinLength
+        MinLength,
+        MaxLength
     };
 
     struct Rule {
