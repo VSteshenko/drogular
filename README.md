@@ -37,7 +37,7 @@ HTML
 
 ## Status
 
-**Version:** 0.11.0
+**Version:** 0.12.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -115,6 +115,9 @@ HTML
 - Component registry
 - Dynamic component creation
 - Recursive component rendering
+- Component lifecycle hooks
+- Component initialization
+- Component destruction
 - Self-closing component tags
 - Component children
 - Default slots
@@ -197,6 +200,8 @@ HTML
 | Attribute Bindings              | Stable      |
 | Slots                           | Stable      |
 | Recursive Component Rendering   | Stable      |
+| Component Lifecycle             | Stable      |
+| Lifecycle Hooks                 | Stable      |
 | Scoped RenderContext            | Stable      |
 | Template Compiler               | Stable      |
 | Template AST                    | Stable      |
@@ -537,6 +542,50 @@ Templates are compiled into an AST and cached for reuse.
 {{ user.profile.name }}
 ```
 
+## Component Lifecycle
+
+Components can participate in the rendering lifecycle.
+
+```c++
+class UserCardComponent
+    : public drogular::TemplateComponent
+{
+public:
+    void onInit(
+        drogular::RenderContext& context
+    ) override
+    {
+        // initialization
+    }
+
+    void onDestroy(
+        drogular::RenderContext& context
+    ) override
+    {
+        // cleanup
+    }
+};
+```
+
+### Lifecycle order
+
+```text
+Component Creation
+    ↓
+onInit()
+    ↓
+render()
+    ↓
+onDestroy()
+```
+
+### Lifecycle hooks are invoked for
+
+* Direct component rendering
+* Component tags
+* Nested components
+* Sibling components
+
 ## Layouts
 
 ```html
@@ -558,13 +607,6 @@ public:
 ```
 
 ## Roadmap
-
-### 0.12 — Component Lifecycle
-
-- Component initialization hooks
-- Component destruction hooks
-- Parameter change notifications
-- Lifecycle integration tests
 
 ### 0.13 — State Management
 
