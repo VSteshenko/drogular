@@ -170,3 +170,107 @@ TEST(ComponentLifecycleTests, CallsLifecycleHooksInOrderForNestedComponents) {
     EXPECT_EQ(events[4], "child-destroy");
     EXPECT_EQ(events[5], "parent-destroy");
 }
+
+class LifecycleFirstChildComponent final : public drogular::Component {
+public:
+    static constexpr auto tag = "LifecycleFirstChild";
+
+    static inline std::vector<std::string>* events = nullptr;
+
+    void onInit(drogular::RenderContext&) override {
+        events->push_back("first-init");
+    }
+
+    std::string render(drogular::RenderContext&) override {
+        events->push_back("first-render");
+        return "<span>First</span>";
+    }
+
+    void onDestroy(drogular::RenderContext&) override {
+        events->push_back("first-destroy");
+    }
+};
+
+class LifecycleSecondChildComponent final : public drogular::Component {
+public:
+    static constexpr auto tag = "LifecycleSecondChild";
+
+    static inline std::vector<std::string>* events = nullptr;
+
+    void onInit(drogular::RenderContext&) override {
+        events->push_back("second-init");
+    }
+
+    std::string render(drogular::RenderContext&) override {
+        events->push_back("second-render");
+        return "<span>Second</span>";
+    }
+
+    void onDestroy(drogular::RenderContext&) override {
+        events->push_back("second-destroy");
+    }
+};
+
+class LifecycleSiblingsParentComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "LifecycleSiblingsParent";
+
+    static inline std::vector<std::string>* events = nullptr;
+
+    void onInit(drogular::RenderContext&) override {
+        events->push_back("parent-init");
+    }
+
+    std::string templateHtml() const override {
+        events->push_back("parent-render");
+
+        return R"(<section><LifecycleFirstChild /><LifecycleSecondChild /></section>)";
+    }
+
+    void onDestroy(drogular::RenderContext&) override {
+        events->push_back("parent-destroy");
+    }
+};
+
+TEST(ComponentLifecycleTests, CallsLifecycleHooksInOrderForSiblingComponents) {
+    std::vector<std::string> events;
+
+    LifecycleSiblingsParentComponent::events = &events;
+    LifecycleFirstChildComponent::events = &events;
+    LifecycleSecondChildComponent::events = &events;
+
+    drogular::ApplicationServices services;
+
+    services.components().registerComponent<LifecycleSiblingsParentComponent>();
+    services.components().registerComponent<LifecycleFirstChildComponent>();
+    services.components().registerComponent<LifecycleSecondChildComponent>();
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto html =
+        drogular::component_renderer::render(
+            "<LifecycleSiblingsParent />",
+            services.components(),
+            context
+        );
+
+    EXPECT_EQ(
+        html,
+        "<section><span>First</span><span>Second</span></section>"
+    );
+
+    const std::vector<std::string> expected = {
+        "parent-init",
+        "parent-render",
+        "first-init",
+        "first-render",
+        "first-destroy",
+        "second-init",
+        "second-render",
+        "second-destroy",
+        "parent-destroy"
+    };
+
+    EXPECT_EQ(events, expected);
+}
