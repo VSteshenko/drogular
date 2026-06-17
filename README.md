@@ -10,7 +10,6 @@ Drogular combines:
 
 - Drogon performance
 - Angular-inspired components
-- GraphQL-first data loading
 - Server-side rendering
 - Scoped component contexts
 - Template engine
@@ -27,18 +26,18 @@ ApplicationServices
     ↓
 Router
     ↓
-RenderContext
+Page / Action
     ↓
-Page
+Services
     ↓
-GraphQLClient
+Template Rendering
     ↓
-GraphQLResult
+HTML
 ```
 
 ## Status
 
-**Version:** 0.10.0
+**Version:** 0.11.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -68,6 +67,22 @@ Template Runtime
 Component Renderer
     ↓
 HTML
+```
+
+Action pipeline:
+
+```text
+HTML Form
+    ↓
+ActionHandler
+    ↓
+ActionContext
+    ↓
+Services
+    ↓
+ActionResult
+    ↓
+HTTP Response
 ```
 
 Data pipeline:
@@ -148,6 +163,20 @@ HTML
 - Error handling
 - Integration tests
 
+#### Actions
+
+- ActionHandler
+- ActionContext
+- ActionResult
+- ActionValidationError
+- Form value access
+- Typed form values
+- Required form values
+- Redirect responses
+- HTML responses
+- JSON responses
+- Action integration tests
+
 #### Testing
 
 - Component testing
@@ -192,68 +221,79 @@ HTML
 | Dependency Validation           | Stable      |
 | Circular Dependency Detection   | Stable      |
 | Testing Helpers                 | Stable      |
+| Actions                         | Stable      |
+| ActionContext                   | Stable      |
+| ActionResult                    | Stable      |
+| Action Validation               | Stable      |
+| Forms                           | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
 ## Example
 
-A page can declare a GraphQL query, load data through the configured GraphQL client, and render HTML using Drogular templates.
+TodoPWA demonstrates:
+
+- Components
+- Dependency Injection
+- Template Compiler
+- Forms
+- Actions
+- Validation
+
+Template:
 
 ```html
-<AppLayout>
-    <Card title="Todos">
-        @foreach(todo in todos)
-            <TodoItem
-                title="{{ todo.title }}"
-                done="{{ todo.done }}" />
-        @endforeach
-    </Card>
-</AppLayout>
+<form method="post" action="/todos/create">
+    <input name="title" />
+    <button>Add</button>
+</form>
+
+@foreach(todo in todos)
+    <TodoItem 
+        id="{{ todo.id }}"
+        title="{{ todo.title }}"
+        done="{{ todo.done }}" />
+@endforeach
 ```
+
+Action:
 
 ```c++
-app.component<AppLayout>();
-app.component<CardComponent>();
-app.component<TodoItemComponent>();
+class CreateTodoAction
+    : public drogular::ActionHandler
+{
+public:
+    ActionResult handle(
+        ActionContext& context
+    ) override
+    {
+        auto service =
+            context.requireService<TodoService>();
 
-app.page<TodoPage>("/");
-```
+        service->create(
+            context.requireForm<std::string>("title")
+        );
 
-Data flow:
-
-```text
-GraphQL Query
-        ↓
-GraphQL Client
-        ↓
-GraphQL Result
-        ↓
-Json data
-        ↓
-RenderContext
-        ↓
-TemplatePage
-        ↓
-Component Renderer
-        ↓
-HTML
+        return ActionResult::redirect("/");
+    } 
+};
 ```
 
 Application setup:
 
 ```c++
-drogular::GraphQLResult result;
-
-auto client =
-    std::make_shared<
-        drogular::StaticGraphQLClient
-    >(std::move(result));
-
 drogular::App app;
 
-app.graphQLClient(client);
+app.services().add<TodoService>(
+    drogular::ServiceLifetime::Singleton
+);
+
+app.component<TodoItemComponent>();
 
 app.page<TodoPage>("/");
+app.action<CreateTodoAction>("/todos/create");
+app.action<ToggleTodoAction>("/todos/toggle");
+app.action<DeleteTodoAction>("/todos/delete");
 
 app.run(8080);
 ```
@@ -274,7 +314,7 @@ http://localhost:8080
 
 Drogular includes a small dependency injection container through `ApplicationServices`.
 
-### Register a singleton
+## Register a singleton
 
 ```c++
 services.add<Logger>(
@@ -282,7 +322,7 @@ services.add<Logger>(
 );
 ```
 
-### Register a scoped service
+## Register a scoped service
 
 ```c++
 services.add<RequestContext>(
@@ -290,7 +330,7 @@ services.add<RequestContext>(
 );
 ```
 
-### Register a transient service
+## Register a transient service
 
 ```c++
 services.add<CommandHandler>(
@@ -298,7 +338,7 @@ services.add<CommandHandler>(
 );
 ```
 
-### Register with a factory
+## Register with a factory
 
 ```c++
 services.addFactory<TodoService>(
@@ -311,7 +351,7 @@ services.addFactory<TodoService>(
 );
 ```
 
-### Resolve from RenderContext
+## Resolve from RenderContext
 
 ```c++
 auto logger =
@@ -324,6 +364,55 @@ auto logger =
 | LazySingleton | Created on first request and reused  |
 | Transient     | New instance on every request        |
 | Scoped        | One instance per RenderContext scope |
+
+## Actions
+
+### Register an action
+
+```c++
+app.action<CreateTodoAction>(
+    "/todos/create"
+);
+```
+
+### Read typed form values
+
+```c++
+auto title =
+    context.form<std::string>("title");
+
+auto id =
+    context.form<int>("id");
+```
+
+### Required values
+
+```c++
+auto title =
+    context.requireForm<std::string>("title");
+```
+
+### Resolve services
+
+```c++
+auto service =
+    context.requireService<TodoService>();
+```
+
+### Redirect
+
+```c++
+return ActionResult::redirect("/");
+```
+
+### JSON response
+
+```c++
+Json::Value json;
+json["ok"] = true;
+
+return ActionResult::json(json);
+```
 
 ## GraphQL builder
 
@@ -470,18 +559,43 @@ public:
 
 ## Roadmap
 
-### 0.11 — Developer Experience & Validation
+### 0.12 — Component Lifecycle
 
+- Component initialization hooks
+- Component destruction hooks
+- Parameter change notifications
+- Lifecycle integration tests
+
+### 0.13 — State Management
+
+- Shared application state
+- Component state
+- State propagation
+- State testing helpers
+
+### 0.14 — Forms & Validation
+
+- Form validation helpers
+- Validation rules
+- Validation errors
 - Startup validation
-- Service diagnostics
-- Application validation
-- Better template diagnostics
-- Improved error messages
 - Validation reports
+- Form examples
+
+### 0.15 — Authentication & Authorization Sample App
+
+- Login
+- Logout
+- Session handling
+- Protected pages
+- Role-based access example
 
 ### 1.0 — Stable Release
 
 - API stabilization
+- Service diagnostics
+- Better template diagnostics
+- Improved error messages
 - Documentation
 - Examples
 - Production readiness
