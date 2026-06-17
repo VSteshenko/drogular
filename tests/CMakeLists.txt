@@ -11,6 +11,7 @@ add_executable(drogular_tests
     component_tests.cpp
     component_lifecycle_tests.cpp
     component_state_tests.cpp
+    component_state_subscription_tests.cpp
     compiled_template_tests.cpp
     dependency_graph_tests.cpp
     http_graphql_client_tests.cpp
