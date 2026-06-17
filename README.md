@@ -37,7 +37,7 @@ HTML
 
 ## Status
 
-**Version:** 0.12.0
+**Version:** 0.13.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -180,6 +180,15 @@ HTML
 - JSON responses
 - Action integration tests
 
+#### State Management
+
+- State<T>
+- Observable state
+- State subscriptions
+- Component state
+- Shared state through DI
+- Store pattern
+
 #### Testing
 
 - Component testing
@@ -231,6 +240,10 @@ HTML
 | ActionResult                    | Stable      |
 | Action Validation               | Stable      |
 | Forms                           | Stable      |
+| State<T>                        | Stable      |
+| Observable State                | Stable      |
+| Shared State                    | Stable      |
+| Store Pattern                   | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
@@ -418,6 +431,64 @@ json["ok"] = true;
 
 return ActionResult::json(json);
 ```
+
+## State Management
+
+Drogular provides lightweight state management built around
+plain C++ objects.
+
+### State
+
+```cpp
+drogular::State<int> counter(0);
+
+counter.set(42);
+
+EXPECT_EQ(
+    counter.value(),
+    42
+);
+```
+
+### Observable State
+
+```c++
+counter.subscribe(
+    [](const int& value) {
+        std::cout << value;
+    }
+);
+
+counter.set(5);
+```
+
+### Shared State
+
+```c++
+using CounterState =
+    drogular::State<int>;
+
+services.addFactory<CounterState>(
+    drogular::ServiceLifetime::Singleton,
+    []() {
+        return std::make_shared<CounterState>(0);
+    }
+);
+```
+
+### Store Pattern
+
+```c++
+class TodoStore {
+public:
+    drogular::State<
+        std::vector<Todo>
+    > todos;
+};
+```
+
+Stores are regular services and integrate naturally with
+dependency injection.
 
 ## GraphQL builder
 
@@ -607,13 +678,6 @@ public:
 ```
 
 ## Roadmap
-
-### 0.13 — State Management
-
-- Shared application state
-- Component state
-- State propagation
-- State testing helpers
 
 ### 0.14 — Forms & Validation
 

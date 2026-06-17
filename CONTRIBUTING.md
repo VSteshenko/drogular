@@ -33,3 +33,15 @@ cmake --build build
 - One feature per pull request
 - Tests required for new functionality
 - Public APIs must be documented
+
+## Testing Guidelines
+
+Test-only classes and component tags should use
+unique names to avoid ODR conflicts inside the
+unified test binary.
+
+Examples:
+
+- LifecycleParentComponent
+- StorePatternTodoStore
+- ComponentStateCounterComponent
