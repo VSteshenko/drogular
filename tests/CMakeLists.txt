@@ -45,6 +45,7 @@ add_executable(drogular_tests
     auth_store_tests.cpp
     login_action_tests.cpp
     logout_action_tests.cpp
+    dashboard_page_tests.cpp
     ../examples/auth_sample/auth_service.cpp
 )
 
