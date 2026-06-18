@@ -41,6 +41,8 @@ add_executable(drogular_tests
     todo_page_tests.cpp
     todo_store_tests.cpp
     ../examples/todo_pwa/todo_page.cpp
+    auth_service_tests.cpp
+    ../examples/auth_sample/auth_service.cpp
 )
 
 target_link_libraries(drogular_tests
