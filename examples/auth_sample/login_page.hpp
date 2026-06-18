@@ -1,0 +1,58 @@
+#pragma once
+
+#include <drogular/page.hpp>
+
+class LoginPage final
+    : public drogular::TemplatePage
+{
+public:
+    std::string templateHtml() const override
+    {
+        return R"(
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Drogular Auth Sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <main>
+        <h1>Login</h1>
+
+        <p>
+            Try:
+            <strong>admin / password</strong>
+            or
+            <strong>user / password</strong>
+        </p>
+
+        <form method="post" action="/login">
+            <label>
+                Username
+                <input name="username" />
+            </label>
+
+            <br />
+
+            <label>
+                Password
+                <input name="password" type="password" />
+            </label>
+
+            <br />
+
+            <button type="submit">Login</button>
+        </form>
+
+        <p>
+            <a href="/dashboard">Dashboard</a>
+            |
+            <a href="/admin">Admin</a>
+        </p>
+    </main>
+</body>
+</html>
+)";
+    }
+};
