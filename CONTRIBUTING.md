@@ -36,12 +36,27 @@ cmake --build build
 
 ## Testing Guidelines
 
-Test-only classes and component tags should use
-unique names to avoid ODR conflicts inside the
-unified test binary.
+Test-only classes, fixtures, stores, and component tags should use unique, area-prefixed names.
+
+Recommended prefixes:
+
+- `Core` for framework tests
+- `TodoPwa` for TodoPWA example tests
+- `AuthSample` for authentication sample tests
 
 Examples:
 
-- LifecycleParentComponent
-- StorePatternTodoStore
-- ComponentStateCounterComponent
+- `CoreLifecycleParentComponent`
+- `CoreStorePatternTodoStore`
+- `TodoPwaStoreTests`
+- `AuthSampleLoginActionTests`
+
+Avoid generic test-only names such as:
+
+- `TodoStore`
+- `TodoItemComponent`
+- `CounterComponent`
+- `ParentComponent`
+- `ChildComponent`
+
+This avoids ODR conflicts when tests are linked into a single test binary.
