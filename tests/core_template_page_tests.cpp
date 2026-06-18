@@ -1,0 +1,245 @@
+#include <drogular/page.hpp>
+#include <drogular/services.hpp>
+#include <drogular/testing.hpp>
+
+#include <gtest/gtest.h>
+
+#include <string>
+#include <json/json.h>
+
+class CoreTestTemplatePage final : public drogular::TemplatePage {
+public:
+    void onInit(drogular::RenderContext& context) override {
+        context.set("title", std::string("Hello TemplatePage"));
+    }
+
+    std::string templateHtml() const override {
+        return "<h1>{{ title }}</h1>";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersTemplateWithContext) {
+    CoreTestTemplatePage page;
+    drogular::RenderContext context;
+
+    page.onInit(context);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<h1>Hello TemplatePage</h1>"
+    );
+}
+
+class CoreTemplatePageCardComponent final : public drogular::Component {
+public:
+    static constexpr auto tag = "CoreCard";
+
+    std::string render(drogular::RenderContext&) override {
+        return "<article>CoreCard from TemplatePage</article>";
+    }
+};
+
+class CoreComponentTagTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return "<main><CoreCard /></main>";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersComponentTags) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<CoreTemplatePageCardComponent>();
+
+    CoreComponentTagTemplatePage page;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<main><article>CoreCard from TemplatePage</article></main>"
+    );
+}
+
+class CoreTemplatePageCardWithInput final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreCardWithInput";
+
+    std::string templateHtml() const override {
+        return "<article>{{ title }}</article>";
+    }
+};
+
+class CoreComponentInputTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(<main><CoreCardWithInput title="Welcome from Page" /></main>)";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersComponentTagsWithStringInputs) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<CoreTemplatePageCardWithInput>();
+
+    CoreComponentInputTemplatePage page;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<main><article>Welcome from Page</article></main>"
+    );
+}
+
+class CoreTemplateTodoItemComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreTodoItem";
+
+    std::string templateHtml() const override {
+        return "<li>{{ title }}</li>";
+    }
+};
+
+class CoreComponentBindingForeachPage final : public drogular::TemplatePage {
+public:
+    void onInit(drogular::RenderContext& context) override {
+        Json::Value todos(Json::arrayValue);
+
+        Json::Value first;
+        first["title"] = "Learn Drogular";
+
+        Json::Value second;
+        second["title"] = "Build Components";
+
+        todos.append(first);
+        todos.append(second);
+
+        context.set("todos", todos);
+    }
+
+    std::string templateHtml() const override {
+        return R"(
+<ul>
+@foreach(todo in todos)
+<CoreTodoItem title="{{ todo.title }}" />
+@endforeach
+</ul>
+)";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersComponentBindingsInsideForeach) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<CoreTemplateTodoItemComponent>();
+
+    CoreComponentBindingForeachPage page;
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    page.onInit(context);
+
+    const auto html = page.render(context);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<li>Learn Drogular</li>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<li>Build Components</li>"
+        )
+    );
+}
+
+class CoreSlotCardComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreSlotCard";
+
+    std::string templateHtml() const override {
+        return "<article><slot/></article>";
+    }
+};
+
+class CoreComponentSlotTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(<main><CoreSlotCard><p>Hello from page</p></CoreSlotCard></main>)";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersComponentTagsWithDefaultSlot) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<CoreSlotCardComponent>();
+
+    CoreComponentSlotTemplatePage page;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<main><article><p>Hello from page</p></article></main>"
+    );
+}
+
+class CoreNestedPageCardComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreNestedPageCard";
+
+    std::string templateHtml() const override {
+        return "<article><slot/></article>";
+    }
+};
+
+class CoreNestedPageButtonComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreNestedPageButton";
+
+    std::string templateHtml() const override {
+        return "<button>{{ title }}</button>";
+    }
+};
+
+class CoreNestedComponentTemplatePage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(
+<main>
+<CoreNestedPageCard>
+<CoreNestedPageButton title="Save" />
+</CoreNestedPageCard>
+</main>
+)";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersNestedComponentTags) {
+    drogular::ApplicationServices services;
+
+    services.components().registerComponent<CoreNestedPageCardComponent>();
+    services.components().registerComponent<CoreNestedPageButtonComponent>();
+
+    CoreNestedComponentTemplatePage page;
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto html = page.render(context);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<article>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<button>Save</button>"
+        )
+    );
+}
