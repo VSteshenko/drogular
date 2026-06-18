@@ -37,7 +37,7 @@ HTML
 
 ## Status
 
-**Version:** 0.13.0
+**Version:** 0.14.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -189,6 +189,18 @@ HTML
 - Shared state through DI
 - Store pattern
 
+#### Forms & Validation
+
+- ValidationResult
+- ValidationError
+- FormValidator
+- Required validation
+- Minimum length validation
+- Maximum length validation
+- Email validation
+- Field error helpers
+- Form validation in actions
+
 #### Testing
 
 - Component testing
@@ -244,6 +256,10 @@ HTML
 | Observable State                | Stable      |
 | Shared State                    | Stable      |
 | Store Pattern                   | Stable      |
+| Forms & Validation              | Stable      |
+| ValidationResult                | Stable      |
+| FormValidator                   | Stable      |
+| Field Validation                | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
@@ -678,15 +694,6 @@ public:
 ```
 
 ## Roadmap
-
-### 0.14 — Forms & Validation
-
-- Form validation helpers
-- Validation rules
-- Validation errors
-- Startup validation
-- Validation reports
-- Form examples
 
 ### 0.15 — Authentication & Authorization Sample App
 
