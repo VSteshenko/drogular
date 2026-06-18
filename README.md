@@ -37,7 +37,7 @@ HTML
 
 ## Status
 
-**Version:** 0.14.0
+**Version:** 0.15.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -201,6 +201,17 @@ HTML
 - Field error helpers
 - Form validation in actions
 
+#### Authentication & Authorization
+
+- AuthUser
+- AuthService
+- AuthStore
+- LoginAction
+- LogoutAction
+- Protected pages
+- Role-based authorization
+- Authentication sample application
+
 #### Testing
 
 - Component testing
@@ -260,6 +271,10 @@ HTML
 | ValidationResult                | Stable      |
 | FormValidator                   | Stable      |
 | Field Validation                | Stable      |
+| Authentication Sample           | Stable      |
+| Authorization Sample            | Stable      |
+| AuthStore                       | Stable      |
+| Login / Logout Flow             | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
@@ -348,7 +363,7 @@ http://localhost:8080
 
 Drogular includes a small dependency injection container through `ApplicationServices`.
 
-## Register a singleton
+### Register a singleton
 
 ```c++
 services.add<Logger>(
@@ -356,7 +371,7 @@ services.add<Logger>(
 );
 ```
 
-## Register a scoped service
+### Register a scoped service
 
 ```c++
 services.add<RequestContext>(
@@ -364,7 +379,7 @@ services.add<RequestContext>(
 );
 ```
 
-## Register a transient service
+### Register a transient service
 
 ```c++
 services.add<CommandHandler>(
@@ -372,7 +387,7 @@ services.add<CommandHandler>(
 );
 ```
 
-## Register with a factory
+### Register with a factory
 
 ```c++
 services.addFactory<TodoService>(
@@ -385,7 +400,7 @@ services.addFactory<TodoService>(
 );
 ```
 
-## Resolve from RenderContext
+### Resolve from RenderContext
 
 ```c++
 auto logger =
@@ -610,9 +625,9 @@ Templates are compiled into an AST and cached for reuse.
 
 ```html
 @if(showTodos)
-<p>Visible</p>
+    <p>Visible</p>
 @else
-<p>Hidden</p>
+    <p>Hidden</p>
 @endif
 ```
 
@@ -693,15 +708,52 @@ public:
 };
 ```
 
-## Roadmap
+## Authentication Sample
 
-### 0.15 — Authentication & Authorization Sample App
+Drogular includes a complete authentication and authorization sample application.
+
+Features:
 
 - Login
 - Logout
-- Session handling
-- Protected pages
-- Role-based access example
+- Authenticated dashboard
+- Role-based admin page
+- Form validation
+- State-based authentication store
+
+Sample users:
+
+admin / password
+user / password
+
+### State + Auth Example
+
+```c++
+auto authStore =
+    context.requireService<AuthStore>();
+
+if (authStore->currentUser.value()) {
+    ...
+}
+```
+
+### Role Check Example
+
+```c++
+if (currentUser->role == "admin") {
+    ...
+}
+```
+
+## Roadmap
+
+### 0.16 — External Templates
+
+- templatePath()
+- External HTML templates
+- Template loader
+- Template cache
+- Development reload support
 
 ### 1.0 — Stable Release
 
