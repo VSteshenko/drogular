@@ -65,6 +65,20 @@ private:
         size_t length = 0;
     };
 
+    static std::string requiredMessage(const std::string& field);
+
+    static std::string minLengthMessage(
+        const std::string& field,
+        size_t length
+    );
+
+    static std::string maxLengthMessage(
+        const std::string& field,
+        size_t length
+    );
+
+    static std::string emailMessage(const std::string& field);
+
     const ActionContext& context_;
     std::vector<Rule> rules_;
 };

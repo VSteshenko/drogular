@@ -43,6 +43,38 @@ public:
         return errors_;
     }
 
+    /**
+     * Returns true when the specified field
+     * contains at least one validation error.
+     */
+    bool hasError(
+        const std::string& field
+    ) const {
+        for (const auto& error : errors_) {
+            if (error.field == field) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the first error message for the
+     * specified field.
+     */
+    std::optional<std::string> error(
+        const std::string& field
+    ) const {
+        for (const auto& error : errors_) {
+            if (error.field == field) {
+                return error.message;
+            }
+        }
+
+        return std::nullopt;
+    }
+
 private:
     std::vector<ValidationError> errors_;
 };

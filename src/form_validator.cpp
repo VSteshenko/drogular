@@ -95,7 +95,7 @@ ValidationResult FormValidator::validate() const {
                     value->empty()) {
                     result.addError(
                         rule.field,
-                        rule.field + " is required"
+                        requiredMessage(rule.field)
                     );
                 }
                 break;
@@ -105,7 +105,7 @@ ValidationResult FormValidator::validate() const {
                     value->size() < rule.length) {
                     result.addError(
                         rule.field,
-                        rule.field + " is too short"
+                        minLengthMessage(rule.field, rule.length)
                     );
                 }
                 break;
@@ -115,7 +115,7 @@ ValidationResult FormValidator::validate() const {
                     value->size() > rule.length) {
                     result.addError(
                         rule.field,
-                        rule.field + " is too long"
+                        maxLengthMessage(rule.field, rule.length)
                     );
                 }
                 break;
@@ -126,7 +126,7 @@ ValidationResult FormValidator::validate() const {
                     !looksLikeEmail(*value)) {
                     result.addError(
                         rule.field,
-                        rule.field + " is not a valid email"
+                        emailMessage(rule.field)
                     );
                 }
             break;
@@ -134,6 +134,38 @@ ValidationResult FormValidator::validate() const {
     }
 
     return result;
+}
+
+std::string FormValidator::requiredMessage(
+    const std::string& field
+) {
+    return field + " is required";
+}
+
+std::string FormValidator::minLengthMessage(
+    const std::string& field,
+    size_t length
+) {
+    return field +
+           " must be at least " +
+           std::to_string(length) +
+           " characters";
+}
+
+std::string FormValidator::maxLengthMessage(
+    const std::string& field,
+    size_t length
+) {
+    return field +
+           " must be at most " +
+           std::to_string(length) +
+           " characters";
+}
+
+std::string FormValidator::emailMessage(
+    const std::string& field
+) {
+    return field + " is not a valid email";
 }
 
 } // namespace drogular

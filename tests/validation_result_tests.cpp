@@ -32,3 +32,29 @@ TEST(ValidationResultTests, StoresMultipleErrors) {
     EXPECT_FALSE(result.valid());
     EXPECT_EQ(result.errors().size(), 2);
 }
+
+TEST(ValidationResultTests, DetectsFieldErrors) {
+    drogular::ValidationResult result;
+
+    result.addError("email", "Invalid email");
+
+    EXPECT_TRUE(result.hasError("email"));
+    EXPECT_FALSE(result.hasError("title"));
+}
+
+TEST(ValidationResultTests, ReturnsFirstFieldError) {
+    drogular::ValidationResult result;
+
+    result.addError("email", "Invalid email");
+
+    const auto error = result.error("email");
+
+    ASSERT_TRUE(error.has_value());
+    EXPECT_EQ(*error, "Invalid email");
+}
+
+TEST(ValidationResultTests, ReturnsNulloptWhenFieldHasNoError) {
+    drogular::ValidationResult result;
+
+    EXPECT_FALSE(result.error("email").has_value());
+}
