@@ -1,6 +1,7 @@
 #include "admin_page.hpp"
 #include "auth_service.hpp"
 #include "auth_store.hpp"
+#include "home_page.hpp"
 #include "dashboard_page.hpp"
 #include "login_action.hpp"
 #include "login_page.hpp"
@@ -20,6 +21,7 @@ int main()
         drogular::ServiceLifetime::Singleton
     );
 
+    app.page<HomePage>("/");
     app.page<LoginPage>("/login");
     app.page<DashboardPage>("/dashboard");
     app.page<AdminPage>("/admin");
