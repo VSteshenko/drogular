@@ -43,6 +43,7 @@ add_executable(drogular_tests
     ../examples/todo_pwa/todo_page.cpp
     auth_service_tests.cpp
     auth_store_tests.cpp
+    login_action_tests.cpp
     ../examples/auth_sample/auth_service.cpp
 )
 
