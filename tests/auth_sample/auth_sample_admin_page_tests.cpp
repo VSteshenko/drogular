@@ -1,5 +1,6 @@
 #include "../examples/auth_sample/auth_service.hpp"
 #include "../examples/auth_sample/admin_page.hpp"
+#include "auth_sample_test_services.hpp"
 
 #include <drogular/testing.hpp>
 
@@ -18,11 +19,10 @@ TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
-
-    services.setOptions(&options);
 
     const auto result =
         drogular::test::renderPage<AdminPage>(
@@ -61,8 +61,9 @@ TEST(AuthSampleAdminPageTests, DeniesRegularUser) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
 
     services.setOptions(&options);
@@ -104,8 +105,9 @@ TEST(AuthSampleAdminPageTests, AllowsAdministrator) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
 
     services.setOptions(&options);

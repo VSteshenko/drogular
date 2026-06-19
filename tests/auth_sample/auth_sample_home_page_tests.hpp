@@ -1,4 +1,5 @@
 #include "../examples/auth_sample/home_page.hpp"
+#include "auth_sample_test_services.hpp"
 
 #include <drogular/testing.hpp>
 
@@ -13,8 +14,9 @@ TEST(AuthSampleHomePageTests, RedirectsGuestToLogin) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
 
     services.setOptions(&options);
@@ -52,8 +54,9 @@ TEST(AuthSampleHomePageTests, RedirectsAuthenticatedUserToDashboard) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
 
     services.setOptions(&options);

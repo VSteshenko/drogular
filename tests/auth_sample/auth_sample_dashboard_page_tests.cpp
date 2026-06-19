@@ -1,4 +1,5 @@
 #include "../examples/auth_sample/dashboard_page.hpp"
+#include "auth_sample_test_services.hpp"
 
 #include <drogular/testing.hpp>
 
@@ -13,8 +14,9 @@ TEST(AuthSampleDashboardPageTests, ShowsLoginRequiredForGuest) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
 
     services.setOptions(&options);
@@ -59,8 +61,9 @@ TEST(AuthSampleDashboardPageTests, ShowsDashboardForAuthenticatedUser) {
 
     drogular::ApplicationOptions options;
 
-    options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+    configureAuthSampleServices(
+        services,
+        options
     );
 
     services.setOptions(&options);
