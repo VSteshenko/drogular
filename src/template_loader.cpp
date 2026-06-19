@@ -6,14 +6,32 @@
 
 namespace drogular {
 
+TemplateLoader::TemplateLoader(
+    std::filesystem::path root
+)
+    : root_(std::move(root)) {
+}
+
+const std::filesystem::path& TemplateLoader::root() const {
+    return root_;
+}
+
 std::string TemplateLoader::load(
     const std::string& path
 ) const {
-    std::ifstream file(path);
+    std::filesystem::path resolvedPath(path);
+
+    if (!root_.empty() &&
+        resolvedPath.is_relative()) {
+        resolvedPath = root_ / resolvedPath;
+        }
+
+    std::ifstream file(resolvedPath);
 
     if (!file.is_open()) {
         throw std::runtime_error(
-            "Template file not found: " + path
+            "Template file not found: " +
+            resolvedPath.string()
         );
     }
 

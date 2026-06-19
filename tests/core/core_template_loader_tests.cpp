@@ -67,3 +67,44 @@ TEST(CoreTemplateLoaderTests, LoadsUtf8TemplateFile) {
 
     std::filesystem::remove(path);
 }
+
+TEST(CoreTemplateLoaderTests, LoadsTemplateFromRoot) {
+    const auto root =
+        std::filesystem::temp_directory_path();
+
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_loader_root_test.html",
+            "<h1>Root Template</h1>"
+        );
+
+    drogular::TemplateLoader loader(root);
+
+    EXPECT_EQ(
+        loader.load(
+            "drogular_template_loader_root_test.html"
+        ),
+        "<h1>Root Template</h1>"
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreTemplateLoaderTests, AbsolutePathIgnoresRoot) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_loader_absolute_test.html",
+            "<h1>Absolute Template</h1>"
+        );
+
+    drogular::TemplateLoader loader(
+        "/not-used"
+    );
+
+    EXPECT_EQ(
+        loader.load(path.string()),
+        "<h1>Absolute Template</h1>"
+    );
+
+    std::filesystem::remove(path);
+}
