@@ -5,7 +5,7 @@ if(POLICY CMP0135)
 endif()
 
 project(Drogular
-    VERSION 0.15.0
+    VERSION 0.16.0
     LANGUAGES CXX
 )
 
@@ -44,6 +44,7 @@ add_library(drogular
     src/template_runtime.cpp
     src/template_cache.cpp
     src/template_diagnostics.cpp
+    src/template_loader.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
