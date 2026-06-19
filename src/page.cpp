@@ -8,8 +8,22 @@ std::optional<gql::Query> Page::query() const {
 }
 
 std::string TemplatePage::render(RenderContext& context) {
+    std::string templateSource;
+
+    if (!templatePath().empty()) {
+        drogular::TemplateLoader loader;
+
+        templateSource =
+            loader.load(
+                templatePath()
+            );
+    } else {
+        templateSource =
+            templateHtml();
+    }
+
     const auto compiled =
-        templateCache_.getOrCompile(templateHtml());
+        templateCache_.getOrCompile(templateSource);
 
     auto html = compiled->render(context);
 

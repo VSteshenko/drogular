@@ -6,6 +6,26 @@
 
 #include <string>
 #include <json/json.h>
+#include <filesystem>
+#include <fstream>
+
+namespace {
+
+std::filesystem::path writeTemplateFile(
+    const std::string& name,
+    const std::string& content
+) {
+    const auto path =
+        std::filesystem::temp_directory_path() /
+        name;
+
+    std::ofstream file(path);
+    file << content;
+
+    return path;
+}
+
+} // namespace
 
 class CoreTestTemplatePage final : public drogular::TemplatePage {
 public:
@@ -242,4 +262,121 @@ TEST(CoreTemplatePageTests, RendersNestedComponentTags) {
             "<button>Save</button>"
         )
     );
+}
+
+class CoreTemplatePageInlinePage final
+    : public drogular::TemplatePage
+{
+public:
+    std::string templateHtml() const override {
+        return "<h1>{{ title }}</h1>";
+    }
+
+    void onInit(
+        drogular::RenderContext& context
+    ) override {
+        context.set(
+            "title",
+            std::string("Inline Template")
+        );
+    }
+};
+
+TEST(CoreTemplatePageTests, UsesTemplateHtmlWhenTemplatePathIsEmpty) {
+    const auto result =
+        drogular::test::renderPage<CoreTemplatePageInlinePage>();
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<h1>Inline Template</h1>"
+        )
+    );
+}
+
+class CoreTemplatePageExternalPage final
+    : public drogular::TemplatePage
+{
+public:
+    static inline std::string path;
+
+    std::string templatePath() const override {
+        return path;
+    }
+
+    void onInit(
+        drogular::RenderContext& context
+    ) override {
+        context.set(
+            "title",
+            std::string("External Template")
+        );
+    }
+};
+
+TEST(CoreTemplatePageTests, UsesTemplatePathWhenProvided) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_page_external.html",
+            "<h1>{{ title }}</h1>"
+        );
+
+    CoreTemplatePageExternalPage::path = path.string();
+
+    const auto result =
+        drogular::test::renderPage<CoreTemplatePageExternalPage>();
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<h1>External Template</h1>"
+        )
+    );
+
+    std::filesystem::remove(path);
+}
+
+class CoreTemplatePagePriorityPage final
+    : public drogular::TemplatePage
+{
+public:
+    static inline std::string path;
+
+    std::string templatePath() const override {
+        return path;
+    }
+
+    std::string templateHtml() const override {
+        return "<h1>Inline Template</h1>";
+    }
+};
+
+TEST(CoreTemplatePageTests, TemplatePathOverridesTemplateHtml) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_page_priority.html",
+            "<h1>External Template</h1>"
+        );
+
+    CoreTemplatePagePriorityPage::path =
+        path.string();
+
+    const auto result =
+        drogular::test::renderPage<CoreTemplatePagePriorityPage>();
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<h1>External Template</h1>"
+        )
+    );
+
+    EXPECT_FALSE(
+        drogular::test::contains(
+            result.html,
+            "Inline Template"
+        )
+    );
+
+    std::filesystem::remove(path);
 }
