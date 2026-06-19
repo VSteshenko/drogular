@@ -1,8 +1,12 @@
 #pragma once
 
+#include "auth_service.hpp"
 #include "auth_store.hpp"
+#include "auth_template_path.hpp"
 
 #include <drogular/page.hpp>
+
+#include <string>
 
 class AdminPage final
     : public drogular::TemplatePage
@@ -10,25 +14,24 @@ class AdminPage final
 public:
     void onInit(
         drogular::RenderContext& context
-    ) override
-    {
+    ) override {
         auto authStore =
             context.requireService<AuthStore>();
+
+        auto authService =
+            context.requireService<AuthService>();
 
         const auto currentUser =
             authStore->currentUser.value();
 
-        bool isAdmin = false;
+        const auto isAdmin =
+            currentUser.has_value() &&
+            authService->hasRole(
+                *currentUser,
+                "admin"
+            );
 
-        if (currentUser.has_value()) {
-            isAdmin =
-                currentUser->role == "admin";
-        }
-
-        context.set(
-            "isAdmin",
-            isAdmin
-        );
+        context.set("isAdmin", isAdmin);
 
         context.set(
             "username",
@@ -38,26 +41,7 @@ public:
         );
     }
 
-    std::string templateHtml() const override
-    {
-        return R"(
-@if(isAdmin)
-
-<h1>Admin Panel</h1>
-
-<p>
-Welcome administrator {{ username }}.
-</p>
-
-@else
-
-<h1>Access Denied</h1>
-
-<p>
-Administrator role required.
-</p>
-
-@endif
-)";
+    std::string templatePath() const override {
+        return authTemplatePath("admin.html");
     }
 };

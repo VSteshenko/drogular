@@ -1,6 +1,7 @@
 #pragma once
 
 #include "auth_store.hpp"
+#include "auth_template_path.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/component.hpp>
@@ -33,19 +34,7 @@ public:
         );
     }
 
-    std::string templateHtml() const override {
-        return R"(
-@if(authenticated)
-<h1>Dashboard</h1>
-<p>Welcome, {{ username }}.</p>
-
-<form method="post" action="/logout">
-    <button type="submit">Logout</button>
-</form>
-@else
-<h1>Login required</h1>
-<a href="/login">Go to login</a>
-@endif
-)";
+    std::string templatePath() const override {
+        return authTemplatePath("dashboard.html");
     }
 };

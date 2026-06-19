@@ -1,3 +1,4 @@
+#include "../examples/auth_sample/auth_service.hpp"
 #include "../examples/auth_sample/admin_page.hpp"
 
 #include <drogular/testing.hpp>
@@ -6,6 +7,10 @@
 
 TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
     drogular::ApplicationServices services;
+
+    services.add<AuthService>(
+        drogular::ServiceLifetime::Singleton
+    );
 
     services.add<AuthStore>(
         drogular::ServiceLifetime::Singleton
@@ -26,6 +31,10 @@ TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
 
 TEST(AuthSampleAdminPageTests, DeniesRegularUser) {
     drogular::ApplicationServices services;
+
+    services.add<AuthService>(
+        drogular::ServiceLifetime::Singleton
+    );
 
     services.add<AuthStore>(
         drogular::ServiceLifetime::Singleton
@@ -57,6 +66,10 @@ TEST(AuthSampleAdminPageTests, DeniesRegularUser) {
 
 TEST(AuthSampleAdminPageTests, AllowsAdministrator) {
     drogular::ApplicationServices services;
+
+    services.add<AuthService>(
+        drogular::ServiceLifetime::Singleton
+    );
 
     services.add<AuthStore>(
         drogular::ServiceLifetime::Singleton
