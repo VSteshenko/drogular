@@ -1,5 +1,6 @@
 #include <drogular/page.hpp>
 #include <drogular/component_renderer.hpp>
+#include "drogular/template_loader.hpp"
 
 namespace drogular {
 
@@ -11,12 +12,19 @@ std::string TemplatePage::render(RenderContext& context) {
     std::string templateSource;
 
     if (!templatePath().empty()) {
-        drogular::TemplateLoader loader;
+        TemplateLoader loader;
+
+        if (context.services() != nullptr &&
+            context.services()->options() != nullptr) {
+            loader = TemplateLoader(
+                context.services()
+                    ->options()
+                    ->templateRoot()
+            );
+        }
 
         templateSource =
-            loader.load(
-                templatePath()
-            );
+            loader.load(templatePath());
     } else {
         templateSource =
             templateHtml();

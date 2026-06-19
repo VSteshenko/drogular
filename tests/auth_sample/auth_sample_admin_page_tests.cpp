@@ -16,10 +16,18 @@ TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
         drogular::ServiceLifetime::Singleton
     );
 
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
+
     const auto result =
-        drogular::test::renderPage<
-            AdminPage
-        >(&services);
+        drogular::test::renderPage<AdminPage>(
+            &services
+        );
 
     EXPECT_TRUE(
         drogular::test::contains(
@@ -51,10 +59,18 @@ TEST(AuthSampleAdminPageTests, DeniesRegularUser) {
         }
     );
 
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
+
     const auto result =
-        drogular::test::renderPage<
-            AdminPage
-        >(&services);
+        drogular::test::renderPage<AdminPage>(
+            &services
+        );
 
     EXPECT_TRUE(
         drogular::test::contains(
@@ -86,10 +102,18 @@ TEST(AuthSampleAdminPageTests, AllowsAdministrator) {
         }
     );
 
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
+
     const auto result =
-        drogular::test::renderPage<
-            AdminPage
-        >(&services);
+        drogular::test::renderPage<AdminPage>(
+            &services
+        );
 
     EXPECT_TRUE(
         drogular::test::contains(

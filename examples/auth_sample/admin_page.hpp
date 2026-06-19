@@ -2,7 +2,6 @@
 
 #include "auth_service.hpp"
 #include "auth_store.hpp"
-#include "auth_template_path.hpp"
 
 #include <drogular/page.hpp>
 
@@ -42,6 +41,6 @@ public:
     }
 
     std::string templatePath() const override {
-        return authTemplatePath("admin.html");
+        return "admin.html";
     }
 };

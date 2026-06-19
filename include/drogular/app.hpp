@@ -5,10 +5,12 @@
 #include <drogular/page.hpp>
 #include <drogular/router.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/application_options.hpp>
 
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <filesystem>
 
 namespace drogular {
 
@@ -19,7 +21,25 @@ namespace drogular {
  */
 class App {
 public:
-    App() = default;
+    App();
+
+    ApplicationOptions& options() {
+        return options_;
+    }
+
+    const ApplicationOptions& options() const {
+        return options_;
+    }
+
+    App& templateRoot(
+        std::filesystem::path root
+    ) {
+        options_.setTemplateRoot(
+            std::move(root)
+        );
+
+        return *this;
+    }
 
     /**
      * Sets the GraphQL client used by application pages.
@@ -89,6 +109,7 @@ public:
     }
 
 private:
+    ApplicationOptions options_;
     ApplicationServices services_;
     Router router_{&services_};
 };

@@ -11,6 +11,14 @@ TEST(AuthSampleDashboardPageTests, ShowsLoginRequiredForGuest) {
         drogular::ServiceLifetime::Singleton
     );
 
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
+
     const auto result =
         drogular::test::renderPage<DashboardPage>(
             &services
@@ -48,6 +56,14 @@ TEST(AuthSampleDashboardPageTests, ShowsDashboardForAuthenticatedUser) {
             .role = "admin"
         }
     );
+
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
 
     const auto result =
         drogular::test::renderPage<DashboardPage>(

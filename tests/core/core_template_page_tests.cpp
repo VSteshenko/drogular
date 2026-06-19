@@ -380,3 +380,37 @@ TEST(CoreTemplatePageTests, TemplatePathOverridesTemplateHtml) {
 
     std::filesystem::remove(path);
 }
+
+TEST(CoreTemplatePageTests, UsesTemplateRootFromApplicationOptions) {
+    const auto root =
+        std::filesystem::temp_directory_path();
+
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_root_page.html",
+            "<h1>{{ title }}</h1>"
+        );
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(root);
+    services.setOptions(&options);
+
+    CoreTemplatePageExternalPage::path =
+        "drogular_template_root_page.html";
+
+    const auto result =
+        drogular::test::renderPage<
+            CoreTemplatePageExternalPage
+        >(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<h1>External Template</h1>"
+        )
+    );
+
+    std::filesystem::remove(path);
+}

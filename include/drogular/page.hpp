@@ -3,7 +3,6 @@
 #include <drogular/component.hpp>
 #include <drogular/graphql.hpp>
 #include <drogular/template_cache.hpp>
-#include <drogular/template_loader.hpp>
 
 #include <optional>
 

@@ -2,6 +2,7 @@
 
 #include <drogular/component_registry.hpp>
 #include <drogular/dependency_graph.hpp>
+#include <drogular/application_options.hpp>
 
 #include <memory>
 #include <typeinfo>
@@ -294,6 +295,20 @@ public:
      */
     const ComponentRegistry& components() const;
 
+    void setOptions(
+        ApplicationOptions* options
+    ) {
+        options_ = options;
+    }
+
+    ApplicationOptions* options() {
+        return options_;
+    }
+
+    const ApplicationOptions* options() const {
+        return options_;
+    }
+
 private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
@@ -302,6 +317,7 @@ private:
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
     DependencyGraph dependencyGraph_;
     ComponentRegistry componentRegistry_;
+    ApplicationOptions* options_ = nullptr;
 
     template <typename T>
     std::function<std::shared_ptr<void>()> wrapFactory(

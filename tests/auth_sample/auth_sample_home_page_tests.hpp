@@ -11,6 +11,14 @@ TEST(AuthSampleHomePageTests, RedirectsGuestToLogin) {
         drogular::ServiceLifetime::Singleton
     );
 
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
+
     const auto result =
         drogular::test::renderPage<HomePage>(
             &services
@@ -41,6 +49,14 @@ TEST(AuthSampleHomePageTests, RedirectsAuthenticatedUserToDashboard) {
             .role = "admin"
         }
     );
+
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        "../../examples/auth_sample/templates"
+    );
+
+    services.setOptions(&options);
 
     const auto result =
         drogular::test::renderPage<HomePage>(
