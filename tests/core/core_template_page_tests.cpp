@@ -414,3 +414,72 @@ TEST(CoreTemplatePageTests, UsesTemplateRootFromApplicationOptions) {
 
     std::filesystem::remove(path);
 }
+
+class CoreTemplatePageCachePage final
+    : public drogular::TemplatePage
+{
+public:
+    static inline std::string path;
+
+    std::string templatePath() const override {
+        return path;
+    }
+};
+
+TEST(CoreTemplatePageTests, CachesExternalTemplateSource) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_page_cache.html",
+            "<h1>First</h1>"
+        );
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        std::filesystem::temp_directory_path()
+    );
+
+    services.setOptions(&options);
+
+    CoreTemplatePageCachePage::path =
+        "drogular_template_page_cache.html";
+
+    const auto first =
+        drogular::test::renderPage<
+            CoreTemplatePageCachePage
+        >(&services);
+
+    {
+        std::ofstream file(path);
+        file << "<h1>Second</h1>";
+    }
+
+    const auto second =
+        drogular::test::renderPage<
+            CoreTemplatePageCachePage
+        >(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            first.html,
+            "<h1>First</h1>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            second.html,
+            "<h1>First</h1>"
+        )
+    );
+
+    EXPECT_FALSE(
+        drogular::test::contains(
+            second.html,
+            "<h1>Second</h1>"
+        )
+    );
+
+    std::filesystem::remove(path);
+}

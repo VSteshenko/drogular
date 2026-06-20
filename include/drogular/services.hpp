@@ -3,6 +3,7 @@
 #include <drogular/component_registry.hpp>
 #include <drogular/dependency_graph.hpp>
 #include <drogular/application_options.hpp>
+#include <drogular/template_source_cache.hpp>
 
 #include <memory>
 #include <typeinfo>
@@ -295,10 +296,16 @@ public:
      */
     const ComponentRegistry& components() const;
 
-    void setOptions(
-        ApplicationOptions* options
-    ) {
+    void setOptions(ApplicationOptions* options) {
         options_ = options;
+
+        if (options_ != nullptr) {
+            templateSourceCache_.setLoader(
+                TemplateLoader(
+                    options_->templateRoot()
+                )
+            );
+        }
     }
 
     ApplicationOptions* options() {
@@ -307,6 +314,14 @@ public:
 
     const ApplicationOptions* options() const {
         return options_;
+    }
+
+    TemplateSourceCache& templateSourceCache() {
+        return templateSourceCache_;
+    }
+
+    const TemplateSourceCache& templateSourceCache() const {
+        return templateSourceCache_;
     }
 
 private:
@@ -318,6 +333,7 @@ private:
     DependencyGraph dependencyGraph_;
     ComponentRegistry componentRegistry_;
     ApplicationOptions* options_ = nullptr;
+    TemplateSourceCache templateSourceCache_;
 
     template <typename T>
     std::function<std::shared_ptr<void>()> wrapFactory(

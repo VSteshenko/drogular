@@ -12,19 +12,21 @@ std::string TemplatePage::render(RenderContext& context) {
     std::string templateSource;
 
     if (!templatePath().empty()) {
-        TemplateLoader loader;
-
-        if (context.services() != nullptr &&
-            context.services()->options() != nullptr) {
-            loader = TemplateLoader(
-                context.services()
-                    ->options()
-                    ->templateRoot()
-            );
+        if (!templatePath().empty()) {
+            if (context.services() != nullptr) {
+                templateSource =
+                    context.services()
+                        ->templateSourceCache()
+                        .load(templatePath());
+            } else {
+                TemplateLoader loader;
+                templateSource =
+                    loader.load(templatePath());
+            }
+        } else {
+            templateSource =
+                templateHtml();
         }
-
-        templateSource =
-            loader.load(templatePath());
     } else {
         templateSource =
             templateHtml();

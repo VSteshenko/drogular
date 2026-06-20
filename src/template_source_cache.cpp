@@ -40,4 +40,11 @@ bool TemplateSourceCache::contains(
     return cache_.contains(path);
 }
 
+void TemplateSourceCache::setLoader(
+    TemplateLoader loader
+) {
+    loader_ = std::move(loader);
+    clear();
+}
+
 } // namespace drogular

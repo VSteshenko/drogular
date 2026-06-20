@@ -23,6 +23,8 @@ public:
         const std::string& path
     ) const;
 
+    void setLoader(TemplateLoader loader);
+
 private:
     TemplateLoader loader_;
 
