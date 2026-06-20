@@ -24,6 +24,8 @@ add_executable(drogular_tests
     core/core_inject_tests.cpp
     core/core_render_context_tests.cpp
     core/core_services_tests.cpp
+    core/core_session_tests.cpp
+    core/core_session_store_tests.cpp
     core/core_state_tests.cpp
     core/core_shared_state_tests.cpp
     core/core_store_pattern_tests.cpp

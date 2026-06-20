@@ -37,6 +37,8 @@ add_library(drogular
     src/page.cpp
     src/router.cpp
     src/services.cpp
+    src/session.cpp
+    src/session_store.cpp
     src/template_engine.cpp
     src/template_tokenizer.cpp
     src/template_ast.cpp
