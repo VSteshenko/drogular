@@ -1,4 +1,5 @@
 #include <drogular/action_context.hpp>
+#include <drogular/session_store.hpp>
 
 namespace drogular {
 
@@ -59,6 +60,43 @@ std::optional<std::string> ActionContext::cookie(
     }
 
     return value;
+}
+
+std::shared_ptr<Session> ActionContext::existingSession() const {
+    if (services_ == nullptr) {
+        return nullptr;
+    }
+
+    auto store =
+        services_->service<SessionStore>();
+
+    if (store == nullptr) {
+        return nullptr;
+    }
+
+    const auto sessionId =
+        cookie("session_id");
+
+    if (!sessionId.has_value()) {
+        return nullptr;
+    }
+
+    return store->get(*sessionId);
+}
+
+std::shared_ptr<Session> ActionContext::session() {
+    if (services_ == nullptr) {
+        return nullptr;
+    }
+
+    auto store =
+        services_->requireService<SessionStore>();
+
+    if (const auto existing = existingSession()) {
+        return existing;
+    }
+
+    return store->create();
 }
 
 } // namespace drogular

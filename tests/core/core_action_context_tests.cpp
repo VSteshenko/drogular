@@ -1,4 +1,5 @@
 #include <drogular/action_context.hpp>
+#include <drogular/session_store.hpp>
 
 #include <drogon/HttpRequest.h>
 #include <gtest/gtest.h>
@@ -86,4 +87,85 @@ TEST(CoreActionContextTests, ReadsCookie) {
 
     ASSERT_TRUE(value.has_value());
     EXPECT_EQ(*value, "abc123");
+}
+
+TEST(CoreActionContextTests, ReturnsNullWhenSessionDoesNotExist) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ApplicationServices services;
+
+    services.add<drogular::SessionStore>(
+        drogular::ServiceLifetime::Singleton
+    );
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    EXPECT_EQ(
+        context.existingSession(),
+        nullptr
+    );
+}
+
+TEST(CoreActionContextTests, CreatesSession) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ApplicationServices services;
+
+    services.add<drogular::SessionStore>(
+        drogular::ServiceLifetime::Singleton
+    );
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    const auto session =
+        context.session();
+
+    ASSERT_NE(session, nullptr);
+
+    const auto id =
+        session->get("_id");
+
+    ASSERT_TRUE(id.has_value());
+}
+
+TEST(CoreActionContextTests, FindsExistingSessionFromCookie) {
+    drogular::ApplicationServices services;
+
+    services.add<drogular::SessionStore>(
+        drogular::ServiceLifetime::Singleton
+    );
+
+    auto store =
+        services.requireService<drogular::SessionStore>();
+
+    auto session =
+        store->create();
+
+    const auto id =
+        session->get("_id");
+
+    ASSERT_TRUE(id.has_value());
+
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    request->addCookie("session_id", *id);
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    EXPECT_EQ(
+        context.existingSession(),
+        session
+    );
 }

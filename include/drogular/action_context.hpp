@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/session.hpp>
 #include <drogular/action_validation_error.hpp>
 
 #include <drogon/HttpRequest.h>
@@ -126,6 +127,10 @@ public:
     std::optional<std::string> cookie(
         const std::string& name
     ) const;
+
+    std::shared_ptr<Session> session();
+
+    std::shared_ptr<Session> existingSession() const;
 
 private:
     drogon::HttpRequestPtr request_;
