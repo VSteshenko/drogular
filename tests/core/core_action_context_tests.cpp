@@ -69,3 +69,21 @@ TEST(CoreActionContextTests, RequireFormThrowsWhenMissing) {
         drogular::ActionValidationError
     );
 }
+
+TEST(CoreActionContextTests, ReadsCookie) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    request->addCookie("session_id", "abc123");
+
+    drogular::ActionContext context(
+        request,
+        nullptr
+    );
+
+    const auto value =
+        context.cookie("session_id");
+
+    ASSERT_TRUE(value.has_value());
+    EXPECT_EQ(*value, "abc123");
+}

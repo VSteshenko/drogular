@@ -51,3 +51,30 @@ TEST(CoreActionResponseTests, ConvertsJsonResult) {
     ASSERT_NE(responseJson, nullptr);
     EXPECT_TRUE((*responseJson)["ok"].asBool());
 }
+
+TEST(CoreActionResponseTests, ConvertsCookiesToHttpResponse) {
+    auto result =
+        drogular::ActionResult::redirect("/");
+
+    result.cookie(
+        "session_id",
+        "abc123"
+    );
+
+    const auto response =
+        drogular::toHttpResponse(result);
+
+    ASSERT_NE(response, nullptr);
+
+    const auto cookies =
+        response->cookies();
+
+    ASSERT_TRUE(
+        cookies.find("session_id") != cookies.end()
+    );
+
+    EXPECT_EQ(
+        cookies.at("session_id").value(),
+        "abc123"
+    );
+}

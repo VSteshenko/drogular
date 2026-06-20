@@ -48,4 +48,17 @@ std::string ActionContext::requireFormValue(
     return *value;
 }
 
+std::optional<std::string> ActionContext::cookie(
+    const std::string& name
+) const {
+    const auto value =
+        request_->getCookie(name);
+
+    if (value.empty()) {
+        return std::nullopt;
+    }
+
+    return value;
+}
+
 } // namespace drogular

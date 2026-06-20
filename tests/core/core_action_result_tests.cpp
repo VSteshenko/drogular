@@ -34,3 +34,19 @@ TEST(CoreActionResultTests, CreatesJsonResult) {
     EXPECT_EQ(result.type(), drogular::ActionResultType::Json);
     EXPECT_TRUE(result.json()["ok"].asBool());
 }
+
+TEST(CoreActionResultTests, StoresCookies) {
+    auto result =
+        drogular::ActionResult::redirect("/");
+
+    result.cookie(
+        "session_id",
+        "abc123"
+    );
+
+    ASSERT_EQ(result.cookies().size(), 1);
+    EXPECT_EQ(result.cookies()[0].name, "session_id");
+    EXPECT_EQ(result.cookies()[0].value, "abc123");
+    EXPECT_EQ(result.cookies()[0].path, "/");
+    EXPECT_TRUE(result.cookies()[0].httpOnly);
+}

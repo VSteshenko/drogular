@@ -123,6 +123,10 @@ public:
         return *value;
     }
 
+    std::optional<std::string> cookie(
+        const std::string& name
+    ) const;
+
 private:
     drogon::HttpRequestPtr request_;
     ApplicationServices* services_ = nullptr;

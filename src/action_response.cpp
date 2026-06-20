@@ -2,6 +2,30 @@
 
 namespace drogular {
 
+namespace {
+
+void applyCookies(
+    const drogular::ActionResult& result,
+    const drogon::HttpResponsePtr& response
+) {
+    for (const auto& cookie : result.cookies()) {
+        drogon::Cookie drogonCookie(
+            cookie.name,
+            cookie.value
+        );
+
+        drogonCookie.setPath(cookie.path);
+
+        if (cookie.httpOnly) {
+            drogonCookie.setHttpOnly(true);
+        }
+
+        response->addCookie(drogonCookie);
+    }
+}
+
+} // namespace
+
 drogon::HttpResponsePtr toHttpResponse(
     const ActionResult& result
 ) {
@@ -16,6 +40,7 @@ drogon::HttpResponsePtr toHttpResponse(
                     result.location()
                 );
 
+            applyCookies(result, response);
             return response;
         }
 
@@ -29,13 +54,16 @@ drogon::HttpResponsePtr toHttpResponse(
 
             response->setBody(result.body());
 
+            applyCookies(result, response);
             return response;
         }
 
         case ActionResultType::Json: {
-            return drogon::HttpResponse::newHttpJsonResponse(
-                result.json()
-            );
+            auto response =
+                drogon::HttpResponse::newHttpJsonResponse(result.json());
+
+            applyCookies(result, response);
+            return response;
         }
     }
 

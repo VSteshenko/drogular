@@ -3,6 +3,7 @@
 #include <json/json.h>
 
 #include <string>
+#include <vector>
 
 namespace drogular {
 
@@ -11,6 +12,13 @@ enum class ActionResultType {
     Redirect,
     Html,
     Json
+};
+
+struct Cookie {
+    std::string name;
+    std::string value;
+    std::string path = "/";
+    bool httpOnly = true;
 };
 
 /**
@@ -34,11 +42,21 @@ public:
 
     const Json::Value& json() const;
 
+    ActionResult& cookie(
+        std::string name,
+        std::string value,
+        std::string path = "/",
+        bool httpOnly = true
+    );
+
+    const std::vector<Cookie>& cookies() const;
+
 private:
     ActionResultType type_ = ActionResultType::Empty;
     std::string location_;
     std::string body_;
     Json::Value json_;
+    std::vector<Cookie> cookies_;
 };
 
 } // namespace drogular

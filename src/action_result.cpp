@@ -45,4 +45,24 @@ const Json::Value& ActionResult::json() const {
     return json_;
 }
 
+ActionResult& ActionResult::cookie(
+    std::string name,
+    std::string value,
+    std::string path,
+    bool httpOnly
+) {
+    cookies_.push_back({
+        .name = std::move(name),
+        .value = std::move(value),
+        .path = std::move(path),
+        .httpOnly = httpOnly
+    });
+
+    return *this;
+}
+
+const std::vector<Cookie>& ActionResult::cookies() const {
+    return cookies_;
+}
+
 } // namespace drogular
