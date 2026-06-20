@@ -17,6 +17,10 @@ int main()
         drogular::ServiceLifetime::Singleton
     );
 
+    app.services().add<drogular::SessionStore>(
+        drogular::ServiceLifetime::Singleton
+    );
+
     app.services().add<AuthStore>(
         drogular::ServiceLifetime::Singleton
     );

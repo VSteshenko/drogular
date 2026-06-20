@@ -35,7 +35,7 @@ TEST(AuthSampleLoginActionTests, LogsInValidUser) {
         drogular::ServiceLifetime::Singleton
     );
 
-    services.add<AuthStore>(
+    services.add<drogular::SessionStore>(
         drogular::ServiceLifetime::Singleton
     );
 
@@ -50,26 +50,26 @@ TEST(AuthSampleLoginActionTests, LogsInValidUser) {
     const auto result =
         action.handle(context);
 
-    EXPECT_EQ(
-        result.type(),
-        drogular::ActionResultType::Redirect
-    );
+    EXPECT_EQ(result.location(), "/dashboard");
 
-    EXPECT_EQ(
-        result.location(),
-        "/dashboard"
-    );
+    ASSERT_EQ(result.cookies().size(), 1);
+    EXPECT_EQ(result.cookies()[0].name, "session_id");
 
     auto store =
-        services.requireService<AuthStore>();
+        services.requireService<drogular::SessionStore>();
 
-    ASSERT_TRUE(
-        store->currentUser.value()
-            .has_value()
+    const auto session =
+        store->get(result.cookies()[0].value);
+
+    ASSERT_NE(session, nullptr);
+
+    EXPECT_EQ(
+        session->get("username").value(),
+        "admin"
     );
 
     EXPECT_EQ(
-        store->currentUser.value()->username,
+        session->get("role").value(),
         "admin"
     );
 }
@@ -81,7 +81,7 @@ TEST(AuthSampleLoginActionTests, RejectsInvalidUser) {
         drogular::ServiceLifetime::Singleton
     );
 
-    services.add<AuthStore>(
+    services.add<drogular::SessionStore>(
         drogular::ServiceLifetime::Singleton
     );
 
@@ -98,11 +98,5 @@ TEST(AuthSampleLoginActionTests, RejectsInvalidUser) {
 
     EXPECT_EQ(result.location(), "/login");
 
-    auto store =
-        services.requireService<AuthStore>();
-
-    EXPECT_FALSE(
-        store->currentUser.value()
-            .has_value()
-    );
+    EXPECT_TRUE(result.cookies().empty());
 }

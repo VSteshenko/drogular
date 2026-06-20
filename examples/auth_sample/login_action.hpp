@@ -1,10 +1,10 @@
 #pragma once
 
 #include "auth_service.hpp"
-#include "auth_store.hpp"
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
+#include <drogular/session_store.hpp>
 
 class LoginAction final : public drogular::ActionHandler {
 public:
@@ -24,9 +24,6 @@ public:
         auto authService =
             context.requireService<AuthService>();
 
-        auto authStore =
-            context.requireService<AuthStore>();
-
         const auto user =
             authService->authenticate(
                 context.requireForm<std::string>("username"),
@@ -37,8 +34,28 @@ public:
             return drogular::ActionResult::redirect("/login");
         }
 
-        authStore->currentUser.set(*user);
+        auto session =
+            context.session();
 
-        return drogular::ActionResult::redirect("/dashboard");
+        session->set(
+            "user_id",
+            std::to_string(user->id)
+        );
+
+        session->set(
+            "username",
+            user->username
+        );
+
+        session->set(
+            "role",
+            user->role
+        );
+
+        const auto sessionId =
+            session->get("_id").value();
+
+        return drogular::ActionResult::redirect("/dashboard")
+            .cookie("session_id", sessionId);
     }
 };
