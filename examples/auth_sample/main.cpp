@@ -21,9 +21,8 @@ int main()
         drogular::ServiceLifetime::Singleton
     );
 
-    app.templateRoot(
-      "examples/auth_sample/templates"
-    );
+    app.templateRoot("examples/auth_sample/templates")
+        .templateCache(false);
 
     app.page<HomePage>("/");
     app.page<LoginPage>("/login");

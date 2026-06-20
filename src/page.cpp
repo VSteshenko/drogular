@@ -14,14 +14,32 @@ std::string TemplatePage::render(RenderContext& context) {
     if (!templatePath().empty()) {
         if (!templatePath().empty()) {
             if (context.services() != nullptr) {
-                templateSource =
-                    context.services()
-                        ->templateSourceCache()
-                        .load(templatePath());
+                auto* options =
+                    context.services()->options();
+
+                if (options != nullptr &&
+                    options->templateCacheEnabled()) {
+                    templateSource =
+                        context.services()
+                            ->templateSourceCache()
+                            .load(templatePath());
+                } else {
+                    TemplateLoader loader;
+
+                    if (options != nullptr) {
+                        loader = TemplateLoader(
+                            options->templateRoot()
+                        );
+                    }
+
+                    templateSource =
+                        loader.load(templatePath());
+                }
             } else {
                 TemplateLoader loader;
+
                 templateSource =
-                    loader.load(templatePath());
+                        loader.load(templatePath());
             }
         } else {
             templateSource =

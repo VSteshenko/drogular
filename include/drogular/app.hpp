@@ -41,6 +41,11 @@ public:
         return *this;
     }
 
+    App& templateCache(bool enabled) {
+        options_.setTemplateCacheEnabled(enabled);
+        return *this;
+    }
+
     /**
      * Sets the GraphQL client used by application pages.
      */

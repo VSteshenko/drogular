@@ -358,8 +358,7 @@ TEST(CoreTemplatePageTests, TemplatePathOverridesTemplateHtml) {
             "<h1>External Template</h1>"
         );
 
-    CoreTemplatePagePriorityPage::path =
-        path.string();
+    CoreTemplatePagePriorityPage::path = path.string();
 
     const auto result =
         drogular::test::renderPage<CoreTemplatePagePriorityPage>();
@@ -475,6 +474,59 @@ TEST(CoreTemplatePageTests, CachesExternalTemplateSource) {
     );
 
     EXPECT_FALSE(
+        drogular::test::contains(
+            second.html,
+            "<h1>Second</h1>"
+        )
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreTemplatePageTests, ReloadsExternalTemplateWhenCacheIsDisabled) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_page_reload.html",
+            "<h1>First</h1>"
+        );
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        std::filesystem::temp_directory_path()
+    );
+
+    options.setTemplateCacheEnabled(false);
+
+    services.setOptions(&options);
+
+    CoreTemplatePageCachePage::path =
+        "drogular_template_page_reload.html";
+
+    const auto first =
+        drogular::test::renderPage<
+            CoreTemplatePageCachePage
+        >(&services);
+
+    {
+        std::ofstream file(path);
+        file << "<h1>Second</h1>";
+    }
+
+    const auto second =
+        drogular::test::renderPage<
+            CoreTemplatePageCachePage
+        >(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            first.html,
+            "<h1>First</h1>"
+        )
+    );
+
+    EXPECT_TRUE(
         drogular::test::contains(
             second.html,
             "<h1>Second</h1>"
