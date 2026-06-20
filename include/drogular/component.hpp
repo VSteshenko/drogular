@@ -2,6 +2,8 @@
 
 #include <drogular/template_cache.hpp>
 
+#include <drogon//HttpRequest.h>
+
 #include <any>
 #include <optional>
 #include <string>
@@ -273,6 +275,16 @@ public:
      */
     void mergeGraphQL(GraphQLResult result);
 
+    void setRequest(
+        const drogon::HttpRequestPtr& request
+    );
+
+    drogon::HttpRequestPtr request() const;
+
+    std::optional<std::string> cookie(
+        const std::string& name
+    ) const;
+
 private:
     const RenderContext* parent_ = nullptr;
     std::unordered_map<std::string, std::any> values_;
@@ -280,6 +292,7 @@ private:
     ApplicationServices* services_ = nullptr;
     std::unordered_map<std::type_index, std::shared_ptr<void>> scopedServices_;
     GraphQLResult graphql_;
+    drogon::HttpRequestPtr request_;
 };
 
 /**

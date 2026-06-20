@@ -87,6 +87,33 @@ void RenderContext::mergeGraphQL(GraphQLResult result) {
     graphql_.merge(std::move(result));
 }
 
+void RenderContext::setRequest(
+    const drogon::HttpRequestPtr& request
+) {
+    request_ = request;
+}
+
+drogon::HttpRequestPtr RenderContext::request() const {
+    return request_;
+}
+
+std::optional<std::string> RenderContext::cookie(
+    const std::string& name
+) const {
+    if (request_ == nullptr) {
+        return std::nullopt;
+    }
+
+    const auto value =
+        request_->getCookie(name);
+
+    if (value.empty()) {
+        return std::nullopt;
+    }
+
+    return value;
+}
+
 bool RenderContext::contains(const std::string& key) const {
     if (values_.contains(key)) {
         return true;

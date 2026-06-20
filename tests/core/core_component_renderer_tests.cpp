@@ -1,3 +1,4 @@
+#include <drogon/HttpRequest.h>
 #include <drogular/component_renderer.hpp>
 #include <drogular/component_registry.hpp>
 #include <drogular/component.hpp>
@@ -177,4 +178,20 @@ TEST(CoreComponentRendererTests, RendersNestedComponentInsideSlot) {
         html,
         "<article><button>Click</button></article>"
     );
+}
+
+TEST(CoreComponentRenderContextTests, ReadsCookieFromRequest) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    request->addCookie("session_id", "abc123");
+
+    drogular::RenderContext context;
+    context.setRequest(request);
+
+    const auto value =
+        context.cookie("session_id");
+
+    ASSERT_TRUE(value.has_value());
+    EXPECT_EQ(*value, "abc123");
 }

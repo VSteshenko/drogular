@@ -16,10 +16,11 @@ void Router::page(const std::string& path, std::shared_ptr<Page> page) {
 
     drogon::app().registerHandler(
         path,
-        [page, services](const drogon::HttpRequestPtr&,
+        [page, services](const drogon::HttpRequestPtr& request,
                std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
             RenderContext context;
             context.setServices(services);
+            context.setRequest(request);
 
             page->onInit(context);
 
