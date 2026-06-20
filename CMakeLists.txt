@@ -43,6 +43,7 @@ add_library(drogular
     src/template_parser.cpp
     src/template_runtime.cpp
     src/template_cache.cpp
+    src/template_source_cache.cpp
     src/template_diagnostics.cpp
     src/template_loader.cpp
 )
