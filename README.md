@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="assets/logo.png" width="200" alt="Drogular Logo">
+</p>
+
 # Drogular
 
 Drogular is an Angular-inspired C++ web framework built on top of Drogon.
@@ -37,7 +41,7 @@ HTML
 
 ## Status
 
-**Version:** 0.15.0
+**Version:** 0.16.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -212,6 +216,16 @@ HTML
 - Role-based authorization
 - Authentication sample application
 
+#### External Templates
+
+- TemplateLoader
+- External HTML templates
+- templatePath()
+- Template root directory
+- Template source cache
+- Development reload support
+- ApplicationOptions
+
 #### Testing
 
 - Component testing
@@ -275,6 +289,12 @@ HTML
 | Authorization Sample            | Stable      |
 | AuthStore                       | Stable      |
 | Login / Logout Flow             | Stable      |
+| External Templates              | Stable      |
+| TemplateLoader                  | Stable      |
+| Template Root                   | Stable      |
+| Template Source Cache           | Stable      |
+| Development Template Reload     | Stable      |
+| ApplicationOptions              | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
@@ -644,6 +664,37 @@ Templates are compiled into an AST and cached for reuse.
 {{ user.profile.name }}
 ```
 
+## External Templates
+
+Drogular pages can load templates from external HTML files.
+
+```c++
+class LoginPage final
+    : public drogular::TemplatePage
+{
+public:
+    std::string templatePath() const override {
+        return "login.html";
+    }
+};
+```
+
+### Configure a template root
+
+```c++
+drogular::App app;
+
+app.templateRoot(
+    "examples/auth_sample/templates"
+);
+```
+
+### Disable template cache during development
+
+```c++
+app.templateCache(false);
+```
+
 ## Component Lifecycle
 
 Components can participate in the rendering lifecycle.
@@ -747,13 +798,21 @@ if (currentUser->role == "admin") {
 
 ## Roadmap
 
-### 0.16 — External Templates
+### 0.17 — Portal Foundations
 
-- templatePath()
-- External HTML templates
-- Template loader
-- Template cache
-- Development reload support
+- Cookie support
+- Session support
+- Layouts / partials
+- Database / repository example
+
+### 0.18 — PWA Offline Support
+
+- Service Worker example
+- Web App Manifest
+- App shell cache
+- Static assets cache
+- Offline fallback page
+- TodoPWA offline demo
 
 ### 1.0 — Stable Release
 
