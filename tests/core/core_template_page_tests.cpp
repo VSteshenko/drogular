@@ -535,3 +535,63 @@ TEST(CoreTemplatePageTests, ReloadsExternalTemplateWhenCacheIsDisabled) {
 
     std::filesystem::remove(path);
 }
+
+class CoreTemplatePageWithIncludePage final
+    : public drogular::TemplatePage
+{
+public:
+    static inline std::string path;
+
+    std::string templatePath() const override {
+        return path;
+    }
+};
+
+TEST(CoreTemplatePageTests, ProcessesIncludesFromExternalTemplate) {
+    const auto root =
+        std::filesystem::temp_directory_path();
+
+    const auto partial =
+        writeTemplateFile(
+            "drogular_template_page_partial.html",
+            "<header>Header</header>"
+        );
+
+    const auto page =
+        writeTemplateFile(
+            "drogular_template_page_with_include.html",
+            R"(@include("drogular_template_page_partial.html")
+<main>Content</main>)"
+        );
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(root);
+    services.setOptions(&options);
+
+    CoreTemplatePageWithIncludePage::path =
+        "drogular_template_page_with_include.html";
+
+    const auto result =
+        drogular::test::renderPage<
+            CoreTemplatePageWithIncludePage
+        >(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<header>Header</header>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<main>Content</main>"
+        )
+    );
+
+    std::filesystem::remove(partial);
+    std::filesystem::remove(page);
+}
