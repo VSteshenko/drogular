@@ -58,3 +58,20 @@ TEST(CoreSessionStoreTests, RemovesSession) {
 
     EXPECT_FALSE(store.contains(*id));
 }
+
+TEST(CoreSessionStoreTests, ClearsSessions) {
+    drogular::SessionStore store;
+
+    const auto session =
+        store.create();
+
+    const auto id =
+        session->get("_id");
+
+    ASSERT_TRUE(id.has_value());
+    EXPECT_TRUE(store.contains(*id));
+
+    store.clear();
+
+    EXPECT_FALSE(store.contains(*id));
+}

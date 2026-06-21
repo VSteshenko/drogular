@@ -24,6 +24,8 @@ public:
         const std::string& id
     );
 
+    void clear();
+
 private:
     std::string generateId() const;
 

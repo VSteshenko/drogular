@@ -47,6 +47,10 @@ void SessionStore::remove(
     sessions_.erase(id);
 }
 
+void SessionStore::clear() {
+    sessions_.clear();
+}
+
 std::string SessionStore::generateId() const {
     static thread_local std::mt19937_64 generator{
         std::random_device{}()
