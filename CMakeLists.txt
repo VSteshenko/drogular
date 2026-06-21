@@ -48,6 +48,7 @@ add_library(drogular
     src/template_source_cache.cpp
     src/template_diagnostics.cpp
     src/template_loader.cpp
+    src/template_preprocessor.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
