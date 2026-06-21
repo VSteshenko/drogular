@@ -13,7 +13,19 @@ TemplatePreprocessor::TemplatePreprocessor(
 std::string TemplatePreprocessor::process(
     const std::string& source
 ) const {
-    return processIncludes(source);
+    auto current = source;
+
+    while (current.find("@include(") != std::string::npos) {
+        const auto next = processIncludes(current);
+
+        if (next == current) {
+            break;
+        }
+
+        current = next;
+    }
+
+    return current;
 }
 
 std::string TemplatePreprocessor::processIncludes(
