@@ -72,6 +72,7 @@ target_compile_features(drogular
 if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/todo_pwa)
     add_subdirectory(examples/auth_sample)
+    add_subdirectory(examples/repository_sample)
 endif()
 
 if(DROGULAR_BUILD_TESTS)

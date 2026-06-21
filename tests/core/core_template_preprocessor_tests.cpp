@@ -91,3 +91,33 @@ TEST(CoreTemplatePreprocessorTests, ProcessesNestedIncludes) {
     std::filesystem::remove(nav);
     std::filesystem::remove(header);
 }
+
+TEST(CoreTemplatePreprocessorTests, ThrowsWhenIncludeDepthIsExceeded) {
+    const auto first =
+        writeTemplateFile(
+            "drogular_cycle_first.html",
+            R"(@include("drogular_cycle_second.html"))"
+        );
+
+    const auto second =
+        writeTemplateFile(
+            "drogular_cycle_second.html",
+            R"(@include("drogular_cycle_first.html"))"
+        );
+
+    drogular::TemplatePreprocessor preprocessor{
+        drogular::TemplateLoader(
+            std::filesystem::temp_directory_path()
+        )
+    };
+
+    EXPECT_THROW(
+        preprocessor.process(
+            R"(@include("drogular_cycle_first.html"))"
+        ),
+        std::runtime_error
+    );
+
+    std::filesystem::remove(first);
+    std::filesystem::remove(second);
+}

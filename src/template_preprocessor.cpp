@@ -1,6 +1,7 @@
 #include <drogular/template_preprocessor.hpp>
 
 #include <regex>
+#include <stdexcept>
 
 namespace drogular {
 
@@ -15,17 +16,25 @@ std::string TemplatePreprocessor::process(
 ) const {
     auto current = source;
 
-    while (current.find("@include(") != std::string::npos) {
+    constexpr int maxIncludeDepth = 16;
+
+    for (int depth = 0; depth < maxIncludeDepth; ++depth) {
+        if (current.find("@include(") == std::string::npos) {
+            return current;
+        }
+
         const auto next = processIncludes(current);
 
         if (next == current) {
-            break;
+            return current;
         }
 
         current = next;
     }
 
-    return current;
+    throw std::runtime_error(
+        "Maximum template include depth exceeded"
+    );
 }
 
 std::string TemplatePreprocessor::processIncludes(

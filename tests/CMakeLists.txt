@@ -53,6 +53,8 @@ add_executable(drogular_tests
     auth_sample/auth_sample_dashboard_page_tests.cpp
     auth_sample/auth_sample_admin_page_tests.cpp
     ../examples/auth_sample/auth_service.cpp
+    repository_sample/repository_sample_user_repository_tests.cpp
+    repository_sample/repository_sample_users_page_tests.cpp
 )
 
 target_link_libraries(drogular_tests
