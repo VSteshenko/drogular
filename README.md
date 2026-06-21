@@ -41,7 +41,7 @@ HTML
 
 ## Status
 
-**Version:** 0.16.0
+**Version:** 0.17.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -154,6 +154,10 @@ HTML
 - Conditions (`@if`)
 - Loops (`@foreach`)
 - Json path access
+- Template Layouts
+- Template Partials
+- Nested Includes
+- Include Cycle Protection
 
 #### GraphQL
 
@@ -209,12 +213,14 @@ HTML
 
 - AuthUser
 - AuthService
-- AuthStore
+- SessionStore
 - LoginAction
 - LogoutAction
 - Protected pages
 - Role-based authorization
 - Authentication sample application
+- Cookie Support
+- Session Support
 
 #### External Templates
 
@@ -225,6 +231,11 @@ HTML
 - Template source cache
 - Development reload support
 - ApplicationOptions
+
+#### Database/repository example
+
+- Repository Pattern
+- Repository Sample
 
 #### Testing
 
@@ -287,7 +298,6 @@ HTML
 | Field Validation                | Stable      |
 | Authentication Sample           | Stable      |
 | Authorization Sample            | Stable      |
-| AuthStore                       | Stable      |
 | Login / Logout Flow             | Stable      |
 | External Templates              | Stable      |
 | TemplateLoader                  | Stable      |
@@ -295,6 +305,10 @@ HTML
 | Template Source Cache           | Stable      |
 | Development Template Reload     | Stable      |
 | ApplicationOptions              | Stable      |
+| Sessions                        | Stable      |
+| Template Layouts                | Stable      |
+| Template Partials               | Stable      |
+| Repository Pattern              | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
@@ -739,7 +753,7 @@ onDestroy()
 * Nested components
 * Sibling components
 
-## Layouts
+## Component Slots
 
 ```html
 <header>
@@ -759,6 +773,23 @@ public:
 };
 ```
 
+## Layouts
+
+```html
+<!doctype html>
+<html>
+<body>
+
+@include("partials/header.html")
+
+@content
+
+@include("partials/footer.html")
+
+</body>
+</html>
+```
+
 ## Authentication Sample
 
 Drogular includes a complete authentication and authorization sample application.
@@ -770,7 +801,9 @@ Features:
 - Authenticated dashboard
 - Role-based admin page
 - Form validation
-- State-based authentication store
+- Session-based authentication
+- Cookie-backed sessions
+- Role-based authorization
 
 Sample users:
 
@@ -780,12 +813,8 @@ user / password
 ### State + Auth Example
 
 ```c++
-auto authStore =
-    context.requireService<AuthStore>();
-
-if (authStore->currentUser.value()) {
-    ...
-}
+auto currentUser =
+    AuthSession::currentUser(context);
 ```
 
 ### Role Check Example
@@ -796,16 +825,35 @@ if (currentUser->role == "admin") {
 }
 ```
 
+## Repository Example
+
+```c++
+auto repository =
+    context.requireService<UserRepository>();
+
+const auto users =
+    repository->all();
+```
+
+```c++
+repository->create(
+    name,
+    email
+);
+```
+
 ## Roadmap
 
-### 0.17 — Portal Foundations
+### 0.18 — Static Files & Asset Support
 
-- Cookie support
-- Session support
-- Layouts / partials
-- Database / repository example
+- Static file registration
+- Favicon support
+- Asset directories
+- Safe file serving
+- Dynamic file responses
+- Path traversal protection
 
-### 0.18 — PWA Offline Support
+### 0.19 — PWA Offline Support
 
 - Service Worker example
 - Web App Manifest
