@@ -10,8 +10,6 @@ std::optional<gql::Query> Page::query() const {
 }
 
 std::string TemplatePage::render(RenderContext& context) {
-    std::string templateSource;
-
     TemplateLoader loader;
 
     if (context.services() != nullptr &&
@@ -23,21 +21,49 @@ std::string TemplatePage::render(RenderContext& context) {
         );
     }
 
+    auto loadTemplateSource =
+        [&](const std::string& path) {
+            if (context.services() != nullptr &&
+                context.services()->options() != nullptr &&
+                context.services()->options()->templateCacheEnabled()) {
+                    return context.services()
+                        ->templateSourceCache()
+                        .load(path);
+                }
+
+            return loader.load(path);
+        };
+
+    std::string templateSource;
+
     if (!templatePath().empty()) {
-        if (context.services() != nullptr &&
-            context.services()->options() != nullptr &&
-            context.services()->options()->templateCacheEnabled()) {
-            templateSource =
-                context.services()
-                    ->templateSourceCache()
-                    .load(templatePath());
-        } else {
-            templateSource =
-                loader.load(templatePath());
-        }
+        templateSource =
+            loadTemplateSource(templatePath());
     } else {
         templateSource =
             templateHtml();
+    }
+
+    if (!layoutPath().empty()) {
+        auto layoutSource =
+            loadTemplateSource(layoutPath());
+
+        const auto marker =
+            std::string("@content");
+
+        const auto position =
+            layoutSource.find(marker);
+
+        if (position != std::string::npos) {
+            layoutSource.replace(
+                position,
+                marker.size(),
+                templateSource
+            );
+        }
+
+        templateSource =
+            std::move(layoutSource);
     }
 
     TemplatePreprocessor preprocessor(loader);

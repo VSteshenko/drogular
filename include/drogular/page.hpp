@@ -45,6 +45,13 @@ public:
     }
 
     /**
+     * Returns the external layout file path.
+     */
+    virtual std::string layoutPath() const {
+        return "";
+    }
+
+    /**
      * Renders the template using RenderContext.
      */
     std::string render(RenderContext& context) override;

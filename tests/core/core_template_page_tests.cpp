@@ -595,3 +595,120 @@ TEST(CoreTemplatePageTests, ProcessesIncludesFromExternalTemplate) {
     std::filesystem::remove(partial);
     std::filesystem::remove(page);
 }
+
+class CoreTemplatePageWithLayoutPage final
+    : public drogular::TemplatePage
+{
+public:
+    std::string templatePath() const override {
+        return "drogular_layout_page.html";
+    }
+
+    std::string layoutPath() const override {
+        return "drogular_layout_main.html";
+    }
+};
+
+TEST(CoreTemplatePageTests, RendersPageInsideLayout) {
+    const auto page =
+        writeTemplateFile(
+            "drogular_layout_page.html",
+            "<h1>Hello</h1>"
+        );
+
+    const auto layout =
+        writeTemplateFile(
+            "drogular_layout_main.html",
+            "<html><body>@content</body></html>"
+        );
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        std::filesystem::temp_directory_path()
+    );
+
+    services.setOptions(&options);
+
+    const auto result =
+        drogular::test::renderPage<
+            CoreTemplatePageWithLayoutPage
+        >(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<html><body><h1>Hello</h1></body></html>"
+        )
+    );
+
+    std::filesystem::remove(page);
+    std::filesystem::remove(layout);
+}
+
+TEST(CoreTemplatePageTests, ProcessesIncludesInsideLayout) {
+    const auto page =
+        writeTemplateFile(
+            "drogular_layout_include_page.html",
+            "<main>Content</main>"
+        );
+
+    const auto partial =
+        writeTemplateFile(
+            "drogular_layout_header.html",
+            "<header>Header</header>"
+        );
+
+    const auto layout =
+        writeTemplateFile(
+            "drogular_layout_include_main.html",
+            R"(@include("drogular_layout_header.html")
+<body>@content</body>)"
+        );
+
+    class CoreTemplatePageWithLayoutIncludePage final
+        : public drogular::TemplatePage
+    {
+    public:
+        std::string templatePath() const override {
+            return "drogular_layout_include_page.html";
+        }
+
+        std::string layoutPath() const override {
+            return "drogular_layout_include_main.html";
+        }
+    };
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        std::filesystem::temp_directory_path()
+    );
+
+    services.setOptions(&options);
+
+    const auto result =
+        drogular::test::renderPage<
+            CoreTemplatePageWithLayoutIncludePage
+        >(&services);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<header>Header</header>"
+        )
+    );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "<body><main>Content</main></body>"
+        )
+    );
+
+    std::filesystem::remove(page);
+    std::filesystem::remove(partial);
+    std::filesystem::remove(layout);
+}
