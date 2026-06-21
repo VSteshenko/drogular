@@ -1,7 +1,7 @@
 #pragma once
 
 #include "auth_service.hpp"
-#include "auth_store.hpp"
+#include "auth_session.hpp"
 
 #include <drogular/page.hpp>
 
@@ -14,14 +14,11 @@ public:
     void onInit(
         drogular::RenderContext& context
     ) override {
-        auto authStore =
-            context.requireService<AuthStore>();
-
         auto authService =
             context.requireService<AuthService>();
 
         const auto currentUser =
-            authStore->currentUser.value();
+            AuthSession::currentUser(context);
 
         const auto isAdmin =
             currentUser.has_value() &&

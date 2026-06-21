@@ -1,5 +1,6 @@
 #include "../examples/auth_sample/home_page.hpp"
 #include "auth_sample_test_services.hpp"
+#include "auth_sample_test_helpers.hpp"
 
 #include <drogular/testing.hpp>
 
@@ -7,23 +8,17 @@
 
 TEST(AuthSampleHomePageTests, RedirectsGuestToLogin) {
     drogular::ApplicationServices services;
-
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
-
     drogular::ApplicationOptions options;
 
-    configureAuthSampleServices(
-        services,
-        options
-    );
+    configureAuthSampleTestServices(services, options);
 
-    services.setOptions(&options);
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
 
     const auto result =
         drogular::test::renderPage<HomePage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(
@@ -36,15 +31,13 @@ TEST(AuthSampleHomePageTests, RedirectsGuestToLogin) {
 
 TEST(AuthSampleHomePageTests, RedirectsAuthenticatedUserToDashboard) {
     drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
 
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
+    configureAuthSampleTestServices(services, options);
 
-    auto store =
-        services.requireService<AuthStore>();
-
-    store->currentUser.set(
+    auto request =
+    makeAuthSampleRequestWithSession(
+        services,
         AuthUser{
             .id = 1,
             .username = "admin",
@@ -52,18 +45,10 @@ TEST(AuthSampleHomePageTests, RedirectsAuthenticatedUserToDashboard) {
         }
     );
 
-    drogular::ApplicationOptions options;
-
-    configureAuthSampleServices(
-        services,
-        options
-    );
-
-    services.setOptions(&options);
-
     const auto result =
         drogular::test::renderPage<HomePage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(

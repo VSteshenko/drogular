@@ -46,7 +46,6 @@ add_executable(drogular_tests
     todo_pwa/todo_pwa_todo_store_tests.cpp
     ../examples/todo_pwa/todo_page.cpp
     auth_sample/auth_sample_auth_service_tests.cpp
-    auth_sample/auth_sample_auth_store_tests.cpp
     auth_sample/auth_sample_login_action_tests.cpp
     auth_sample/auth_sample_logout_action_tests.cpp
     auth_sample/auth_sample_home_page_tests.hpp

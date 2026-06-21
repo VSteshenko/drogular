@@ -1,6 +1,7 @@
 #include "../examples/auth_sample/auth_service.hpp"
 #include "../examples/auth_sample/admin_page.hpp"
 #include "auth_sample_test_services.hpp"
+#include "auth_sample_test_helpers.hpp"
 
 #include <drogular/testing.hpp>
 
@@ -8,25 +9,17 @@
 
 TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
     drogular::ApplicationServices services;
-
-    services.add<AuthService>(
-        drogular::ServiceLifetime::Singleton
-    );
-
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
-
     drogular::ApplicationOptions options;
 
-    configureAuthSampleServices(
-        services,
-        options
-    );
+    configureAuthSampleTestServices(services, options);
+
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
 
     const auto result =
         drogular::test::renderPage<AdminPage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(
@@ -39,38 +32,24 @@ TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
 
 TEST(AuthSampleAdminPageTests, DeniesRegularUser) {
     drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
 
-    services.add<AuthService>(
-        drogular::ServiceLifetime::Singleton
-    );
+    configureAuthSampleTestServices(services, options);
 
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
-
-    auto store =
-        services.requireService<AuthStore>();
-
-    store->currentUser.set(
+    auto request =
+    makeAuthSampleRequestWithSession(
+        services,
         AuthUser{
-            .id = 2,
+            .id = 1,
             .username = "user",
             .role = "user"
         }
     );
 
-    drogular::ApplicationOptions options;
-
-    configureAuthSampleServices(
-        services,
-        options
-    );
-
-    services.setOptions(&options);
-
     const auto result =
         drogular::test::renderPage<AdminPage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(
@@ -83,19 +62,13 @@ TEST(AuthSampleAdminPageTests, DeniesRegularUser) {
 
 TEST(AuthSampleAdminPageTests, AllowsAdministrator) {
     drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
 
-    services.add<AuthService>(
-        drogular::ServiceLifetime::Singleton
-    );
+    configureAuthSampleTestServices(services, options);
 
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
-
-    auto store =
-        services.requireService<AuthStore>();
-
-    store->currentUser.set(
+    auto request =
+    makeAuthSampleRequestWithSession(
+        services,
         AuthUser{
             .id = 1,
             .username = "admin",
@@ -103,18 +76,10 @@ TEST(AuthSampleAdminPageTests, AllowsAdministrator) {
         }
     );
 
-    drogular::ApplicationOptions options;
-
-    configureAuthSampleServices(
-        services,
-        options
-    );
-
-    services.setOptions(&options);
-
     const auto result =
         drogular::test::renderPage<AdminPage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(

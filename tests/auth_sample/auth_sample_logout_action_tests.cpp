@@ -2,6 +2,7 @@
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>
+#include <drogular/session_store.hpp>
 
 #include <drogon/HttpRequest.h>
 #include <gtest/gtest.h>
@@ -27,43 +28,55 @@ drogular::ActionContext makeLogoutContext(
 TEST(AuthSampleLogoutActionTests, ClearsAuthenticatedUser) {
     drogular::ApplicationServices services;
 
-    services.add<AuthStore>(
+    services.add<drogular::SessionStore>(
         drogular::ServiceLifetime::Singleton
     );
 
     auto store =
-        services.requireService<AuthStore>();
+        services.requireService<drogular::SessionStore>();
 
-    store->currentUser.set(
-        AuthUser{
-            .id = 1,
-            .username = "admin",
-            .role = "admin"
-        }
+    auto session =
+        store->create();
+
+    const auto sessionId =
+        session->get("_id").value();
+
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    request->addCookie(
+        "session_id",
+        sessionId
     );
 
-    auto context =
-        makeLogoutContext(services);
+    drogular::ActionContext context(
+        request,
+        &services
+    );
 
     LogoutAction action;
 
     action.handle(context);
 
     EXPECT_FALSE(
-        store->currentUser.value()
-            .has_value()
+        store->contains(sessionId)
     );
 }
 
 TEST(AuthSampleLogoutActionTests, RedirectsToLogin) {
     drogular::ApplicationServices services;
 
-    services.add<AuthStore>(
+    services.add<drogular::SessionStore>(
         drogular::ServiceLifetime::Singleton
     );
 
-    auto context =
-        makeLogoutContext(services);
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
 
     LogoutAction action;
 
@@ -71,12 +84,22 @@ TEST(AuthSampleLogoutActionTests, RedirectsToLogin) {
         action.handle(context);
 
     EXPECT_EQ(
-        result.type(),
-        drogular::ActionResultType::Redirect
+        result.location(),
+        "/login"
+    );
+
+    ASSERT_EQ(
+        result.cookies().size(),
+        1
     );
 
     EXPECT_EQ(
-        result.location(),
-        "/login"
+        result.cookies()[0].name,
+        "session_id"
+    );
+
+    EXPECT_EQ(
+        result.cookies()[0].value,
+        ""
     );
 }

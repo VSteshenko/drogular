@@ -1,5 +1,6 @@
 #include "../examples/auth_sample/dashboard_page.hpp"
 #include "auth_sample_test_services.hpp"
+#include "auth_sample_test_helpers.hpp"
 
 #include <drogular/testing.hpp>
 
@@ -7,23 +8,17 @@
 
 TEST(AuthSampleDashboardPageTests, ShowsLoginRequiredForGuest) {
     drogular::ApplicationServices services;
-
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
-
     drogular::ApplicationOptions options;
 
-    configureAuthSampleServices(
-        services,
-        options
-    );
+    configureAuthSampleTestServices(services, options);
 
-    services.setOptions(&options);
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
 
     const auto result =
         drogular::test::renderPage<DashboardPage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(
@@ -43,15 +38,13 @@ TEST(AuthSampleDashboardPageTests, ShowsLoginRequiredForGuest) {
 
 TEST(AuthSampleDashboardPageTests, ShowsDashboardForAuthenticatedUser) {
     drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
 
-    services.add<AuthStore>(
-        drogular::ServiceLifetime::Singleton
-    );
+    configureAuthSampleTestServices(services, options);
 
-    auto store =
-        services.requireService<AuthStore>();
-
-    store->currentUser.set(
+    auto request =
+    makeAuthSampleRequestWithSession(
+        services,
         AuthUser{
             .id = 1,
             .username = "admin",
@@ -59,18 +52,10 @@ TEST(AuthSampleDashboardPageTests, ShowsDashboardForAuthenticatedUser) {
         }
     );
 
-    drogular::ApplicationOptions options;
-
-    configureAuthSampleServices(
-        services,
-        options
-    );
-
-    services.setOptions(&options);
-
     const auto result =
         drogular::test::renderPage<DashboardPage>(
-            &services
+            &services,
+            request
         );
 
     EXPECT_TRUE(

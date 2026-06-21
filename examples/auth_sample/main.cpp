@@ -1,6 +1,5 @@
 #include "admin_page.hpp"
 #include "auth_service.hpp"
-#include "auth_store.hpp"
 #include "home_page.hpp"
 #include "dashboard_page.hpp"
 #include "login_action.hpp"
@@ -18,10 +17,6 @@ int main()
     );
 
     app.services().add<drogular::SessionStore>(
-        drogular::ServiceLifetime::Singleton
-    );
-
-    app.services().add<AuthStore>(
         drogular::ServiceLifetime::Singleton
     );
 

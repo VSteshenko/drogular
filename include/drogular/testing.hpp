@@ -2,8 +2,9 @@
 
 #include <drogular/page.hpp>
 
+#include <drogon/HttpRequest.h>
+
 #include <string>
-#include <cstring>
 #include <unordered_map>
 
 namespace drogular::test {
@@ -90,28 +91,26 @@ inline std::string renderComponentTree(
 }
 
 /**
- * Creates a page, runs its lifecycle, and renders it.
- */
-template <typename PageType>
-RenderResult renderPage() {
-    PageType page;
-    RenderContext context;
-
-    return {
-        .html = renderComponentTree(page, context),
-        .context = std::move(context)
-    };
-}
-
-/**
  * Creates a page, runs its lifecycle with application services, and renders it.
  */
 template <typename PageType>
-RenderResult renderPage(ApplicationServices* services) {
+RenderResult renderPage(
+    ApplicationServices* services = nullptr,
+    const drogon::HttpRequestPtr& request = nullptr
+) {
     PageType page;
+
     RenderContext context;
 
-    context.setServices(services);
+    if (services != nullptr) {
+        context.setServices(services);
+    }
+
+    if (request != nullptr) {
+        context.setRequest(request);
+    }
+
+    page.onInit(context);
 
     return {
         .html = renderComponentTree(page, context),
