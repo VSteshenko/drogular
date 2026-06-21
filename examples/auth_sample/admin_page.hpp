@@ -27,6 +27,7 @@ public:
                 "admin"
             );
 
+        context.set("pageTitle", std::string("Admin"));
         context.set("isAdmin", isAdmin);
 
         context.set(
@@ -39,5 +40,9 @@ public:
 
     std::string templatePath() const override {
         return "admin.html";
+    }
+
+    std::string layoutPath() const override {
+        return "layouts/main.html";
     }
 };

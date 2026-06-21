@@ -1,17 +1,17 @@
 @if(isAdmin)
-
-<h1>Admin Panel</h1>
+<h2>Admin Panel</h2>
 
 <p>
-Welcome administrator {{ username }}.
+    Welcome administrator {{ username }}.
 </p>
 
+<p>
+    This page is visible only for users with the admin role.
+</p>
 @else
-
-<h1>Access Denied</h1>
+<h2>Access Denied</h2>
 
 <p>
-Administrator role required.
+    Administrator role required.
 </p>
-
 @endif

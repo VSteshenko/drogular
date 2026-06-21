@@ -14,6 +14,7 @@ public:
         const auto currentUser =
             AuthSession::currentUser(context);
 
+        context.set("pageTitle", std::string("Dashboard"));
         context.set(
             "authenticated",
             currentUser.has_value()
@@ -22,5 +23,9 @@ public:
 
     std::string templatePath() const override {
         return "home.html";
+    }
+
+    std::string layoutPath() const override {
+        return "layouts/main.html";
     }
 };
