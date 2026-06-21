@@ -8,9 +8,24 @@
 
 #include <drogular/app.hpp>
 
+#include <drogon/drogon.h>
+
 int main()
 {
     drogular::App app;
+
+    drogon::app().registerHandler(
+        "/favicon.ico",
+        [](const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
+            auto response =
+                drogon::HttpResponse::newFileResponse(
+                    "examples/auth_sample/public/favicon.ico"
+                );
+
+            callback(response);
+        }
+    );
 
     app.services().add<AuthService>(
         drogular::ServiceLifetime::Singleton

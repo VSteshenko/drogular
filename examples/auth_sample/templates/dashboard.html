@@ -2,6 +2,16 @@
 <h1>Dashboard</h1>
 <p>Welcome, {{ username }}.</p>
 
+@if(isAdmin)
+
+<p>
+    <a href="/admin">
+        Open Admin Panel
+    </a>
+</p>
+
+@endif
+
 <form method="post" action="/logout">
     <button type="submit">Logout</button>
 </form>

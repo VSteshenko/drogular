@@ -28,6 +28,11 @@ public:
                 ? currentUser->username
                 : std::string("")
         );
+
+        context.set(
+            "isAdmin",
+            currentUser->role == "admin"
+        );
     }
 
     std::string templatePath() const override {
