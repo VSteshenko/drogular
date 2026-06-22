@@ -5,6 +5,8 @@
 
 #include <drogon/drogon.h>
 
+#include <filesystem>
+
 namespace drogular {
 
 Router::Router(ApplicationServices* services)
@@ -55,6 +57,38 @@ void Router::action(const std::string& path, std::shared_ptr<ActionHandler> acti
             );
         },
         {drogon::Post}
+    );
+}
+
+void Router::staticFiles(
+    const std::string& routePrefix,
+    const std::filesystem::path& directory
+) {
+    auto normalizedPrefix = routePrefix;
+
+    if (!normalizedPrefix.empty() &&
+        normalizedPrefix.back() == '/') {
+        normalizedPrefix.pop_back();
+        }
+
+    drogon::app().registerHandler(
+        normalizedPrefix + "/{filePath}",
+        [normalizedPrefix, directory](
+            const drogon::HttpRequestPtr& request,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback,
+            const std::string& filePath
+        ) {
+            const auto fullPath =
+                directory / filePath;
+
+            auto response =
+                drogon::HttpResponse::newFileResponse(
+                    fullPath.string()
+                );
+
+            callback(response);
+        },
+        {drogon::Get}
     );
 }
 

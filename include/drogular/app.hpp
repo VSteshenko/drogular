@@ -105,6 +105,34 @@ public:
         return *this;
     }
 
+    /// Registers a static file mapping.
+    ///
+    /// Requests matching the specified route prefix are served
+    /// from the given directory.
+    ///
+    /// Example:
+    ///
+    /// app.staticFiles(
+    ///     "/assets",
+    ///     "public"
+    /// );
+    ///
+    /// Request:
+    ///
+    /// /assets/logo.png
+    ///
+    /// File:
+    ///
+    /// public/logo.png
+    ///
+    /// Static file mappings are typically used for:
+    ///
+    /// - Images
+    /// - CSS
+    /// - JavaScript
+    /// - Favicons
+    /// - Web manifests
+    /// - Service workers
     App& staticFiles(
         std::string routePrefix,
         std::filesystem::path directory

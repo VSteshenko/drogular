@@ -14,17 +14,9 @@ int main()
 {
     drogular::App app;
 
-    drogon::app().registerHandler(
-        "/favicon.ico",
-        [](const drogon::HttpRequestPtr&,
-            std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
-            auto response =
-                drogon::HttpResponse::newFileResponse(
-                    "examples/auth_sample/public/favicon.ico"
-                );
-
-            callback(response);
-        }
+    app.staticFiles(
+        "/assets",
+        "examples/auth_sample/public"
     );
 
     app.services().add<AuthService>(

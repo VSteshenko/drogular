@@ -28,6 +28,17 @@ public:
      */
     void action(const std::string& path, std::shared_ptr<ActionHandler> action);
 
+    /// Registers a static file handler.
+    ///
+    /// Files requested under the specified route prefix
+    /// are resolved relative to the provided directory.
+    ///
+    /// Path traversal protection is applied separately.
+    void staticFiles(
+        const std::string& routePrefix,
+        const std::filesystem::path& directory
+    );
+
 private:
     ApplicationServices* services_ = nullptr;
 };

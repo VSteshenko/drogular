@@ -9,6 +9,13 @@ App::App() {
 }
 
 void App::run(unsigned short port) {
+    for (const auto& mapping : options_.staticFiles()) {
+        router_.staticFiles(
+            mapping.routePrefix,
+            mapping.directory
+        );
+    }
+
     drogon::app()
         .addListener("0.0.0.0", port)
         .run();
