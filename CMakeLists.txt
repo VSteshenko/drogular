@@ -39,6 +39,7 @@ add_library(drogular
     src/services.cpp
     src/session.cpp
     src/session_store.cpp
+    src/static_file_resolver.cpp
     src/template_engine.cpp
     src/template_tokenizer.cpp
     src/template_ast.cpp

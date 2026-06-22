@@ -2,12 +2,39 @@
 #include <drogular/services.hpp>
 #include <drogular/page.hpp>
 #include <drogular/action_response.hpp>
+#include <drogular/static_file_resolver.hpp>
 
 #include <drogon/drogon.h>
 
 #include <filesystem>
 
 namespace drogular {
+
+namespace {
+
+bool isInsideDirectory(
+    const std::filesystem::path& root,
+    const std::filesystem::path& requested
+) {
+    const auto canonicalRoot =
+        std::filesystem::weakly_canonical(root);
+
+    const auto canonicalRequested =
+        std::filesystem::weakly_canonical(requested);
+
+    const auto rootString =
+        canonicalRoot.string();
+
+    const auto requestedString =
+        canonicalRequested.string();
+
+    return requestedString == rootString ||
+           requestedString.starts_with(
+               rootString + std::string(1, std::filesystem::path::preferred_separator)
+           );
+}
+
+} // namespace
 
 Router::Router(ApplicationServices* services)
     : services_(services) {
@@ -71,19 +98,65 @@ void Router::staticFiles(
         normalizedPrefix.pop_back();
         }
 
+    const auto rootDirectory =
+        std::filesystem::weakly_canonical(directory);
+
     drogon::app().registerHandler(
         normalizedPrefix + "/{filePath}",
-        [normalizedPrefix, directory](
-            const drogon::HttpRequestPtr& request,
+        [rootDirectory](
+            const drogon::HttpRequestPtr&,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
             const std::string& filePath
         ) {
-            const auto fullPath =
-                directory / filePath;
+            const auto requestedPath =
+                rootDirectory / filePath;
+
+            if (!isInsideDirectory(
+                    rootDirectory,
+                    requestedPath
+                )) {
+                auto response =
+                    drogon::HttpResponse::newHttpResponse();
+
+                response->setStatusCode(
+                    drogon::k403Forbidden
+                );
+
+                callback(response);
+                return;
+            }
+
+            if (!std::filesystem::exists(requestedPath) ||
+                !std::filesystem::is_regular_file(requestedPath)) {
+                auto response =
+                    drogon::HttpResponse::newHttpResponse();
+
+                response->setStatusCode(
+                    drogon::k404NotFound
+                );
+
+                callback(response);
+                return;
+            }
+
+            StaticFileResolver resolver(rootDirectory);
+
+            const auto resolved =
+                resolver.resolve(filePath);
+
+            if (!resolved.has_value()) {
+                auto response =
+                    drogon::HttpResponse::newHttpResponse();
+
+                response->setStatusCode(drogon::k404NotFound);
+
+                callback(response);
+                return;
+            }
 
             auto response =
                 drogon::HttpResponse::newFileResponse(
-                    fullPath.string()
+                    resolved->string()
                 );
 
             callback(response);
