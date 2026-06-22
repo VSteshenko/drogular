@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 #include <filesystem>
+#include <utility>
 
 namespace drogular {
 
@@ -99,6 +100,18 @@ public:
         router_.action(
             path,
             std::make_shared<ActionType>()
+        );
+
+        return *this;
+    }
+
+    App& staticFiles(
+        std::string routePrefix,
+        std::filesystem::path directory
+    ) {
+        options_.addStaticFiles(
+            std::move(routePrefix),
+            std::move(directory)
         );
 
         return *this;
