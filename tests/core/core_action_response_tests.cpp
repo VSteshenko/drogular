@@ -2,6 +2,9 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+#include <fstream>
+
 TEST(CoreActionResponseTests, ConvertsEmptyResult) {
     const auto response =
         drogular::toHttpResponse(
@@ -77,4 +80,59 @@ TEST(CoreActionResponseTests, ConvertsCookiesToHttpResponse) {
         cookies.at("session_id").value(),
         "abc123"
     );
+}
+
+TEST(CoreActionResponseTests, ConvertsFileResultToHttpResponse) {
+    const auto path =
+        std::filesystem::temp_directory_path() /
+        "drogular_action_file_response.txt";
+
+    {
+        std::ofstream file(path);
+        file << "hello";
+    }
+
+    const auto result =
+        drogular::ActionResult::file(path);
+
+    const auto response =
+        drogular::toHttpResponse(result);
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_EQ(
+        response->contentTypeString(),
+        "text/plain"
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreActionResponseTests, ConvertsDownloadResultToAttachmentResponse) {
+    const auto path =
+        std::filesystem::temp_directory_path() /
+        "drogular_action_download_response.txt";
+
+    {
+        std::ofstream file(path);
+        file << "hello";
+    }
+
+    const auto result =
+        drogular::ActionResult::download(
+            path,
+            "download.txt"
+        );
+
+    const auto response =
+        drogular::toHttpResponse(result);
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_EQ(
+        response->getHeader("Content-Disposition"),
+        "attachment; filename=\"download.txt\""
+    );
+
+    std::filesystem::remove(path);
 }

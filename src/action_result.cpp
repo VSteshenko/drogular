@@ -65,4 +65,37 @@ const std::vector<Cookie>& ActionResult::cookies() const {
     return cookies_;
 }
 
+ActionResult ActionResult::file(std::filesystem::path path) {
+    ActionResult result;
+
+    result.type_ = ActionResultType::File;
+    result.fileInfo_ = {
+        .path = std::move(path),
+        .downloadName = "",
+        .forceDownload = false
+    };
+
+    return result;
+}
+
+ActionResult ActionResult::download(
+    std::filesystem::path path,
+    std::string downloadName
+) {
+    ActionResult result;
+
+    result.type_ = ActionResultType::File;
+    result.fileInfo_ = {
+        .path = std::move(path),
+        .downloadName = std::move(downloadName),
+        .forceDownload = true
+    };
+
+    return result;
+}
+
+const FileResponseInfo& ActionResult::fileInfo() const {
+    return fileInfo_;
+}
+
 } // namespace drogular

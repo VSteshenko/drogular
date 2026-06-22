@@ -50,3 +50,46 @@ TEST(CoreActionResultTests, StoresCookies) {
     EXPECT_EQ(result.cookies()[0].path, "/");
     EXPECT_TRUE(result.cookies()[0].httpOnly);
 }
+
+TEST(CoreActionResultTests, CreatesFileResult) {
+    const auto result =
+        drogular::ActionResult::file(
+            "report.pdf"
+        );
+
+    EXPECT_EQ(
+        result.type(),
+        drogular::ActionResultType::File
+    );
+
+    EXPECT_EQ(
+        result.fileInfo().path,
+        std::filesystem::path("report.pdf")
+    );
+
+    EXPECT_FALSE(
+        result.fileInfo().forceDownload
+    );
+}
+
+TEST(CoreActionResultTests, CreatesDownloadResult) {
+    const auto result =
+        drogular::ActionResult::download(
+            "report.pdf",
+            "sales-report.pdf"
+        );
+
+    EXPECT_EQ(
+        result.type(),
+        drogular::ActionResultType::File
+    );
+
+    EXPECT_TRUE(
+        result.fileInfo().forceDownload
+    );
+
+    EXPECT_EQ(
+        result.fileInfo().downloadName,
+        "sales-report.pdf"
+    );
+}

@@ -3,7 +3,6 @@
 #include <drogular/page.hpp>
 #include <drogular/action_response.hpp>
 #include <drogular/static_file_resolver.hpp>
-#include <drogular/static_file_content_type.hpp>
 #include <drogular/static_file_response.hpp>
 
 #include <drogon/drogon.h>

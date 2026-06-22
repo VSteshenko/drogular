@@ -1,11 +1,12 @@
 #include <drogular/action_response.hpp>
+#include <drogular/static_file_response.hpp>
 
 namespace drogular {
 
 namespace {
 
 void applyCookies(
-    const drogular::ActionResult& result,
+    const ActionResult& result,
     const drogon::HttpResponsePtr& response
 ) {
     for (const auto& cookie : result.cookies()) {
@@ -63,6 +64,26 @@ drogon::HttpResponsePtr toHttpResponse(
                 drogon::HttpResponse::newHttpJsonResponse(result.json());
 
             applyCookies(result, response);
+            return response;
+        }
+
+        case ActionResultType::File: {
+            auto response =
+                StaticFileResponse::create(
+                    result.fileInfo().path
+                );
+
+            if (result.fileInfo().forceDownload) {
+                response->addHeader(
+                    "Content-Disposition",
+                    "attachment; filename=\"" +
+                        result.fileInfo().downloadName +
+                        "\""
+                );
+            }
+
+            applyCookies(result, response);
+
             return response;
         }
     }
