@@ -43,3 +43,13 @@ TEST(CoreApplicationOptionsTests, StoresStaticFileCacheOptions) {
         std::chrono::seconds(60)
     );
 }
+
+TEST(CoreApplicationOptionsTests, StoresStaticFileEtagOptions) {
+    drogular::ApplicationOptions options;
+
+    options.setStaticFileEtagEnabled(false);
+
+    EXPECT_FALSE(
+        options.staticFileEtagEnabled()
+    );
+}

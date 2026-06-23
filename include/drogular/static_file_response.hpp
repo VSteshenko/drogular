@@ -7,20 +7,35 @@
 
 namespace drogular {
 
+/**
+ * Configures HTTP headers for static file responses.
+ */
 struct StaticFileResponseOptions {
+    /**
+     * Enables Cache-Control headers.
+     */
     bool cacheEnabled = true;
 
+    /**
+     * Max age used when cache headers are enabled.
+     */
     std::chrono::seconds maxAge =
         std::chrono::hours(24);
+
+    /**
+     * Enables ETag headers.
+     */
+    bool etagEnabled = true;
 };
 
 class StaticFileResponse {
 public:
     /**
-     * Creates an HTTP file response with detected content type.
+     * Creates an HTTP file response with content type,
+     * cache headers and optional ETag.
      */
     static drogon::HttpResponsePtr create(
-      const std::filesystem::path& path,
+        const std::filesystem::path& path,
         StaticFileResponseOptions options = {}
     );
 };

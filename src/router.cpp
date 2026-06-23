@@ -170,6 +170,9 @@ void Router::staticFiles(
                     options->staticFileCacheMaxAge();
             }
 
+            responseOptions.etagEnabled =
+                options->staticFileEtagEnabled();
+
             auto response =
                 drogular::StaticFileResponse::create(
                     *resolved,

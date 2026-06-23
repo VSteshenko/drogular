@@ -33,6 +33,7 @@ add_executable(drogular_tests
     core/core_static_file_resolver_tests.cpp
     core/core_static_file_content_type_tests.cpp
     core/core_static_file_response_tests.cpp
+    core/core_static_file_etag_tests.cpp
     core/core_template_component_tests.cpp
     core/core_template_engine_tests.cpp
     core/core_template_page_tests.cpp

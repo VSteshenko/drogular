@@ -146,20 +146,58 @@ public:
     }
 
     /**
-     * Enables or disables static file browser cache headers.
+     * Enables or disables browser cache headers for static files.
+     *
+     * When enabled, Drogular includes Cache-Control headers in
+     * static file responses.
+     *
+     * Enabled by default.
      */
-    App& staticFileCache(bool enabled) {
-        options_.setStaticFileCacheEnabled(enabled);
-        return *this;
-    }
+    App& staticFileCache(bool enabled);
 
     /**
-     * Sets max-age for static file browser cache headers.
+     * Sets Cache-Control max-age for static file responses.
+     *
+     * Example:
+     *
+     * app.staticFileCacheMaxAge(
+     *     std::chrono::hours(24)
+     * );
      */
     App& staticFileCacheMaxAge(
         std::chrono::seconds maxAge
-    ) {
-        options_.setStaticFileCacheMaxAge(maxAge);
+    );
+
+    /**
+     * Returns the application's service container.
+     *
+     * Services registered through this container are available
+     * to pages, actions and components through dependency
+     * injection.
+     *
+     * Example:
+     *
+     * app.services().add<UserRepository>(
+     *     ServiceLifetime::Singleton
+     * );
+     */
+    ApplicationServices& services() {
+        return services_;
+    }
+
+    /**
+     * Enables or disables ETag headers for static file responses.
+     *
+     * When enabled, Drogular generates ETag values based on
+     * file metadata and includes them in static file responses.
+     *
+     * ETags are used by browsers to perform conditional requests
+     * and reduce unnecessary file transfers.
+     *
+     * Enabled by default.
+     */
+    App& staticFileEtag(bool enabled) {
+        options_.setStaticFileEtagEnabled(enabled);
         return *this;
     }
 
@@ -167,10 +205,6 @@ public:
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);
-
-    ApplicationServices& services() {
-        return services_;
-    }
 
 private:
     ApplicationOptions options_;

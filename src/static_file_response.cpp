@@ -1,7 +1,9 @@
 #include <drogular/static_file_response.hpp>
 #include <drogular/static_file_content_type.hpp>
+#include <drogular/static_file_etag.hpp>
 
 #include <string>
+#include <filesystem>
 
 namespace drogular {
 
@@ -30,6 +32,13 @@ drogon::HttpResponsePtr StaticFileResponse::create(
         response->addHeader(
             "Cache-Control",
             "no-store"
+        );
+    }
+
+    if (options.etagEnabled) {
+        response->addHeader(
+            "ETag",
+            StaticFileEtag::create(path)
         );
     }
 

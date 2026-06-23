@@ -42,6 +42,7 @@ add_library(drogular
     src/static_file_resolver.cpp
     src/static_file_content_type.cpp
     src/static_file_response.cpp
+    src/static_file_etag.cpp
     src/template_engine.cpp
     src/template_tokenizer.cpp
     src/template_ast.cpp

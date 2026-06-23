@@ -114,3 +114,47 @@ TEST(CoreStaticFileResponseTests, UsesCustomMaxAge) {
 
     std::filesystem::remove(path);
 }
+
+TEST(CoreStaticFileResponseTests, AddsEtagHeader) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_etag.txt",
+            "hello"
+        );
+
+    const auto response =
+        drogular::StaticFileResponse::create(path);
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_FALSE(
+        response->getHeader("ETag").empty()
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreStaticFileResponseTests, CanDisableEtagHeader) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_no_etag.txt",
+            "hello"
+        );
+
+    drogular::StaticFileResponseOptions options;
+    options.etagEnabled = false;
+
+    const auto response =
+        drogular::StaticFileResponse::create(
+            path,
+            options
+        );
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_TRUE(
+        response->getHeader("ETag").empty()
+    );
+
+    std::filesystem::remove(path);
+}
