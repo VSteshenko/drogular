@@ -41,7 +41,7 @@ HTML
 
 ## Status
 
-**Version:** 0.17.0
+**Version:** 0.18.0
 
 Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
 
@@ -237,6 +237,24 @@ HTML
 - Repository Pattern
 - Repository Sample
 
+#### Static Files & Asset Support
+
+- Static file registration
+- Asset directories
+- Favicon support
+- Safe file serving
+- Path traversal protection
+- Content type detection
+- Static file responses
+- File downloads
+- Cache-Control support
+- ETag support
+- If-None-Match support
+- Last-Modified support
+- If-Modified-Since support
+- 304 Not Modified responses
+- Static file cache profiles
+
 #### Testing
 
 - Component testing
@@ -309,6 +327,14 @@ HTML
 | Template Layouts                | Stable      |
 | Template Partials               | Stable      |
 | Repository Pattern              | Stable      |
+| Static Files                    | Stable      |
+| Static File Resolver            | Stable      |
+| Static File Responses           | Stable      |
+| File Downloads                  | Stable      |
+| Static File Caching             | Stable      |
+| ETag Support                    | Stable      |
+| Last-Modified Support           | Stable      |
+| Static File Cache Profiles      | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
@@ -709,6 +735,52 @@ app.templateRoot(
 app.templateCache(false);
 ```
 
+## Static Files
+
+Drogular can serve static files through application-level mappings.
+
+```c++
+app.staticFiles(
+    "/assets",
+    "public"
+);
+```
+
+### Example
+
+```text
+/assets/logo.png -> public/logo.png
+```
+
+### Static File Cache Profiles
+
+```c++
+app.staticFileCacheProfile(
+    drogular::StaticFileCacheProfile::Development
+);
+```
+
+### Available profiles:
+
+- Disabled
+- Development
+- Production
+
+### File Responses
+
+```c++
+return drogular::ActionResult::file(
+    "public/report.pdf"
+);
+```
+
+```c++
+return drogular::ActionResult::download(
+    "exports/report.pdf",
+    "report.pdf"
+);
+```
+
 ## Component Lifecycle
 
 Components can participate in the rendering lifecycle.
@@ -843,15 +915,6 @@ repository->create(
 ```
 
 ## Roadmap
-
-### 0.18 — Static Files & Asset Support
-
-- Static file registration
-- Favicon support
-- Asset directories
-- Safe file serving
-- Dynamic file responses
-- Path traversal protection
 
 ### 0.19 — PWA Offline Support
 
