@@ -8,6 +8,14 @@ int main()
 {
     drogular::App app;
 
+    app.staticFiles(
+        "/assets",
+        "examples/auth_sample/public"
+        )
+        .staticFileCacheProfile(
+           drogular::StaticFileCacheProfile::Development
+        );
+
     app.templateRoot(
         "examples/repository_sample/templates"
     );
