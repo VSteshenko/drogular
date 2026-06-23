@@ -38,6 +38,16 @@ public:
         const std::filesystem::path& path,
         StaticFileResponseOptions options = {}
     );
+
+    /**
+     * Creates a 304 Not Modified response.
+     *
+     * Used when the client already has the current
+     * version of a cached resource.
+     */
+    static drogon::HttpResponsePtr notModified(
+        const std::string& etag
+    );
 };
 
 } // namespace drogular

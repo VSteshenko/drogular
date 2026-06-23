@@ -45,4 +45,22 @@ drogon::HttpResponsePtr StaticFileResponse::create(
     return response;
 }
 
+drogon::HttpResponsePtr StaticFileResponse::notModified(
+    const std::string& etag
+) {
+    auto response =
+        drogon::HttpResponse::newHttpResponse();
+
+    response->setStatusCode(
+        drogon::k304NotModified
+    );
+
+    response->addHeader(
+        "ETag",
+        etag
+    );
+
+    return response;
+}
+
 } // namespace drogular

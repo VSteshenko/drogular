@@ -158,3 +158,22 @@ TEST(CoreStaticFileResponseTests, CanDisableEtagHeader) {
 
     std::filesystem::remove(path);
 }
+
+TEST(CoreStaticFileResponseTests, CreatesNotModifiedResponse) {
+    const auto response =
+        drogular::StaticFileResponse::notModified(
+            "W/\"123-456\""
+        );
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_EQ(
+        response->statusCode(),
+        drogon::k304NotModified
+    );
+
+    EXPECT_EQ(
+        response->getHeader("ETag"),
+        "W/\"123-456\""
+    );
+}

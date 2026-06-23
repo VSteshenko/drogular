@@ -5,6 +5,13 @@
 
 namespace drogular {
 
+/**
+ * Generates ETag values for static files.
+ *
+ * ETags are used by browsers and proxies to perform
+ * conditional requests and reduce unnecessary file
+ * transfers.
+ */
 class StaticFileEtag {
 public:
     /**

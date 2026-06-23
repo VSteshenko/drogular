@@ -4,6 +4,7 @@
 #include <drogular/action_response.hpp>
 #include <drogular/static_file_resolver.hpp>
 #include <drogular/static_file_response.hpp>
+#include <drogular/static_file_etag.hpp>
 
 #include <drogon/drogon.h>
 
@@ -110,7 +111,7 @@ void Router::staticFiles(
     drogon::app().registerHandler(
         normalizedPrefix + "/{filePath}",
         [rootDirectory, options](
-            const drogon::HttpRequestPtr&,
+            const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
             const std::string& filePath
         ) {
@@ -168,13 +169,31 @@ void Router::staticFiles(
 
                 responseOptions.maxAge =
                     options->staticFileCacheMaxAge();
+
+                responseOptions.etagEnabled =
+                    options->staticFileEtagEnabled();
             }
 
-            responseOptions.etagEnabled =
-                options->staticFileEtagEnabled();
+            if (responseOptions.etagEnabled) {
+                const auto etag =
+                    StaticFileEtag::create(
+                        *resolved
+                    );
+
+                const auto requestEtag =
+                    request->getHeader("If-None-Match");
+
+                if (requestEtag == etag) {
+                    callback(
+                        StaticFileResponse::notModified(etag)
+                    );
+
+                    return;
+                }
+            }
 
             auto response =
-                drogular::StaticFileResponse::create(
+                StaticFileResponse::create(
                     *resolved,
                     responseOptions
                 );
