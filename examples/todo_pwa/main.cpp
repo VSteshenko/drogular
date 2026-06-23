@@ -6,11 +6,20 @@
 #include "delete_todo_action.hpp"
 
 #include <drogular/app.hpp>
+#include <drogular/static_file_cache_profile.hpp>
 
 #include <memory>
 
 int main() {
     drogular::App app;
+
+    app.staticFiles(
+       "/assets",
+       "examples/todo_pwa/public"
+   )
+   .staticFileCacheProfile(
+       drogular::StaticFileCacheProfile::Development
+   );
 
     app.services().add<TodoStore>(
         drogular::ServiceLifetime::Singleton

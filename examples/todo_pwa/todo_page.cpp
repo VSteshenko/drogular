@@ -43,6 +43,8 @@ std::string TodoPage::templateHtml() const {
     <meta charset="utf-8">
     <title>{{ title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="/assets/manifest.webmanifest">
+    <meta name="theme-color" content="#4f46e5">
 </head>
 <body>
     <main>
