@@ -202,6 +202,16 @@ public:
     }
 
     /**
+     * Enables or disables Last-Modified headers for static file responses.
+     *
+     * Enabled by default.
+     */
+    App& staticFileLastModified(bool enabled) {
+        options_.setStaticFileLastModifiedEnabled(enabled);
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);

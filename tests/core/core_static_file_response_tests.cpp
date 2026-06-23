@@ -177,3 +177,47 @@ TEST(CoreStaticFileResponseTests, CreatesNotModifiedResponse) {
         "W/\"123-456\""
     );
 }
+
+TEST(CoreStaticFileResponseTests, AddsLastModifiedHeader) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_last_modified.txt",
+            "hello"
+        );
+
+    const auto response =
+        drogular::StaticFileResponse::create(path);
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_FALSE(
+        response->getHeader("Last-Modified").empty()
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreStaticFileResponseTests, CanDisableLastModifiedHeader) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_no_last_modified.txt",
+            "hello"
+        );
+
+    drogular::StaticFileResponseOptions options;
+    options.lastModifiedEnabled = false;
+
+    const auto response =
+        drogular::StaticFileResponse::create(
+            path,
+            options
+        );
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_TRUE(
+        response->getHeader("Last-Modified").empty()
+    );
+
+    std::filesystem::remove(path);
+}

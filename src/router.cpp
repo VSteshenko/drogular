@@ -5,6 +5,7 @@
 #include <drogular/static_file_resolver.hpp>
 #include <drogular/static_file_response.hpp>
 #include <drogular/static_file_etag.hpp>
+#include <drogular/static_file_last_modified.hpp>
 
 #include <drogon/drogon.h>
 
@@ -172,6 +173,9 @@ void Router::staticFiles(
 
                 responseOptions.etagEnabled =
                     options->staticFileEtagEnabled();
+
+                responseOptions.lastModifiedEnabled =
+                    options->staticFileLastModifiedEnabled();
             }
 
             if (responseOptions.etagEnabled) {
@@ -186,6 +190,28 @@ void Router::staticFiles(
                 if (requestEtag == etag) {
                     callback(
                         StaticFileResponse::notModified(etag)
+                    );
+
+                    return;
+                }
+            }
+
+            if (responseOptions.lastModifiedEnabled) {
+                const auto lastModified =
+                    drogular::StaticFileLastModified::create(
+                        *resolved
+                    );
+
+                const auto requestLastModified =
+                    request->getHeader("If-Modified-Since");
+
+                if (requestLastModified == lastModified) {
+                    callback(
+                        drogular::StaticFileResponse::notModified(
+                            responseOptions.etagEnabled
+                                ? drogular::StaticFileEtag::create(*resolved)
+                                : ""
+                        )
                     );
 
                     return;

@@ -158,6 +158,23 @@ public:
         return staticFileEtagEnabled_;
     }
 
+    /**
+     * Enables or disables Last-Modified headers for static files.
+     *
+     * Enabled by default.
+     */
+    void setStaticFileLastModifiedEnabled(bool enabled) {
+        staticFileLastModifiedEnabled_ = enabled;
+    }
+
+    /**
+     * Returns whether Last-Modified headers are enabled
+     * for static file responses.
+     */
+    bool staticFileLastModifiedEnabled() const {
+        return staticFileLastModifiedEnabled_;
+    }
+
 private:
     std::filesystem::path templateRoot_;
     bool templateCacheEnabled_ = true;
@@ -165,6 +182,7 @@ private:
     bool staticFileCacheEnabled_ = true;
     std::chrono::seconds staticFileCacheMaxAge_ = std::chrono::hours(24);
     bool staticFileEtagEnabled_ = true;
+    bool staticFileLastModifiedEnabled_ = true;
 };
 
 } // namespace drogular

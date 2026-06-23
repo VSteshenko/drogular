@@ -1,6 +1,7 @@
 #include <drogular/static_file_response.hpp>
 #include <drogular/static_file_content_type.hpp>
 #include <drogular/static_file_etag.hpp>
+#include <drogular/static_file_last_modified.hpp>
 
 #include <string>
 #include <filesystem>
@@ -42,11 +43,19 @@ drogon::HttpResponsePtr StaticFileResponse::create(
         );
     }
 
+    if (options.lastModifiedEnabled) {
+        response->addHeader(
+            "Last-Modified",
+            StaticFileLastModified::create(path)
+        );
+    }
+
     return response;
 }
 
 drogon::HttpResponsePtr StaticFileResponse::notModified(
-    const std::string& etag
+    std::string etag,
+    std::string lastModified
 ) {
     auto response =
         drogon::HttpResponse::newHttpResponse();
@@ -55,10 +64,13 @@ drogon::HttpResponsePtr StaticFileResponse::notModified(
         drogon::k304NotModified
     );
 
-    response->addHeader(
-        "ETag",
-        etag
-    );
+    if (!etag.empty()) {
+        response->addHeader("ETag", etag);
+    }
+
+    if (!lastModified.empty()) {
+        response->addHeader("Last-Modified", lastModified);
+    }
 
     return response;
 }

@@ -26,6 +26,11 @@ struct StaticFileResponseOptions {
      * Enables ETag headers.
      */
     bool etagEnabled = true;
+
+    /**
+     * Enables Last-Modified headers.
+     */
+    bool lastModifiedEnabled = true;
 };
 
 class StaticFileResponse {
@@ -46,7 +51,8 @@ public:
      * version of a cached resource.
      */
     static drogon::HttpResponsePtr notModified(
-        const std::string& etag
+        std::string etag = "",
+        std::string lastModified = ""
     );
 };
 
