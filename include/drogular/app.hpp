@@ -212,6 +212,19 @@ public:
     }
 
     /**
+     * Applies a predefined static file cache profile.
+     *
+     * This is a convenience API for configuring Cache-Control,
+     * ETag and Last-Modified behavior together.
+     */
+    App& staticFileCacheProfile(
+        StaticFileCacheProfile profile
+    ) {
+        options_.setStaticFileCacheProfile(profile);
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);

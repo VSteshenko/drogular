@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/static_file_mapping.hpp>
+#include <drogular/static_file_cache_profile.hpp>
 
 #include <string>
 #include <vector>
@@ -173,6 +174,36 @@ public:
      */
     bool staticFileLastModifiedEnabled() const {
         return staticFileLastModifiedEnabled_;
+    }
+
+    /**
+     * Applies a predefined static file cache profile.
+     */
+    void setStaticFileCacheProfile(
+        StaticFileCacheProfile profile
+    ) {
+        switch (profile) {
+        case StaticFileCacheProfile::Disabled:
+            setStaticFileCacheEnabled(false);
+            setStaticFileEtagEnabled(false);
+            setStaticFileLastModifiedEnabled(false);
+            break;
+
+        case StaticFileCacheProfile::Development:
+            setStaticFileCacheEnabled(false);
+            setStaticFileEtagEnabled(true);
+            setStaticFileLastModifiedEnabled(true);
+            break;
+
+        case StaticFileCacheProfile::Production:
+            setStaticFileCacheEnabled(true);
+            setStaticFileCacheMaxAge(
+                std::chrono::hours(24)
+            );
+            setStaticFileEtagEnabled(true);
+            setStaticFileLastModifiedEnabled(true);
+            break;
+        }
     }
 
 private:

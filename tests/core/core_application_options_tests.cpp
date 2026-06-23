@@ -53,3 +53,43 @@ TEST(CoreApplicationOptionsTests, StoresStaticFileEtagOptions) {
         options.staticFileEtagEnabled()
     );
 }
+
+TEST(CoreApplicationOptionsTests, AppliesDisabledStaticFileCacheProfile) {
+    drogular::ApplicationOptions options;
+
+    options.setStaticFileCacheProfile(
+        drogular::StaticFileCacheProfile::Disabled
+    );
+
+    EXPECT_FALSE(options.staticFileCacheEnabled());
+    EXPECT_FALSE(options.staticFileEtagEnabled());
+    EXPECT_FALSE(options.staticFileLastModifiedEnabled());
+}
+
+TEST(CoreApplicationOptionsTests, AppliesDevelopmentStaticFileCacheProfile) {
+    drogular::ApplicationOptions options;
+
+    options.setStaticFileCacheProfile(
+        drogular::StaticFileCacheProfile::Development
+    );
+
+    EXPECT_FALSE(options.staticFileCacheEnabled());
+    EXPECT_TRUE(options.staticFileEtagEnabled());
+    EXPECT_TRUE(options.staticFileLastModifiedEnabled());
+}
+
+TEST(CoreApplicationOptionsTests, AppliesProductionStaticFileCacheProfile) {
+    drogular::ApplicationOptions options;
+
+    options.setStaticFileCacheProfile(
+        drogular::StaticFileCacheProfile::Production
+    );
+
+    EXPECT_TRUE(options.staticFileCacheEnabled());
+    EXPECT_EQ(
+        options.staticFileCacheMaxAge(),
+        std::chrono::hours(24)
+    );
+    EXPECT_TRUE(options.staticFileEtagEnabled());
+    EXPECT_TRUE(options.staticFileLastModifiedEnabled());
+}
