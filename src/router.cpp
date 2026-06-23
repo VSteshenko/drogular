@@ -102,9 +102,14 @@ void Router::staticFiles(
     const auto rootDirectory =
         std::filesystem::weakly_canonical(directory);
 
+    auto* options =
+        services_ != nullptr
+            ? services_->options()
+            : nullptr;
+
     drogon::app().registerHandler(
         normalizedPrefix + "/{filePath}",
-        [rootDirectory](
+        [rootDirectory, options](
             const drogon::HttpRequestPtr&,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
             const std::string& filePath
@@ -155,8 +160,21 @@ void Router::staticFiles(
                 return;
             }
 
+            StaticFileResponseOptions responseOptions;
+
+            if (options != nullptr) {
+                responseOptions.cacheEnabled =
+                    options->staticFileCacheEnabled();
+
+                responseOptions.maxAge =
+                    options->staticFileCacheMaxAge();
+            }
+
             auto response =
-                StaticFileResponse::create(*resolved);
+                drogular::StaticFileResponse::create(
+                    *resolved,
+                    responseOptions
+                );
 
             callback(response);
         },

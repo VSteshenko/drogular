@@ -146,6 +146,24 @@ public:
     }
 
     /**
+     * Enables or disables static file browser cache headers.
+     */
+    App& staticFileCache(bool enabled) {
+        options_.setStaticFileCacheEnabled(enabled);
+        return *this;
+    }
+
+    /**
+     * Sets max-age for static file browser cache headers.
+     */
+    App& staticFileCacheMaxAge(
+        std::chrono::seconds maxAge
+    ) {
+        options_.setStaticFileCacheMaxAge(maxAge);
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);

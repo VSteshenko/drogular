@@ -25,3 +25,21 @@ TEST(CoreApplicationOptionsTests, StoresStaticFileMappings) {
         std::filesystem::path("public")
     );
 }
+
+TEST(CoreApplicationOptionsTests, StoresStaticFileCacheOptions) {
+    drogular::ApplicationOptions options;
+
+    options.setStaticFileCacheEnabled(false);
+    options.setStaticFileCacheMaxAge(
+        std::chrono::seconds(60)
+    );
+
+    EXPECT_FALSE(
+        options.staticFileCacheEnabled()
+    );
+
+    EXPECT_EQ(
+        options.staticFileCacheMaxAge(),
+        std::chrono::seconds(60)
+    );
+}

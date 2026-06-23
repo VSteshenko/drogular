@@ -42,3 +42,75 @@ TEST(CoreStaticFileResponseTests, SetsContentTypeFromFileExtension) {
 
     std::filesystem::remove(path);
 }
+
+TEST(CoreStaticFileResponseTests, AddsCacheControlHeader) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_cache.txt",
+            "hello"
+        );
+
+    const auto response =
+        drogular::StaticFileResponse::create(path);
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_EQ(
+        response->getHeader("Cache-Control"),
+        "public, max-age=86400"
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreStaticFileResponseTests, CanDisableCacheControl) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_no_cache.txt",
+            "hello"
+        );
+
+    drogular::StaticFileResponseOptions options;
+    options.cacheEnabled = false;
+
+    const auto response =
+        drogular::StaticFileResponse::create(
+            path,
+            options
+        );
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_EQ(
+        response->getHeader("Cache-Control"),
+        "no-store"
+    );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreStaticFileResponseTests, UsesCustomMaxAge) {
+    const auto path =
+        writeStaticFile(
+            "drogular_static_response_custom_cache.txt",
+            "hello"
+        );
+
+    drogular::StaticFileResponseOptions options;
+    options.maxAge = std::chrono::seconds(60);
+
+    const auto response =
+        drogular::StaticFileResponse::create(
+            path,
+            options
+        );
+
+    ASSERT_NE(response, nullptr);
+
+    EXPECT_EQ(
+        response->getHeader("Cache-Control"),
+        "public, max-age=60"
+    );
+
+    std::filesystem::remove(path);
+}
