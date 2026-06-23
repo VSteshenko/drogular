@@ -71,6 +71,13 @@ std::string TodoPage::templateHtml() const {
         <p>No todos yet.</p>
 @endif
     </main>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/assets/service-worker.js");
+    });
+}
+</script>
 </body>
 </html>
 )";
