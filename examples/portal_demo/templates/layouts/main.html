@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="{{ locale }}">
+<head>
+    <meta charset="utf-8">
+    <title>{{ pageTitle }} — {{ appTitle }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {{{ manifestLink }}}
+    {{{ faviconLink }}}
+    {{{ themeColorMeta }}}
+</head>
+<body>
+    @include("partials/header.html")
+
+    <main>
+        @content
+    </main>
+
+    @include("partials/footer.html")
+
+    {{{ serviceWorkerRegistration }}}
+</body>
+</html>

@@ -81,6 +81,7 @@ if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/todo_pwa)
     add_subdirectory(examples/auth_sample)
     add_subdirectory(examples/repository_sample)
+    add_subdirectory(examples/portal_demo)
 endif()
 
 if(DROGULAR_BUILD_TESTS)

@@ -1,0 +1,27 @@
+<header>
+    <h1>{{ appTitle }}</h1>
+
+    <nav>
+        <a href="/dashboard">{{ navDashboard }}</a>
+        |
+        <a href="/users">{{ navUsers }}</a>
+        |
+        <a href="/admin">{{ navAdmin }}</a>
+        |
+        <a href="/logout">{{ navLogout }}</a>
+    </nav>
+
+    <div>
+        <form method="post" action="/language" style="display:inline">
+            <input type="hidden" name="language" value="en">
+            <button type="submit">EN</button>
+        </form>
+
+        <form method="post" action="/language" style="display:inline">
+            <input type="hidden" name="language" value="de">
+            <button type="submit">DE</button>
+        </form>
+    </div>
+
+    <hr>
+</header>
