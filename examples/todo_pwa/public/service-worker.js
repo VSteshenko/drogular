@@ -1,10 +1,10 @@
-const CACHE_NAME = "drogular-todo-pwa-v5";
+const CACHE_NAME = "drogular-todo-pwa-v6";
 
 const APP_SHELL = [
     "/",
     "/assets/manifest.webmanifest",
     "/service-worker.js",
-    "/assets/offline.html"
+    "/__offline"
 ];
 
 const STATIC_ASSETS = [
@@ -46,7 +46,7 @@ self.addEventListener("fetch", event => {
     if (event.request.mode === "navigate") {
         event.respondWith(
             fetch(event.request)
-                .catch(() => caches.match("/assets/offline.html"))
+                .catch(() => caches.match("/__offline"))
         );
 
         return;

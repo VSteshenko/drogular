@@ -7,6 +7,7 @@
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
+#include "offline_page.hpp"
 
 #include <drogon/drogon.h>
 
@@ -41,6 +42,7 @@ int main() {
     app.action<CreateTodoAction>("/todos/create");
     app.action<ToggleTodoAction>("/todos/toggle");
     app.action<DeleteTodoAction>("/todos/delete");
+    app.offlinePage<TodoPwaOfflinePage>();
 
     app.run(8080);
 }

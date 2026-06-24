@@ -22,6 +22,14 @@ void App::run(unsigned short port) {
         );
     }
 
+    if (offlinePageRoute_.has_value() &&
+        offlinePageFactory_) {
+        router_.page(
+            *offlinePageRoute_,
+            offlinePageFactory_()
+        );
+    }
+
     drogon::app()
         .addListener("0.0.0.0", port)
         .run();

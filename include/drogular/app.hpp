@@ -12,6 +12,8 @@
 #include <type_traits>
 #include <filesystem>
 #include <utility>
+#include <functional>
+#include <optional>
 
 namespace drogular {
 
@@ -105,34 +107,36 @@ public:
         return *this;
     }
 
-    /// Registers a static file mapping.
-    ///
-    /// Requests matching the specified route prefix are served
-    /// from the given directory.
-    ///
-    /// Example:
-    ///
-    /// app.staticFiles(
-    ///     "/assets",
-    ///     "public"
-    /// );
-    ///
-    /// Request:
-    ///
-    /// /assets/logo.png
-    ///
-    /// File:
-    ///
-    /// public/logo.png
-    ///
-    /// Static file mappings are typically used for:
-    ///
-    /// - Images
-    /// - CSS
-    /// - JavaScript
-    /// - Favicons
-    /// - Web manifests
-    /// - Service workers
+    /**
+     * Registers a static file mapping.
+     *
+     * Requests matching the specified route prefix are served
+     * from the given directory.
+     *
+     * Example:
+     *
+     * app.staticFiles(
+     *     "/assets",
+     *     "public"
+     * );
+     *
+     * Request:
+     *
+     * /assets/logo.png
+     *
+     * File:
+     *
+     * public/logo.png
+     *
+     * Static file mappings are typically used for:
+     *
+     * - Images
+     * - CSS
+     * - JavaScript
+     * - Favicons
+     * - Web manifests
+     * - Service workers
+     */
     App& staticFiles(
         std::string routePrefix,
         std::filesystem::path directory
@@ -241,6 +245,27 @@ public:
     }
 
     /**
+     * Registers a dynamic offline fallback page.
+     *
+     * The page is served as a regular Drogular page and can use
+     * templates, layouts, partials and render context data.
+     */
+    template <typename PageType>
+    App& offlinePage(
+        std::string route = "/__offline"
+    ) {
+        offlinePageRoute_ =
+            std::move(route);
+
+        offlinePageFactory_ =
+            []() {
+                return std::make_shared<PageType>();
+        };
+
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);
@@ -249,6 +274,8 @@ private:
     ApplicationOptions options_;
     ApplicationServices services_;
     Router router_{&services_};
+    std::optional<std::string> offlinePageRoute_;
+    std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;
 };
 
 } // namespace drogular
