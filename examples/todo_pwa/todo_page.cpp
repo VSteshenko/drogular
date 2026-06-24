@@ -46,5 +46,12 @@ void TodoPage::onInit(drogular::RenderContext& context) {
         )
     );
 
+    context.set(
+        "offlineStatusScript",
+        drogular::PwaScripts::offlineStatus(
+            "offline-status"
+        )
+    );
+
     drogular::PwaPageSupport::apply(context);
 }

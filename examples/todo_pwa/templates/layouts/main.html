@@ -5,12 +5,28 @@
     <title>Drogular Todo PWA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <style>
+        #offline-status {
+            margin: 0 0 1rem 0;
+            padding: 0.75rem 1rem;
+            border: 1px solid #f59e0b;
+            border-radius: 0.5rem;
+            background: #fffbeb;
+            color: #92400e;
+            font-weight: 500;
+        }
+    </style>
+
     {{{ manifestLink }}}
     {{{ faviconLink }}}
     {{{ themeColorMeta }}}
 </head>
 <body>
     @include("partials/header.html")
+
+    <p id="offline-status" hidden>
+        You are offline. Changes may not be saved.
+    </p>
 
     <main>
         @content
@@ -19,5 +35,6 @@
     @include("partials/footer.html")
 
     {{{ serviceWorkerRegistration }}}
+    {{{ offlineStatusScript }}}
 </body>
 </html>

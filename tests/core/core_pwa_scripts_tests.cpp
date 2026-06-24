@@ -40,3 +40,30 @@ TEST(CorePwaScriptsTests, CreatesInputPersistenceScript) {
     EXPECT_NE(script.find("todo-draft"), std::string::npos);
     EXPECT_NE(script.find("localStorage"), std::string::npos);
 }
+
+TEST(CorePwaScriptsTests, CreatesOfflineStatusScript) {
+    const auto script =
+        drogular::PwaScripts::offlineStatus(
+            "offline-status"
+        );
+
+    EXPECT_NE(
+        script.find("offline-status"),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        script.find("navigator.onLine"),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        script.find("window.addEventListener(\"offline\""),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        script.find("window.addEventListener(\"online\""),
+        std::string::npos
+    );
+}

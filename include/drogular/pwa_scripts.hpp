@@ -28,6 +28,14 @@ public:
         const std::string& inputId,
         const std::string& storageKey
     );
+
+    /**
+     * Creates a script that shows or hides an element depending
+     * on the browser online/offline state.
+     */
+    static std::string offlineStatus(
+        const std::string& elementId
+    );
 };
 
 } // namespace drogular

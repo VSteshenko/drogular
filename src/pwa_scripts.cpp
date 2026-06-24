@@ -45,4 +45,31 @@ std::string PwaScripts::inputPersistence(
 </script>)";
 }
 
+std::string PwaScripts::offlineStatus(
+    const std::string& elementId
+) {
+    return R"(<script>
+(() => {
+    const element = document.getElementById(")" + elementId + R"(");
+
+    if (!element) {
+        return;
+    }
+
+    const updateStatus = () => {
+        if (navigator.onLine) {
+            element.hidden = true;
+        } else {
+            element.hidden = false;
+        }
+    };
+
+    window.addEventListener("online", updateStatus);
+    window.addEventListener("offline", updateStatus);
+
+    updateStatus();
+})();
+</script>)";
+}
+
 } // namespace drogular
