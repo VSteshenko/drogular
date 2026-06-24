@@ -8,10 +8,32 @@
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
 
+#include <drogon/drogon.h>
+
 #include <memory>
 
 int main() {
     drogular::App app;
+
+    drogon::app().registerHandler(
+        "/service-worker.js",
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response =
+                drogon::HttpResponse::newFileResponse(
+                    "examples/todo_pwa/public/service-worker.js"
+                );
+
+            response->setContentTypeString(
+                "application/javascript"
+            );
+
+            callback(response);
+        },
+        {drogon::Get}
+    );
 
     app.staticFiles(
        "/assets",
