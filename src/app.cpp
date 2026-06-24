@@ -16,6 +16,12 @@ void App::run(unsigned short port) {
         );
     }
 
+    if (options_.serviceWorkerPath().has_value()) {
+        router_.serviceWorker(
+            *options_.serviceWorkerPath()
+        );
+    }
+
     drogon::app()
         .addListener("0.0.0.0", port)
         .run();

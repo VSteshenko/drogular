@@ -8,6 +8,7 @@
 #include <utility>
 #include <filesystem>
 #include <chrono>
+#include <optional>
 
 namespace drogular {
 
@@ -206,6 +207,26 @@ public:
         }
     }
 
+    /**
+     * Sets the service worker file served from /service-worker.js.
+     *
+     * Service workers must usually be served from the application
+     * root to control the whole application scope.
+     */
+    void setServiceWorker(
+        std::filesystem::path path
+    ) {
+        serviceWorkerPath_ = std::move(path);
+    }
+
+    /**
+     * Returns the configured service worker file path.
+     */
+    const std::optional<std::filesystem::path>&
+    serviceWorkerPath() const {
+        return serviceWorkerPath_;
+    }
+
 private:
     std::filesystem::path templateRoot_;
     bool templateCacheEnabled_ = true;
@@ -214,6 +235,7 @@ private:
     std::chrono::seconds staticFileCacheMaxAge_ = std::chrono::hours(24);
     bool staticFileEtagEnabled_ = true;
     bool staticFileLastModifiedEnabled_ = true;
+    std::optional<std::filesystem::path> serviceWorkerPath_;
 };
 
 } // namespace drogular

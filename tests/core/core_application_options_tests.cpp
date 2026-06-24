@@ -93,3 +93,20 @@ TEST(CoreApplicationOptionsTests, AppliesProductionStaticFileCacheProfile) {
     EXPECT_TRUE(options.staticFileEtagEnabled());
     EXPECT_TRUE(options.staticFileLastModifiedEnabled());
 }
+
+TEST(CoreApplicationOptionsTests, StoresServiceWorkerPath) {
+    drogular::ApplicationOptions options;
+
+    options.setServiceWorker(
+        "public/service-worker.js"
+    );
+
+    ASSERT_TRUE(
+        options.serviceWorkerPath().has_value()
+    );
+
+    EXPECT_EQ(
+        *options.serviceWorkerPath(),
+        std::filesystem::path("public/service-worker.js")
+    );
+}

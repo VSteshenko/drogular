@@ -230,4 +230,31 @@ void Router::staticFiles(
     );
 }
 
+void Router::serviceWorker(
+    const std::filesystem::path& path
+) {
+    drogon::app().registerHandler(
+        "/service-worker.js",
+        [path](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response =
+                drogular::StaticFileResponse::create(path);
+
+            response->setContentTypeString(
+                "application/javascript"
+            );
+
+            response->addHeader(
+                "Service-Worker-Allowed",
+                "/"
+            );
+
+            callback(response);
+        },
+        {drogon::Get}
+    );
+}
+
 } // namespace drogular

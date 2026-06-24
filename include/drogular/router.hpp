@@ -28,15 +28,27 @@ public:
      */
     void action(const std::string& path, std::shared_ptr<ActionHandler> action);
 
-    /// Registers a static file handler.
-    ///
-    /// Files requested under the specified route prefix
-    /// are resolved relative to the provided directory.
-    ///
-    /// Path traversal protection is applied separately.
+    /**
+     * Registers a static file handler.
+     *
+     * Files requested under the specified route prefix
+     * are resolved relative to the provided directory.
+     *
+     * Path traversal protection is applied separately.
+     */
     void staticFiles(
         const std::string& routePrefix,
         const std::filesystem::path& directory
+    );
+
+    /**
+     * Registers a root-level service worker route.
+     *
+     * The service worker is served from /service-worker.js,
+     * regardless of where the source file is located on disk.
+     */
+    void serviceWorker(
+        const std::filesystem::path& path
     );
 
 private:

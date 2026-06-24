@@ -225,6 +225,22 @@ public:
     }
 
     /**
+     * Registers a service worker file.
+     *
+     * The file is served from /service-worker.js so that it can
+     * control the root application scope.
+     */
+    App& serviceWorker(
+        std::filesystem::path path
+    ) {
+        options_.setServiceWorker(
+            std::move(path)
+        );
+
+        return *this;
+    }
+
+    /**
      * Starts the HTTP server on the given port.
      */
     void run(unsigned short port);
