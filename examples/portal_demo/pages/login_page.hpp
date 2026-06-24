@@ -4,7 +4,7 @@
 
 #include <drogular/page.hpp>
 
-class PortalDashboardPage final
+class PortalLoginPage final
     : public drogular::TemplatePage
 {
 public:
@@ -14,13 +14,13 @@ public:
     {
         PortalPageSupport::apply(
             context,
-            "dashboard.title"
+            "login.title"
         );
     }
 
     std::string templatePath() const override
     {
-        return "dashboard.html";
+        return "login.html";
     }
 
     std::string layoutPath() const override

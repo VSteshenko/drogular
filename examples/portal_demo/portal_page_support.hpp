@@ -54,6 +54,21 @@ public:
         );
 
         context.set(
+            "loginUsername",
+            translations.get(locale, "login.username")
+        );
+
+        context.set(
+            "loginPassword",
+            translations.get(locale, "login.password")
+        );
+
+        context.set(
+            "loginSubmit",
+            translations.get(locale, "login.submit")
+        );
+
+        context.set(
             "navLogout",
             translations.get(locale, "nav.logout")
         );

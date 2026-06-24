@@ -1,0 +1,17 @@
+<h2>{{ pageTitle }}</h2>
+
+<form method="post" action="/login">
+    <div>
+        <label for="username">{{ loginUsername }}</label>
+        <input id="username" name="username" />
+    </div>
+
+    <div>
+        <label for="password">{{ loginPassword }}</label>
+        <input id="password" name="password" type="password" />
+    </div>
+
+    <div>
+        <button type="submit">{{ loginSubmit }}</button>
+    </div>
+</form>
