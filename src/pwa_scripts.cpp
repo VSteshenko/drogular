@@ -14,4 +14,35 @@ if ("serviceWorker" in navigator) {
 </script>)";
 }
 
+std::string PwaScripts::inputPersistence(
+    const std::string& inputId,
+    const std::string& storageKey
+) {
+    return R"(<script>
+(() => {
+    const input = document.getElementById(")" + inputId + R"(");
+
+    if (!input) {
+        return;
+    }
+
+    const storageKey = ")" + storageKey + R"(";
+
+    const savedValue = localStorage.getItem(storageKey);
+
+    if (savedValue !== null) {
+        input.value = savedValue;
+    }
+
+    input.addEventListener("input", () => {
+        localStorage.setItem(storageKey, input.value);
+    });
+
+    input.form?.addEventListener("submit", () => {
+        localStorage.removeItem(storageKey);
+    });
+})();
+</script>)";
+}
+
 } // namespace drogular

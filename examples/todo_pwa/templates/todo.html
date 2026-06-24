@@ -11,9 +11,11 @@
 @endif
 
 <form method="post" action="/todos/create">
-    <input name="title" placeholder="New todo" />
+    <input id="todo-title" name="title" placeholder="New todo" />
     <button type="submit">Add</button>
 </form>
+
+{{{ todoDraftPersistence }}}
 
 @if(hasTodos)
 <ul>

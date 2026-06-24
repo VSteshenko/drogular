@@ -28,3 +28,15 @@ TEST(CorePwaScriptsTests, SupportsCustomServiceWorkerPath) {
         std::string::npos
     );
 }
+
+TEST(CorePwaScriptsTests, CreatesInputPersistenceScript) {
+    const auto script =
+        drogular::PwaScripts::inputPersistence(
+            "todo-title",
+            "todo-draft"
+        );
+
+    EXPECT_NE(script.find("todo-title"), std::string::npos);
+    EXPECT_NE(script.find("todo-draft"), std::string::npos);
+    EXPECT_NE(script.find("localStorage"), std::string::npos);
+}

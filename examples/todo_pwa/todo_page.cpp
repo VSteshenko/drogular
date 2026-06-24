@@ -38,5 +38,13 @@ void TodoPage::onInit(drogular::RenderContext& context) {
     context.set("todos", todos);
     context.set("hasTodos", !sourceTodos.empty());
 
+    context.set(
+        "todoDraftPersistence",
+        drogular::PwaScripts::inputPersistence(
+            "todo-title",
+            "todo-draft"
+        )
+    );
+
     drogular::PwaPageSupport::apply(context);
 }

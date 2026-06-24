@@ -19,6 +19,15 @@ public:
     static std::string serviceWorkerRegistration(
         const std::string& path = "/service-worker.js"
     );
+
+    /**
+     * Creates a small script that persists an input value
+     * in localStorage and restores it on page load.
+     */
+    static std::string inputPersistence(
+        const std::string& inputId,
+        const std::string& storageKey
+    );
 };
 
 } // namespace drogular
