@@ -2,6 +2,8 @@
 #include "todo.hpp"
 #include "todo_store.hpp"
 
+#include <drogular/pwa_scripts.hpp>
+
 #include <vector>
 #include <json/json.h>
 
@@ -33,4 +35,9 @@ void TodoPage::onInit(drogular::RenderContext& context) {
 
     context.set("todos", todos);
     context.set("hasTodos", !sourceTodos.empty());
+
+    context.set(
+        "serviceWorkerRegistration",
+        drogular::PwaScripts::serviceWorkerRegistration()
+    );
 }

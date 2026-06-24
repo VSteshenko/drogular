@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-todo-pwa-v4";
+const CACHE_NAME = "drogular-todo-pwa-v5";
 
 const APP_SHELL = [
     "/",
