@@ -1,9 +1,30 @@
 #include <drogular/component.hpp>
 #include <drogular/services.hpp>
+#include <drogular/testing.hpp>
 
 #include <gtest/gtest.h>
 
 #include <string>
+#include <filesystem>
+#include <fstream>
+
+namespace {
+
+std::filesystem::path writeTemplateFile(
+    const std::string& name,
+    const std::string& content
+) {
+    const auto path =
+        std::filesystem::temp_directory_path() /
+        name;
+
+    std::ofstream file(path);
+    file << content;
+
+    return path;
+}
+
+} // namespace
 
 class CoreTestTemplateComponent final : public drogular::TemplateComponent {
 public:
@@ -89,4 +110,54 @@ TEST(CoreTemplateComponentTests, RendersComponentTags) {
         component.render(context),
         "<section><article>Card from TemplateComponent</article></section>"
     );
+}
+
+class CoreTemplateComponentExternalTemplateComponent final
+    : public drogular::TemplateComponent
+{
+public:
+    static constexpr auto tag =
+        "CoreTemplateComponentExternalTemplate";
+
+    std::string templatePath() const override {
+        return "drogular_component_external.html";
+    }
+};
+
+TEST(CoreTemplateComponentTests, UsesTemplatePathWhenProvided) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_component_external.html",
+            "<span>{{ title }}</span>"
+        );
+
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    options.setTemplateRoot(
+        std::filesystem::temp_directory_path()
+    );
+
+    services.setOptions(&options);
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+    context.set(
+        "title",
+        std::string("External Component")
+    );
+
+    CoreTemplateComponentExternalTemplateComponent component;
+
+    const auto html =
+        component.render(context);
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            html,
+            "<span>External Component</span>"
+        )
+    );
+
+    std::filesystem::remove(path);
 }

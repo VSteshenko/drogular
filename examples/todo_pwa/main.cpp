@@ -15,15 +15,21 @@
 int main() {
     drogular::App app;
 
+    app.templateRoot(
+           "examples/todo_pwa/templates"
+       )
+       .templateCache(false);
+
     app.staticFiles(
        "/assets",
        "examples/todo_pwa/public"
-   )
-   .staticFileCacheProfile(
-       drogular::StaticFileCacheProfile::Development
-   );
-
-    app.serviceWorker("examples/todo_pwa/public/service-worker.js");
+    )
+    .staticFileCacheProfile(
+        drogular::StaticFileCacheProfile::Development
+    )
+    .serviceWorker(
+        "examples/todo_pwa/public/service-worker.js"
+    );
 
     app.services().add<TodoStore>(
         drogular::ServiceLifetime::Singleton

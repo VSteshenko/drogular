@@ -12,8 +12,29 @@
 #include <memory>
 #include <vector>
 
-TEST(TodoPweTodoPageTests, RendersTodoList) {
+namespace {
+
+void configureTodoPwaTestServices(
+    drogular::ApplicationServices& services,
+    drogular::ApplicationOptions& options
+) {
+    options.setTemplateRoot(
+        "../../examples/todo_pwa/templates"
+    );
+
+    services.setOptions(&options);
+}
+
+} // namespace
+
+TEST(TodoPwaTodoPageTests, RendersTodoList) {
     drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    configureTodoPwaTestServices(
+        services,
+        options
+    );
 
     services.registerService<TodoStore>(
         std::make_shared<TodoStore>()
@@ -75,8 +96,14 @@ TEST(TodoPweTodoPageTests, RendersTodoList) {
     );
 }
 
-TEST(TodoPweTodoPageTests, RendersEmptyTodoState) {
+TEST(TodoPwaTodoPageTests, RendersEmptyTodoState) {
     drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    configureTodoPwaTestServices(
+        services,
+        options
+    );
 
     services.registerService<TodoStore>(
         std::make_shared<TodoStore>(

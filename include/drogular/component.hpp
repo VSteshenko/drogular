@@ -388,9 +388,21 @@ private:
 class TemplateComponent : public Component {
 public:
     /**
-     * Returns template HTML.
+     * Returns inline component template HTML.
+     *
+     * Used when templatePath() is empty.
      */
-    virtual std::string templateHtml() const = 0;
+    virtual std::string templateHtml() const {
+        return "";
+    }
+    /**
+     * Returns the external template file path.
+     *
+     * Empty path means templateHtml() will be used.
+     */
+    virtual std::string templatePath() const {
+        return "";
+    }
 
     /**
      * Renders the template using RenderContext.

@@ -1,0 +1,46 @@
+@if(hasErrors)
+<section>
+    <strong>Validation errors</strong>
+
+    <ul>
+    @foreach(error in errors)
+        <li>{{ error.message }}</li>
+    @endforeach
+    </ul>
+</section>
+@endif
+
+<form method="post" action="/todos/create">
+    <input name="title" placeholder="New todo" />
+    <button type="submit">Add</button>
+</form>
+
+@if(hasTodos)
+<ul>
+@foreach(todo in todos)
+    <li>
+        <form method="post" action="/todos/toggle" style="display:inline">
+            <input type="hidden" name="id" value="{{ todo.id }}" />
+            <button type="submit">
+                @if(todo.done)
+                Undo
+                @else
+                Done
+                @endif
+            </button>
+        </form>
+
+        <span>
+            {{ todo.title }}
+        </span>
+
+        <form method="post" action="/todos/delete" style="display:inline">
+            <input type="hidden" name="id" value="{{ todo.id }}" />
+            <button type="submit">Delete</button>
+        </form>
+    </li>
+@endforeach
+</ul>
+@else
+<p>No todos yet.</p>
+@endif
