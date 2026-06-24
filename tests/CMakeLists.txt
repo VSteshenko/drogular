@@ -24,6 +24,7 @@ add_executable(drogular_tests
     core/core_form_validator_tests.cpp
     core/core_inject_tests.cpp
     core/core_pwa_scripts_tests.cpp
+    core/core_pwa_html_tests.cpp
     core/core_render_context_tests.cpp
     core/core_services_tests.cpp
     core/core_session_tests.cpp

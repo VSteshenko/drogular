@@ -36,6 +36,7 @@ add_library(drogular
     src/graphql_response.cpp
     src/page.cpp
     src/pwa_scripts.cpp
+    src/pwa_html.cpp
     src/router.cpp
     src/services.cpp
     src/session.cpp

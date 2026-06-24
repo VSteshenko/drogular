@@ -3,6 +3,7 @@
 #include "todo_store.hpp"
 
 #include <drogular/pwa_scripts.hpp>
+#include <drogular/pwa_html.hpp>
 
 #include <vector>
 #include <json/json.h>
@@ -39,5 +40,19 @@ void TodoPage::onInit(drogular::RenderContext& context) {
     context.set(
         "serviceWorkerRegistration",
         drogular::PwaScripts::serviceWorkerRegistration()
+    );
+    context.set(
+        "manifestLink",
+        drogular::PwaHtml::manifestLink()
+    );
+
+    context.set(
+        "faviconLink",
+        drogular::PwaHtml::favicon()
+    );
+
+    context.set(
+        "themeColorMeta",
+        drogular::PwaHtml::themeColor("#4f46e5")
     );
 }
