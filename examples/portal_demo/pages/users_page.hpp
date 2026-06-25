@@ -3,6 +3,8 @@
 #include "../portal_auth_support.hpp"
 #include "../portal_page_support.hpp"
 #include "../portal_user_repository.hpp"
+#include "../portal_error_translator.hpp"
+#include "../portal_locale.hpp"
 
 #include <drogular/page.hpp>
 
@@ -16,6 +18,54 @@ public:
         PortalPageSupport::apply(
             context,
             "users.title"
+        );
+
+        const auto locale =
+            PortalLocale::fromRenderContext(context);
+
+        const auto request =
+            context.request();
+
+        const auto error =
+            request != nullptr
+                ? request->getParameter("error")
+                : std::string("");
+
+        const auto success =
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string("");
+
+        const auto usersError =
+            PortalErrorTranslator::usersError(
+                locale,
+                error
+            );
+
+        const auto usersSuccess =
+            PortalErrorTranslator::usersSuccess(
+                locale,
+                success
+            );
+
+        context.set(
+            "hasUsersError",
+            !usersError.empty()
+        );
+
+        context.set(
+            "usersError",
+            usersError
+        );
+
+        context.set(
+            "hasUsersSuccess",
+            !usersSuccess.empty()
+        );
+
+        context.set(
+            "usersSuccess",
+            usersSuccess
         );
 
         const auto currentUser =

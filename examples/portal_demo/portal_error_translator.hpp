@@ -28,4 +28,43 @@ public:
 
         return "";
     }
+
+    static std::string usersError(
+        const std::string& locale,
+        const std::string& error
+    ) {
+        PortalTranslations translations;
+
+        if (error == "validation") {
+            return translations.get(
+                locale,
+                "users.error.validation"
+            );
+        }
+
+        if (error == "access_denied") {
+            return translations.get(
+                locale,
+                "users.error.access_denied"
+            );
+        }
+
+        return "";
+    }
+
+    static std::string usersSuccess(
+        const std::string& locale,
+        const std::string& success
+    ) {
+        PortalTranslations translations;
+
+        if (success == "user_created") {
+            return translations.get(
+                locale,
+                "users.success.created"
+            );
+        }
+
+        return "";
+    }
 };

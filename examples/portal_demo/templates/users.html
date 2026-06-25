@@ -12,21 +12,51 @@
 <h2>{{ pageTitle }}</h2>
 
 @if(isAdmin)
+@if(hasUsersError)
+<div style="
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #f5c2c7;
+    border-radius: 0.5rem;
+    background: #f8d7da;
+    color: #842029;
+">
+    {{ usersError }}
+</div>
+@endif
+
+@if(hasUsersSuccess)
+<div style="
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #badbcc;
+    border-radius: 0.5rem;
+    background: #d1e7dd;
+    color: #0f5132;
+">
+    {{ usersSuccess }}
+</div>
+@endif
 <form method="post" action="/users/create">
     <div>
-        <label>Username</label>
+        <label>{{ usersUsername }}</label>
         <input name="username" />
     </div>
 
     <div>
-        <label>Role</label>
+        <label>{{ usersPassword }}</label>
+        <input name="password" type="password" />
+    </div>
+
+    <div>
+        <label>{{ usersRole }}</label>
         <select name="role">
             <option value="user">user</option>
             <option value="admin">admin</option>
         </select>
     </div>
 
-    <button type="submit">Create User</button>
+    <button type="submit">{{ usersCreate }}</button>
 </form>
 @endif
 

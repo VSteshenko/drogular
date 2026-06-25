@@ -11,11 +11,12 @@ class PortalUserRepository {
 public:
     void create(
         std::string username,
+        std::string password,
         std::string role
     ) {
         users_.push_back({
             .username = std::move(username),
-            .password = username,
+            .password = std::move(password),
             .role = std::move(role)
         });
     }
@@ -36,6 +37,18 @@ public:
 
     std::vector<PortalUser> all() {
         return users_;
+    }
+
+    bool exists(
+        const std::string& username
+    ) const {
+        for (const auto& user : users_) {
+            if (user.username == username) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 private:

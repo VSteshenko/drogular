@@ -16,17 +16,19 @@ public:
             context.existingSession();
 
         if (session == nullptr) {
+            // not logged in
             return drogular::ActionResult::redirect(
                 "/login"
             );
         }
 
-        const auto role =
+        const auto currentRole =
             session->get("role");
 
-        if (!role.has_value() || *role != "admin") {
+        if (!currentRole.has_value() || *currentRole != "admin") {
+            // not admin
             return drogular::ActionResult::redirect(
-                "/users"
+                "/users?error=access_denied"
             );
         }
 
@@ -34,25 +36,45 @@ public:
             drogular::FormValidator(context)
                 .required("username")
                 .minLength("username", 2)
+                .required("password")
+                .minLength("password", 3)
                 .required("role")
                 .validate();
 
         if (!validation.valid()) {
+            // validation failed
             return drogular::ActionResult::redirect(
-                "/users"
+                "/users?error=validation"
             );
         }
+
+        const auto username =
+            context.requireForm<std::string>("username");
+
+        const auto password =
+            context.requireForm<std::string>("password");
+
+        const auto role =
+            context.requireForm<std::string>("role");
 
         auto repository =
             context.requireService<PortalUserRepository>();
 
+        if (repository->exists(username)) {
+            return drogular::ActionResult::redirect(
+                "/users?error=duplicate_user"
+            );
+        }
+
         repository->create(
-            context.requireForm<std::string>("username"),
-            context.requireForm<std::string>("role")
+            username,
+            password,
+            role
         );
 
+        // success
         return drogular::ActionResult::redirect(
-            "/users"
+            "/users?success=user_created"
         );
     }
 };

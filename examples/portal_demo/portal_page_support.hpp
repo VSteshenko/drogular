@@ -125,5 +125,37 @@ public:
                 ? request->path()
                 : std::string("/dashboard")
         );
+
+        context.set(
+            "usersUsername",
+            translations.get(
+                locale,
+                "users.username"
+            )
+        );
+
+        context.set(
+            "usersPassword",
+            translations.get(
+                locale,
+                "users.password"
+            )
+        );
+
+        context.set(
+            "usersRole",
+            translations.get(
+                locale,
+                "users.role"
+            )
+        );
+
+        context.set(
+            "usersCreate",
+            translations.get(
+                locale,
+                "users.create"
+            )
+        );
     }
 };

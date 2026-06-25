@@ -70,6 +70,14 @@ private:
                 {"login.error.invalid_credentials", "Invalid username or password."},
                 {"dashboard.title", "Dashboard"},
                 {"users.title", "Users"},
+                {"users.error.validation", "Please enter a valid username and role."},
+                {"users.error.access_denied", "Only administrators can create users."},
+                {"users.error.duplicate_user", "A user with this username already exists."},
+                {"users.username", "Username"},
+                {"users.password", "Password"},
+                {"users.role", "Role"},
+                {"users.create", "Create User"},
+                {"users.success.created", "User was created successfully."},
                 {"admin.title", "Admin"},
                 {"offline.title", "You are offline"}
             }
@@ -93,6 +101,14 @@ private:
                 {"login.error.invalid_credentials", "Ungültiger Benutzername oder Passwort."},
                 {"dashboard.title", "Übersicht"},
                 {"users.title", "Benutzer"},
+                {"users.error.validation", "Bitte geben Sie einen gültigen Benutzernamen und eine Rolle ein."},
+                {"users.error.access_denied", "Nur Administratoren können Benutzer erstellen."},
+                {"users.error.duplicate_user", "Ein Benutzer mit diesem Namen existiert bereits."},
+                {"users.username", "Benutzername"},
+                {"users.password", "Passwort"},
+                {"users.role", "Rolle"},
+                {"users.create", "Benutzer erstellen"},
+                {"users.success.created", "Der Benutzer wurde erfolgreich erstellt."},
                 {"admin.title", "Admin"},
                 {"offline.title", "Sie sind offline"}
             }
