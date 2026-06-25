@@ -2,6 +2,7 @@
 
 #include "portal_locale.hpp"
 #include "portal_translations.hpp"
+#include "portal_auth_support.hpp"
 
 #include <drogular/pwa_page_support.hpp>
 #include <drogular/component.hpp>
@@ -73,12 +74,31 @@ public:
             translations.get(locale, "nav.logout")
         );
 
-        const auto isAuthenticated =
-            context.cookie("session_id").has_value();
+        const auto currentUser =
+            PortalAuthSupport::currentUser(context);
 
         context.set(
             "isAuthenticated",
-            isAuthenticated
+            currentUser.has_value()
+        );
+
+        context.set(
+            "currentUsername",
+            currentUser.has_value()
+                ? currentUser->username
+                : std::string("")
+        );
+
+        context.set(
+            "currentRole",
+            currentUser.has_value()
+                ? currentUser->role
+                : std::string("")
+        );
+
+        context.set(
+            "isAdmin",
+            currentUser.has_value() && currentUser->role == "admin"
         );
 
         context.set(

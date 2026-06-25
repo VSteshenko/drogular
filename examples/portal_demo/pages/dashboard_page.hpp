@@ -10,21 +10,26 @@ class PortalDashboardPage final
 public:
     void onInit(
         drogular::RenderContext& context
-    ) override
-    {
+    ) override {
         PortalPageSupport::apply(
             context,
             "dashboard.title"
         );
+
+        const auto currentUser =
+            PortalAuthSupport::currentUser(context);
+
+        context.set(
+            "loginRequired",
+            !currentUser.has_value()
+        );
     }
 
-    std::string templatePath() const override
-    {
+    std::string templatePath() const override {
         return "dashboard.html";
     }
 
-    std::string layoutPath() const override
-    {
+    std::string layoutPath() const override {
         return "layouts/main.html";
     }
 };
