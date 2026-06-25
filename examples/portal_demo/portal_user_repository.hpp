@@ -5,9 +5,21 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <utility>
 
 class PortalUserRepository {
 public:
+    void create(
+        std::string username,
+        std::string role
+    ) {
+        users_.push_back({
+            .username = std::move(username),
+            .password = username,
+            .role = std::move(role)
+        });
+    }
+
     std::optional<PortalUser> findByCredentials(
         const std::string& username,
         const std::string& password

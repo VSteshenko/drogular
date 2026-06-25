@@ -11,6 +11,25 @@
 @else
 <h2>{{ pageTitle }}</h2>
 
+@if(isAdmin)
+<form method="post" action="/users/create">
+    <div>
+        <label>Username</label>
+        <input name="username" />
+    </div>
+
+    <div>
+        <label>Role</label>
+        <select name="role">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+        </select>
+    </div>
+
+    <button type="submit">Create User</button>
+</form>
+@endif
+
 <ul>
 @foreach(user in users)
     <li>

@@ -30,11 +30,12 @@ public:
             return;
         }
 
-        PortalUserRepository repository;
+        auto repository =
+            context.requireService<PortalUserRepository>();
 
         Json::Value users(Json::arrayValue);
 
-        for (const auto& user : repository.all()) {
+        for (const auto& user : repository->all()) {
             Json::Value value;
             value["username"] = user.username;
             value["role"] = user.role;
@@ -44,13 +45,11 @@ public:
         context.set("users", users);
     }
 
-    std::string templatePath() const override
-    {
+    std::string templatePath() const override {
         return "users.html";
     }
 
-    std::string layoutPath() const override
-    {
+    std::string layoutPath() const override {
         return "layouts/main.html";
     }
 };

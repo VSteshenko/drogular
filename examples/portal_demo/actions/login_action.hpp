@@ -21,10 +21,11 @@ public:
                 "password"
             );
 
-        PortalUserRepository repository;
+        auto repository =
+            context.requireService<PortalUserRepository>();
 
         const auto user =
-            repository.findByCredentials(
+            repository->findByCredentials(
                 username,
                 password
             );
@@ -53,8 +54,7 @@ public:
 
         return drogular::ActionResult::redirect(
             "/dashboard"
-        )
-        .cookie(
+        ).cookie(
             "session_id",
             sessionId
         );

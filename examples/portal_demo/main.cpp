@@ -5,6 +5,8 @@
 #include "actions/logout_action.hpp"
 #include "pages/users_page.hpp"
 #include "pages/admin_page.hpp"
+#include "portal_user_repository.hpp"
+#include "actions/create_user_action.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -29,6 +31,10 @@ int main() {
         drogular::ServiceLifetime::Singleton
     );
 
+    app.services().add<PortalUserRepository>(
+        drogular::ServiceLifetime::Singleton
+    );
+
     app.page<PortalLoginPage>("/");
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
@@ -38,6 +44,7 @@ int main() {
     app.action<PortalLanguageAction>("/language");
     app.action<PortalLoginAction>("/login");
     app.action<PortalLogoutAction>("/logout");
+    app.action<PortalCreateUserAction>("/users/create");
 
     app.run(8083);
 
