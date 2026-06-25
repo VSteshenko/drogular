@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../portal_page_support.hpp"
+#include "../portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
 
@@ -34,21 +35,13 @@ public:
             !error.empty()
         );
 
-        std::string loginError;
-
-        if (error == "missing_credentials") {
-            loginError = translations.get(
+        context.set(
+            "loginError",
+            PortalErrorTranslator::loginError(
                 locale,
-                "login.error.missing_credentials"
-            );
-        } else if (error == "invalid_credentials") {
-            loginError = translations.get(
-                locale,
-                "login.error.invalid_credentials"
-            );
-        }
-
-        context.set("loginError", loginError);
+                error
+            )
+        );
     }
 
     std::string templatePath() const override {
