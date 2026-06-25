@@ -22,6 +22,10 @@ public:
         return std::nullopt;
     }
 
+    std::vector<PortalUser> all() {
+        return users_;
+    }
+
 private:
     std::vector<PortalUser> users_{
         {"admin", "admin", "admin"},

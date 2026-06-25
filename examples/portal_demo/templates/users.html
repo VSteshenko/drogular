@@ -1,0 +1,22 @@
+@if(loginRequired)
+<h2>{{ navLogin }}</h2>
+
+<p>
+    Please login to continue.
+</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@else
+<h2>{{ pageTitle }}</h2>
+
+<ul>
+@foreach(user in users)
+    <li>
+        <strong>{{ user.username }}</strong>
+        — {{ user.role }}
+    </li>
+@endforeach
+</ul>
+@endif

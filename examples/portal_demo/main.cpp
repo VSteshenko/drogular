@@ -3,6 +3,7 @@
 #include "pages/login_page.hpp"
 #include "actions/login_action.hpp"
 #include "actions/logout_action.hpp"
+#include "pages/users_page.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -30,6 +31,7 @@ int main() {
     app.page<PortalLoginPage>("/");
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
+    app.page<PortalUsersPage>("/users");
 
     app.action<PortalLanguageAction>("/language");
     app.action<PortalLoginAction>("/login");
