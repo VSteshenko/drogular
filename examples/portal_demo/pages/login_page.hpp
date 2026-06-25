@@ -11,6 +11,16 @@ public:
     void onInit(
         drogular::RenderContext& context
     ) override {
+        PortalPageSupport::apply(
+            context,
+            "login.title"
+        );
+
+        const auto locale =
+            PortalLocale::fromRenderContext(context);
+
+        PortalTranslations translations;
+
         const auto request =
             context.request();
 
@@ -24,28 +34,28 @@ public:
             !error.empty()
         );
 
-        context.set(
-            "loginError",
-            error == "missing_credentials"
-                ? std::string("Please enter username and password.")
-                : error == "invalid_credentials"
-                    ? std::string("Invalid username or password.")
-                    : std::string("")
-        );
+        std::string loginError;
 
-        PortalPageSupport::apply(
-            context,
-            "login.title"
-        );
+        if (error == "missing_credentials") {
+            loginError = translations.get(
+                locale,
+                "login.error.missing_credentials"
+            );
+        } else if (error == "invalid_credentials") {
+            loginError = translations.get(
+                locale,
+                "login.error.invalid_credentials"
+            );
+        }
+
+        context.set("loginError", loginError);
     }
 
-    std::string templatePath() const override
-    {
+    std::string templatePath() const override {
         return "login.html";
     }
 
-    std::string layoutPath() const override
-    {
+    std::string layoutPath() const override {
         return "layouts/main.html";
     }
 };
