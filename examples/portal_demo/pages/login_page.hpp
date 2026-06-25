@@ -10,8 +10,29 @@ class PortalLoginPage final
 public:
     void onInit(
         drogular::RenderContext& context
-    ) override
-    {
+    ) override {
+        const auto request =
+            context.request();
+
+        const auto error =
+            request != nullptr
+                ? request->getParameter("error")
+                : std::string("");
+
+        context.set(
+            "hasLoginError",
+            !error.empty()
+        );
+
+        context.set(
+            "loginError",
+            error == "missing_credentials"
+                ? std::string("Please enter username and password.")
+                : error == "invalid_credentials"
+                    ? std::string("Invalid username or password.")
+                    : std::string("")
+        );
+
         PortalPageSupport::apply(
             context,
             "login.title"
