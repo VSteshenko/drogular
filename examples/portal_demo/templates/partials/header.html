@@ -1,28 +1,41 @@
 <header>
-    <h1>{{ appTitle }}</h1>
+    <h1 style="margin-right:auto;">{{ appTitle }}</h1>
+    <div style="display:flex; align-items:center; gap:1rem;">
 
-    <nav>
-        <a href="/dashboard">{{ navDashboard }}</a>
-        |
-        <a href="/users">{{ navUsers }}</a>
-        |
-        <a href="/admin">{{ navAdmin }}</a>
-        |
-        <form method="post" action="/logout" style="display:inline">
-            <button type="submit">{{ navLogout }}</button>
-        </form>
-    </nav>
+        <nav>
+            <a href="/dashboard">{{ navDashboard }}</a>
+            |
+            <a href="/users">{{ navUsers }}</a>
+            |
+            <a href="/admin">{{ navAdmin }}</a>
 
-    <div>
-        <form method="post" action="/language" style="display:inline">
-            <input type="hidden" name="language" value="en">
-            <button type="submit">{{ languageEnglish }}</button>
-        </form>
+            @if(isAuthenticated)
+            |
+            <form method="post" action="/logout" style="display:inline">
+                <button
+                        type="submit"
+                        style="border:none; background:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                    {{ navLogout }}
+                </button>
+            </form>
+            @endif
+        </nav>
 
-        <form method="post" action="/language" style="display:inline">
-            <input type="hidden" name="language" value="de">
-            <button type="submit">{{ languageGerman }}</button>
-        </form>
+        <div>
+            <form method="post" action="/language" style="display:inline">
+                <input type="hidden" name="language" value="en">
+                <button type="submit" @if(isEnglish)disabled@endif>
+                    EN
+                </button>
+            </form>
+
+            <form method="post" action="/language" style="display:inline">
+                <input type="hidden" name="language" value="de">
+                <button type="submit" @if(isGerman)disabled@endif>
+                    DE
+                </button>
+            </form>
+        </div>
     </div>
 
     <hr>

@@ -72,5 +72,28 @@ public:
             "navLogout",
             translations.get(locale, "nav.logout")
         );
+
+        const auto isAuthenticated =
+            context.cookie("session_id").has_value();
+
+        context.set(
+            "isAuthenticated",
+            isAuthenticated
+        );
+
+        context.set(
+            "isLoginPage",
+            pageTitleKey == "login.title"
+        );
+
+        context.set(
+            "isGerman",
+            locale == "de"
+        );
+
+        context.set(
+            "isEnglish",
+            locale == "en"
+        );
     }
 };
