@@ -61,8 +61,12 @@ public:
             context.requireService<PortalUserRepository>();
 
         if (repository->exists(username)) {
+            const auto username =
+                context.form<std::string>("username")
+                    .value_or("");
+
             return drogular::ActionResult::redirect(
-                "/users?error=duplicate_user"
+                "/users?error=validation&username=" + username
             );
         }
 

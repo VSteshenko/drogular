@@ -49,6 +49,13 @@ public:
             );
         }
 
+        if (error == "duplicate_user") {
+            return translations.get(
+                locale,
+                "users.error.duplicate_user"
+            );
+        }
+
         return "";
     }
 

@@ -1,16 +1,7 @@
 <h2>{{ pageTitle }}</h2>
 
 @if(hasLoginError)
-<div style="
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid #f5c2c7;
-    border-radius: 0.5rem;
-    background: #f8d7da;
-    color: #842029;
-">
-    {{ loginError }}
-</div>
+@include("partials/alert_error.html")
 @endif
 
 <form method="post" action="/login">

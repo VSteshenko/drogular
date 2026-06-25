@@ -42,6 +42,14 @@ public:
                 error
             )
         );
+
+        context.set(
+            "alertMessage",
+            PortalErrorTranslator::loginError(
+                locale,
+                error
+            )
+        );
     }
 
     std::string templatePath() const override {

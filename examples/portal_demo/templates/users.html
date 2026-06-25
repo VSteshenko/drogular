@@ -13,34 +13,17 @@
 
 @if(isAdmin)
 @if(hasUsersError)
-<div style="
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid #f5c2c7;
-    border-radius: 0.5rem;
-    background: #f8d7da;
-    color: #842029;
-">
-    {{ usersError }}
-</div>
+@include("partials/alert_error.html")
 @endif
 
 @if(hasUsersSuccess)
-<div style="
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid #badbcc;
-    border-radius: 0.5rem;
-    background: #d1e7dd;
-    color: #0f5132;
-">
-    {{ usersSuccess }}
-</div>
+@include("partials/alert_success.html")
 @endif
+
 <form method="post" action="/users/create">
     <div>
         <label>{{ usersUsername }}</label>
-        <input name="username" />
+        <input name="username" value="{{ createUsername }}" />
     </div>
 
     <div>

@@ -42,6 +42,16 @@ public:
                 error
             );
 
+        const auto username =
+            request != nullptr
+                ? request->getParameter("username")
+                : std::string("");
+
+        context.set(
+            "createUsername",
+            username
+        );
+
         const auto usersSuccess =
             PortalErrorTranslator::usersSuccess(
                 locale,
@@ -66,6 +76,13 @@ public:
         context.set(
             "usersSuccess",
             usersSuccess
+        );
+
+        context.set(
+            "alertMessage",
+            !usersError.empty()
+                ? usersError
+                : usersSuccess
         );
 
         const auto currentUser =
