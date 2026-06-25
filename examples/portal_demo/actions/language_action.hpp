@@ -8,8 +8,7 @@ class PortalLanguageAction final
 public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
-    ) override
-    {
+    ) override {
         const auto language =
             context.requireForm<std::string>(
                 "language"

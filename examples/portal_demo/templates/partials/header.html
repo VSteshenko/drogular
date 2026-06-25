@@ -8,18 +8,20 @@
         |
         <a href="/admin">{{ navAdmin }}</a>
         |
-        <a href="/login">{{ navLogin }}</a>
+        <form method="post" action="/logout" style="display:inline">
+            <button type="submit">{{ navLogout }}</button>
+        </form>
     </nav>
 
     <div>
         <form method="post" action="/language" style="display:inline">
             <input type="hidden" name="language" value="en">
-            <button type="submit">EN</button>
+            <button type="submit">{{ languageEnglish }}</button>
         </form>
 
         <form method="post" action="/language" style="display:inline">
             <input type="hidden" name="language" value="de">
-            <button type="submit">DE</button>
+            <button type="submit">{{ languageGerman }}</button>
         </form>
     </div>
 
