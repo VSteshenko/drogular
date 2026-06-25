@@ -115,5 +115,15 @@ public:
             "isEnglish",
             locale == "en"
         );
+
+        const auto request =
+            context.request();
+
+        context.set(
+            "currentPath",
+            request != nullptr
+                ? request->path()
+                : std::string("/dashboard")
+        );
     }
 };

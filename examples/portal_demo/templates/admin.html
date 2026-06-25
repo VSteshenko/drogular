@@ -1,0 +1,27 @@
+@if(loginRequired)
+<h2>{{ navLogin }}</h2>
+
+<p>
+    Please login to continue.
+</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@endif
+
+@if(accessDenied)
+<h2>Access denied</h2>
+
+<p>
+    Administrator role required.
+</p>
+@endif
+
+@if(hasAdminAccess)
+<h2>{{ pageTitle }}</h2>
+
+<p>
+    Welcome to the administrator area.
+</p>
+@endif

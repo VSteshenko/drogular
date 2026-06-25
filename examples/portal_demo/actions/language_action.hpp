@@ -19,8 +19,17 @@ public:
                 ? "de"
                 : "en";
 
+        const auto redirect =
+            context.form<std::string>("redirect")
+                .value_or("/dashboard");
+
+        const auto safeRedirect =
+            redirect.starts_with("/")
+                ? redirect
+                : std::string("/dashboard");
+
         return drogular::ActionResult::redirect(
-            "/dashboard"
+            safeRedirect
         ).cookie(
             "lang",
             normalized
