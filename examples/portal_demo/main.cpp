@@ -7,6 +7,7 @@
 #include "pages/admin_page.hpp"
 #include "portal_user_repository.hpp"
 #include "actions/create_user_action.hpp"
+#include "pages/offline_page.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -25,7 +26,11 @@ int main() {
     .templateCache(false)
     .staticFileCacheProfile(
         drogular::StaticFileCacheProfile::Development
-    );
+    )
+    .serviceWorker(
+        "examples/portal_demo/public/service-worker.js"
+    )
+    .offlinePage<PortalOfflinePage>();
 
     app.services().add<drogular::SessionStore>(
         drogular::ServiceLifetime::Singleton
