@@ -7,11 +7,10 @@
 class PortalErrorTranslator {
 public:
     static std::string loginError(
+        const PortalTranslations& translations,
         const std::string& locale,
         const std::string& error
     ) {
-        PortalTranslations translations;
-
         if (error == "missing_credentials") {
             return translations.get(
                 locale,
@@ -30,11 +29,10 @@ public:
     }
 
     static std::string usersError(
+        const PortalTranslations& translations,
         const std::string& locale,
         const std::string& error
     ) {
-        PortalTranslations translations;
-
         if (error == "validation") {
             return translations.get(
                 locale,
@@ -60,11 +58,10 @@ public:
     }
 
     static std::string usersSuccess(
+        const PortalTranslations& translations,
         const std::string& locale,
         const std::string& success
     ) {
-        PortalTranslations translations;
-
         if (success == "user_created") {
             return translations.get(
                 locale,

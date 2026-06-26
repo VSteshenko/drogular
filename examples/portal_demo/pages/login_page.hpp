@@ -20,7 +20,8 @@ public:
         const auto locale =
             PortalLocale::fromRenderContext(context);
 
-        PortalTranslations translations;
+        auto translations =
+            context.requireService<PortalTranslations>();
 
         const auto request =
             context.request();
@@ -38,6 +39,7 @@ public:
         context.set(
             "loginError",
             PortalErrorTranslator::loginError(
+                *translations,
                 locale,
                 error
             )
@@ -46,6 +48,7 @@ public:
         context.set(
             "alertMessage",
             PortalErrorTranslator::loginError(
+                *translations,
                 locale,
                 error
             )

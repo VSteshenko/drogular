@@ -36,8 +36,12 @@ public:
                 ? request->getParameter("success")
                 : std::string("");
 
+        auto translations =
+            context.requireService<PortalTranslations>();
+
         const auto usersError =
             PortalErrorTranslator::usersError(
+                *translations,
                 locale,
                 error
             );
@@ -54,6 +58,7 @@ public:
 
         const auto usersSuccess =
             PortalErrorTranslator::usersSuccess(
+                *translations,
                 locale,
                 success
             );
