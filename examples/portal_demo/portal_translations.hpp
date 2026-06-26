@@ -79,7 +79,14 @@ private:
                 {"users.create", "Create User"},
                 {"users.success.created", "User was created successfully."},
                 {"admin.title", "Admin"},
-                {"offline.title", "You are offline"}
+                {"offline.title", "You are offline"},
+                {"auth.login_required.title", "Login required"},
+                {"auth.login_required.message", "Please login to continue."},
+                {"auth.access_denied.title", "Access denied"},
+                {"auth.access_denied.message", "Administrator role required."},
+                {"header.signed_in_as", "Signed in as"},
+                {"offline.message", "The portal is currently unavailable because there is no network connection."},
+                {"offline.hint", "Please reconnect and reload the page."}
             }
         },
         {
@@ -110,7 +117,14 @@ private:
                 {"users.create", "Benutzer erstellen"},
                 {"users.success.created", "Der Benutzer wurde erfolgreich erstellt."},
                 {"admin.title", "Admin"},
-                {"offline.title", "Sie sind offline"}
+                {"offline.title", "Sie sind offline"},
+                {"auth.login_required.title", "Anmeldung erforderlich"},
+                {"auth.login_required.message", "Bitte melden Sie sich an, um fortzufahren."},
+                {"auth.access_denied.title", "Zugriff verweigert"},
+                {"auth.access_denied.message", "Administratorrechte sind erforderlich."},
+                {"header.signed_in_as", "Angemeldet als"},
+                {"offline.message", "Das Portal ist derzeit nicht verfügbar, weil keine Netzwerkverbindung besteht."},
+                {"offline.hint", "Bitte stellen Sie die Verbindung wieder her und laden Sie die Seite neu."}
             }
         }
     };

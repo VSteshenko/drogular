@@ -1,8 +1,8 @@
 @if(loginRequired)
-<h2>{{ navLogin }}</h2>
+<h2>{{ authLoginRequiredTitle }}</h2>
 
 <p>
-    Please login to continue.
+    {{ authLoginRequiredMessage }}
 </p>
 
 <p>
@@ -11,10 +11,10 @@
 @endif
 
 @if(accessDenied)
-<h2>Access denied</h2>
+<h2>{{ authAccessDeniedTitle }}</h2>
 
 <p>
-    Administrator role required.
+    {{ authAccessDeniedMessage }}
 </p>
 @endif
 

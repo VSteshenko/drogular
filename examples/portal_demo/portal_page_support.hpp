@@ -24,138 +24,51 @@ public:
 
         context.set("locale", locale);
 
-        context.set(
-            "appTitle",
-            translations.get(locale, "app.title")
-        );
-
-        context.set(
-            "pageTitle",
-            translations.get(locale, pageTitleKey)
-        );
-
-        context.set(
-            "navDashboard",
-            translations.get(locale, "nav.dashboard")
-        );
-
-        context.set(
-            "navUsers",
-            translations.get(locale, "nav.users")
-        );
-
-        context.set(
-            "navAdmin",
-            translations.get(locale, "nav.admin")
-        );
-
-        context.set(
-            "navLogin",
-            translations.get(locale, "nav.login")
-        );
-
-        context.set(
-            "loginUsername",
-            translations.get(locale, "login.username")
-        );
-
-        context.set(
-            "loginPassword",
-            translations.get(locale, "login.password")
-        );
-
-        context.set(
-            "loginSubmit",
-            translations.get(locale, "login.submit")
-        );
-
-        context.set(
-            "navLogout",
-            translations.get(locale, "nav.logout")
-        );
+        context.set("appTitle", translations.get(locale, "app.title"));
+        context.set("pageTitle", translations.get(locale, pageTitleKey));
+        context.set("navDashboard", translations.get(locale, "nav.dashboard"));
+        context.set("navUsers", translations.get(locale, "nav.users"));
+        context.set("navAdmin", translations.get(locale, "nav.admin"));
+        context.set("navLogin", translations.get(locale, "nav.login"));
+        context.set("loginUsername", translations.get(locale, "login.username"));
+        context.set("loginPassword", translations.get(locale, "login.password"));
+        context.set("loginSubmit", translations.get(locale, "login.submit"));
+        context.set("navLogout", translations.get(locale, "nav.logout"));
 
         const auto currentUser =
             PortalAuthSupport::currentUser(context);
 
-        context.set(
-            "isAuthenticated",
-            currentUser.has_value()
+        context.set("isAuthenticated", currentUser.has_value());
+        context.set("currentUsername", currentUser.has_value()
+            ? currentUser->username
+            : std::string("")
         );
-
-        context.set(
-            "currentUsername",
-            currentUser.has_value()
-                ? currentUser->username
-                : std::string("")
+        context.set("currentRole", currentUser.has_value()
+            ? currentUser->role
+            : std::string("")
         );
-
-        context.set(
-            "currentRole",
-            currentUser.has_value()
-                ? currentUser->role
-                : std::string("")
-        );
-
-        context.set(
-            "isAdmin",
-            currentUser.has_value() && currentUser->role == "admin"
-        );
-
-        context.set(
-            "isLoginPage",
-            pageTitleKey == "login.title"
-        );
-
-        context.set(
-            "isGerman",
-            locale == "de"
-        );
-
-        context.set(
-            "isEnglish",
-            locale == "en"
-        );
+        context.set("isAdmin", currentUser.has_value() && currentUser->role == "admin");
+        context.set("isLoginPage", pageTitleKey == "login.title");
+        context.set("isGerman", locale == "de");
+        context.set("isEnglish", locale == "en");
 
         const auto request =
             context.request();
 
-        context.set(
-            "currentPath",
-            request != nullptr
-                ? request->path()
-                : std::string("/dashboard")
+        context.set("currentPath", request != nullptr
+            ? request->path()
+            : std::string("/dashboard")
         );
-
-        context.set(
-            "usersUsername",
-            translations.get(
-                locale,
-                "users.username"
-            )
-        );
-
-        context.set(
-            "usersPassword",
-            translations.get(
-                locale,
-                "users.password"
-            )
-        );
-
-        context.set(
-            "usersRole",
-            translations.get(
-                locale,
-                "users.role"
-            )
-        );
-
-        context.set(
-            "usersCreate",
-            translations.get(
-                locale,
-                "users.create"
-            )
-        );
+        context.set("usersUsername", translations.get(locale, "users.username"));
+        context.set("usersPassword", translations.get(locale, "users.password"));
+        context.set("usersRole", translations.get(locale, "users.role"));
+        context.set("usersCreate", translations.get(locale, "users.create"));
+        context.set("authLoginRequiredTitle", translations.get(locale, "auth.login_required.title"));
+        context.set("authLoginRequiredMessage", translations.get(locale, "auth.login_required.message"));
+        context.set("authAccessDeniedTitle", translations.get(locale, "auth.access_denied.title"));
+        context.set("authAccessDeniedMessage", translations.get(locale, "auth.access_denied.message"));
+        context.set("headerSignedInAs", translations.get(locale, "header.signed_in_as"));
+        context.set("offlineMessage", translations.get(locale, "offline.message"));
+        context.set("offlineHint", translations.get(locale, "offline.hint"));
     }
 };

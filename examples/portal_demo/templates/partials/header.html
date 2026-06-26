@@ -1,15 +1,17 @@
 <header>
-    <h1 style="margin-right:auto;">{{ appTitle }}</h1>
     <div style="display:flex; align-items:center; gap:1rem;">
+        <h1 style="margin-right:auto;">{{ appTitle }}</h1>
+    </div>
 
+    @if(isAuthenticated)
         <nav>
             <a href="/dashboard">{{ navDashboard }}</a>
             |
             <a href="/users">{{ navUsers }}</a>
+            @if(isAdmin)
             |
             <a href="/admin">{{ navAdmin }}</a>
-
-            @if(isAuthenticated)
+            @endif
             |
             <form method="post" action="/logout" style="display:inline">
                 <button
@@ -18,8 +20,15 @@
                     {{ navLogout }}
                 </button>
             </form>
-            @endif
         </nav>
+    @endif
+
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+        @if(isAuthenticated)
+            <small>
+                {{ headerSignedInAs }}: {{ currentUsername }}
+            </small>
+        @endif
 
         <div>
             <form method="post" action="/language" style="display:inline">
