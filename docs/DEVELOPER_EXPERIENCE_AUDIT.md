@@ -202,6 +202,28 @@ Observe.
 
 ⸻
 
+## Page Initialization
+
+Current:
+
+PageSupport::apply(...)
+
+resolve services
+
+context.set(...)
+
+render
+
+#### Observation
+
+Every page follows the same initialization pattern.
+
+Status:
+
+Observe
+
+⸻
+
 ## Candidate APIs
 
 The following ideas are intentionally postponed until more evidence is collected.
