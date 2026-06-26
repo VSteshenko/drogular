@@ -35,6 +35,7 @@ public:
         context.set("loginPassword", translations->get(locale, "login.password"));
         context.set("loginSubmit", translations->get(locale, "login.submit"));
         context.set("navLogout", translations->get(locale, "nav.logout"));
+        context.set("navProjects", translations->get(locale, "nav.projects"));
 
         const auto currentUser =
             PortalAuthSupport::currentUser(context);
@@ -71,5 +72,12 @@ public:
         context.set("headerSignedInAs", translations->get(locale, "header.signed_in_as"));
         context.set("offlineMessage", translations->get(locale, "offline.message"));
         context.set("offlineHint", translations->get(locale, "offline.hint"));
+
+        context.set("projectsTitleLabel", translations->get(locale, "projects.title.label"));
+        context.set("projectsStatusLabel", translations->get(locale, "projects.status.label"));
+        context.set("projectsCreate", translations->get(locale, "projects.create"));
+        context.set("projectStatusActive", translations->get(locale, "projects.status.active"));
+        context.set("projectStatusPaused", translations->get(locale, "projects.status.paused"));
+        context.set("projectStatusDone", translations->get(locale, "projects.status.done"));
     }
 };

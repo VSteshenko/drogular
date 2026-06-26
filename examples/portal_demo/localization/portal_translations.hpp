@@ -86,7 +86,17 @@ private:
                 {"auth.access_denied.message", "Administrator role required."},
                 {"header.signed_in_as", "Signed in as"},
                 {"offline.message", "The portal is currently unavailable because there is no network connection."},
-                {"offline.hint", "Please reconnect and reload the page."}
+                {"offline.hint", "Please reconnect and reload the page."},
+                {"nav.projects", "Projects"},
+                {"projects.title", "Projects"},
+                {"projects.title.label", "Title"},
+                {"projects.status.label", "Status"},
+                {"projects.create", "Create Project"},
+                {"projects.status.active", "Active"},
+                {"projects.status.paused", "Paused"},
+                {"projects.status.done", "Done"},
+                {"projects.error.validation", "Please enter a valid project title and status."},
+                {"projects.success.created", "Project was created successfully."}
             }
         },
         {
@@ -124,7 +134,17 @@ private:
                 {"auth.access_denied.message", "Administratorrechte sind erforderlich."},
                 {"header.signed_in_as", "Angemeldet als"},
                 {"offline.message", "Das Portal ist derzeit nicht verfügbar, weil keine Netzwerkverbindung besteht."},
-                {"offline.hint", "Bitte stellen Sie die Verbindung wieder her und laden Sie die Seite neu."}
+                {"offline.hint", "Bitte stellen Sie die Verbindung wieder her und laden Sie die Seite neu."},
+                {"nav.projects", "Projekte"},
+                {"projects.title", "Projekte"},
+                {"projects.title.label", "Titel"},
+                {"projects.status.label", "Status"},
+                {"projects.create", "Projekt erstellen"},
+                {"projects.status.active", "Aktiv"},
+                {"projects.status.paused", "Pausiert"},
+                {"projects.status.done", "Erledigt"},
+                {"projects.error.validation", "Bitte geben Sie einen gültigen Projekttitel und Status ein."},
+                {"projects.success.created", "Das Projekt wurde erfolgreich erstellt."}
             }
         }
     };

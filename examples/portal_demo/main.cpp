@@ -9,6 +9,9 @@
 #include "actions/create_user_action.hpp"
 #include "pages/offline_page.hpp"
 #include "localization/portal_translations.hpp"
+#include "actions/create_project_action.hpp"
+#include "pages/projects_page.hpp"
+#include "portal_project_repository.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -45,16 +48,22 @@ int main() {
         drogular::ServiceLifetime::Singleton
     );
 
+    app.services().add<PortalProjectRepository>(
+        drogular::ServiceLifetime::Singleton
+    );
+
     app.page<PortalLoginPage>("/");
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
     app.page<PortalUsersPage>("/users");
     app.page<PortalAdminPage>("/admin");
+    app.page<PortalProjectsPage>("/projects");
 
     app.action<PortalLanguageAction>("/language");
     app.action<PortalLoginAction>("/login");
     app.action<PortalLogoutAction>("/logout");
     app.action<PortalCreateUserAction>("/users/create");
+    app.action<PortalCreateProjectAction>("/projects/create");
 
     app.run(8083);
 

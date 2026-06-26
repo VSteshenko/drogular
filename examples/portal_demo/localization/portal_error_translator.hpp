@@ -71,4 +71,34 @@ public:
 
         return "";
     }
+
+    static std::string projectsError(
+        const PortalTranslations& translations,
+        const std::string& locale,
+        const std::string& error
+    ) {
+        if (error == "validation") {
+            return translations.get(
+                locale,
+                "projects.error.validation"
+            );
+        }
+
+        return "";
+    }
+
+    static std::string projectsSuccess(
+        const PortalTranslations& translations,
+        const std::string& locale,
+        const std::string& success
+    ) {
+        if (success == "project_created") {
+            return translations.get(
+                locale,
+                "projects.success.created"
+            );
+        }
+
+        return "";
+    }
 };

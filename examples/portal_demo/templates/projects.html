@@ -1,0 +1,48 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>
+    {{ authLoginRequiredMessage }}
+</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@else
+<h2>{{ pageTitle }}</h2>
+
+@if(hasProjectsError)
+@include("partials/alert_error.html")
+@endif
+
+@if(hasProjectsSuccess)
+@include("partials/alert_success.html")
+@endif
+
+<form method="post" action="/projects/create">
+    <div>
+        <label>{{ projectsTitleLabel }}</label>
+        <input name="title" value="{{ createProjectTitle }}" />
+    </div>
+
+    <div>
+        <label>{{ projectsStatusLabel }}</label>
+        <select name="status">
+            <option value="active">{{ projectStatusActive }}</option>
+            <option value="paused">{{ projectStatusPaused }}</option>
+            <option value="done">{{ projectStatusDone }}</option>
+        </select>
+    </div>
+
+    <button type="submit">{{ projectsCreate }}</button>
+</form>
+
+<ul>
+    @foreach(project in projects)
+    <li>
+        <strong>{{ project.title }}</strong>
+        — {{ project.status }}
+    </li>
+    @endforeach
+</ul>
+@endif
