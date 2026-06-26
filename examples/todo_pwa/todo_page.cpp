@@ -3,8 +3,7 @@
 #include "todo_store.hpp"
 
 #include <drogular/pwa_scripts.hpp>
-#include <drogular/pwa_html.hpp>
-#include <drogular/pwa_page_support.hpp>
+#include <drogular/page_support.hpp>
 
 #include <vector>
 #include <json/json.h>
@@ -53,5 +52,8 @@ void TodoPage::onInit(drogular::RenderContext& context) {
         )
     );
 
-    drogular::PwaPageSupport::apply(context);
+    drogular::PageSupport::apply(
+        context,
+        "Drogular Todo PWA"
+    );
 }

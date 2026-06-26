@@ -4,7 +4,7 @@
 #include "../localization/portal_translations.hpp"
 #include "../auth/portal_auth_support.hpp"
 
-#include <drogular/pwa_page_support.hpp>
+#include <drogular/page_support.hpp>
 #include <drogular/component.hpp>
 
 #include <string>
@@ -21,12 +21,16 @@ public:
         auto translations =
             context.requireService<PortalTranslations>();
 
-        drogular::PwaPageSupport::apply(context);
+        const auto pageTitle = translations->get(locale, pageTitleKey);
+
+        drogular::PageSupport::apply(
+            context,
+            pageTitle
+        );
 
         context.set("locale", locale);
 
         context.set("appTitle", translations->get(locale, "app.title"));
-        context.set("pageTitle", translations->get(locale, pageTitleKey));
         context.set("navDashboard", translations->get(locale, "nav.dashboard"));
         context.set("navUsers", translations->get(locale, "nav.users"));
         context.set("navAdmin", translations->get(locale, "nav.admin"));
@@ -57,10 +61,6 @@ public:
         const auto request =
             context.request();
 
-        context.set("currentPath", request != nullptr
-            ? request->path()
-            : std::string("/dashboard")
-        );
         context.set("usersUsername", translations->get(locale, "users.username"));
         context.set("usersPassword", translations->get(locale, "users.password"));
         context.set("usersRole", translations->get(locale, "users.role"));

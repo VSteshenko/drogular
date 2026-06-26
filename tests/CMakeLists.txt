@@ -51,6 +51,7 @@ add_executable(drogular_tests
     core/core_template_loader_tests.cpp
     core/core_template_preprocessor_tests.cpp
     core/core_validation_result_tests.cpp
+    core/core_page_support_tests.cpp
     core/core_testing_tests.cpp
     todo_pwa/todo_pwa_todo_page_tests.cpp
     todo_pwa/todo_pwa_todo_store_tests.cpp
