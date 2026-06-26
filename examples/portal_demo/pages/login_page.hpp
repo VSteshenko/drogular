@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../portal_page_support.hpp"
-#include "../portal_error_translator.hpp"
+#include "../ui/portal_page_support.hpp"
+#include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
 

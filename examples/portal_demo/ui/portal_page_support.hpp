@@ -1,8 +1,8 @@
 #pragma once
 
-#include "portal_locale.hpp"
-#include "portal_translations.hpp"
-#include "portal_auth_support.hpp"
+#include "../localization/portal_locale.hpp"
+#include "../localization/portal_translations.hpp"
+#include "../auth/portal_auth_support.hpp"
 
 #include <drogular/pwa_page_support.hpp>
 #include <drogular/component.hpp>
