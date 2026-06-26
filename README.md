@@ -6,9 +6,19 @@
 
 Drogular is an Angular-inspired C++ web framework built on top of Drogon.
 
+Drogular is validated through complete reference applications rather than isolated examples.
+
 The goal is to provide a component-oriented way to build SSR, SPA, and PWA-style applications in modern C++ with first-class GraphQL support.
 
-### Why Drogular?
+## Architecture Philosophy
+
+Drogular evolves through real applications.
+
+New APIs are introduced only after they have been validated by practical usage in the included examples.
+
+This keeps the framework compact, consistent and focused on solving real development problems.
+
+## Why Drogular?
 
 Drogular combines:
 
@@ -41,9 +51,17 @@ HTML
 
 ## Status
 
-**Version:** 0.18.0
+**Version:** 0.19.0
 
-Drogular is an experimental Angular-inspired C++ web framework built on top of Drogon.
+Current release highlights:
+
+- Progressive Web Application support
+- Portal Demo reference application
+- Localization infrastructure
+- Offline support
+- Static asset pipeline
+
+A modern C++ web application framework for Drogon, validated through real-world reference applications.
 
 Current architecture:
 
@@ -218,7 +236,7 @@ HTML
 - LogoutAction
 - Protected pages
 - Role-based authorization
-- Authentication sample application
+- Authentication reference application
 - Cookie Support
 - Session Support
 
@@ -232,10 +250,11 @@ HTML
 - Development reload support
 - ApplicationOptions
 
-#### Database/repository example
+#### Repositories
 
 - Repository Pattern
-- Repository Sample
+- Repository services
+- Dependency Injection integration
 
 #### Static Files & Asset Support
 
@@ -254,6 +273,22 @@ HTML
 - If-Modified-Since support
 - 304 Not Modified responses
 - Static file cache profiles
+
+#### Progressive Web Applications
+
+- Web App Manifest
+- Service Worker registration
+- Offline pages
+- App shell support
+- Dynamic offline page generation
+- PWA helper APIs
+
+#### Localization
+
+- Translation services
+- Runtime language switching
+- Localized validation messages
+- Shared localization helpers
 
 #### Testing
 
@@ -335,19 +370,30 @@ HTML
 | ETag Support                    | Stable      |
 | Last-Modified Support           | Stable      |
 | Static File Cache Profiles      | Stable      |
+| Portal Demo                     | Stable      |
+| Localization                    | Stable      |
+| PWA                             | Stable      |
+| Service Worker                  | Stable      |
+| Web App Manifest                | Stable      |
+| Offline Support                 | Stable      |
+| Static Asset Pipeline           | Stable      |
+| Static Asset Cache Profiles     | Stable      |
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
-## Example
+## Reference Applications
 
-TodoPWA demonstrates:
+### TodoPWA
+
+Demonstrates:
 
 - Components
-- Dependency Injection
-- Template Compiler
-- Forms
 - Actions
+- State Management
 - Validation
+- PWA
+- Offline Support
+- Service Worker
 
 Template:
 
@@ -418,6 +464,24 @@ Open:
 ```text
 http://localhost:8080
 ```
+
+### Portal Demo
+
+Demonstrates:
+
+- Authentication
+- Authorization
+- Sessions
+- Dependency Injection
+- Repository Pattern
+- Localization
+- Shared Layouts
+- Shared Partials
+- Validation
+- PWA
+- Offline Support
+
+Demonstrates the recommended architecture for medium-sized Drogular applications.
 
 ## Dependency Injection
 
@@ -740,10 +804,10 @@ app.templateCache(false);
 Drogular can serve static files through application-level mappings.
 
 ```c++
-app.staticFiles(
-    "/assets",
-    "public"
-);
+app.staticFiles("/assets", "./public")
+   .staticFileCacheProfile(
+       StaticFileCacheProfile::Production
+   );
 ```
 
 ### Example
@@ -778,6 +842,31 @@ return drogular::ActionResult::file(
 return drogular::ActionResult::download(
     "exports/report.pdf",
     "report.pdf"
+);
+```
+
+## Authentication
+
+```c++
+auto session =
+    context.session();
+
+session->set("username", username);
+```
+
+## Progressive Web Applications
+
+Drogular provides first-class Progressive Web Application support through manifests, service workers and offline pages.
+
+```c++
+app.manifest(...)
+   .serviceWorker(...)
+   .offlinePage<OfflinePage>();
+```
+
+```c++
+app.staticFileCacheProfile(
+    StaticFileCacheProfile::Production
 );
 ```
 
@@ -862,68 +951,25 @@ public:
 </html>
 ```
 
-## Authentication Sample
+## Reference Applications
 
-Drogular includes a complete authentication and authorization sample application.
-
-Features:
-
-- Login
-- Logout
-- Authenticated dashboard
-- Role-based admin page
-- Form validation
-- Session-based authentication
-- Cookie-backed sessions
-- Role-based authorization
-
-Sample users:
-
-admin / password
-user / password
-
-### State + Auth Example
-
-```c++
-auto currentUser =
-    AuthSession::currentUser(context);
-```
-
-### Role Check Example
-
-```c++
-if (currentUser->role == "admin") {
-    ...
-}
-```
-
-## Repository Example
-
-```c++
-auto repository =
-    context.requireService<UserRepository>();
-
-const auto users =
-    repository->all();
-```
-
-```c++
-repository->create(
-    name,
-    email
-);
-```
+- TodoPWA
+- Portal Demo
+- Authentication sample
+- Repository sample
+- Localization sample
+- PWA sample
 
 ## Roadmap
 
-### 0.19 — PWA Offline Support
+### 0.20 — Developer Experience
 
-- Service Worker example
-- Web App Manifest
-- App shell cache
-- Static assets cache
-- Offline fallback page
-- TodoPWA offline demo
+- Reduce boilerplate
+- Simplify page creation
+- Simplify authenticated pages
+- Shared CRUD helpers
+- Improved portal architecture
+- Better developer ergonomics
 
 ### 1.0 — Stable Release
 
