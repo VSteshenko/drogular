@@ -4,7 +4,7 @@
 
 # Drogular
 
-Drogular is an Angular-inspired C++ web framework built on top of Drogon.
+Drogular is an Angular-inspired C++ web framework built on top of [Drogon](https://github.com/drogonframework/drogon).
 
 Drogular is validated through complete reference applications rather than isolated examples.
 
