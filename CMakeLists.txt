@@ -38,6 +38,7 @@ add_library(drogular
     src/page.cpp
     src/page_support.cpp
     src/pwa_scripts.cpp
+    src/page_auth_support.cpp
     src/pwa_html.cpp
     src/pwa_page_support.cpp
     src/router.cpp

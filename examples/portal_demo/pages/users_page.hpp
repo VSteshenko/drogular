@@ -7,6 +7,7 @@
 #include "../localization/portal_locale.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/page_auth_support.hpp>
 
 class PortalUsersPage final
     : public drogular::TemplatePage
@@ -90,15 +91,7 @@ public:
                 : usersSuccess
         );
 
-        const auto currentUser =
-            PortalAuthSupport::currentUser(context);
-
-        context.set(
-            "loginRequired",
-            !currentUser.has_value()
-        );
-
-        if (!currentUser.has_value()) {
+        if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
         }
 

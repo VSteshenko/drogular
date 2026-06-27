@@ -3,6 +3,7 @@
 #include "../ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/page_auth_support.hpp>
 
 class PortalDashboardPage final
     : public drogular::TemplatePage
@@ -16,13 +17,9 @@ public:
             "dashboard.title"
         );
 
-        const auto currentUser =
-            PortalAuthSupport::currentUser(context);
-
-        context.set(
-            "loginRequired",
-            !currentUser.has_value()
-        );
+        if (!drogular::PageAuthSupport::requireAuthentication(context)) {
+            return;
+        }
     }
 
     std::string templatePath() const override {

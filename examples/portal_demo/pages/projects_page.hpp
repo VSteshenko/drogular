@@ -5,6 +5,7 @@
 #include "../ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/page_auth_support.hpp>
 
 class PortalProjectsPage final
     : public drogular::TemplatePage
@@ -61,15 +62,7 @@ public:
         context.set("alertMessage", !projectsError.empty() ? projectsError : projectsSuccess);
         context.set("createProjectTitle", createTitle);
 
-        const auto currentUser =
-            PortalAuthSupport::currentUser(context);
-
-        context.set(
-            "loginRequired",
-            !currentUser.has_value()
-        );
-
-        if (!currentUser.has_value()) {
+        if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
         }
 

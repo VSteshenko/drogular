@@ -4,6 +4,7 @@
 #include "../ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/page_auth_support.hpp>
 
 class PortalAdminPage final
     : public drogular::TemplatePage
@@ -17,24 +18,24 @@ public:
             "admin.title"
         );
 
-        const auto currentUser =
-            PortalAuthSupport::currentUser(context);
+        context.set("accessDenied", false);
+        context.set("hasAdminAccess", false);
 
-        context.set(
-            "loginRequired",
-            !currentUser.has_value()
-        );
+        if (!drogular::PageAuthSupport::requireAuthentication(context)) {
+            return;
+        }
 
-        context.set(
-            "accessDenied",
-            currentUser.has_value() &&
-            currentUser->role != "admin"
-        );
+        if (!drogular::PageAuthSupport::requireSessionValue(
+                context,
+                "role",
+                "admin"
+            )) {
+            return;
+            }
 
         context.set(
             "hasAdminAccess",
-            currentUser.has_value() &&
-            currentUser->role == "admin"
+            true
         );
     }
 
