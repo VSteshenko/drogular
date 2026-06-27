@@ -4,6 +4,7 @@
 
 #include <drogular/component.hpp>
 #include <drogular/session_store.hpp>
+#include <drogular/auth_support.hpp>
 
 #include <optional>
 #include <string>
@@ -31,10 +32,16 @@ public:
         }
 
         const auto username =
-            session->get("username");
+            drogular::AuthSupport::sessionValue(
+                context,
+                "username"
+            );
 
         const auto role =
-            session->get("role");
+            drogular::AuthSupport::sessionValue(
+                context,
+                "role"
+            );
 
         if (!username.has_value() ||
             !role.has_value()) {
@@ -58,10 +65,10 @@ public:
         drogular::RenderContext& context,
         const std::string& role
     ) {
-        const auto user =
-            currentUser(context);
-
-        return user.has_value() &&
-               user->role == role;
+        return drogular::AuthSupport::hasSessionValue(
+            context,
+            "role",
+            role
+        );
     }
 };

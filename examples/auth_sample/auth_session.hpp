@@ -2,9 +2,8 @@
 
 #include "auth_user.hpp"
 
-#include <drogular/component.hpp>
-#include <drogular/session.hpp>
-#include <drogular/session_store.hpp>
+#include <drogular/auth_support.hpp>
+#include <drogular/page.hpp>
 
 #include <optional>
 #include <string>
@@ -14,41 +13,46 @@ public:
     static std::optional<AuthUser> currentUser(
         drogular::RenderContext& context
     ) {
-        const auto sessionId =
-            context.cookie("session_id");
+        const auto username =
+            drogular::AuthSupport::sessionValue(
+                context,
+                "username"
+            );
 
-        if (!sessionId.has_value()) {
-            return std::nullopt;
-        }
+        const auto role =
+            drogular::AuthSupport::sessionValue(
+                context,
+                "role"
+            );
 
-        auto sessionStore =
-            context.requireService<drogular::SessionStore>();
-
-        const auto session =
-            sessionStore->get(*sessionId);
-
-        if (session == nullptr) {
-            return std::nullopt;
-        }
-
-        return fromSession(*session);
-    }
-
-    static std::optional<AuthUser> fromSession(
-        const drogular::Session& session
-    ) {
-        const auto id = session.get("user_id");
-        const auto username = session.get("username");
-        const auto role = session.get("role");
-
-        if (!id || !username || !role) {
+        if (!username.has_value() ||
+            !role.has_value()) {
             return std::nullopt;
         }
 
         return AuthUser{
-            .id = std::stoi(*id),
             .username = *username,
             .role = *role
         };
+    }
+
+    static bool isAuthenticated(
+        drogular::RenderContext& context
+    )
+    {
+        return drogular::AuthSupport::isAuthenticated(
+            context
+        );
+    }
+
+    static bool isAdmin(
+        drogular::RenderContext& context
+    )
+    {
+        return drogular::AuthSupport::hasSessionValue(
+            context,
+            "role",
+            "admin"
+        );
     }
 };
