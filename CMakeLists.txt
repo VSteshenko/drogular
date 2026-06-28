@@ -44,6 +44,7 @@ add_library(drogular
     src/locale_support.cpp
     src/router.cpp
     src/render_context.cpp
+    src/url.cpp
     src/services.cpp
     src/session.cpp
     src/session_store.cpp

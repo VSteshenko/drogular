@@ -4,6 +4,7 @@
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
+#include <drogular/url.hpp>
 
 class PortalCreateProjectAction final
     : public drogular::ActionHandler
@@ -21,10 +22,6 @@ public:
             );
         }
 
-        const auto title =
-            context.form<std::string>("title")
-            .value_or("");
-
         const auto validation =
             drogular::FormValidator(context)
                 .required("title")
@@ -32,10 +29,15 @@ public:
                 .required("status")
                 .validate();
 
+        const auto title =
+            context.form<std::string>("title")
+                .value_or("");
+
         if (!validation.valid()) {
             // validation failed
             return drogular::ActionResult::redirect(
-                "/projects?error=validation&title=" + title
+                "/projects?error=validation&title=" +
+                drogular::Url::encode(title)
             );
         }
 

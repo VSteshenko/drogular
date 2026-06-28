@@ -4,6 +4,7 @@
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
+#include <drogular/url.hpp>
 
 class PortalCreateUserAction final
     : public drogular::ActionHandler
@@ -41,15 +42,17 @@ public:
                 .required("role")
                 .validate();
 
+        const auto username =
+            context.form<std::string>("username")
+                .value_or("");
+
         if (!validation.valid()) {
             // validation failed
             return drogular::ActionResult::redirect(
-                "/users?error=validation"
+                "/users?error=validation&username=" +
+                drogular::Url::encode(username)
             );
         }
-
-        const auto username =
-            context.requireForm<std::string>("username");
 
         const auto password =
             context.requireForm<std::string>("password");
@@ -61,12 +64,9 @@ public:
             context.requireService<PortalUserRepository>();
 
         if (repository->exists(username)) {
-            const auto username =
-                context.form<std::string>("username")
-                    .value_or("");
-
             return drogular::ActionResult::redirect(
-                "/users?error=validation&username=" + username
+                "/users?error=duplicate_user&username=" +
+                drogular::Url::encode(username)
             );
         }
 
