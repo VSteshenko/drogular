@@ -36,8 +36,11 @@ int main() {
     )
     .offlinePage<PortalOfflinePage>();
 
-    app.services().add<PortalTranslations>(
-        drogular::ServiceLifetime::Singleton
+    app.services().addFactory<drogular::TranslationProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [] {
+            return std::make_shared<PortalTranslations>();
+        }
     );
 
     app.services().add<drogular::SessionStore>(

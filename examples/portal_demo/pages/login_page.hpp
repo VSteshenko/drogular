@@ -4,7 +4,6 @@
 #include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
-#include <drogular/locale_support.hpp>
 
 class PortalLoginPage final
     : public drogular::TemplatePage
@@ -17,12 +16,6 @@ public:
             context,
             "login.title"
         );
-
-        const auto locale =
-            drogular::LocaleSupport::current(context);
-
-        auto translations =
-            context.requireService<PortalTranslations>();
 
         const auto request =
             context.request();
@@ -40,8 +33,7 @@ public:
         context.set(
             "loginError",
             PortalErrorTranslator::loginError(
-                *translations,
-                locale,
+                context,
                 error
             )
         );
@@ -49,8 +41,7 @@ public:
         context.set(
             "alertMessage",
             PortalErrorTranslator::loginError(
-                *translations,
-                locale,
+                context,
                 error
             )
         );

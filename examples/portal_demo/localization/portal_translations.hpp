@@ -1,10 +1,21 @@
 #pragma once
 
+#include <drogular/translation_provider.hpp>
+
 #include <string>
 #include <unordered_map>
 
-class PortalTranslations {
+class PortalTranslations
+    : public drogular::TranslationProvider
+{
 public:
+    std::string translate(
+        const std::string& locale,
+        const std::string& key
+    ) const override {
+        return get(locale, key);
+    }
+
     std::string get(
         const std::string& locale,
         const std::string& key

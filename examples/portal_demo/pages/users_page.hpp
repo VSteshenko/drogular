@@ -7,7 +7,6 @@
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
-#include <drogular/locale_support.hpp>
 
 class PortalUsersPage final
     : public drogular::TemplatePage
@@ -20,9 +19,6 @@ public:
             context,
             "users.title"
         );
-
-        const auto locale =
-            drogular::LocaleSupport::current(context);
 
         const auto request =
             context.request();
@@ -37,13 +33,9 @@ public:
                 ? request->getParameter("success")
                 : std::string("");
 
-        auto translations =
-            context.requireService<PortalTranslations>();
-
         const auto usersError =
             PortalErrorTranslator::usersError(
-                *translations,
-                locale,
+                context,
                 error
             );
 
@@ -59,8 +51,7 @@ public:
 
         const auto usersSuccess =
             PortalErrorTranslator::usersSuccess(
-                *translations,
-                locale,
+                context,
                 success
             );
 

@@ -5,7 +5,6 @@
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
-#include <drogular/locale_support.hpp>
 
 class PortalProjectsPage final
     : public drogular::TemplatePage
@@ -18,12 +17,6 @@ public:
             context,
             "projects.title"
         );
-
-        const auto locale =
-            drogular::LocaleSupport::current(context);
-
-        auto translations =
-            context.requireService<PortalTranslations>();
 
         const auto request =
             context.request();
@@ -45,15 +38,13 @@ public:
 
         const auto projectsError =
             PortalErrorTranslator::projectsError(
-                *translations,
-                locale,
+                context,
                 error
             );
 
         const auto projectsSuccess =
             PortalErrorTranslator::projectsSuccess(
-                *translations,
-                locale,
+                context,
                 success
             );
 

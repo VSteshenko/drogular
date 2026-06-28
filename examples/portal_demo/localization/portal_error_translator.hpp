@@ -1,26 +1,25 @@
 #pragma once
 
-#include "portal_translations.hpp"
+#include <drogular/translation_support.hpp>
 
 #include <string>
 
 class PortalErrorTranslator {
 public:
     static std::string loginError(
-        const PortalTranslations& translations,
-        const std::string& locale,
+        drogular::RenderContext& context,
         const std::string& error
     ) {
         if (error == "missing_credentials") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "login.error.missing_credentials"
             );
         }
 
         if (error == "invalid_credentials") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "login.error.invalid_credentials"
             );
         }
@@ -29,27 +28,26 @@ public:
     }
 
     static std::string usersError(
-        const PortalTranslations& translations,
-        const std::string& locale,
+        drogular::RenderContext& context,
         const std::string& error
     ) {
         if (error == "validation") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "users.error.validation"
             );
         }
 
         if (error == "access_denied") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "users.error.access_denied"
             );
         }
 
         if (error == "duplicate_user") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "users.error.duplicate_user"
             );
         }
@@ -58,13 +56,12 @@ public:
     }
 
     static std::string usersSuccess(
-        const PortalTranslations& translations,
-        const std::string& locale,
+        drogular::RenderContext& context,
         const std::string& success
     ) {
         if (success == "user_created") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "users.success.created"
             );
         }
@@ -73,13 +70,12 @@ public:
     }
 
     static std::string projectsError(
-        const PortalTranslations& translations,
-        const std::string& locale,
+        drogular::RenderContext& context,
         const std::string& error
     ) {
         if (error == "validation") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "projects.error.validation"
             );
         }
@@ -88,13 +84,12 @@ public:
     }
 
     static std::string projectsSuccess(
-        const PortalTranslations& translations,
-        const std::string& locale,
+        drogular::RenderContext& context,
         const std::string& success
     ) {
         if (success == "project_created") {
-            return translations.get(
-                locale,
+            return drogular::TranslationSupport::translate(
+                context,
                 "projects.success.created"
             );
         }

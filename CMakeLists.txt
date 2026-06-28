@@ -62,6 +62,7 @@ add_library(drogular
     src/template_diagnostics.cpp
     src/template_loader.cpp
     src/template_preprocessor.cpp
+    src/translation_support.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
