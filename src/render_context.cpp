@@ -122,6 +122,29 @@ std::string RenderContext::translate(
     );
 }
 
+void RenderContext::setTranslated(
+    const std::string& name,
+    const std::string& translationKey
+) {
+    set(
+        name,
+        translate(translationKey)
+    );
+}
+
+void RenderContext::setTranslations(
+    std::initializer_list<
+        std::pair<std::string, std::string>
+    > values
+) {
+    for (const auto& [name, key] : values) {
+        setTranslated(
+            name,
+            key
+        );
+    }
+}
+
 bool RenderContext::contains(const std::string& key) const {
     if (values_.contains(key)) {
         return true;

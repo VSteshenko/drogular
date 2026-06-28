@@ -22,27 +22,6 @@ public:
             pageTitle
         );
 
-        context.set("appTitle",
-            context.translate("app.title"));
-        context.set("navDashboard",
-            context.translate("nav.dashboard"));
-        context.set("navUsers",
-            context.translate("nav.users"));
-        context.set("navAdmin",
-            context.translate("nav.admin"));
-        context.set("navLogin",
-            context.translate("nav.login"));
-        context.set("loginUsername",
-            context.translate("login.username"));
-        context.set("loginPassword",
-            context.translate("login.password"));
-        context.set("loginSubmit",
-            context.translate("login.submit"));
-        context.set("navLogout",
-            context.translate("nav.logout"));
-        context.set("navProjects",
-            context.translate("nav.projects"));
-
         const auto currentUser =
             PortalAuthSupport::currentUser(context);
 
@@ -64,43 +43,42 @@ public:
         context.set("isGerman", locale == "de");
         context.set("isEnglish", locale == "en");
 
-        const auto request =
-            context.request();
+        context.setTranslations({
 
-        context.set("usersUsername",
-            context.translate("users.username"));
-        context.set("usersPassword",
-            context.translate("users.password"));
-        context.set("usersRole",
-            context.translate("users.role"));
-        context.set("usersCreate",
-            context.translate("users.create"));
-        context.set("authLoginRequiredTitle",
-            context.translate("auth.login_required.title"));
-        context.set("authLoginRequiredMessage",
-            context.translate("auth.login_required.message"));
-        context.set("authAccessDeniedTitle",
-            context.translate("auth.access_denied.title"));
-        context.set("authAccessDeniedMessage",
-            context.translate("auth.access_denied.message"));
-        context.set("headerSignedInAs",
-            context.translate("header.signed_in_as"));
-        context.set("offlineMessage",
-            context.translate("offline.message"));
-        context.set("offlineHint",
-            context.translate("offline.hint"));
+            {"appTitle", "app.title"},
 
-        context.set("projectsTitleLabel",
-            context.translate("projects.title.label"));
-        context.set("projectsStatusLabel",
-            context.translate("projects.status.label"));
-        context.set("projectsCreate",
-            context.translate("projects.create"));
-        context.set("projectStatusActive",
-            context.translate("projects.status.active"));
-        context.set("projectStatusPaused",
-            context.translate("projects.status.paused"));
-        context.set("projectStatusDone",
-            context.translate("projects.status.done"));
+            {"navDashboard", "nav.dashboard"},
+            {"navUsers", "nav.users"},
+            {"navProjects", "nav.projects"},
+            {"navAdmin", "nav.admin"},
+            {"navLogin", "nav.login"},
+            {"navLogout", "nav.logout"},
+
+            {"loginUsername", "login.username"},
+            {"loginPassword", "login.password"},
+            {"loginSubmit", "login.submit"},
+
+            {"usersUsername", "users.username"},
+            {"usersPassword", "users.password"},
+            {"usersRole", "users.role"},
+            {"usersCreate", "users.create"},
+
+            {"projectsTitleLabel", "projects.title.label"},
+            {"projectsStatusLabel", "projects.status.label"},
+            {"projectsCreate", "projects.create"},
+            {"projectStatusActive", "projects.status.active"},
+            {"projectStatusPaused", "projects.status.paused"},
+            {"projectStatusDone", "projects.status.done"},
+
+            {"authLoginRequiredTitle", "auth.login_required.title"},
+            {"authLoginRequiredMessage", "auth.login_required.message"},
+            {"authAccessDeniedTitle", "auth.access_denied.title"},
+            {"authAccessDeniedMessage", "auth.access_denied.message"},
+
+            {"headerSignedInAs", "header.signed_in_as"},
+
+            {"offlineMessage", "offline.message"},
+            {"offlineHint", "offline.hint"}
+        });
     }
 };

@@ -353,3 +353,15 @@ TEST(CoreRenderContextTests, TranslatesKeyWithoutProvider) {
         "app.title"
     );
 }
+
+TEST(CoreRenderContextTests, SetsTranslatedValues) {
+    drogular::RenderContext context;
+
+    context.setTranslations({
+        {"title", "app.title"},
+        {"logout", "nav.logout"}
+    });
+
+    EXPECT_EQ(context.get<std::string>("title"), "app.title");
+    EXPECT_EQ(context.get<std::string>("logout"), "nav.logout");
+}

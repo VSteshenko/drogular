@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <memory>
 #include <typeindex>
+#include <initializer_list>
+#include <utility>
 
 namespace drogular {
 
@@ -290,6 +292,23 @@ public:
      */
     std::string translate(
         const std::string& key
+    );
+
+    /**
+     * Translates the specified key and stores the result.
+     */
+    void setTranslated(
+        const std::string& name,
+        const std::string& translationKey
+    );
+
+    /**
+     * Translates and stores multiple values.
+     */
+    void setTranslations(
+        std::initializer_list<
+            std::pair<std::string, std::string>
+        > values
     );
 
 private:
