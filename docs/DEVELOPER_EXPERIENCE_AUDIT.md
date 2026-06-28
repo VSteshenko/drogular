@@ -15,7 +15,188 @@ Every new abstraction must satisfy all of the following conditions:
 
 When in doubt, keep the existing API.
 
-⸻
+---
+
+## Status Legend
+
+| Status | Meaning |
+|--------|---------|
+| Observe | Repetition has been noticed, but more evidence is needed. |
+| Candidate | The pattern appears in multiple places and may justify a helper. |
+| Prototype | Implemented as a helper or application-level abstraction. |
+| Framework | Proven by real usage and moved into Drogular core. |
+| Keep as-is | The current implementation is simple enough and does not need abstraction. |
+
+---
+
+## Implemented in 0.20
+
+### PageSupport
+
+Current framework API:
+
+```c++
+drogular::PageSupport::apply(
+    context,
+    "Dashboard"
+);
+```
+
+Provides:
+
+- `pageTitle`
+- `currentPath`
+- PWA metadata through `PwaPageSupport`
+- common page-level setup
+
+#### Result
+
+Common page setup was removed from TodoPWA and Portal Demo pages.
+
+Status:
+
+Framework.
+
+---
+
+### AuthSupport
+
+Current framework API:
+
+```c++
+drogular::AuthSupport::sessionValue(
+    context,
+    "username"
+);
+
+drogular::AuthSupport::hasSessionValue(
+    context,
+    "role",
+    "admin"
+);
+```
+
+#### Result
+
+Low-level session lookup code was removed from `auth_sample` and `portal_demo` helpers.
+
+Status:
+
+Framework.
+
+---
+
+### PageAuthSupport
+
+Current framework API:
+
+```c++
+if (!drogular::PageAuthSupport::requireAuthentication(context)) {
+    return;
+}
+
+if (!drogular::PageAuthSupport::requireSessionValue(
+        context,
+        "role",
+        "admin")) {
+    return;
+}
+```
+
+Provides common render context flags:
+
+- `loginRequired`
+- `accessDenied`
+
+#### Result
+
+Repeated authentication checks in Dashboard, Users, Projects and Admin pages were reduced.
+
+Status:
+
+Framework.
+
+---
+
+### LocaleSupport
+
+Current framework API:
+
+```c++
+const auto locale =
+    drogular::LocaleSupport::current(context);
+```
+
+#### Result
+
+Portal-specific locale detection was replaced with a small core helper.
+
+Status:
+
+Framework.
+
+---
+
+### TranslationProvider and TranslationSupport
+
+Current framework API:
+
+```c++
+class PortalTranslations
+    : public drogular::TranslationProvider
+{
+public:
+    std::string translate(
+        const std::string& locale,
+        const std::string& key
+    ) const override;
+};
+```
+
+```c++
+drogular::TranslationSupport::translate(
+    context,
+    "dashboard.title"
+);
+```
+
+#### Result
+
+Pages no longer need to know how locale and translation provider are connected.
+
+Status:
+
+Framework.
+
+---
+
+### RenderContext::translate
+
+Current framework API:
+
+```c++
+context.translate("dashboard.title");
+```
+
+#### Result
+
+Translation became a natural render-context operation.
+
+This reduced repeated code such as:
+
+```c++
+const auto locale =
+    drogular::LocaleSupport::current(context);
+
+auto translations =
+    context.requireService<drogular::TranslationProvider>();
+```
+
+Status:
+
+Framework.
+
+---
 
 ## Audit
 
@@ -23,26 +204,28 @@ When in doubt, keep the existing API.
 
 Current:
 
-Typical page initialization:
+```c++
+if (!drogular::PageAuthSupport::requireAuthentication(context)) {
+    return;
+}
+```
+
+Admin checks:
 
 ```c++
-PortalPageSupport::apply(context, "...");
-auto currentUser =
-    PortalAuthSupport::currentUser(context);
-context.set(
-    "loginRequired",
-    !currentUser.has_value()
-);
+if (!drogular::PageAuthSupport::requireSessionValue(
+        context,
+        "role",
+        "admin")) {
+    return;
+}
 ```
 
 #### Observation
 
-This pattern appears in:
+The first small helper layer is now in core.
 
-- Dashboard
-- Users
-- Projects
-- Admin
+Higher-level abstractions may still appear later.
 
 #### Candidate
 
@@ -53,44 +236,77 @@ Possible future APIs:
 
 Status:
 
-Not enough evidence yet.
+Observe.
 
-⸻
+---
 
 ### Localization
 
 Current:
 
-Typical page:
-
 ```c++
-auto translations =
-    context.requireService<PortalTranslations>();
-const auto locale =
-    PortalLocale::fromRenderContext(context);
+context.translate("app.title");
 ```
 
 #### Observation
 
-Appears in nearly every page.
+The first localization layer is now in core:
 
-Needs more investigation before introducing a localization service.
+- `LocaleSupport`
+- `TranslationProvider`
+- `TranslationSupport`
+- `RenderContext::translate()`
+
+Future growth may include:
+
+- file-based providers
+- cached providers
+- fallback locale chains
+- machine translation providers
+- formatting helpers
+
+Status:
+
+Framework foundation implemented. Observe next layer.
+
+---
+
+### Translation Context Setup
+
+Current:
+
+```c++
+context.set(
+    "navDashboard",
+    context.translate("nav.dashboard")
+);
+
+context.set(
+    "navUsers",
+    context.translate("nav.users")
+);
+```
+
+#### Observation
+
+After adding `RenderContext::translate()`, a new pattern appeared: translate a key and immediately place it into the render context.
+
+This is not yet enough evidence for a new API.
 
 Status:
 
 Observe.
 
-⸻
+---
 
 ### Error Handling
 
 Current:
 
-PortalErrorTranslator
-
-Shared alert partials
-
-Localized validation messages
+- PortalErrorTranslator
+- Shared alert partials
+- Localized validation messages
+- `context.translate(...)`
 
 #### Observation
 
@@ -102,7 +318,7 @@ Status:
 
 Keep as-is.
 
-⸻
+---
 
 ### CRUD Pages
 
@@ -134,7 +350,7 @@ Status:
 
 Observe.
 
-⸻
+---
 
 ### Repository Pattern
 
@@ -154,32 +370,31 @@ Status:
 
 Keep as-is.
 
-⸻
+---
 
-### Page Support
+### Page Initialization
 
 Current:
 
-PortalPageSupport::apply(…)
+```c++
+drogular::PageSupport::apply(...);
 
-Provides:
+resolve services
 
-- localization
-- navigation
-- common template variables
-- PWA support
+context.set(...)
+
+render
+```
 
 #### Observation
 
-Already significantly reduces boilerplate.
-
-May become a framework feature in the future.
+Every page follows the same initialization pattern, but the current helpers already reduced the largest repeated parts.
 
 Status:
 
-Good candidate.
+Observe.
 
-⸻
+---
 
 ### Actions
 
@@ -200,29 +415,7 @@ Status:
 
 Observe.
 
-⸻
-
-## Page Initialization
-
-Current:
-
-PageSupport::apply(...)
-
-resolve services
-
-context.set(...)
-
-render
-
-#### Observation
-
-Every page follows the same initialization pattern.
-
-Status:
-
-Observe
-
-⸻
+---
 
 ## Candidate APIs
 
@@ -232,14 +425,16 @@ The following ideas are intentionally postponed until more evidence is collected
 - AdminPage
 - CrudPage
 - CrudAction
-- LocalizationService
 - AlertComponent
 - FormBuilder
 - CRUD helpers
+- Translation context binding helpers
+- File-based TranslationProvider
+- Cached TranslationProvider
 
 None of these should be implemented before they naturally emerge from multiple applications.
 
-⸻
+---
 
 ## Rule
 
