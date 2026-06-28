@@ -1,4 +1,5 @@
 #include <drogular/template_runtime.hpp>
+#include <drogular/render_context.hpp>
 
 #include <gtest/gtest.h>
 #include <json/json.h>

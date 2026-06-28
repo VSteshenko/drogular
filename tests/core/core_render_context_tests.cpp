@@ -1,4 +1,4 @@
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 #include <drogular/services.hpp>
 
 #include <gtest/gtest.h>

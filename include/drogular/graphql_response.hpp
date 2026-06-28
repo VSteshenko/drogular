@@ -1,6 +1,6 @@
 #pragma once
 
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 
 #include <optional>
 #include <string>

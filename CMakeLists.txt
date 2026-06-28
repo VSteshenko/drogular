@@ -41,7 +41,9 @@ add_library(drogular
     src/page_auth_support.cpp
     src/pwa_html.cpp
     src/pwa_page_support.cpp
+    src/locale_support.cpp
     src/router.cpp
+    src/render_context.cpp
     src/services.cpp
     src/session.cpp
     src/session_store.cpp

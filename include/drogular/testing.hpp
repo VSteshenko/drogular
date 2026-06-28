@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/page.hpp>
+#include <drogular/render_context.hpp>
 
 #include <drogon/HttpRequest.h>
 

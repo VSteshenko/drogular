@@ -2,6 +2,7 @@
 #include <drogular/component_renderer.hpp>
 #include <drogular/services.hpp>
 #include <drogular/state.hpp>
+#include <drogular/render_context.hpp>
 
 #include <gtest/gtest.h>
 

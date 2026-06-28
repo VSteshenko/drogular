@@ -2,7 +2,7 @@
 
 #include "../portal_user.hpp"
 
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 #include <drogular/session_store.hpp>
 #include <drogular/auth_support.hpp>
 

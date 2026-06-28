@@ -1,7 +1,7 @@
 #pragma once
 
 #include <drogular/action_context.hpp>
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 
 #include <string>
 

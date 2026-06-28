@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../auth/portal_auth_support.hpp"
 #include "../portal_project_repository.hpp"
 #include "../ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
+#include <drogular/locale_support.hpp>
 
 class PortalProjectsPage final
     : public drogular::TemplatePage
@@ -20,7 +20,7 @@ public:
         );
 
         const auto locale =
-            PortalLocale::fromRenderContext(context);
+            drogular::LocaleSupport::current(context);
 
         auto translations =
             context.requireService<PortalTranslations>();

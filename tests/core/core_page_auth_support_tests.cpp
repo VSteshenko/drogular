@@ -1,7 +1,7 @@
 #include <drogular/page_auth_support.hpp>
 #include <drogular/session_store.hpp>
 
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 #include <drogular/page.hpp>
 #include <drogular/testing.hpp>
 

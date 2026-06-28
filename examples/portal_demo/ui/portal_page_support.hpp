@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../localization/portal_locale.hpp"
 #include "../localization/portal_translations.hpp"
 #include "../auth/portal_auth_support.hpp"
 
 #include <drogular/page_support.hpp>
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
+#include <drogular/locale_support.hpp>
 
 #include <string>
 
@@ -16,7 +16,7 @@ public:
         const std::string& pageTitleKey
     ) {
         const auto locale =
-            PortalLocale::fromRenderContext(context);
+            drogular::LocaleSupport::current(context);
 
         auto translations =
             context.requireService<PortalTranslations>();

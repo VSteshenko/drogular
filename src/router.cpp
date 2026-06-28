@@ -6,6 +6,7 @@
 #include <drogular/static_file_response.hpp>
 #include <drogular/static_file_etag.hpp>
 #include <drogular/static_file_last_modified.hpp>
+#include <drogular/render_context.hpp>
 
 #include <drogon/drogon.h>
 

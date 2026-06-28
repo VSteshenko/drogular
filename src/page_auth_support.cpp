@@ -1,5 +1,5 @@
 #include <drogular/page_auth_support.hpp>
-
+#include <drogular/render_context.hpp>
 #include <drogular/auth_support.hpp>
 
 namespace drogular {

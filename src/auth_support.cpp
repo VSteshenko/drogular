@@ -1,5 +1,5 @@
 #include <drogular/auth_support.hpp>
-
+#include <drogular/render_context.hpp>
 #include <drogular/session_store.hpp>
 
 namespace drogular {

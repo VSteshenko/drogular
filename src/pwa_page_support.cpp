@@ -1,8 +1,7 @@
 #include <drogular/pwa_page_support.hpp>
-
+#include <drogular/render_context.hpp>
 #include <drogular/pwa_html.hpp>
 #include <drogular/pwa_scripts.hpp>
-#include "drogular/component.hpp"
 
 namespace drogular {
 

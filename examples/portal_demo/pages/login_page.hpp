@@ -4,6 +4,7 @@
 #include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/locale_support.hpp>
 
 class PortalLoginPage final
     : public drogular::TemplatePage
@@ -18,7 +19,7 @@ public:
         );
 
         const auto locale =
-            PortalLocale::fromRenderContext(context);
+            drogular::LocaleSupport::current(context);
 
         auto translations =
             context.requireService<PortalTranslations>();

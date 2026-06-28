@@ -1,8 +1,8 @@
 #include <drogular/template_runtime.hpp>
+#include <drogular/render_context.hpp>
 
 #include <json/json.h>
 
-#include <cctype>
 #include <optional>
 #include <sstream>
 #include <string>

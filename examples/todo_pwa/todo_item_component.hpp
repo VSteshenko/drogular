@@ -1,13 +1,12 @@
 #pragma once
 
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 
 class TodoItemComponent final : public drogular::TemplateComponent {
 public:
     static constexpr auto tag = "TodoItem";
 
-    std::string templatePath() const override
-    {
+    std::string templatePath() const override {
         return "components/todo_item.html";
     }
 

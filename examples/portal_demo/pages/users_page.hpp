@@ -4,10 +4,10 @@
 #include "../ui/portal_page_support.hpp"
 #include "../portal_user_repository.hpp"
 #include "../localization/portal_error_translator.hpp"
-#include "../localization/portal_locale.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
+#include <drogular/locale_support.hpp>
 
 class PortalUsersPage final
     : public drogular::TemplatePage
@@ -22,7 +22,7 @@ public:
         );
 
         const auto locale =
-            PortalLocale::fromRenderContext(context);
+            drogular::LocaleSupport::current(context);
 
         const auto request =
             context.request();

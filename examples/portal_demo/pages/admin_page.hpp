@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../auth/portal_auth_support.hpp"
 #include "../ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>

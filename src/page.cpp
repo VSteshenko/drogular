@@ -1,4 +1,5 @@
 #include <drogular/page.hpp>
+#include <drogular/render_context.hpp>
 #include <drogular/component_renderer.hpp>
 #include "drogular/template_loader.hpp"
 #include <drogular/template_preprocessor.hpp>

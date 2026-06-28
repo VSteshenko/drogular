@@ -4,7 +4,7 @@
 #include <drogular/template_parser.hpp>
 #include <drogular/template_tokenizer.hpp>
 #include <drogular/template_runtime.hpp>
-#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 
 #include <optional>
 

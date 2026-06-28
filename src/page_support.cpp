@@ -1,5 +1,5 @@
 #include <drogular/page_support.hpp>
-
+#include <drogular/render_context.hpp>
 #include <drogular/pwa_page_support.hpp>
 
 namespace drogular {

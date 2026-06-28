@@ -3,6 +3,7 @@
 #include "user_repository.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/render_context.hpp>
 
 class RepositorySampleUsersPage final
     : public drogular::TemplatePage
