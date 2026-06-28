@@ -11,17 +11,11 @@ public:
         const std::string& error
     ) {
         if (error == "missing_credentials") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "login.error.missing_credentials"
-            );
+            return context.translate("login.error.missing_credentials");
         }
 
         if (error == "invalid_credentials") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "login.error.invalid_credentials"
-            );
+            return context.translate("login.error.invalid_credentials");
         }
 
         return "";
@@ -32,24 +26,15 @@ public:
         const std::string& error
     ) {
         if (error == "validation") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "users.error.validation"
-            );
+            return context.translate("users.error.validation");
         }
 
         if (error == "access_denied") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "users.error.access_denied"
-            );
+            return context.translate("users.error.access_denied");
         }
 
         if (error == "duplicate_user") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "users.error.duplicate_user"
-            );
+            return context.translate("users.error.duplicate_user");
         }
 
         return "";
@@ -60,10 +45,7 @@ public:
         const std::string& success
     ) {
         if (success == "user_created") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "users.success.created"
-            );
+            return context.translate("users.success.created");
         }
 
         return "";
@@ -74,10 +56,7 @@ public:
         const std::string& error
     ) {
         if (error == "validation") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "projects.error.validation"
-            );
+            return context.translate("projects.error.validation");
         }
 
         return "";
@@ -88,10 +67,7 @@ public:
         const std::string& success
     ) {
         if (success == "project_created") {
-            return drogular::TranslationSupport::translate(
-                context,
-                "projects.success.created"
-            );
+            return context.translate("projects.success.created");
         }
 
         return "";

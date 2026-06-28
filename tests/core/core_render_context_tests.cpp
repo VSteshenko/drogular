@@ -344,3 +344,12 @@ TEST(CoreRenderContextTests, AddsFactoryScopedUsingLifetime) {
 
     EXPECT_EQ(first.get(), second.get());
 }
+
+TEST(CoreRenderContextTests, TranslatesKeyWithoutProvider) {
+    drogular::RenderContext context;
+
+    EXPECT_EQ(
+        context.translate("app.title"),
+        "app.title"
+    );
+}

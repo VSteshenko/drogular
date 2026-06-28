@@ -282,6 +282,16 @@ public:
         const std::string& name
     ) const;
 
+    /**
+     * Translates a key using the current request locale.
+     *
+     * Requires a TranslationProvider service to be registered.
+     * If no provider is registered, the key itself is returned.
+     */
+    std::string translate(
+        const std::string& key
+    );
+
 private:
     const RenderContext* parent_ = nullptr;
     std::unordered_map<std::string, std::any> values_;

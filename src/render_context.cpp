@@ -1,6 +1,7 @@
 #include <drogular/render_context.hpp>
 #include <drogular/graphql_client.hpp>
 #include <drogular/services.hpp>
+#include <drogular/translation_support.hpp>
 
 namespace drogular {
 
@@ -110,6 +111,15 @@ std::optional<std::string> RenderContext::cookie(
     }
 
     return value;
+}
+
+std::string RenderContext::translate(
+    const std::string& key
+) {
+    return TranslationSupport::translate(
+        *this,
+        key
+    );
 }
 
 bool RenderContext::contains(const std::string& key) const {
