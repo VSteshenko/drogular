@@ -5,6 +5,7 @@
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/url.hpp>
+#include <drogular/action_auth_support.hpp>
 
 class PortalCreateUserAction final
     : public drogular::ActionHandler
@@ -13,24 +14,21 @@ public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
     ) override {
-        const auto session =
-            context.existingSession();
-
-        if (session == nullptr) {
-            // not logged in
-            return drogular::ActionResult::redirect(
-                "/login"
-            );
+        if (const auto result =
+                drogular::ActionAuthSupport::requireAuthentication(
+                    context
+                )) {
+            return *result;
         }
 
-        const auto currentRole =
-            session->get("role");
-
-        if (!currentRole.has_value() || *currentRole != "admin") {
-            // not admin
-            return drogular::ActionResult::redirect(
-                "/users?error=access_denied"
-            );
+        if (const auto result =
+                drogular::ActionAuthSupport::requireSessionValue(
+                    context,
+                    "role",
+                    "admin",
+                    "/users?error=access_denied"
+                )) {
+            return *result;
         }
 
         const auto validation =

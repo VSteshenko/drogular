@@ -5,6 +5,7 @@
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/url.hpp>
+#include <drogular/action_auth_support.hpp>
 
 class PortalCreateProjectAction final
     : public drogular::ActionHandler
@@ -13,13 +14,11 @@ public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
     ) override {
-        const auto session =
-            context.existingSession();
-
-        if (session == nullptr) {
-            return drogular::ActionResult::redirect(
-                "/login"
-            );
+        if (const auto result =
+                drogular::ActionAuthSupport::requireAuthentication(
+                    context
+                )) {
+            return *result;
         }
 
         const auto validation =
