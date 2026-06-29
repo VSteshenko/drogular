@@ -73,6 +73,7 @@ public:
             {"projectNotFoundMessage", "projects.not_found.message"},
             {"projectsBack", "projects.back"},
             {"projectsUpdate", "projects.update"},
+            {"projectsDelete", "projects.delete"},
             {"projectsBackToDetails", "projects.back_to_details"},
 
             {"authLoginRequiredTitle", "auth.login_required.title"},

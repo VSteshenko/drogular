@@ -15,6 +15,7 @@
 #include "pages/project_details_page.hpp"
 #include "pages/project_edit_page.hpp"
 #include "actions/update_project_action.hpp"
+#include "actions/delete_project_action.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -73,6 +74,7 @@ int main() {
     app.action<PortalCreateUserAction>("/users/create");
     app.action<PortalCreateProjectAction>("/projects/create");
     app.action<PortalUpdateProjectAction>("/projects/{id}/update");
+    app.action<PortalDeleteProjectAction>("/projects/{id}/delete");
 
     app.run(8083);
 

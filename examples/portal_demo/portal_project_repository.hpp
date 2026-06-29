@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <optional>
+#include <algorithm>
 
 class PortalProjectRepository {
 public:
@@ -58,6 +59,26 @@ public:
         }
 
         return false;
+    }
+
+    bool remove(
+        int id
+    ) {
+        const auto originalSize =
+            projects_.size();
+
+        projects_.erase(
+            std::remove_if(
+                projects_.begin(),
+                projects_.end(),
+                [id](const PortalProject& project) {
+                    return project.id == id;
+                }
+            ),
+            projects_.end()
+        );
+
+        return projects_.size() != originalSize;
     }
 
 private:

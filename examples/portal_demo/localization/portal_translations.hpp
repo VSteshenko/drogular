@@ -117,6 +117,9 @@ private:
                 {"projects.update", "Update Project"},
                 {"projects.back_to_details", "Back to details"},
                 {"projects.success.updated", "Project was updated successfully."},
+                {"projects.delete", "Delete Project"},
+                {"projects.success.deleted", "Project was deleted successfully."},
+                {"projects.error.not_found", "Project was not found."},
             }
         },
         {
@@ -174,6 +177,9 @@ private:
                 {"projects.update", "Projekt aktualisieren"},
                 {"projects.back_to_details", "Zurück zu Details"},
                 {"projects.success.updated", "Das Projekt wurde erfolgreich aktualisiert."},
+                {"projects.delete", "Projekt löschen"},
+                {"projects.success.deleted", "Das Projekt wurde erfolgreich gelöscht."},
+                {"projects.error.not_found", "Projekt wurde nicht gefunden."},
             }
         }
     };

@@ -61,6 +61,9 @@ public:
         if (error == "not_found") {
             return context.translate("projects.error.not_found");
         }
+        if (error == "not_found") {
+            return context.translate("projects.error.not_found");
+        }
 
         return "";
     }
@@ -74,6 +77,9 @@ public:
         }
         if (success == "project_updated") {
             return context.translate("projects.success.updated");
+        }
+        if (success == "project_deleted") {
+            return context.translate("projects.success.deleted");
         }
 
         return "";
