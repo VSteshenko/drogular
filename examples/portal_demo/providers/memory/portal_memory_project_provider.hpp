@@ -1,7 +1,7 @@
 #pragma once
 
 #include "portal_project.hpp"
-#include "portal_project_provider.hpp"
+#include "../project_provider.hpp"
 
 #include <string>
 #include <utility>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_memory_project_provider.hpp"
+#include "../providers/project_provider.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
