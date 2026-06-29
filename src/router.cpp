@@ -87,10 +87,11 @@ void Router::page(const std::string& path, std::shared_ptr<Page> page) {
 
 void Router::action(const std::string& path, std::shared_ptr<ActionHandler> action) {
     auto* services = services_;
+    const RoutePattern pattern(path);
 
     drogon::app().registerHandler(
         path,
-        [action, services](
+        [action, services, pattern](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
@@ -98,6 +99,20 @@ void Router::action(const std::string& path, std::shared_ptr<ActionHandler> acti
                 request,
                 services
             );
+
+            std::unordered_map<std::string, std::string> routeParams;
+
+            pattern.match(
+                request->path(),
+                routeParams
+            );
+
+            for (const auto& [name, value] : routeParams) {
+                context.setRouteParam(
+                    name,
+                    value
+                );
+            }
 
             const auto result =
                 action->handle(context);

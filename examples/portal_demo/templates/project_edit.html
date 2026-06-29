@@ -1,0 +1,36 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+<p>{{ authLoginRequiredMessage }}</p>
+<p><a href="/login">{{ navLogin }}</a></p>
+@else
+
+@if(projectNotFound)
+<h2>{{ projectNotFoundTitle }}</h2>
+<p>{{ projectNotFoundMessage }}</p>
+<p><a href="/projects">{{ projectsBack }}</a></p>
+@else
+
+<h2>{{ pageTitle }}</h2>
+
+<form method="post" action="/projects/{{ projectId }}/update">
+    <div>
+        <label>{{ projectsTitleLabel }}</label>
+        <input name="title" value="{{ projectTitle }}" />
+    </div>
+
+    <div>
+        <label>{{ projectsStatusLabel }}</label>
+        <select name="status">
+            <option value="active">{{ projectStatusActive }}</option>
+            <option value="paused">{{ projectStatusPaused }}</option>
+            <option value="done">{{ projectStatusDone }}</option>
+        </select>
+    </div>
+
+    <button type="submit">{{ projectsUpdate }}</button>
+</form>
+
+<p><a href="/projects/{{ projectId }}">{{ projectsBackToDetails }}</a></p>
+
+@endif
+@endif

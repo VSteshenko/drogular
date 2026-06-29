@@ -4,6 +4,8 @@
 #include <drogon/HttpRequest.h>
 #include <gtest/gtest.h>
 
+#include <stdexcept>
+
 class CoreActionContextTestService {
 public:
     int value() const {
@@ -167,5 +169,84 @@ TEST(CoreActionContextTests, FindsExistingSessionFromCookie) {
     EXPECT_EQ(
         context.existingSession(),
         session
+    );
+}
+
+TEST(CoreActionContextTests, StoresRouteParams) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ApplicationServices services;
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    context.setRouteParam(
+        "id",
+        "42"
+    );
+
+    const auto id =
+        context.routeParam("id");
+
+    ASSERT_TRUE(id.has_value());
+    EXPECT_EQ(*id, "42");
+}
+
+TEST(CoreActionContextTests, ReturnsNulloptForMissingRouteParam) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ApplicationServices services;
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    const auto id =
+        context.routeParam("id");
+
+    EXPECT_FALSE(id.has_value());
+}
+
+TEST(CoreActionContextTests, RequiresRouteParam) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ApplicationServices services;
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    context.setRouteParam(
+        "id",
+        "42"
+    );
+
+    EXPECT_EQ(
+        context.requireRouteParam("id"),
+        "42"
+    );
+}
+
+TEST(CoreActionContextTests, ThrowsForMissingRequiredRouteParam) {
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    drogular::ApplicationServices services;
+
+    drogular::ActionContext context(
+        request,
+        &services
+    );
+
+    EXPECT_THROW(
+        context.requireRouteParam("id"),
+        std::runtime_error
     );
 }

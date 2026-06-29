@@ -84,6 +84,41 @@ std::shared_ptr<Session> ActionContext::existingSession() const {
     return store->get(*sessionId);
 }
 
+void ActionContext::setRouteParam(
+    const std::string& name,
+    const std::string& value
+) {
+    routeParams_[name] = value;
+}
+
+std::optional<std::string> ActionContext::routeParam(
+    const std::string& name
+) const {
+    const auto found =
+        routeParams_.find(name);
+
+    if (found == routeParams_.end()) {
+        return std::nullopt;
+    }
+
+    return found->second;
+}
+
+std::string ActionContext::requireRouteParam(
+    const std::string& name
+) const {
+    const auto value =
+        routeParam(name);
+
+    if (!value.has_value()) {
+        throw std::runtime_error(
+            "Missing route parameter: " + name
+        );
+    }
+
+    return *value;
+}
+
 std::shared_ptr<Session> ActionContext::session() {
     if (services_ == nullptr) {
         return nullptr;

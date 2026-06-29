@@ -13,6 +13,8 @@
 #include "pages/projects_page.hpp"
 #include "portal_project_repository.hpp"
 #include "pages/project_details_page.hpp"
+#include "pages/project_edit_page.hpp"
+#include "actions/update_project_action.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -63,12 +65,14 @@ int main() {
     app.page<PortalAdminPage>("/admin");
     app.page<PortalProjectsPage>("/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");
+    app.page<PortalProjectEditPage>("/projects/{id}/edit");
 
     app.action<PortalLanguageAction>("/language");
     app.action<PortalLoginAction>("/login");
     app.action<PortalLogoutAction>("/logout");
     app.action<PortalCreateUserAction>("/users/create");
     app.action<PortalCreateProjectAction>("/projects/create");
+    app.action<PortalUpdateProjectAction>("/projects/{id}/update");
 
     app.run(8083);
 

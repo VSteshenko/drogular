@@ -112,6 +112,10 @@ private:
                 {"projects.not_found.title", "Project not found"},
                 {"projects.not_found.message", "The requested project does not exist."},
                 {"projects.back", "Back to projects"},
+                {"projects.edit.title", "Edit Project"},
+                {"projects.update", "Update Project"},
+                {"projects.back_to_details", "Back to details"},
+                {"projects.success.updated", "Project was updated successfully."},
             }
         },
         {
@@ -164,6 +168,10 @@ private:
                 {"projects.not_found.title", "Projekt nicht gefunden"},
                 {"projects.not_found.message", "Das angeforderte Projekt existiert nicht."},
                 {"projects.back", "Zurück zu Projekten"},
+                {"projects.edit.title", "Projekt bearbeiten"},
+                {"projects.update", "Projekt aktualisieren"},
+                {"projects.back_to_details", "Zurück zu Details"},
+                {"projects.success.updated", "Das Projekt wurde erfolgreich aktualisiert."},
             }
         }
     };

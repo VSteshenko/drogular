@@ -11,6 +11,7 @@
 #include <string>
 #include <stdexcept>
 #include <type_traits>
+#include <unordered_map>
 
 namespace drogular {
 
@@ -132,9 +133,39 @@ public:
 
     std::shared_ptr<Session> existingSession() const;
 
+    /**
+     * Stores a route parameter.
+     *
+     * This method is intended for framework use while matching
+     * parameterized action routes.
+     */
+    void setRouteParam(
+        const std::string& name,
+        const std::string& value
+    );
+
+    /**
+     * Returns the value of the specified route parameter.
+     *
+     * Returns std::nullopt when the parameter is not present.
+     */
+    std::optional<std::string> routeParam(
+        const std::string& name
+    ) const;
+
+    /**
+     * Returns the value of the specified route parameter.
+     *
+     * Throws std::runtime_error when the parameter is missing.
+     */
+    std::string requireRouteParam(
+        const std::string& name
+    ) const;
+
 private:
     drogon::HttpRequestPtr request_;
     ApplicationServices* services_ = nullptr;
+    std::unordered_map<std::string, std::string> routeParams_;
 };
 
 } // namespace drogular

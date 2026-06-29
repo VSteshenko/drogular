@@ -44,6 +44,22 @@ public:
         return std::nullopt;
     }
 
+    bool update(
+        int id,
+        std::string title,
+        std::string status
+    ) {
+        for (auto& project : projects_) {
+            if (project.id == id) {
+                project.title = std::move(title);
+                project.status = std::move(status);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 private:
     std::vector<PortalProject> projects_;
     int nextId_ = 1;
