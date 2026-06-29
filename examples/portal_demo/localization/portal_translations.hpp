@@ -107,7 +107,11 @@ private:
                 {"projects.status.paused", "Paused"},
                 {"projects.status.done", "Done"},
                 {"projects.error.validation", "Please enter a valid project title and status."},
-                {"projects.success.created", "Project was created successfully."}
+                {"projects.success.created", "Project was created successfully."},
+                {"projects.details.title", "Project Details"},
+                {"projects.not_found.title", "Project not found"},
+                {"projects.not_found.message", "The requested project does not exist."},
+                {"projects.back", "Back to projects"},
             }
         },
         {
@@ -155,7 +159,11 @@ private:
                 {"projects.status.paused", "Pausiert"},
                 {"projects.status.done", "Erledigt"},
                 {"projects.error.validation", "Bitte geben Sie einen gültigen Projekttitel und Status ein."},
-                {"projects.success.created", "Das Projekt wurde erfolgreich erstellt."}
+                {"projects.success.created", "Das Projekt wurde erfolgreich erstellt."},
+                {"projects.details.title", "Projektdetails"},
+                {"projects.not_found.title", "Projekt nicht gefunden"},
+                {"projects.not_found.message", "Das angeforderte Projekt existiert nicht."},
+                {"projects.back", "Zurück zu Projekten"},
             }
         }
     };

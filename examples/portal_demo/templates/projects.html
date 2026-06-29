@@ -40,7 +40,9 @@
 <ul>
     @foreach(project in projects)
     <li>
-        <strong>{{ project.title }}</strong>
+        <a href="/projects/{{ project.id }}">
+            {{ project.title }}
+        </a>
         — {{ project.status }}
     </li>
     @endforeach

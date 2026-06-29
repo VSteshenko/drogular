@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <optional>
 
 class PortalProjectRepository {
 public:
@@ -29,6 +30,18 @@ public:
             .title = std::move(title),
             .status = std::move(status)
         });
+    }
+
+    std::optional<PortalProject> findById(
+        int id
+    ) const {
+        for (const auto& project : projects_) {
+            if (project.id == id) {
+                return project;
+            }
+        }
+
+        return std::nullopt;
     }
 
 private:

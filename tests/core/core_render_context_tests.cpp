@@ -365,3 +365,24 @@ TEST(CoreRenderContextTests, SetsTranslatedValues) {
     EXPECT_EQ(context.get<std::string>("title"), "app.title");
     EXPECT_EQ(context.get<std::string>("logout"), "nav.logout");
 }
+
+TEST(CoreRenderContextTests, StoresRouteParams) {
+    drogular::RenderContext context;
+
+    context.setRouteParam("id", "42");
+
+    const auto id =
+        context.routeParam("id");
+
+    ASSERT_TRUE(id.has_value());
+    EXPECT_EQ(*id, "42");
+}
+
+TEST(CoreRenderContextTests, ThrowsForMissingRequiredRouteParam) {
+    drogular::RenderContext context;
+
+    EXPECT_THROW(
+        context.requireRouteParam("id"),
+        std::runtime_error
+    );
+}

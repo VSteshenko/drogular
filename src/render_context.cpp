@@ -3,6 +3,8 @@
 #include <drogular/services.hpp>
 #include <drogular/translation_support.hpp>
 
+#include <stdexcept>
+
 namespace drogular {
 
 void GraphQLResult::merge(GraphQLResult other) {
@@ -143,6 +145,41 @@ void RenderContext::setTranslations(
             key
         );
     }
+}
+
+void RenderContext::setRouteParam(
+    const std::string& name,
+    const std::string& value
+) {
+    routeParams_[name] = value;
+}
+
+std::optional<std::string> RenderContext::routeParam(
+    const std::string& name
+) const {
+    const auto found =
+        routeParams_.find(name);
+
+    if (found == routeParams_.end()) {
+        return std::nullopt;
+    }
+
+    return found->second;
+}
+
+std::string RenderContext::requireRouteParam(
+    const std::string& name
+) const {
+    const auto value =
+        routeParam(name);
+
+    if (!value.has_value()) {
+        throw std::runtime_error(
+            "Missing route parameter: " + name
+        );
+    }
+
+    return *value;
 }
 
 bool RenderContext::contains(const std::string& key) const {

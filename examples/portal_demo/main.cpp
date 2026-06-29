@@ -12,10 +12,11 @@
 #include "actions/create_project_action.hpp"
 #include "pages/projects_page.hpp"
 #include "portal_project_repository.hpp"
+#include "pages/project_details_page.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
-#include "drogular/session_store.hpp"
+#include <drogular/session_store.hpp>
 
 int main() {
     drogular::App app;
@@ -61,6 +62,7 @@ int main() {
     app.page<PortalUsersPage>("/users");
     app.page<PortalAdminPage>("/admin");
     app.page<PortalProjectsPage>("/projects");
+    app.page<PortalProjectDetailsPage>("/projects/{id}");
 
     app.action<PortalLanguageAction>("/language");
     app.action<PortalLoginAction>("/login");

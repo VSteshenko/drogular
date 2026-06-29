@@ -7,10 +7,12 @@
 #include <drogular/static_file_etag.hpp>
 #include <drogular/static_file_last_modified.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/route_pattern.hpp>
 
 #include <drogon/drogon.h>
 
 #include <filesystem>
+#include <unordered_map>
 
 namespace drogular {
 
@@ -46,14 +48,31 @@ Router::Router(ApplicationServices* services)
 
 void Router::page(const std::string& path, std::shared_ptr<Page> page) {
     auto* services = services_;
+    const RoutePattern pattern(path);
 
     drogon::app().registerHandler(
         path,
-        [page, services](const drogon::HttpRequestPtr& request,
-               std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
+        [page, services, pattern](
+            const drogon::HttpRequestPtr& request,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
             RenderContext context;
             context.setServices(services);
             context.setRequest(request);
+
+            std::unordered_map<std::string, std::string> routeParams;
+
+            pattern.match(
+                request->path(),
+                routeParams
+            );
+
+            for (const auto& [name, value] : routeParams) {
+                context.setRouteParam(
+                    name,
+                    value
+                );
+            }
 
             page->onInit(context);
 

@@ -69,6 +69,9 @@ public:
             {"projectStatusActive", "projects.status.active"},
             {"projectStatusPaused", "projects.status.paused"},
             {"projectStatusDone", "projects.status.done"},
+            {"projectNotFoundTitle", "projects.not_found.title"},
+            {"projectNotFoundMessage", "projects.not_found.message"},
+            {"projectsBack", "projects.back"},
 
             {"authLoginRequiredTitle", "auth.login_required.title"},
             {"authLoginRequiredMessage", "auth.login_required.message"},

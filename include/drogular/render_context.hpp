@@ -13,6 +13,8 @@
 #include <typeindex>
 #include <initializer_list>
 #include <utility>
+#include <optional>
+#include <unordered_map>
 
 namespace drogular {
 
@@ -311,6 +313,35 @@ public:
         > values
     );
 
+    /**
+     * Stores a route parameter.
+     *
+     * This method is intended for framework use while matching
+     * parameterized routes.
+     */
+    void setRouteParam(
+        const std::string& name,
+        const std::string& value
+    );
+
+    /**
+     * Returns the value of the specified route parameter.
+     *
+     * Returns std::nullopt when the parameter is not present.
+     */
+    std::optional<std::string> routeParam(
+        const std::string& name
+    ) const;
+
+    /**
+     * Returns the value of the specified route parameter.
+     *
+     * Throws std::runtime_error when the parameter is missing.
+     */
+    std::string requireRouteParam(
+        const std::string& name
+    ) const;
+
 private:
     const RenderContext* parent_ = nullptr;
     std::unordered_map<std::string, std::any> values_;
@@ -319,6 +350,7 @@ private:
     std::unordered_map<std::type_index, std::shared_ptr<void>> scopedServices_;
     GraphQLResult graphql_;
     drogon::HttpRequestPtr request_;
+    std::unordered_map<std::string, std::string> routeParams_;
 };
 
 } // namespace drogular
