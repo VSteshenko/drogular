@@ -44,6 +44,22 @@ public:
             return;
         }
 
+        const auto request =
+            context.request();
+
+        const auto success =
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string("");
+
+        const auto projectsSuccess =
+            PortalErrorTranslator::projectsSuccess(
+                context,
+                success
+            );
+
+        context.set("hasProjectsSuccess", !projectsSuccess.empty());
+        context.set("alertMessage", projectsSuccess);
         context.set("projectId", project->id);
         context.set("projectTitle", project->title);
         context.set("projectStatus", project->status);

@@ -23,6 +23,10 @@
 
 <h2>{{ projectTitle }}</h2>
 
+@if(hasProjectsSuccess)
+@include("partials/alert_success.html")
+@endif
+
 <p>
     <strong>ID:</strong> {{ projectId }}
 </p>

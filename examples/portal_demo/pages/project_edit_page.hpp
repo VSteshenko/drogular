@@ -2,11 +2,13 @@
 
 #include "../portal_project_repository.hpp"
 #include "../ui/portal_page_support.hpp"
+#include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
 #include <cstdlib>
+#include <string>
 
 class PortalProjectEditPage final
     : public drogular::TemplatePage
@@ -15,10 +17,7 @@ public:
     void onInit(
         drogular::RenderContext& context
     ) override {
-        PortalPageSupport::apply(
-            context,
-            "projects.edit.title"
-        );
+        PortalPageSupport::apply(context, "projects.edit.title");
 
         if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
@@ -39,9 +38,30 @@ public:
             return;
         }
 
+        const auto request =
+            context.request();
+
+        const auto error =
+            request != nullptr
+                ? request->getParameter("error")
+                : std::string("");
+
+        const auto projectsError =
+            PortalErrorTranslator::projectsError(
+                context,
+                error
+            );
+
+        context.set("hasProjectsError", !projectsError.empty());
+        context.set("alertMessage", projectsError);
+
         context.set("projectId", project->id);
         context.set("projectTitle", project->title);
         context.set("projectStatus", project->status);
+
+        context.set("isActive", project->status == "active");
+        context.set("isPaused", project->status == "paused");
+        context.set("isDone", project->status == "done");
     }
 
     std::string templatePath() const override {

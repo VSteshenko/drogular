@@ -6,9 +6,9 @@
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/url.hpp>
-#include <drogular/render_context.hpp>
 
 #include <cstdlib>
+#include <string>
 
 class PortalUpdateProjectAction final
     : public drogular::ActionHandler
@@ -20,13 +20,16 @@ public:
         if (const auto result =
                 drogular::ActionAuthSupport::requireAuthentication(context)) {
             return *result;
-        }
+                }
 
         const auto id =
             std::atoi(context.requireRouteParam("id").c_str());
 
         const auto title =
             context.form<std::string>("title").value_or("");
+
+        const auto status =
+            context.form<std::string>("status").value_or("");
 
         const auto validation =
             drogular::FormValidator(context)

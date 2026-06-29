@@ -12,6 +12,10 @@
 
 <h2>{{ pageTitle }}</h2>
 
+@if(hasProjectsError)
+@include("partials/alert_error.html")
+@endif
+
 <form method="post" action="/projects/{{ projectId }}/update">
     <div>
         <label>{{ projectsTitleLabel }}</label>
@@ -21,16 +25,18 @@
     <div>
         <label>{{ projectsStatusLabel }}</label>
         <select name="status">
-            <option value="active">{{ projectStatusActive }}</option>
-            <option value="paused">{{ projectStatusPaused }}</option>
-            <option value="done">{{ projectStatusDone }}</option>
+            <option value="active" @if(isActive)selected@endif>{{ projectStatusActive }}</option>
+            <option value="paused" @if(isPaused)selected@endif>{{ projectStatusPaused }}</option>
+            <option value="done" @if(isDone)selected@endif>{{ projectStatusDone }}</option>
         </select>
     </div>
 
     <button type="submit">{{ projectsUpdate }}</button>
 </form>
 
-<p><a href="/projects/{{ projectId }}">{{ projectsBackToDetails }}</a></p>
+<p>
+    <a href="/projects/{{ projectId }}">{{ projectsBackToDetails }}</a>
+</p>
 
 @endif
 @endif
