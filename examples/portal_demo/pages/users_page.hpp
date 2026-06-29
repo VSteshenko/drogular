@@ -2,7 +2,7 @@
 
 #include "../auth/portal_auth_support.hpp"
 #include "../ui/portal_page_support.hpp"
-#include "../portal_user_repository.hpp"
+#include "../portal_memory_user_provider.hpp"
 #include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
@@ -87,7 +87,7 @@ public:
         }
 
         auto repository =
-            context.requireService<PortalUserRepository>();
+            context.requireService<PortalUserProvider>();
 
         Json::Value users(Json::arrayValue);
 

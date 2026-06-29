@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_project_repository.hpp"
+#include "../portal_memory_project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
@@ -30,7 +30,7 @@ public:
             );
 
         auto repository =
-            context.requireService<PortalProjectRepository>();
+            context.requireService<PortalProjectProvider>();
 
         const auto project =
             repository->findById(id);

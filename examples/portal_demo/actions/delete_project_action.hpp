@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_project_repository.hpp"
+#include "../portal_memory_project_provider.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
@@ -26,7 +26,7 @@ public:
             );
 
         auto repository =
-            context.requireService<PortalProjectRepository>();
+            context.requireService<PortalProjectProvider>();
 
         const auto removed =
             repository->remove(id);

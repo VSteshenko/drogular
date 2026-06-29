@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_project_repository.hpp"
+#include "../portal_memory_project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../localization/portal_error_translator.hpp"
 
@@ -27,7 +27,7 @@ public:
             std::atoi(context.requireRouteParam("id").c_str());
 
         auto repository =
-            context.requireService<PortalProjectRepository>();
+            context.requireService<PortalProjectProvider>();
 
         const auto project =
             repository->findById(id);

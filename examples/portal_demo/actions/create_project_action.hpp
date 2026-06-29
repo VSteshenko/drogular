@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_project_repository.hpp"
+#include "../portal_memory_project_provider.hpp"
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
@@ -41,11 +41,14 @@ public:
         }
 
         auto repository =
-            context.requireService<PortalProjectRepository>();
+            context.requireService<PortalProjectProvider>();
+
+        PortalProject project;
+        project.title = context.requireForm<std::string>("title");
+        project.status = context.requireForm<std::string>("status");
 
         repository->create(
-            context.requireForm<std::string>("title"),
-            context.requireForm<std::string>("status")
+            project
         );
 
         // success

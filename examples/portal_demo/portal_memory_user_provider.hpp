@@ -1,30 +1,27 @@
 #pragma once
 
 #include "portal_user.hpp"
+#include "portal_user_provider.hpp"
 
 #include <optional>
 #include <string>
 #include <vector>
-#include <utility>
 
-class PortalUserRepository {
+class PortalMemoryUserProvider final
+    : public PortalUserProvider
+{
 public:
-    void create(
-        std::string username,
-        std::string password,
-        std::string role
-    ) {
-        users_.push_back({
-            .username = std::move(username),
-            .password = std::move(password),
-            .role = std::move(role)
-        });
+    PortalUser create(
+        PortalUser user
+    ) override {
+        users_.push_back(user);
+        return user;
     }
 
     std::optional<PortalUser> findByCredentials(
         const std::string& username,
         const std::string& password
-    ) const {
+    ) const override {
         for (const auto& user : users_) {
             if (user.username == username &&
                 user.password == password) {
@@ -35,13 +32,13 @@ public:
         return std::nullopt;
     }
 
-    std::vector<PortalUser> all() {
+    std::vector<PortalUser> all() const override {
         return users_;
     }
 
     bool exists(
         const std::string& username
-    ) const {
+    ) const override {
         for (const auto& user : users_) {
             if (user.username == username) {
                 return true;

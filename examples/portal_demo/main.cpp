@@ -5,13 +5,13 @@
 #include "actions/logout_action.hpp"
 #include "pages/users_page.hpp"
 #include "pages/admin_page.hpp"
-#include "portal_user_repository.hpp"
+#include "portal_memory_user_provider.hpp"
 #include "actions/create_user_action.hpp"
 #include "pages/offline_page.hpp"
 #include "localization/portal_translations.hpp"
 #include "actions/create_project_action.hpp"
 #include "pages/projects_page.hpp"
-#include "portal_project_repository.hpp"
+#include "portal_memory_project_provider.hpp"
 #include "pages/project_details_page.hpp"
 #include "pages/project_edit_page.hpp"
 #include "actions/update_project_action.hpp"
@@ -51,12 +51,18 @@ int main() {
         drogular::ServiceLifetime::Singleton
     );
 
-    app.services().add<PortalUserRepository>(
-        drogular::ServiceLifetime::Singleton
+    app.services().addFactory<PortalUserProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [] {
+            return std::make_shared<PortalMemoryUserProvider>();
+        }
     );
 
-    app.services().add<PortalProjectRepository>(
-        drogular::ServiceLifetime::Singleton
+    app.services().addFactory<PortalProjectProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [] {
+            return std::make_shared<PortalMemoryProjectProvider>();
+        }
     );
 
     app.page<PortalLoginPage>("/");

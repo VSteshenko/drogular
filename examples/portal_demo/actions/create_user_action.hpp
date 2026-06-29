@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_user_repository.hpp"
+#include "../portal_memory_user_provider.hpp"
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
@@ -59,7 +59,7 @@ public:
             context.requireForm<std::string>("role");
 
         auto repository =
-            context.requireService<PortalUserRepository>();
+            context.requireService<PortalUserProvider>();
 
         if (repository->exists(username)) {
             return drogular::ActionResult::redirect(
@@ -68,10 +68,16 @@ public:
             );
         }
 
+        PortalUser user;
+        user.username =
+            context.requireForm<std::string>("username");
+        user.password =
+            context.requireForm<std::string>("password");
+        user.role =
+            context.requireForm<std::string>("role");
+
         repository->create(
-            username,
-            password,
-            role
+            user
         );
 
         // success

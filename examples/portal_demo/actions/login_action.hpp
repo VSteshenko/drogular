@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_user_repository.hpp"
+#include "../portal_memory_user_provider.hpp"
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
@@ -31,7 +31,7 @@ public:
             context.requireForm<std::string>("password");
 
         auto repository =
-            context.requireService<PortalUserRepository>();
+            context.requireService<PortalUserProvider>();
 
         const auto user =
             repository->findByCredentials(

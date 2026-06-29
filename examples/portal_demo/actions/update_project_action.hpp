@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_project_repository.hpp"
+#include "../portal_memory_project_provider.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
@@ -47,13 +47,16 @@ public:
         }
 
         auto repository =
-            context.requireService<PortalProjectRepository>();
+            context.requireService<PortalProjectProvider>();
+
+        PortalProject project;
+        project.id = id;
+        project.title = context.requireForm<std::string>("title");
+        project.status = context.requireForm<std::string>("status");
 
         const auto updated =
             repository->update(
-                id,
-                context.requireForm<std::string>("title"),
-                context.requireForm<std::string>("status")
+                project
             );
 
         if (!updated) {

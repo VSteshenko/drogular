@@ -1,6 +1,7 @@
 #pragma once
 
 #include "portal_project.hpp"
+#include "portal_project_provider.hpp"
 
 #include <string>
 #include <utility>
@@ -8,9 +9,11 @@
 #include <optional>
 #include <algorithm>
 
-class PortalProjectRepository {
+class PortalMemoryProjectProvider final
+    : public PortalProjectProvider
+{
 public:
-    PortalProjectRepository()
+    PortalMemoryProjectProvider()
         : projects_({
               {1, "Customer Portal", "active"},
               {2, "Internal Dashboard", "paused"}
@@ -18,24 +21,21 @@ public:
           nextId_(3) {
     }
 
-    std::vector<PortalProject> all() const {
+    std::vector<PortalProject> all() const override {
         return projects_;
     }
 
-    void create(
-        std::string title,
-        std::string status
-    ) {
-        projects_.push_back({
-            .id = nextId_++,
-            .title = std::move(title),
-            .status = std::move(status)
-        });
+    PortalProject create(
+        PortalProject project
+    ) override {
+        project.id = nextId_++;
+        projects_.push_back(project);
+        return project;
     }
 
     std::optional<PortalProject> findById(
         int id
-    ) const {
+    ) const override {
         for (const auto& project : projects_) {
             if (project.id == id) {
                 return project;
@@ -46,14 +46,11 @@ public:
     }
 
     bool update(
-        int id,
-        std::string title,
-        std::string status
-    ) {
-        for (auto& project : projects_) {
-            if (project.id == id) {
-                project.title = std::move(title);
-                project.status = std::move(status);
+        PortalProject project
+    ) override {
+        for (auto& existing : projects_) {
+            if (existing.id == project.id) {
+                existing = std::move(project);
                 return true;
             }
         }
@@ -63,7 +60,7 @@ public:
 
     bool remove(
         int id
-    ) {
+    ) override {
         const auto originalSize =
             projects_.size();
 
