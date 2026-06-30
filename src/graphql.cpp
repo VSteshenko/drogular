@@ -421,4 +421,103 @@ Query query(std::string name) {
     return Query(std::move(name));
 }
 
+Mutation::Mutation(std::string name)
+    : name_(std::move(name))
+{
+}
+
+Mutation& Mutation::variable(
+    std::string name,
+    std::string type
+) {
+    variables_.push_back({
+        std::move(name),
+        std::move(type)
+    });
+
+    return *this;
+}
+
+Mutation& Mutation::select(
+    Selection selection
+) {
+    selections_.push_back(
+        std::move(selection)
+    );
+
+    return *this;
+}
+
+Mutation& Mutation::select(
+    std::string name,
+    std::vector<Selection> children
+) {
+    selections_.push_back(
+        field(
+            std::move(name),
+            std::move(children)
+        )
+    );
+
+    return *this;
+}
+
+Mutation& Mutation::fragment(
+    Fragment fragment
+) {
+    fragments_.push_back(
+        std::move(fragment)
+    );
+
+    return *this;
+}
+
+ValidationResult Mutation::validate() const {
+    ValidationResult result;
+
+    if (selections_.empty()) {
+        result.addError(
+            "Mutation must have at least one selection"
+        );
+    }
+
+    std::set<std::string> variableNames;
+
+    for (const auto& variable : variables_) {
+        if (!variableNames.insert(variable.name).second) {
+            result.addError(
+                "Duplicate variable: " + variable.name
+            );
+        }
+    }
+
+    return result;
+}
+
+std::string Mutation::toString() const {
+    std::ostringstream output;
+
+    output << "mutation " << name_ << variablesToString(variables_) << " {\n";
+
+    for (const auto& selection : selections_) {
+        output << selection.toString(2) << "\n";
+    }
+
+    output << "}";
+
+    for (const auto& fragment : fragments_) {
+        output << "\n\n" << fragment.toString();
+    }
+
+    return output.str();
+}
+
+Mutation mutation(
+    std::string name
+) {
+    return Mutation(
+        std::move(name)
+    );
+}
+
 } // namespace drogular::gql

@@ -236,4 +236,53 @@ private:
  */
 Query query(std::string name);
 
+/**
+ * Builds a GraphQL mutation string.
+ */
+class Mutation {
+public:
+    explicit Mutation(std::string name);
+
+    /**
+     * Adds a variable declaration to the mutation.
+     */
+    Mutation& variable(std::string name, std::string type);
+
+    /**
+     * Adds a selection to the mutation.
+     */
+    Mutation& select(Selection selection);
+
+    /**
+     * Adds a field selection to the mutation.
+     */
+    Mutation& select(std::string name, std::vector<Selection> children);
+
+    /**
+     * Adds a fragment definition to the mutation document.
+     */
+    Mutation& fragment(Fragment fragment);
+
+    /**
+     * Validates the mutation document.
+     */
+    ValidationResult validate() const;
+
+    /**
+     * Converts the mutation to GraphQL text.
+     */
+    std::string toString() const;
+
+private:
+    std::string name_;
+    std::vector<Variable> variables_;
+    std::vector<Selection> selections_;
+    std::vector<Fragment> fragments_;
+};
+
+/**
+ * Creates a named GraphQL mutation.
+ */
+Mutation mutation(std::string name);
+
 } // namespace drogular::gql
