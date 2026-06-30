@@ -36,6 +36,7 @@ add_library(drogular
     src/graphql_client.cpp
     src/graphql_request.cpp
     src/graphql_response.cpp
+    src/graphql_variables.cpp
     src/page.cpp
     src/page_support.cpp
     src/pwa_scripts.cpp

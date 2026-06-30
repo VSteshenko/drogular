@@ -22,6 +22,7 @@ add_executable(drogular_tests
     core/core_graphql_mutation_tests.cpp
     core/core_graphql_request_tests.cpp
     core/core_graphql_response_tests.cpp
+    core/core_graphql_variables_tests.cpp
     core/core_form_validator_tests.cpp
     core/core_inject_tests.cpp
     core/core_locale_support_tests.cpp
