@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/graphql_variables.hpp>
+
 #include <json/json.h>
 
 #include <string>
@@ -42,6 +44,13 @@ public:
      * Sets GraphQL variable value and returns this request.
      */
     GraphQLRequest& variable(std::string name, Json::Value value);
+
+    /**
+     * Sets GraphQL variables values and returns this request.
+     */
+    GraphQLRequest& variables(
+        const GraphQLVariables& variables
+    );
 
     /**
      * Converts the request to JSON body.

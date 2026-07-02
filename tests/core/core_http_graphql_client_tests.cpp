@@ -231,7 +231,7 @@ TEST_F(CoreHttpGraphQLClientTestFixture, ExecuteMapsResponseDataToGraphQLResult)
         client.execute(query);
 
     const auto viewer =
-        result.require<Json::Value>("viewer");
+        result.toResult().require<Json::Value>("viewer");
 
     EXPECT_EQ(
         viewer["name"].asString(),

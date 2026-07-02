@@ -85,3 +85,20 @@ TEST(CoreGraphQLRequestTests, SupportsFluentApi) {
         10
     );
 }
+
+TEST(CoreGraphQLRequestTests, AcceptsGraphQLVariables) {
+    drogular::GraphQLVariables variables;
+
+    variables
+        .set("id", 1)
+        .set("title", "Portal");
+
+    drogular::GraphQLRequest request(
+        "query Test { project { id } }"
+    );
+
+    request.variables(variables);
+
+    EXPECT_EQ(request.variables()["id"].asInt(), 1);
+    EXPECT_EQ(request.variables()["title"].asString(), "Portal");
+}

@@ -44,6 +44,13 @@ GraphQLRequest& GraphQLRequest::variable(
     return *this;
 }
 
+GraphQLRequest& GraphQLRequest::variables(
+    const GraphQLVariables& variables
+) {
+    variables_ = variables.json();
+    return *this;
+}
+
 Json::Value GraphQLRequest::toJson() const {
     Json::Value body(Json::objectValue);
 

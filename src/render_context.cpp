@@ -1,9 +1,13 @@
 #include <drogular/render_context.hpp>
 #include <drogular/graphql_client.hpp>
+#include <drogular/graphql_variables.hpp>
 #include <drogular/services.hpp>
 #include <drogular/translation_support.hpp>
 
 #include <stdexcept>
+#include <any>
+#include <string>
+#include <json/json.h>
 
 namespace drogular {
 
@@ -19,6 +23,31 @@ bool GraphQLResult::contains(const std::string& key) const {
 
 void GraphQLResult::clear() {
     values_.clear();
+}
+
+Json::Value GraphQLResult::toJson() const
+{
+    Json::Value json(Json::objectValue);
+
+    for (const auto& [name, value] : values_) {
+        if (value.type() == typeid(std::string)) {
+            json[name] = std::any_cast<std::string>(value);
+        } else if (value.type() == typeid(const char*)) {
+            json[name] = std::string(
+                std::any_cast<const char*>(value)
+            );
+        } else if (value.type() == typeid(int)) {
+            json[name] = std::any_cast<int>(value);
+        } else if (value.type() == typeid(bool)) {
+            json[name] = std::any_cast<bool>(value);
+        } else if (value.type() == typeid(double)) {
+            json[name] = std::any_cast<double>(value);
+        } else if (value.type() == typeid(Json::Value)) {
+            json[name] = std::any_cast<Json::Value>(value);
+        }
+    }
+
+    return json;
 }
 
 RenderContextError::RenderContextError(const std::string& message)
@@ -54,14 +83,58 @@ bool RenderContext::hasGraphQLClient() const {
     return graphqlClient_ != nullptr;
 }
 
-void RenderContext::executeGraphQL(const gql::Query& query) {
+void RenderContext::executeGraphQL(
+    const gql::Query& query,
+    const GraphQLVariables& variables
+) {
     if (services_ != nullptr && services_->graphQLClient() != nullptr) {
-        mergeGraphQL(services_->graphQLClient()->execute(query));
+        mergeGraphQL(
+            services_->graphQLClient()->execute(
+                query,
+                variables
+            )
+            .toResult()
+        );
         return;
     }
 
     if (graphqlClient_ != nullptr) {
-        mergeGraphQL(graphqlClient_->execute(query));
+        mergeGraphQL(
+            graphqlClient_->execute(
+                query,
+                variables
+            )
+            .toResult()
+        );
+        return;
+    }
+
+    throw RenderContextError("GraphQL client is not set");
+}
+
+void RenderContext::executeGraphQL(
+    const gql::Mutation& mutation,
+    const GraphQLVariables& variables
+) {
+    if (services_ != nullptr && services_->graphQLClient() != nullptr) {
+        mergeGraphQL(
+            services_->graphQLClient()->execute(
+                mutation,
+                variables
+            )
+            .toResult()
+        );
+        return;
+    }
+
+    if (graphqlClient_ != nullptr) {
+        mergeGraphQL(
+            graphqlClient_->execute(
+                mutation,
+                variables
+            )
+            .toResult()
+        );
         return;
     }
 

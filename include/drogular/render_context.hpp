@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/graphql_variables.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -13,8 +14,6 @@
 #include <typeindex>
 #include <initializer_list>
 #include <utility>
-#include <optional>
-#include <unordered_map>
 
 namespace drogular {
 
@@ -23,6 +22,7 @@ class ApplicationServices;
 
 namespace gql {
 class Query;
+class Mutation;
 }
 
 /**
@@ -80,6 +80,11 @@ public:
 
     bool contains(const std::string& key) const;
     void clear();
+
+    /**
+     * Converts the result data to JSON.
+     */
+    Json::Value toJson() const;
 
 private:
     std::unordered_map<std::string, std::any> values_;
@@ -249,7 +254,18 @@ public:
     /**
      * Executes a GraphQL query and stores the result in this context.
      */
-    void executeGraphQL(const gql::Query& query);
+    void executeGraphQL(
+        const gql::Query& query,
+        const GraphQLVariables& variables = {}
+    );
+
+    /**
+     * Executes a GraphQL mutation and stores the result in this context.
+     */
+    void executeGraphQL(
+        const gql::Mutation& mutation,
+        const GraphQLVariables& variables = {}
+    );
 
     /**
      * Sets application services for this render context.

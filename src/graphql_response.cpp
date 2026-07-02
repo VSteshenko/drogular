@@ -1,5 +1,7 @@
 #include <drogular/graphql_response.hpp>
 
+#include <json/json.h>
+
 namespace drogular {
 
 GraphQLResponse::GraphQLResponse(
@@ -96,17 +98,43 @@ const Json::Value& GraphQLResponse::extensions() const {
     return response_["extensions"];
 }
 
-GraphQLResult GraphQLResponse::toResult() const {
+GraphQLResult GraphQLResponse::toResult() const
+{
     GraphQLResult result;
 
     result.set("__json", rawJson());
 
     if (hasData() && data().isObject()) {
         for (const auto& name : data().getMemberNames()) {
-            result.set(
-                name,
-                data()[name]
-            );
+            const auto& value =
+                data()[name];
+
+            if (value.isString()) {
+                result.set(
+                    name,
+                    value.asString()
+                );
+            } else if (value.isInt()) {
+                result.set(
+                    name,
+                    value.asInt()
+                );
+            } else if (value.isBool()) {
+                result.set(
+                    name,
+                    value.asBool()
+                );
+            } else if (value.isDouble()) {
+                result.set(
+                    name,
+                    value.asDouble()
+                );
+            } else {
+                result.set(
+                    name,
+                    value
+                );
+            }
         }
     }
 

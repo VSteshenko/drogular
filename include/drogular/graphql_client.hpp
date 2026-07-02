@@ -1,8 +1,10 @@
 #pragma once
 
 #include <drogular/component.hpp>
+#include <drogular/graphql.hpp>
 #include <drogular/graphql_request.hpp>
 #include <drogular/graphql_response.hpp>
+#include <drogular/graphql_variables.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -21,7 +23,15 @@ class GraphQLClient {
 public:
     virtual ~GraphQLClient() = default;
 
-    virtual GraphQLResult execute(const gql::Query& query) = 0;
+    virtual GraphQLResponse execute(
+        const gql::Query& query,
+        const GraphQLVariables& variables
+    ) = 0;
+
+    virtual GraphQLResponse execute(
+        const gql::Mutation& mutation,
+        const GraphQLVariables& variables = {}
+    ) = 0;
 
     /**
      * Executes a GraphQL request.
@@ -31,14 +41,30 @@ public:
 
 class StaticGraphQLClient final : public GraphQLClient {
 public:
-    explicit StaticGraphQLClient(GraphQLResult result);
+    explicit StaticGraphQLClient(
+        GraphQLResponse response
+    );
 
-    GraphQLResult execute(const gql::Query& query) override;
+    explicit StaticGraphQLClient(
+        Json::Value data
+    );
 
-    GraphQLResponse executeRequest(const GraphQLRequest& request) override;
+    GraphQLResponse execute(
+        const gql::Query& query,
+        const GraphQLVariables& variables = {}
+    ) override;
+
+    GraphQLResponse execute(
+        const gql::Mutation& mutation,
+        const GraphQLVariables& variables = {}
+    ) override;
+
+    GraphQLResponse executeRequest(
+        const GraphQLRequest& request
+    ) override;
 
 private:
-    GraphQLResult result_;
+    GraphQLResponse response_;
 };
 
 class HttpGraphQLClient final : public GraphQLClient {
@@ -49,7 +75,29 @@ public:
         std::string path = "/graphql"
     );
 
-    GraphQLResult execute(const gql::Query& query) override;
+    GraphQLResponse execute(
+        const gql::Query& query,
+        const GraphQLVariables& variables = {}
+    ) override {
+        GraphQLRequest request(query.toString());
+        request.variables(variables);
+
+        auto response = executeRequest(request);
+        throwIfGraphQLErrors(response);
+        return response;
+    }
+
+    GraphQLResponse execute(
+        const gql::Mutation& mutation,
+        const GraphQLVariables& variables = {}
+    ) override {
+        GraphQLRequest request(mutation.toString());
+        request.variables(variables);
+
+        auto response = executeRequest(request);
+        throwIfGraphQLErrors(response);
+        return response;
+    }
 
     GraphQLResponse executeRequest(const GraphQLRequest& request) override;
 
@@ -57,6 +105,16 @@ private:
     std::string host_;
     std::uint16_t port_;
     std::string path_;
+
+    static void throwIfGraphQLErrors(
+        const GraphQLResponse& response
+    ) {
+        if (response.hasErrors()) {
+            throw GraphQLClientError(
+                "GraphQL response contains errors"
+            );
+        }
+    }
 };
 
 } // namespace drogular

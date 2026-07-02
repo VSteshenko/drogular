@@ -6,12 +6,17 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <json/json.h>
+#include <json/value.h>
 
 TEST(CoreGraphQLClientTests, RenderContextExecutesGraphQLThroughServices) {
-    drogular::GraphQLResult result;
-    result.set("viewer", std::string("Vadim"));
+    Json::Value viewer(Json::objectValue);
+    viewer["id"] = 1;
+    viewer["name"] = "Vadim";
 
-    auto client = std::make_shared<drogular::StaticGraphQLClient>(result);
+    Json::Value data(Json::objectValue);
+    data["viewer"] = viewer;
+    auto client = std::make_shared<drogular::StaticGraphQLClient>(data);
 
     drogular::ApplicationServices services;
     services.setGraphQLClient(client);
@@ -31,14 +36,16 @@ TEST(CoreGraphQLClientTests, RenderContextExecutesGraphQLThroughServices) {
     context.executeGraphQL(query);
 
     EXPECT_EQ(
-        context.graphql().require<std::string>("viewer"),
+        context.graphql()
+            .require<Json::Value>("viewer")["name"]
+            .asString(),
         "Vadim"
     );
 }
 
 TEST(CoreGraphQLClientTests, RenderContextCanStoreGraphQLClient) {
-    drogular::GraphQLResult result;
-    drogular::StaticGraphQLClient client(result);
+    Json::Value data(Json::objectValue);
+    drogular::StaticGraphQLClient client(data);
 
     drogular::RenderContext context;
 
@@ -48,10 +55,14 @@ TEST(CoreGraphQLClientTests, RenderContextCanStoreGraphQLClient) {
 }
 
 TEST(CoreGraphQLClientTests, RenderContextExecutesGraphQLQuery) {
-    drogular::GraphQLResult result;
-    result.set("viewer", std::string("Vadim"));
+    Json::Value viewer(Json::objectValue);
+    viewer["id"] = 1;
+    viewer["name"] = "Vadim";
 
-    drogular::StaticGraphQLClient client(result);
+    Json::Value data(Json::objectValue);
+    data["viewer"] = viewer;
+
+    drogular::StaticGraphQLClient client(data);
 
     drogular::RenderContext context;
     context.setGraphQLClient(&client);
@@ -68,7 +79,9 @@ TEST(CoreGraphQLClientTests, RenderContextExecutesGraphQLQuery) {
     context.executeGraphQL(query);
 
     EXPECT_EQ(
-        context.graphql().require<std::string>("viewer"),
+        context.graphql()
+            .require<Json::Value>("viewer")["name"]
+            .asString(),
         "Vadim"
     );
 }
@@ -91,10 +104,14 @@ TEST(CoreGraphQLClientTests, RenderContextThrowsWithoutGraphQLClient) {
 }
 
 TEST(CoreGraphQLClientTests, StaticClientReturnsPredefinedResult) {
-    drogular::GraphQLResult result;
-    result.set("viewer", std::string("Vadim"));
+    Json::Value viewer(Json::objectValue);
+    viewer["id"] = 1;
+    viewer["name"] = "Vadim";
 
-    drogular::StaticGraphQLClient client(result);
+    Json::Value data(Json::objectValue);
+    data["viewer"] = viewer;
+
+    drogular::StaticGraphQLClient client(data);
 
     const auto query = drogular::gql::query("Viewer")
         .select(
@@ -107,8 +124,10 @@ TEST(CoreGraphQLClientTests, StaticClientReturnsPredefinedResult) {
 
     const auto response = client.execute(query);
 
+    ASSERT_TRUE(response.field("viewer").has_value());
+
     EXPECT_EQ(
-        response.require<std::string>("viewer"),
+        response.field("viewer")->operator[]("name").asString(),
         "Vadim"
     );
 }
@@ -117,16 +136,22 @@ TEST(CoreGraphQLClientTests, ExecuteGraphQLMergesResults) {
     drogular::GraphQLResult existing;
 
     existing.set("viewer", std::string("Vadim"));
-    drogular::GraphQLResult incoming;
 
-    incoming.set("theme", std::string("dark"));
-    drogular::StaticGraphQLClient client(std::move(incoming));
+    Json::Value incoming(Json::objectValue);
+    incoming["theme"] = "dark";
+
+    drogular::StaticGraphQLClient client(
+        incoming
+    );
+
     drogular::RenderContext context;
 
     context.graphql().merge(std::move(existing));
     context.setGraphQLClient(&client);
 
-    auto query = drogular::gql::query("Settings");
+    auto query =
+        drogular::gql::query("Settings");
+
     context.executeGraphQL(query);
 
     EXPECT_EQ(
@@ -153,10 +178,10 @@ TEST(CoreGraphQLClientTests, CreatesHttpGraphQLClient) {
 }
 
 TEST(CoreGraphQLClientTests, StaticClientExecutesRequest) {
-    drogular::GraphQLResult result;
-    result.set("viewer", std::string("Vadim"));
+    Json::Value data(Json::objectValue);
+    data["viewer"] = "Vadim";
 
-    drogular::StaticGraphQLClient client(result);
+    drogular::StaticGraphQLClient client(data);
 
     drogular::GraphQLRequest request("query { viewer { name } }");
 
@@ -203,4 +228,54 @@ TEST(CoreGraphQLClientTests, GraphQLResponseProvidesErrorMessages) {
 
     ASSERT_EQ(messages.size(), 1);
     EXPECT_EQ(messages[0], "GraphQL validation failed");
+}
+
+TEST(CoreGraphQLClientTests, ExecutesQueryWithVariables) {
+    Json::Value data(Json::objectValue);
+    data["projectId"] = 1;
+
+    auto client =
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
+
+    drogular::GraphQLVariables variables;
+    variables.set("id", 1);
+
+    const auto response =
+        client->execute(
+            drogular::gql::query("ProjectById")
+                .variable("id", "ID!")
+                .select(drogular::gql::field("projectId")),
+            variables
+        );
+
+    ASSERT_TRUE(response.field("projectId").has_value());
+    EXPECT_EQ(response.field("projectId")->asInt(), 1);
+}
+
+TEST(CoreGraphQLClientTests, ExecutesMutationWithVariables) {
+    Json::Value data(Json::objectValue);
+    data["updated"] = true;
+
+    auto client =
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
+
+    drogular::GraphQLVariables variables;
+
+    Json::Value project(Json::objectValue);
+    variables.set("project", project);
+
+    const auto response =
+        client->execute(
+            drogular::gql::mutation("UpdateProject")
+                .variable("project", "ProjectInput!")
+                .select(drogular::gql::field("updated")),
+            variables
+        );
+
+    ASSERT_TRUE(response.field("updated").has_value());
+    EXPECT_TRUE(response.field("updated")->asBool());
 }

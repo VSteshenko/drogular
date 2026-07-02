@@ -1,5 +1,6 @@
 #include <drogular/graphql_client.hpp>
-#include "drogular/graphql.hpp"
+#include <drogular/graphql.hpp>
+#include <drogular/graphql_response.hpp>
 
 #include <drogon/drogon.h>
 
@@ -15,26 +16,66 @@ GraphQLClientError::GraphQLClientError(
     : std::runtime_error(message) {
 }
 
+GraphQLResponse GraphQLClient::execute(
+    const gql::Query& query,
+    const GraphQLVariables& variables
+) {
+    GraphQLRequest request(
+        query.toString()
+    );
+
+    request.variables(variables);
+
+    return executeRequest(request);
+}
+
+GraphQLResponse GraphQLClient::execute(
+    const gql::Mutation& mutation,
+    const GraphQLVariables& variables
+) {
+    GraphQLRequest request(
+        mutation.toString()
+    );
+
+    request.variables(variables);
+
+    return executeRequest(request);
+}
+
+StaticGraphQLClient::StaticGraphQLClient(
+    GraphQLResponse response
+)
+    : response_(std::move(response))
+{
+}
+
+StaticGraphQLClient::StaticGraphQLClient(
+    Json::Value data
+) {
+    Json::Value response(Json::objectValue);
+    response["data"] = std::move(data);
+
+    response_ = GraphQLResponse(response);
+}
+
+GraphQLResponse StaticGraphQLClient::execute(
+    const gql::Query&,
+    const GraphQLVariables&
+) {
+    return response_;
+}
+
+GraphQLResponse StaticGraphQLClient::execute(
+    const gql::Mutation&,
+    const GraphQLVariables&
+) {
+    return response_;
+}
+
 GraphQLResponse StaticGraphQLClient::executeRequest(
     const GraphQLRequest&
 ) {
-    Json::Value response(Json::objectValue);
-
-    Json::Value data(Json::objectValue);
-
-    // StaticGraphQLClient keeps GraphQLResult compatibility.
-    // It does not provide structured GraphQLResponse data yet.
-    response["data"] = data;
-
-    return GraphQLResponse(response);
-}
-
-StaticGraphQLClient::StaticGraphQLClient(GraphQLResult result)
-    : result_(std::move(result)) {
-}
-
-GraphQLResult StaticGraphQLClient::execute(const gql::Query&) {
-    return result_;
+    return response_;
 }
 
 HttpGraphQLClient::HttpGraphQLClient(
@@ -45,26 +86,6 @@ HttpGraphQLClient::HttpGraphQLClient(
     : host_(std::move(host)),
       port_(port),
       path_(std::move(path)) {
-}
-
-GraphQLResult HttpGraphQLClient::execute(
-    const gql::Query& query
-) {
-    GraphQLRequest request(query.toString());
-
-    const auto response = executeRequest(request);
-
-    if (response.hasErrors()) {
-        const auto messages = response.errorMessages();
-
-        throw GraphQLClientError(
-            messages.empty()
-                ? "GraphQL response contains errors"
-                : messages[0]
-        );
-    }
-
-    return response.toResult();
 }
 
 GraphQLResponse HttpGraphQLClient::executeRequest(
@@ -125,6 +146,15 @@ GraphQLResponse HttpGraphQLClient::executeRequest(
     }
 
     return GraphQLResponse(*json);
+/*    GraphQLResponse graphQLResponse(*json);
+
+    if (graphQLResponse.hasErrors()) {
+        throw GraphQLClientError(
+            "GraphQL response contains errors"
+        );
+    }
+
+    return graphQLResponse;*/
 }
 
 } // namespace drogular
