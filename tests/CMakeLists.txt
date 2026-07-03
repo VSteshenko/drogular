@@ -75,6 +75,9 @@ add_executable(drogular_tests
     repository_sample/repository_sample_user_repository_tests.cpp
     repository_sample/repository_sample_users_page_tests.cpp
     repository_sample/repository_sample_create_user_action_tests.cpp
+    ../examples/portal_demo/providers/graphql/documents/project_queries.cpp
+    ../examples/portal_demo/providers/graphql/documents/project_mutations.cpp
+    portal_demo/portal_graphql_project_provider_tests.cpp
 )
 
 target_link_libraries(drogular_tests

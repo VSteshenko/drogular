@@ -25,7 +25,7 @@ public:
 
     virtual GraphQLResponse execute(
         const gql::Query& query,
-        const GraphQLVariables& variables
+        const GraphQLVariables& variables = {}
     ) = 0;
 
     virtual GraphQLResponse execute(
