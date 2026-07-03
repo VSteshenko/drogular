@@ -8,6 +8,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <optional>
 
 namespace drogular {
 
@@ -63,8 +64,22 @@ public:
         const GraphQLRequest& request
     ) override;
 
+    /**
+     * Returns the last GraphQL request executed by this client.
+     *
+     * Useful for tests that need to verify generated queries,
+     * mutations or variables.
+     */
+    std::optional<GraphQLRequest> lastRequest() const;
+
+    /**
+     * Clears the stored last request.
+     */
+    void clearLastRequest();
+
 private:
     GraphQLResponse response_;
+    std::optional<GraphQLRequest> lastRequest_;
 };
 
 class HttpGraphQLClient final : public GraphQLClient {

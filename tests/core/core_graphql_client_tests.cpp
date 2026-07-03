@@ -279,3 +279,53 @@ TEST(CoreGraphQLClientTests, ExecutesMutationWithVariables) {
     ASSERT_TRUE(response.field("updated").has_value());
     EXPECT_TRUE(response.field("updated")->asBool());
 }
+
+TEST(CoreGraphQLClientTests, StaticClientStoresLastRequest) {
+    Json::Value data(Json::objectValue);
+    data["ok"] = true;
+
+    drogular::StaticGraphQLClient client(data);
+
+    drogular::GraphQLVariables variables;
+    variables.set("id", 42);
+
+    const auto query =
+        drogular::gql::query("ProjectById")
+            .variable("id", "ID!")
+            .select(drogular::gql::field("project"));
+
+    client.execute(query, variables);
+
+    const auto lastRequest =
+        client.lastRequest();
+
+    ASSERT_TRUE(lastRequest.has_value());
+
+    EXPECT_EQ(
+        lastRequest->query(),
+        query.toString()
+    );
+
+    EXPECT_EQ(
+        lastRequest->variables()["id"].asInt(),
+        42
+    );
+}
+
+TEST(CoreGraphQLClientTests, StaticClientClearsLastRequest) {
+    Json::Value data(Json::objectValue);
+    data["ok"] = true;
+
+    drogular::StaticGraphQLClient client(data);
+
+    client.execute(
+        drogular::gql::query("Test")
+            .select(drogular::gql::field("ok"))
+    );
+
+    ASSERT_TRUE(client.lastRequest().has_value());
+
+    client.clearLastRequest();
+
+    EXPECT_FALSE(client.lastRequest().has_value());
+}

@@ -59,23 +59,45 @@ StaticGraphQLClient::StaticGraphQLClient(
 }
 
 GraphQLResponse StaticGraphQLClient::execute(
-    const gql::Query&,
-    const GraphQLVariables&
+    const gql::Query& query,
+    const GraphQLVariables& variables
 ) {
-    return response_;
+    GraphQLRequest request(
+        query.toString()
+    );
+
+    request.variables(variables);
+
+    return executeRequest(request);
 }
 
 GraphQLResponse StaticGraphQLClient::execute(
-    const gql::Mutation&,
-    const GraphQLVariables&
+    const gql::Mutation& mutation,
+    const GraphQLVariables& variables
 ) {
-    return response_;
+    GraphQLRequest request(
+        mutation.toString()
+    );
+
+    request.variables(variables);
+
+    return executeRequest(request);
 }
 
 GraphQLResponse StaticGraphQLClient::executeRequest(
-    const GraphQLRequest&
+    const GraphQLRequest& request
 ) {
+    lastRequest_ = request;
+
     return response_;
+}
+
+std::optional<GraphQLRequest> StaticGraphQLClient::lastRequest() const {
+    return lastRequest_;
+}
+
+void StaticGraphQLClient::clearLastRequest() {
+    lastRequest_.reset();
 }
 
 HttpGraphQLClient::HttpGraphQLClient(
