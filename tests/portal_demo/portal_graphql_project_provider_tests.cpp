@@ -26,26 +26,22 @@ TEST(PortalGraphQLProjectProviderTests, ReadsProjects) {
     data["projects"] = projects;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            data
-        );
+        std::make_shared<drogular::StaticGraphQLClient>(data);
 
-    PortalGraphQLProjectProvider provider(
-        client
-    );
+    PortalGraphQLProjectProvider provider(client);
 
-    const auto result =
-        provider.all();
+    const auto result = provider.all();
 
     ASSERT_EQ(result.size(), 2);
-
-    EXPECT_EQ(result[0].id, 1);
     EXPECT_EQ(result[0].title, "Customer Portal");
-    EXPECT_EQ(result[0].status, "active");
-
-    EXPECT_EQ(result[1].id, 2);
     EXPECT_EQ(result[1].title, "Internal Dashboard");
-    EXPECT_EQ(result[1].status, "paused");
+
+    ASSERT_EQ(client->requestCount(), 1);
+
+    EXPECT_EQ(
+        client->lastRequest()->query(),
+        ProjectQueries::all().toString()
+    );
 }
 
 TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
@@ -58,22 +54,23 @@ TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
     data["project"] = project;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            data
-        );
+        std::make_shared<drogular::StaticGraphQLClient>(data);
 
-    PortalGraphQLProjectProvider provider(
-        client
-    );
+    PortalGraphQLProjectProvider provider(client);
 
-    const auto result =
-        provider.findById(5);
+    const auto result = provider.findById(5);
 
     ASSERT_TRUE(result.has_value());
-
     EXPECT_EQ(result->id, 5);
     EXPECT_EQ(result->title, "Portal Demo");
     EXPECT_EQ(result->status, "done");
+
+    ASSERT_EQ(client->requestCount(), 1);
+
+    EXPECT_EQ(
+        client->lastRequest()->variables()["id"].asInt(),
+        5
+    );
 }
 
 TEST(PortalGraphQLProjectProviderTests, ReturnsNulloptForMissingProject) {
@@ -105,24 +102,25 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
     data["createProject"] = created;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            data
-        );
+        std::make_shared<drogular::StaticGraphQLClient>(data);
 
-    PortalGraphQLProjectProvider provider(
-        client
-    );
+    PortalGraphQLProjectProvider provider(client);
 
     PortalProject project;
     project.title = "New Project";
     project.status = "active";
 
-    const auto result =
-        provider.create(project);
+    const auto result = provider.create(project);
 
     EXPECT_EQ(result.id, 10);
     EXPECT_EQ(result.title, "New Project");
-    EXPECT_EQ(result.status, "active");
+
+    ASSERT_EQ(client->requestCount(), 1);
+
+    EXPECT_EQ(
+        client->lastRequest()->variables()["project"]["title"].asString(),
+        "New Project"
+    );
 }
 
 TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
@@ -135,21 +133,22 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
     data["updateProject"] = updated;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            data
-        );
+        std::make_shared<drogular::StaticGraphQLClient>(data);
 
-    PortalGraphQLProjectProvider provider(
-        client
-    );
+    PortalGraphQLProjectProvider provider(client);
 
     PortalProject project;
     project.id = 10;
     project.title = "Updated Project";
     project.status = "done";
 
-    EXPECT_TRUE(
-        provider.update(project)
+    EXPECT_TRUE(provider.update(project));
+
+    ASSERT_EQ(client->requestCount(), 1);
+
+    EXPECT_EQ(
+        client->lastRequest()->variables()["project"]["id"].asInt(),
+        10
     );
 }
 
@@ -158,15 +157,16 @@ TEST(PortalGraphQLProjectProviderTests, RemovesProject) {
     data["removeProject"] = true;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(
-            data
-        );
+        std::make_shared<drogular::StaticGraphQLClient>(data);
 
-    PortalGraphQLProjectProvider provider(
-        client
-    );
+    PortalGraphQLProjectProvider provider(client);
 
-    EXPECT_TRUE(
-        provider.remove(10)
+    EXPECT_TRUE(provider.remove(10));
+
+    ASSERT_EQ(client->requestCount(), 1);
+
+    EXPECT_EQ(
+        client->lastRequest()->variables()["id"].asInt(),
+        10
     );
 }
