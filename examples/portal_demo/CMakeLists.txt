@@ -2,6 +2,8 @@ add_executable(portal_demo
     main.cpp
     providers/graphql/documents/project_queries.cpp
     providers/graphql/documents/project_mutations.cpp
+    providers/graphql/documents/user_queries.cpp
+    providers/graphql/documents/user_mutations.cpp
 )
 
 target_link_libraries(portal_demo
