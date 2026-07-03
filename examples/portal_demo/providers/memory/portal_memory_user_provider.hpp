@@ -1,6 +1,6 @@
 #pragma once
 
-#include "portal_user.hpp"
+#include "../../portal_user.hpp"
 #include "../user_provider.hpp"
 
 #include <optional>
@@ -11,6 +11,26 @@ class PortalMemoryUserProvider final
     : public PortalUserProvider
 {
 public:
+    explicit PortalMemoryUserProvider(
+        std::vector<PortalUser> users
+    )
+        : users_(std::move(users))
+    {
+    }
+
+    PortalMemoryUserProvider() {
+        users_.push_back({
+            .username = "admin",
+            .password = "admin",
+            .role = "admin"
+        });
+        users_.push_back({
+            .username = "user",
+            .password = "user",
+            .role = "user"
+        });
+    }
+
     PortalUser create(
         PortalUser user
     ) override {
@@ -49,8 +69,5 @@ public:
     }
 
 private:
-    std::vector<PortalUser> users_{
-        {"admin", "admin", "admin"},
-        {"user", "user", "user"}
-    };
+    std::vector<PortalUser> users_;
 };

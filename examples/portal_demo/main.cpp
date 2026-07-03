@@ -11,11 +11,14 @@
 #include "localization/portal_translations.hpp"
 #include "actions/create_project_action.hpp"
 #include "pages/projects_page.hpp"
-#include "providers/memory/portal_memory_project_provider.hpp"
 #include "pages/project_details_page.hpp"
 #include "pages/project_edit_page.hpp"
 #include "actions/update_project_action.hpp"
 #include "actions/delete_project_action.hpp"
+#include "providers/graphql/portal_graphql_project_provider.hpp"
+#include "providers/graphql/portal_dataset_graphql_client.hpp"
+#include "providers/graphql/portal_dataset_graphql_adapter.hpp"
+#include "data/demo_dataset.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -51,17 +54,34 @@ int main() {
         drogular::ServiceLifetime::Singleton
     );
 
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    const auto fixtureUsers =
+        dataset->users();
+
     app.services().addFactory<PortalUserProvider>(
         drogular::ServiceLifetime::Singleton,
-        [] {
-            return std::make_shared<PortalMemoryUserProvider>();
+        [fixtureUsers] {
+            return std::make_shared<PortalMemoryUserProvider>(
+                fixtureUsers
+            );
         }
     );
 
+    auto projectClient =
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        );
+
     app.services().addFactory<PortalProjectProvider>(
         drogular::ServiceLifetime::Singleton,
-        [] {
-            return std::make_shared<PortalMemoryProjectProvider>();
+        [projectClient] {
+            return std::make_shared<PortalGraphQLProjectProvider>(
+                projectClient
+            );
         }
     );
 
