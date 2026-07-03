@@ -9,6 +9,7 @@
 #include <string>
 #include <stdexcept>
 #include <optional>
+#include <vector>
 
 namespace drogular {
 
@@ -24,11 +25,17 @@ class GraphQLClient {
 public:
     virtual ~GraphQLClient() = default;
 
+    /**
+     * Executes a GraphQL query.
+     */
     virtual GraphQLResponse execute(
         const gql::Query& query,
         const GraphQLVariables& variables = {}
     ) = 0;
 
+    /**
+     * Executes a GraphQL mutation.
+     */
     virtual GraphQLResponse execute(
         const gql::Mutation& mutation,
         const GraphQLVariables& variables = {}
@@ -40,46 +47,64 @@ public:
     virtual GraphQLResponse executeRequest(const GraphQLRequest& request) = 0;
 };
 
-class StaticGraphQLClient final : public GraphQLClient {
+class StaticGraphQLClient : public GraphQLClient {
 public:
-    explicit StaticGraphQLClient(
-        GraphQLResponse response
-    );
-
+    /**
+     * Creates a client returning the specified GraphQL response.
+     */
     explicit StaticGraphQLClient(
         Json::Value data
     );
 
+    /**
+     * Executes a GraphQL query.
+     */
     GraphQLResponse execute(
         const gql::Query& query,
         const GraphQLVariables& variables = {}
     ) override;
 
+    /**
+     * Executes a GraphQL mutation.
+     */
     GraphQLResponse execute(
         const gql::Mutation& mutation,
         const GraphQLVariables& variables = {}
     ) override;
 
+    /**
+     * Executes a raw GraphQL request.
+     */
     GraphQLResponse executeRequest(
         const GraphQLRequest& request
     ) override;
 
     /**
-     * Returns the last GraphQL request executed by this client.
+     * Returns all executed GraphQL requests.
      *
-     * Useful for tests that need to verify generated queries,
-     * mutations or variables.
+     * Requests are stored in execution order and can be used
+     * to verify generated queries and variables in tests.
+     */
+    const std::vector<GraphQLRequest>& requests() const;
+
+    /**
+     * Returns the last executed GraphQL request.
      */
     std::optional<GraphQLRequest> lastRequest() const;
 
     /**
-     * Clears the stored last request.
+     * Removes all stored requests.
      */
-    void clearLastRequest();
+    void clearRequests();
+
+    /**
+     * Returns the number of executed requests.
+     */
+    std::size_t requestCount() const;
 
 private:
     GraphQLResponse response_;
-    std::optional<GraphQLRequest> lastRequest_;
+    std::vector<GraphQLRequest> requests_;
 };
 
 class HttpGraphQLClient final : public GraphQLClient {

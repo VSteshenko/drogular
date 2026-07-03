@@ -43,13 +43,6 @@ GraphQLResponse GraphQLClient::execute(
 }
 
 StaticGraphQLClient::StaticGraphQLClient(
-    GraphQLResponse response
-)
-    : response_(std::move(response))
-{
-}
-
-StaticGraphQLClient::StaticGraphQLClient(
     Json::Value data
 ) {
     Json::Value response(Json::objectValue);
@@ -87,17 +80,29 @@ GraphQLResponse StaticGraphQLClient::execute(
 GraphQLResponse StaticGraphQLClient::executeRequest(
     const GraphQLRequest& request
 ) {
-    lastRequest_ = request;
+    requests_.push_back(request);
 
     return response_;
 }
 
-std::optional<GraphQLRequest> StaticGraphQLClient::lastRequest() const {
-    return lastRequest_;
+const std::vector<GraphQLRequest>& StaticGraphQLClient::requests() const {
+    return requests_;
 }
 
-void StaticGraphQLClient::clearLastRequest() {
-    lastRequest_.reset();
+std::optional<GraphQLRequest> StaticGraphQLClient::lastRequest() const {
+    if (requests_.empty()) {
+        return std::nullopt;
+    }
+
+    return requests_.back();
+}
+
+void StaticGraphQLClient::clearRequests() {
+    requests_.clear();
+}
+
+std::size_t StaticGraphQLClient::requestCount() const {
+    return requests_.size();
 }
 
 HttpGraphQLClient::HttpGraphQLClient(

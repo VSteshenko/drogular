@@ -312,7 +312,53 @@ TEST(CoreGraphQLClientTests, StaticClientStoresLastRequest) {
     );
 }
 
-TEST(CoreGraphQLClientTests, StaticClientClearsLastRequest) {
+TEST(CoreGraphQLClientTests, StaticClientStoresRequestHistory) {
+    Json::Value data(Json::objectValue);
+    data["ok"] = true;
+
+    drogular::StaticGraphQLClient client(data);
+
+    auto firstQuery =
+        drogular::gql::query("First")
+            .select(drogular::gql::field("first"));
+
+    auto secondQuery =
+        drogular::gql::query("Second")
+            .select(drogular::gql::field("second"));
+
+    drogular::GraphQLVariables firstVariables;
+    firstVariables.set("id", 1);
+
+    drogular::GraphQLVariables secondVariables;
+    secondVariables.set("id", 2);
+
+    client.execute(firstQuery, firstVariables);
+    client.execute(secondQuery, secondVariables);
+
+    ASSERT_EQ(client.requestCount(), 2);
+
+    EXPECT_EQ(
+        client.requests()[0].query(),
+        firstQuery.toString()
+    );
+
+    EXPECT_EQ(
+        client.requests()[1].query(),
+        secondQuery.toString()
+    );
+
+    EXPECT_EQ(
+        client.requests()[0].variables()["id"].asInt(),
+        1
+    );
+
+    EXPECT_EQ(
+        client.requests()[1].variables()["id"].asInt(),
+        2
+    );
+}
+
+TEST(CoreGraphQLClientTests, StaticClientClearsRequestHistory) {
     Json::Value data(Json::objectValue);
     data["ok"] = true;
 
@@ -323,9 +369,61 @@ TEST(CoreGraphQLClientTests, StaticClientClearsLastRequest) {
             .select(drogular::gql::field("ok"))
     );
 
+    ASSERT_EQ(client.requestCount(), 1);
+    ASSERT_FALSE(client.requests().empty());
     ASSERT_TRUE(client.lastRequest().has_value());
 
-    client.clearLastRequest();
+    client.clearRequests();
 
+    EXPECT_EQ(client.requestCount(), 0);
+    EXPECT_TRUE(client.requests().empty());
     EXPECT_FALSE(client.lastRequest().has_value());
+}
+
+TEST(CoreGraphQLClientTests, StaticClientStoresMutationRequest) {
+    Json::Value data(Json::objectValue);
+    data["updated"] = true;
+
+    drogular::StaticGraphQLClient client(data);
+
+    Json::Value project(Json::objectValue);
+    project["id"] = 10;
+    project["title"] = "Portal";
+    project["status"] = "active";
+
+    drogular::GraphQLVariables variables;
+    variables.set("project", project);
+
+    auto mutation =
+        drogular::gql::mutation("UpdateProject")
+            .variable("project", "ProjectInput!")
+            .select(
+                drogular::gql::field("updateProject")
+                    .arg(
+                        "project",
+                        drogular::gql::variable("project")
+                    )
+                    .children({
+                        drogular::gql::field("id"),
+                        drogular::gql::field("title"),
+                        drogular::gql::field("status")
+                    })
+            );
+
+    client.execute(mutation, variables);
+
+    const auto lastRequest =
+        client.lastRequest();
+
+    ASSERT_TRUE(lastRequest.has_value());
+
+    EXPECT_EQ(
+        lastRequest->query(),
+        mutation.toString()
+    );
+
+    EXPECT_EQ(
+        lastRequest->variables()["project"]["title"].asString(),
+        "Portal"
+    );
 }

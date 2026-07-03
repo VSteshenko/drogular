@@ -11,7 +11,7 @@ TEST(CoreServicesTests, StoresGraphQLClient) {
     drogular::ApplicationServices services;
     drogular::GraphQLResponse result;
 
-    auto client = std::make_shared<drogular::StaticGraphQLClient>(result);
+    auto client = std::make_shared<drogular::StaticGraphQLClient>(result.data());
 
     services.setGraphQLClient(client);
 
