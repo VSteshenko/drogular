@@ -18,6 +18,7 @@
 #include "providers/graphql/portal_graphql_project_provider.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "providers/graphql/portal_dataset_graphql_adapter.hpp"
+#include "providers/graphql/portal_graphql_user_provider.hpp"
 #include "data/demo_dataset.hpp"
 
 #include <drogular/app.hpp>
@@ -59,28 +60,25 @@ int main() {
             DemoDataset::create()
         );
 
-    const auto fixtureUsers =
-        dataset->users();
-
-    app.services().addFactory<PortalUserProvider>(
-        drogular::ServiceLifetime::Singleton,
-        [fixtureUsers] {
-            return std::make_shared<PortalMemoryUserProvider>(
-                fixtureUsers
-            );
-        }
-    );
-
-    auto projectClient =
+    auto graphQLClient =
         std::make_shared<PortalDatasetGraphQLClient>(
             dataset
         );
 
+    app.services().addFactory<PortalUserProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [graphQLClient] {
+            return std::make_shared<PortalGraphQLUserProvider>(
+                graphQLClient
+            );
+        }
+    );
+
     app.services().addFactory<PortalProjectProvider>(
         drogular::ServiceLifetime::Singleton,
-        [projectClient] {
+        [graphQLClient] {
             return std::make_shared<PortalGraphQLProjectProvider>(
-                projectClient
+                graphQLClient
             );
         }
     );

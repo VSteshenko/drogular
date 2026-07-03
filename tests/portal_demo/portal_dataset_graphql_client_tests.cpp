@@ -3,6 +3,9 @@
 #include "../../examples/portal_demo//providers/graphql/documents/project_queries.hpp"
 #include "../../examples/portal_demo//providers/graphql/documents/project_mutations.hpp"
 #include "../../examples/portal_demo//providers/graphql/mappers/project_mapper.hpp"
+#include "../../examples/portal_demo//providers/graphql/documents/user_queries.hpp"
+#include "../../examples/portal_demo//providers/graphql/documents/user_mutations.hpp"
+#include "../../examples/portal_demo//providers/graphql/mappers/user_mapper.hpp"
 
 #include <gtest/gtest.h>
 
@@ -137,4 +140,106 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsNullForMissingProject) {
 
     ASSERT_TRUE(project.has_value());
     EXPECT_TRUE(project->isNull());
+}
+
+TEST(PortalDatasetGraphQLClientTests, ReadsUsersFromDataset) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    dataset->addUser({
+        .username = "admin",
+        .password = "admin",
+        .role = "admin"
+    });
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    const auto response =
+        client.execute(
+            UserQueries::all()
+        );
+
+    const auto users =
+        response.field("users");
+
+    ASSERT_TRUE(users.has_value());
+    ASSERT_EQ(users->size(), 1);
+    EXPECT_EQ((*users)[0]["username"].asString(), "admin");
+}
+
+TEST(PortalDatasetGraphQLClientTests, FindsUserByCredentialsFromDataset) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    dataset->addUser({
+        .username = "admin",
+        .password = "secret",
+        .role = "admin"
+    });
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    const auto response =
+        client.execute(
+            UserQueries::findByCredentials(),
+            UserMapper::credentialsVariables(
+                "admin",
+                "secret"
+            )
+        );
+
+    const auto user =
+        response.field("userByCredentials");
+
+    ASSERT_TRUE(user.has_value());
+    EXPECT_EQ((*user)["role"].asString(), "admin");
+}
+
+TEST(PortalDatasetGraphQLClientTests, ReturnsNullForInvalidCredentials) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    const auto response =
+        client.execute(
+            UserQueries::findByCredentials(),
+            UserMapper::credentialsVariables(
+                "missing",
+                "wrong"
+            )
+        );
+
+    const auto user =
+        response.field("userByCredentials");
+
+    ASSERT_TRUE(user.has_value());
+    EXPECT_TRUE(user->isNull());
+}
+
+TEST(PortalDatasetGraphQLClientTests, CreatesUserInDataset) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    PortalUser user;
+    user.username = "newuser";
+    user.password = "secret";
+    user.role = "user";
+
+    const auto response =
+        client.execute(
+            UserMutations::create(user),
+            UserMapper::toVariables(user)
+        );
+
+    ASSERT_EQ(dataset->users().size(), 1);
+    EXPECT_EQ(dataset->users()[0].username, "newuser");
+
+    const auto created =
+        response.field("createUser");
+
+    ASSERT_TRUE(created.has_value());
+    EXPECT_EQ((*created)["role"].asString(), "user");
 }

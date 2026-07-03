@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../data/portal_dataset.hpp"
-#include "../../providers/graphql/mappers/project_mapper.hpp"
 
 #include <drogular/graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
@@ -38,6 +37,17 @@ public:
             );
         }
 
+        if (text.find("userByCredentials") != std::string::npos) {
+            return userByCredentialsResponse(
+                variables.json()["username"].asString(),
+                variables.json()["password"].asString()
+            );
+        }
+
+        if (text.find("users") != std::string::npos) {
+            return usersResponse();
+        }
+
         return emptyResponse();
     }
 
@@ -63,6 +73,12 @@ public:
         if (text.find("removeProject") != std::string::npos) {
             return removeProjectResponse(
                 variables.json()["id"].asInt()
+            );
+        }
+
+        if (text.find("createUser") != std::string::npos) {
+            return createUserResponse(
+                variables.json()["user"]
             );
         }
 
@@ -202,6 +218,67 @@ private:
         }
 
         return nextId;
+    }
+
+    static Json::Value userJson(
+        const PortalUser& user
+    ) {
+        Json::Value value(Json::objectValue);
+
+        value["username"] = user.username;
+        value["password"] = user.password;
+        value["role"] = user.role;
+
+        return value;
+    }
+
+    drogular::GraphQLResponse usersResponse() const {
+        Json::Value users(Json::arrayValue);
+
+        for (const auto& user : dataset_->users()) {
+            users.append(userJson(user));
+        }
+
+        Json::Value data(Json::objectValue);
+        data["users"] = users;
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse userByCredentialsResponse(
+        const std::string& username,
+        const std::string& password
+    ) const {
+        Json::Value data(Json::objectValue);
+        data["userByCredentials"] = Json::Value();
+
+        for (const auto& user : dataset_->users()) {
+            if (user.username == username &&
+                user.password == password) {
+                data["userByCredentials"] =
+                    userJson(user);
+                break;
+                }
+        }
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse createUserResponse(
+        const Json::Value& value
+    ) {
+        PortalUser user;
+
+        user.username = value["username"].asString();
+        user.password = value["password"].asString();
+        user.role = value["role"].asString();
+
+        dataset_->users().push_back(user);
+
+        Json::Value data(Json::objectValue);
+        data["createUser"] = userJson(user);
+
+        return response(data);
     }
 
     static drogular::GraphQLResponse response(

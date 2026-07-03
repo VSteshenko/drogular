@@ -32,6 +32,11 @@ public:
         return users_;
     }
 
+    std::vector<PortalUser>& users()
+    {
+        return users_;
+    }
+
     const std::vector<PortalProject>& projects() const {
         return projects_;
     }
