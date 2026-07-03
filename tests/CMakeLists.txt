@@ -78,6 +78,7 @@ add_executable(drogular_tests
     ../examples/portal_demo/providers/graphql/documents/project_queries.cpp
     ../examples/portal_demo/providers/graphql/documents/project_mutations.cpp
     portal_demo/portal_graphql_project_provider_tests.cpp
+    portal_demo/portal_dataset_graphql_client_tests.cpp
 )
 
 target_link_libraries(drogular_tests
