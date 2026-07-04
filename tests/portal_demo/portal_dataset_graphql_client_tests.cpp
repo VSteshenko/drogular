@@ -243,3 +243,39 @@ TEST(PortalDatasetGraphQLClientTests, CreatesUserInDataset) {
     ASSERT_TRUE(created.has_value());
     EXPECT_EQ((*created)["role"].asString(), "user");
 }
+
+TEST(PortalDatasetGraphQLClientTests, UpdatesUserInDataset) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    dataset->addUser({
+        .id = 2,
+        .username = "user",
+        .password = "user",
+        .role = "user"
+    });
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    PortalUser user;
+    user.id = 2;
+    user.username = "user";
+    user.password = "newpass";
+    user.role = "admin";
+
+    const auto response =
+        client.execute(
+            UserMutations::update(user),
+            UserMapper::toVariables(user)
+        );
+
+    ASSERT_EQ(dataset->users().size(), 1);
+    EXPECT_EQ(dataset->users()[0].password, "newpass");
+    EXPECT_EQ(dataset->users()[0].role, "admin");
+
+    const auto updated =
+        response.field("updateUser");
+
+    ASSERT_TRUE(updated.has_value());
+    EXPECT_EQ((*updated)["role"].asString(), "admin");
+}

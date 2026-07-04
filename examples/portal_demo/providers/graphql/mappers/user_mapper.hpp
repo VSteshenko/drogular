@@ -29,6 +29,9 @@ public:
     ) {
         Json::Value value(Json::objectValue);
 
+        if (user.id > 0) {
+            value["id"] = user.id;
+        }
         value["username"] = user.username;
         value["password"] = user.password;
         value["role"] = user.role;
@@ -44,6 +47,7 @@ public:
     ) {
         PortalUser user;
 
+        user.id = value["id"].asInt();
         user.username = value["username"].asString();
         user.password = value["password"].asString();
         user.role = value["role"].asString();

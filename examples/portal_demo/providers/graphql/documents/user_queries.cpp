@@ -21,6 +21,7 @@ drogular::gql::Query UserQueries::findByCredentials() {
                 .arg("username", drogular::gql::variable("username"))
                 .arg("password", drogular::gql::variable("password"))
                 .children({
+                    drogular::gql::field("id"),
                     drogular::gql::field("username"),
                     drogular::gql::field("password"),
                     drogular::gql::field("role")

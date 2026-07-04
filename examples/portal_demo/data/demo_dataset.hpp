@@ -9,11 +9,13 @@ public:
 
         dataset
             .addUser({
+                .id = 1,
                 .username = "admin",
                 .password = "admin",
                 .role = "admin"
             })
             .addUser({
+                .id = 2,
                 .username = "user",
                 .password = "user",
                 .role = "user"

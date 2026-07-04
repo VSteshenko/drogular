@@ -24,4 +24,8 @@ public:
     virtual PortalUser create(
         PortalUser user
     ) = 0;
+
+    virtual bool update(
+        PortalUser user
+    ) = 0;
 };

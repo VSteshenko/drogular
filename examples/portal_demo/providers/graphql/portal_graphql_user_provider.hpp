@@ -91,6 +91,19 @@ public:
         return UserMapper::fromValue(*created);
     }
 
+    bool update(
+        PortalUser user
+    ) override {
+        const auto response =
+            client_->execute(
+                UserMutations::update(user),
+                UserMapper::toVariables(user)
+            );
+
+        return response.field("updateUser").has_value() &&
+               !response.field("updateUser")->isNull();
+    }
+
 private:
     std::shared_ptr<drogular::GraphQLClient> client_;
 };

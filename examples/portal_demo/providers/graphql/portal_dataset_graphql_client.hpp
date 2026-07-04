@@ -76,6 +76,12 @@ public:
             );
         }
 
+        if (text.find("updateUser") != std::string::npos) {
+            return updateUserResponse(
+                variables.json()["user"]
+            );
+        }
+
         if (text.find("createUser") != std::string::npos) {
             return createUserResponse(
                 variables.json()["user"]
@@ -225,6 +231,7 @@ private:
     ) {
         Json::Value value(Json::objectValue);
 
+        value["id"] = user.id;
         value["username"] = user.username;
         value["password"] = user.password;
         value["role"] = user.role;
@@ -264,11 +271,22 @@ private:
         return response(data);
     }
 
+    int nextUserId() const {
+        int nextId = 1;
+
+        for (const auto& user : dataset_->users()) {
+            nextId = std::max(nextId, user.id + 1);
+        }
+
+        return nextId;
+    }
+
     drogular::GraphQLResponse createUserResponse(
         const Json::Value& value
     ) {
         PortalUser user;
 
+        user.id = nextUserId();
         user.username = value["username"].asString();
         user.password = value["password"].asString();
         user.role = value["role"].asString();
@@ -277,6 +295,31 @@ private:
 
         Json::Value data(Json::objectValue);
         data["createUser"] = userJson(user);
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse updateUserResponse(
+        const Json::Value& value
+    ) {
+        const auto id =
+            value["id"].asInt();
+
+        Json::Value data(Json::objectValue);
+        data["updateUser"] = Json::Value();
+
+        for (auto& user : dataset_->users()) {
+            if (user.id == id) {
+                user.username = value["username"].asString();
+                user.password = value["password"].asString();
+                user.role = value["role"].asString();
+
+                data["updateUser"] =
+                    userJson(user);
+
+                break;
+            }
+        }
 
         return response(data);
     }

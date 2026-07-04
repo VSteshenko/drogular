@@ -38,6 +38,19 @@ public:
         return user;
     }
 
+    bool update(
+        PortalUser user
+    ) override {
+        for (auto& existing : users_) {
+            if (existing.id == user.id) {
+                existing = std::move(user);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     std::optional<PortalUser> findByCredentials(
         const std::string& username,
         const std::string& password

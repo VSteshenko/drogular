@@ -143,3 +143,33 @@ TEST(PortalGraphQLUserProviderTests, ChecksUserExists) {
     EXPECT_TRUE(provider.exists("admin"));
     EXPECT_FALSE(provider.exists("missing"));
 }
+
+TEST(PortalGraphQLUserProviderTests, UpdatesUser) {
+    Json::Value updated(Json::objectValue);
+    updated["id"] = 2;
+    updated["username"] = "user";
+    updated["password"] = "newpass";
+    updated["role"] = "admin";
+
+    Json::Value data(Json::objectValue);
+    data["updateUser"] = updated;
+
+    auto client =
+        std::make_shared<drogular::StaticGraphQLClient>(data);
+
+    PortalGraphQLUserProvider provider(client);
+
+    PortalUser user;
+    user.id = 2;
+    user.username = "user";
+    user.password = "newpass";
+    user.role = "admin";
+
+    EXPECT_TRUE(provider.update(user));
+
+    ASSERT_EQ(client->requestCount(), 1);
+    EXPECT_EQ(
+        client->lastRequest()->variables()["user"]["id"].asInt(),
+        2
+    );
+}

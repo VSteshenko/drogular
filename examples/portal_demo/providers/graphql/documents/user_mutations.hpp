@@ -9,4 +9,8 @@ public:
     static drogular::gql::Mutation create(
         const PortalUser& user
     );
+
+    static drogular::gql::Mutation update(
+        const PortalUser& user
+    );
 };
