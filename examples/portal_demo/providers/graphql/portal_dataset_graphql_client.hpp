@@ -106,6 +106,7 @@ private:
         value["id"] = project.id;
         value["title"] = project.title;
         value["status"] = project.status;
+        value["ownerId"] = project.ownerId;
 
         return value;
     }
@@ -146,12 +147,12 @@ private:
 
         project.id =
             nextProjectId();
-
         project.title =
             value["title"].asString();
-
         project.status =
             value["status"].asString();
+        project.ownerId =
+            value["ownerId"].asInt();
 
         dataset_->projects().push_back(project);
 
@@ -174,9 +175,10 @@ private:
             if (project.id == id) {
                 project.title =
                     value["title"].asString();
-
                 project.status =
                     value["status"].asString();
+                project.ownerId =
+                    value["ownerId"].asInt();
 
                 data["updateProject"] =
                     projectJson(project);

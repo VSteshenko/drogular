@@ -81,6 +81,16 @@ public:
         return false;
     }
 
+    std::optional<PortalUser> findById(int id) const override {
+        for (const auto& user : all()) {
+            if (user.id == id) {
+                return user;
+            }
+        }
+
+        return std::nullopt;
+    }
+
 private:
     std::vector<PortalUser> users_;
 };

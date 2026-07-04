@@ -22,6 +22,7 @@ public:
 
         value["title"] = project.title;
         value["status"] = project.status;
+        value["ownerId"] = project.ownerId;
 
         drogular::GraphQLVariables variables;
 
@@ -41,6 +42,7 @@ public:
         project.id = value["id"].asInt();
         project.title = value["title"].asString();
         project.status = value["status"].asString();
+        project.ownerId = value["ownerId"].asInt();
 
         return project;
     }

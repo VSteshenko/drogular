@@ -23,12 +23,14 @@ public:
             .addProject({
                 .id = 1,
                 .title = "Customer Portal",
-                .status = "active"
+                .status = "active",
+                .ownerId = 1
             })
             .addProject({
                 .id = 2,
                 .title = "Internal Dashboard",
-                .status = "paused"
+                .status = "paused",
+                .ownerId = 2
             });
 
         return dataset;

@@ -1,4 +1,5 @@
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_provider.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_graphql_user_provider.hpp"
 
 #include <drogular/graphql_client.hpp>
 
@@ -13,11 +14,13 @@ TEST(PortalGraphQLProjectProviderTests, ReadsProjects) {
     first["id"] = 1;
     first["title"] = "Customer Portal";
     first["status"] = "active";
+    first["ownerId"] = 1;
 
     Json::Value second(Json::objectValue);
     second["id"] = 2;
     second["title"] = "Internal Dashboard";
     second["status"] = "paused";
+    second["ownerId"] = 2;
 
     projects.append(first);
     projects.append(second);
@@ -26,9 +29,19 @@ TEST(PortalGraphQLProjectProviderTests, ReadsProjects) {
     data["projects"] = projects;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(data);
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
 
-    PortalGraphQLProjectProvider provider(client);
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            client
+        );
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        userProvider
+    );
 
     const auto result = provider.all();
 
@@ -49,14 +62,25 @@ TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
     project["id"] = 5;
     project["title"] = "Portal Demo";
     project["status"] = "done";
+    project["ownerId"] = 1;
 
     Json::Value data(Json::objectValue);
     data["project"] = project;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(data);
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
 
-    PortalGraphQLProjectProvider provider(client);
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            client
+        );
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        userProvider
+    );
 
     const auto result = provider.findById(5);
 
@@ -64,6 +88,7 @@ TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
     EXPECT_EQ(result->id, 5);
     EXPECT_EQ(result->title, "Portal Demo");
     EXPECT_EQ(result->status, "done");
+    EXPECT_EQ(result->ownerId, 1);
 
     ASSERT_EQ(client->requestCount(), 1);
 
@@ -82,8 +107,14 @@ TEST(PortalGraphQLProjectProviderTests, ReturnsNulloptForMissingProject) {
             data
         );
 
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            client
+        );
+
     PortalGraphQLProjectProvider provider(
-        client
+        client,
+        userProvider
     );
 
     const auto result =
@@ -97,23 +128,37 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
     created["id"] = 10;
     created["title"] = "New Project";
     created["status"] = "active";
+    created["ownerId"] = 1;
 
     Json::Value data(Json::objectValue);
     data["createProject"] = created;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(data);
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
 
-    PortalGraphQLProjectProvider provider(client);
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            client
+        );
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        userProvider
+    );
 
     PortalProject project;
     project.title = "New Project";
     project.status = "active";
+    project.ownerId = 1;
 
     const auto result = provider.create(project);
 
     EXPECT_EQ(result.id, 10);
     EXPECT_EQ(result.title, "New Project");
+    EXPECT_EQ(result.status, "active");
+    EXPECT_EQ(result.ownerId, 1);
 
     ASSERT_EQ(client->requestCount(), 1);
 
@@ -128,19 +173,31 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
     updated["id"] = 10;
     updated["title"] = "Updated Project";
     updated["status"] = "done";
+    updated["ownerId"] = 1;
 
     Json::Value data(Json::objectValue);
     data["updateProject"] = updated;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(data);
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
 
-    PortalGraphQLProjectProvider provider(client);
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            client
+        );
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        userProvider
+    );
 
     PortalProject project;
     project.id = 10;
     project.title = "Updated Project";
     project.status = "done";
+    project.ownerId = 1;
 
     EXPECT_TRUE(provider.update(project));
 
@@ -150,6 +207,10 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
         client->lastRequest()->variables()["project"]["id"].asInt(),
         10
     );
+    EXPECT_EQ(
+        client->lastRequest()->variables()["project"]["ownerId"].asInt(),
+        1
+    );
 }
 
 TEST(PortalGraphQLProjectProviderTests, RemovesProject) {
@@ -157,9 +218,19 @@ TEST(PortalGraphQLProjectProviderTests, RemovesProject) {
     data["removeProject"] = true;
 
     auto client =
-        std::make_shared<drogular::StaticGraphQLClient>(data);
+        std::make_shared<drogular::StaticGraphQLClient>(
+            data
+        );
 
-    PortalGraphQLProjectProvider provider(client);
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            client
+        );
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        userProvider
+    );
 
     EXPECT_TRUE(provider.remove(10));
 

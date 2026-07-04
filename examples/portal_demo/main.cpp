@@ -65,20 +65,24 @@ int main() {
             dataset
         );
 
+    auto userProvider =
+        std::make_shared<PortalGraphQLUserProvider>(
+            graphQLClient
+        );
+
     app.services().addFactory<PortalUserProvider>(
         drogular::ServiceLifetime::Singleton,
-        [graphQLClient] {
-            return std::make_shared<PortalGraphQLUserProvider>(
-                graphQLClient
-            );
+        [userProvider] {
+            return userProvider;
         }
     );
 
     app.services().addFactory<PortalProjectProvider>(
         drogular::ServiceLifetime::Singleton,
-        [graphQLClient] {
+        [graphQLClient, userProvider] {
             return std::make_shared<PortalGraphQLProjectProvider>(
-                graphQLClient
+                graphQLClient,
+                userProvider
             );
         }
     );

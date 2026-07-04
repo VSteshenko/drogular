@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../portal_project.hpp"
+#include "../portal_user.hpp"
 
 #include <optional>
 #include <vector>
@@ -26,4 +27,8 @@ public:
     virtual bool remove(
         int id
     ) = 0;
+
+    virtual std::optional<PortalUser> owner(
+        const PortalProject& project
+    ) const = 0;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../project_provider.hpp"
+#include "../user_provider.hpp"
 #include "documents/project_queries.hpp"
 #include "documents/project_mutations.hpp"
 #include "mappers/project_mapper.hpp"
@@ -19,9 +20,11 @@ class PortalGraphQLProjectProvider final
 {
 public:
     explicit PortalGraphQLProjectProvider(
-        std::shared_ptr<drogular::GraphQLClient> client
+        std::shared_ptr<drogular::GraphQLClient> client,
+        std::shared_ptr<PortalUserProvider> users
     )
-        : client_(std::move(client))
+        : client_(std::move(client)),
+          users_(std::move(users))
     {
     }
 
@@ -97,6 +100,13 @@ public:
                removed->asBool();
     }
 
+    std::optional<PortalUser> owner(
+        const PortalProject& project
+    ) const override {
+        return users_->findById(project.ownerId);
+    }
+
 private:
     std::shared_ptr<drogular::GraphQLClient> client_;
+    std::shared_ptr<PortalUserProvider> users_;
 };

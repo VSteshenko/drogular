@@ -35,6 +35,12 @@
     <strong>{{ projectsStatusLabel }}:</strong> {{ projectStatus }}
 </p>
 
+@if(hasProjectOwner)
+<p>
+    <strong>Owner:</strong> {{ projectOwnerName }}
+</p>
+@endif
+
 <p>
     <a href="/projects/{{ projectId }}/edit">{{ projectsUpdate }}</a>
 </p>

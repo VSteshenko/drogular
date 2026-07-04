@@ -46,6 +46,7 @@ public:
         PortalProject project;
         project.title = context.requireForm<std::string>("title");
         project.status = context.requireForm<std::string>("status");
+        project.ownerId = 1;
 
         repository->create(
             project

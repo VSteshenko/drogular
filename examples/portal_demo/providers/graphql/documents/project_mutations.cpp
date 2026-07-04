@@ -27,7 +27,8 @@ drogular::gql::Mutation ProjectMutations::update(
                 .children({
                     drogular::gql::field("id"),
                     drogular::gql::field("title"),
-                    drogular::gql::field("status")
+                    drogular::gql::field("status"),
+                    drogular::gql::field("ownerId")
                 })
         );
 }

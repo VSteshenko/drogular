@@ -18,7 +18,8 @@ TEST(PortalDatasetGraphQLClientTests, FindsProjectByIdFromDataset) {
     dataset->addProject({
         .id = 1,
         .title = "Customer Portal",
-        .status = "active"
+        .status = "active",
+        .ownerId = 1
     });
 
     PortalDatasetGraphQLClient client(dataset);
@@ -45,6 +46,7 @@ TEST(PortalDatasetGraphQLClientTests, CreatesProjectInDataset) {
     PortalProject project;
     project.title = "New Project";
     project.status = "active";
+    project.ownerId = 1;
 
     const auto response =
         client.execute(
@@ -54,6 +56,8 @@ TEST(PortalDatasetGraphQLClientTests, CreatesProjectInDataset) {
 
     ASSERT_EQ(dataset->projects().size(), 1);
     EXPECT_EQ(dataset->projects()[0].title, "New Project");
+    EXPECT_EQ(dataset->projects()[0].status, "active");
+    EXPECT_EQ(dataset->projects()[0].ownerId, 1);
 
     const auto created =
         response.field("createProject");
@@ -69,7 +73,8 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesProjectInDataset) {
     dataset->addProject({
         .id = 1,
         .title = "Old Project",
-        .status = "active"
+        .status = "active",
+        .ownerId = 1
     });
 
     PortalDatasetGraphQLClient client(dataset);
@@ -78,6 +83,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesProjectInDataset) {
     project.id = 1;
     project.title = "Updated Project";
     project.status = "done";
+    project.ownerId = 1;
 
     const auto response =
         client.execute(
@@ -88,6 +94,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesProjectInDataset) {
     ASSERT_EQ(dataset->projects().size(), 1);
     EXPECT_EQ(dataset->projects()[0].title, "Updated Project");
     EXPECT_EQ(dataset->projects()[0].status, "done");
+    EXPECT_EQ(dataset->projects()[0].ownerId, 1);
 
     const auto updated =
         response.field("updateProject");
@@ -103,7 +110,8 @@ TEST(PortalDatasetGraphQLClientTests, RemovesProjectFromDataset) {
     dataset->addProject({
         .id = 1,
         .title = "Project",
-        .status = "active"
+        .status = "active",
+        .ownerId = 1
     });
 
     PortalDatasetGraphQLClient client(dataset);

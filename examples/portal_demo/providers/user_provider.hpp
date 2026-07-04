@@ -28,4 +28,8 @@ public:
     virtual bool update(
         PortalUser user
     ) = 0;
+
+    virtual std::optional<PortalUser> findById(
+        int id
+    ) const = 0;
 };

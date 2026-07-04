@@ -28,7 +28,8 @@ drogular::gql::Query ProjectQueries::findById(
                 .children({
                     drogular::gql::field("id"),
                     drogular::gql::field("title"),
-                    drogular::gql::field("status")
+                    drogular::gql::field("status"),
+                    drogular::gql::field("ownerId")
                 })
         );
 }

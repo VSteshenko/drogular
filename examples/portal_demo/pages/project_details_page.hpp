@@ -63,6 +63,21 @@ public:
         context.set("projectId", project->id);
         context.set("projectTitle", project->title);
         context.set("projectStatus", project->status);
+
+        const auto owner =
+            repository->owner(*project);
+
+        context.set(
+            "projectOwnerName",
+            owner.has_value()
+                ? owner->username
+                : std::string("")
+        );
+
+        context.set(
+            "hasProjectOwner",
+            owner.has_value()
+        );
     }
 
     std::string templatePath() const override {

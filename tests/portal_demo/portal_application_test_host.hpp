@@ -26,30 +26,34 @@ public:
                 std::move(dataset)
             )
         ),
-          graphQLClient_(
+        graphQLClient_(
             std::make_shared<PortalDatasetGraphQLClient>(
                 dataset_
             )
-          )
+        )
     {
         services_.add<drogular::SessionStore>(
             drogular::ServiceLifetime::Singleton
         );
 
+        auto userProvider =
+            std::make_shared<PortalGraphQLUserProvider>(
+                graphQLClient_
+            );
+
         services_.addFactory<PortalUserProvider>(
             drogular::ServiceLifetime::Singleton,
-            [client = graphQLClient_] {
-                return std::make_shared<PortalGraphQLUserProvider>(
-                    client
-                );
+            [userProvider] {
+                return userProvider;
             }
         );
 
         services_.addFactory<PortalProjectProvider>(
             drogular::ServiceLifetime::Singleton,
-            [client = graphQLClient_] {
+            [client = graphQLClient_, userProvider] {
                 return std::make_shared<PortalGraphQLProjectProvider>(
-                    client
+                    client,
+                    userProvider
                 );
             }
         );
