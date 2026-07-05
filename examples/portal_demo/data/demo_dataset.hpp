@@ -8,6 +8,16 @@ public:
         PortalDataset dataset;
 
         dataset
+            .addRole({
+                .id = 1,
+                .code = "admin",
+                .title = "Administrator"
+            })
+            .addRole({
+                .id = 2,
+                .code = "user",
+                .title = "User"
+            })
             .addUser({
                 .id = 1,
                 .username = "admin",

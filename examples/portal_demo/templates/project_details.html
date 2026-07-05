@@ -38,6 +38,9 @@
 @if(hasProjectOwner)
 <p>
     <strong>Owner:</strong> {{ projectOwnerName }}
+    @if(projectOwnerRole)
+    ({{ projectOwnerRole }})
+    @endif
 </p>
 @endif
 

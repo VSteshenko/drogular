@@ -2,6 +2,7 @@
 
 #include "../providers/project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
+#include "../providers/role_provider.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -78,6 +79,22 @@ public:
             "hasProjectOwner",
             owner.has_value()
         );
+
+        auto roleProvider =
+            context.requireService<PortalRoleProvider>();
+
+        const auto ownerRole =
+            owner.has_value()
+                ? roleProvider->findByCode(owner->role)
+                : std::nullopt;
+
+        context.set(
+            "projectOwnerRole",
+            ownerRole.has_value()
+                ? ownerRole->title
+                : std::string("")
+        );
+
     }
 
     std::string templatePath() const override {

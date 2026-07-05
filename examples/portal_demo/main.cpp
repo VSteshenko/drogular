@@ -19,6 +19,7 @@
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "providers/graphql/portal_dataset_graphql_adapter.hpp"
 #include "providers/graphql/portal_graphql_user_provider.hpp"
+#include "providers/graphql/portal_graphql_role_provider.hpp"
 #include "data/demo_dataset.hpp"
 
 #include <drogular/app.hpp>
@@ -69,6 +70,15 @@ int main() {
         std::make_shared<PortalGraphQLUserProvider>(
             graphQLClient
         );
+
+    app.services().addFactory<PortalRoleProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [dataset] {
+            return std::make_shared<PortalGraphQLRoleProvider>(
+                dataset
+            );
+        }
+    );
 
     app.services().addFactory<PortalUserProvider>(
         drogular::ServiceLifetime::Singleton,

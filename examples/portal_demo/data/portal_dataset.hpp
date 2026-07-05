@@ -2,12 +2,28 @@
 
 #include "../portal_project.hpp"
 #include "../portal_user.hpp"
+#include "../portal_role.hpp"
 
 #include <utility>
 #include <vector>
 
 class PortalDataset {
 public:
+    PortalDataset& addRole(
+        PortalRole role
+    ) {
+        roles_.push_back(std::move(role));
+        return *this;
+    }
+
+    std::vector<PortalRole>& roles() {
+        return roles_;
+    }
+
+    const std::vector<PortalRole>& roles() const {
+        return roles_;
+    }
+
     PortalDataset& addUser(
         PortalUser user
     ) {
@@ -46,6 +62,7 @@ public:
     }
 
 private:
+    std::vector<PortalRole> roles_;
     std::vector<PortalUser> users_;
     std::vector<PortalProject> projects_;
 };
