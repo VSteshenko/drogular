@@ -3,7 +3,7 @@
 #include "../../data/portal_dataset.hpp"
 #include "../../portal_project.hpp"
 
-#include <drogular/graphql_client.hpp>
+#include <drogular/static_graphql_client.hpp>
 
 #include <json/value.h>
 #include <memory>

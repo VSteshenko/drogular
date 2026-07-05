@@ -1,6 +1,6 @@
 #include <drogular/component.hpp>
 #include <drogular/services.hpp>
-#include <drogular/graphql_client.hpp>
+#include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql.hpp>
 
 #include <gtest/gtest.h>

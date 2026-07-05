@@ -1,7 +1,7 @@
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_provider.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_user_provider.hpp"
 
-#include <drogular/graphql_client.hpp>
+#include <drogular/static_graphql_client.hpp>
 
 #include <gtest/gtest.h>
 

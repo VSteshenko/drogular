@@ -2,7 +2,7 @@
 
 #include "../../data/portal_dataset.hpp"
 
-#include <drogular/graphql_client.hpp>
+#include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
 
 #include <algorithm>

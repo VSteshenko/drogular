@@ -1,4 +1,4 @@
-#include <drogular/graphql_client.hpp>
+#include <drogular/static_graphql_client.hpp>
 #include <drogular/services.hpp>
 #include <drogular/inject.hpp>
 
