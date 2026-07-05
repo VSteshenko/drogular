@@ -2,6 +2,8 @@
 
 #include "portal_dataset.hpp"
 
+#include <stdexcept>
+
 class DemoDataset {
 public:
     static PortalDataset create() {
@@ -42,6 +44,15 @@ public:
                 .status = "paused",
                 .ownerId = 2
             });
+
+        const auto validation =
+            dataset.validate();
+
+        if (!validation.valid()) {
+            throw std::runtime_error(
+                validation.errors().front()
+            );
+        }
 
         return dataset;
     }
