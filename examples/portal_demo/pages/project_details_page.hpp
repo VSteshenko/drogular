@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../providers/project_type_provider.hpp"
 #include "../providers/project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../providers/role_provider.hpp"
@@ -95,6 +96,25 @@ public:
                 : std::string("")
         );
 
+        auto projectTypeProvider =
+            context.requireService<PortalProjectTypeProvider>();
+
+        const auto projectType =
+            projectTypeProvider->findById(
+                project->projectTypeId
+            );
+
+        context.set(
+            "hasProjectType",
+            projectType.has_value()
+        );
+
+        context.set(
+            "projectTypeTitle",
+            projectType.has_value()
+                ? projectType->title
+                : std::string("")
+        );
     }
 
     std::string templatePath() const override {

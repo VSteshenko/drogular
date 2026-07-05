@@ -2,8 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(PortalDatasetTests, ValidatesValidDataset)
-{
+TEST(PortalDatasetTests, ValidatesValidDataset) {
     const auto dataset =
         DemoDataset::create();
 
@@ -12,8 +11,7 @@ TEST(PortalDatasetTests, ValidatesValidDataset)
     );
 }
 
-TEST(PortalDatasetTests, DetectsDuplicateUserIds)
-{
+TEST(PortalDatasetTests, DetectsDuplicateUserIds) {
     PortalDataset dataset;
 
     dataset
@@ -26,8 +24,7 @@ TEST(PortalDatasetTests, DetectsDuplicateUserIds)
     EXPECT_FALSE(validation.valid());
 }
 
-TEST(PortalDatasetTests, DetectsDuplicateRoleCodes)
-{
+TEST(PortalDatasetTests, DetectsDuplicateRoleCodes) {
     PortalDataset dataset;
 
     dataset
@@ -39,8 +36,7 @@ TEST(PortalDatasetTests, DetectsDuplicateRoleCodes)
     );
 }
 
-TEST(PortalDatasetTests, DetectsMissingProjectOwner)
-{
+TEST(PortalDatasetTests, DetectsMissingProjectOwner) {
     PortalDataset dataset;
 
     dataset.addProject({
@@ -53,4 +49,40 @@ TEST(PortalDatasetTests, DetectsMissingProjectOwner)
     EXPECT_FALSE(
         dataset.validate().valid()
     );
+}
+
+TEST(PortalDatasetTests, DetectsDuplicateProjectTypeIds) {
+    PortalDataset dataset;
+
+    dataset
+        .addProjectType({.id = 1, .code = "customer", .title = "Customer"})
+        .addProjectType({.id = 1, .code = "internal", .title = "Internal"});
+
+    EXPECT_FALSE(dataset.validate().valid());
+}
+
+TEST(PortalDatasetTests, DetectsDuplicateProjectTypeCodes) {
+    PortalDataset dataset;
+
+    dataset
+        .addProjectType({.id = 1, .code = "customer", .title = "Customer"})
+        .addProjectType({.id = 2, .code = "customer", .title = "Copy"});
+
+    EXPECT_FALSE(dataset.validate().valid());
+}
+
+TEST(PortalDatasetTests, DetectsMissingProjectType) {
+    PortalDataset dataset;
+
+    dataset
+        .addUser({.id = 1, .username = "admin", .password = "x", .role = "admin"})
+        .addProject({
+            .id = 1,
+            .title = "Project",
+            .status = "active",
+            .ownerId = 1,
+            .projectTypeId = 99
+        });
+
+    EXPECT_FALSE(dataset.validate().valid());
 }

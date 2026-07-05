@@ -11,7 +11,9 @@ drogular::gql::Mutation ProjectMutations::create(
                 .children({
                     drogular::gql::field("id"),
                     drogular::gql::field("title"),
-                    drogular::gql::field("status")
+                    drogular::gql::field("status"),
+                    drogular::gql::field("ownerId"),
+                    drogular::gql::field("projectTypeId")
                 })
         );
 }
@@ -28,7 +30,8 @@ drogular::gql::Mutation ProjectMutations::update(
                     drogular::gql::field("id"),
                     drogular::gql::field("title"),
                     drogular::gql::field("status"),
-                    drogular::gql::field("ownerId")
+                    drogular::gql::field("ownerId"),
+                    drogular::gql::field("projectTypeId")
                 })
         );
 }

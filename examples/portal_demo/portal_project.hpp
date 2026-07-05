@@ -7,4 +7,5 @@ struct PortalProject {
     std::string title;
     std::string status;
     int ownerId = 0;
+    int projectTypeId = 0;
 };

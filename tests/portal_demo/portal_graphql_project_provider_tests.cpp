@@ -15,12 +15,14 @@ TEST(PortalGraphQLProjectProviderTests, ReadsProjects) {
     first["title"] = "Customer Portal";
     first["status"] = "active";
     first["ownerId"] = 1;
+    first["projectTypeId"] = 1;
 
     Json::Value second(Json::objectValue);
     second["id"] = 2;
     second["title"] = "Internal Dashboard";
     second["status"] = "paused";
     second["ownerId"] = 2;
+    second["projectTypeId"] = 2;
 
     projects.append(first);
     projects.append(second);
@@ -63,6 +65,7 @@ TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
     project["title"] = "Portal Demo";
     project["status"] = "done";
     project["ownerId"] = 1;
+    project["projectTypeId"] = 1;
 
     Json::Value data(Json::objectValue);
     data["project"] = project;
@@ -89,6 +92,7 @@ TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
     EXPECT_EQ(result->title, "Portal Demo");
     EXPECT_EQ(result->status, "done");
     EXPECT_EQ(result->ownerId, 1);
+    EXPECT_EQ(result->projectTypeId, 1);
 
     ASSERT_EQ(client->requestCount(), 1);
 
@@ -129,6 +133,7 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
     created["title"] = "New Project";
     created["status"] = "active";
     created["ownerId"] = 1;
+    created["projectTypeId"] = 1;
 
     Json::Value data(Json::objectValue);
     data["createProject"] = created;
@@ -152,6 +157,7 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
     project.title = "New Project";
     project.status = "active";
     project.ownerId = 1;
+    project.projectTypeId = 1;
 
     const auto result = provider.create(project);
 
@@ -159,6 +165,7 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
     EXPECT_EQ(result.title, "New Project");
     EXPECT_EQ(result.status, "active");
     EXPECT_EQ(result.ownerId, 1);
+    EXPECT_EQ(result.projectTypeId, 1);
 
     ASSERT_EQ(client->requestCount(), 1);
 
@@ -174,6 +181,7 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
     updated["title"] = "Updated Project";
     updated["status"] = "done";
     updated["ownerId"] = 1;
+    updated["projectTypeId"] = 1;
 
     Json::Value data(Json::objectValue);
     data["updateProject"] = updated;
@@ -198,6 +206,7 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
     project.title = "Updated Project";
     project.status = "done";
     project.ownerId = 1;
+    project.projectTypeId = 1;
 
     EXPECT_TRUE(provider.update(project));
 

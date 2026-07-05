@@ -18,8 +18,7 @@ TEST(PortalDatasetGraphQLClientTests, FindsProjectByIdFromDataset) {
     dataset->addProject({
         .id = 1,
         .title = "Customer Portal",
-        .status = "active",
-        .ownerId = 1
+        .status = "active"
     });
 
     PortalDatasetGraphQLClient client(dataset);

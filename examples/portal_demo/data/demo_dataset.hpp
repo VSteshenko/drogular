@@ -32,17 +32,29 @@ public:
                 .password = "user",
                 .role = "user"
             })
+            .addProjectType({
+                .id = 1,
+                .code = "customer",
+                .title = "Customer Project"
+            })
+            .addProjectType({
+                .id = 2,
+                .code = "internal",
+                .title = "Internal Project"
+            })
             .addProject({
                 .id = 1,
                 .title = "Customer Portal",
                 .status = "active",
-                .ownerId = 1
+                .ownerId = 1,
+                .projectTypeId = 1
             })
             .addProject({
                 .id = 2,
                 .title = "Internal Dashboard",
                 .status = "paused",
-                .ownerId = 2
+                .ownerId = 2,
+                .projectTypeId = 2
             });
 
         const auto validation =

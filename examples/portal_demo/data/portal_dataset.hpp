@@ -3,6 +3,7 @@
 #include "../portal_project.hpp"
 #include "../portal_user.hpp"
 #include "../portal_role.hpp"
+#include "../portal_project_type.hpp"
 #include "portal_dataset_validation_result.hpp"
 
 #include <set>
@@ -64,8 +65,25 @@ public:
         return projects_;
     }
 
-    PortalDatasetValidationResult validate() const
+    PortalDataset& addProjectType(
+        PortalProjectType projectType
+    )
     {
+        projectTypes_.push_back(std::move(projectType));
+        return *this;
+    }
+
+    std::vector<PortalProjectType>& projectTypes()
+    {
+        return projectTypes_;
+    }
+
+    const std::vector<PortalProjectType>& projectTypes() const
+    {
+        return projectTypes_;
+    }
+
+    PortalDatasetValidationResult validate() const {
         PortalDatasetValidationResult result;
 
         validateUserIds(result);
@@ -74,6 +92,9 @@ public:
         validateRoleCodes(result);
         validateProjectIds(result);
         validateProjectOwners(result);
+        validateProjectTypeIds(result);
+        validateProjectTypeCodes(result);
+        validateProjectTypes(result);
 
         return result;
     }
@@ -82,6 +103,7 @@ private:
     std::vector<PortalRole> roles_;
     std::vector<PortalUser> users_;
     std::vector<PortalProject> projects_;
+    std::vector<PortalProjectType> projectTypes_;
 
     void validateUserIds(
         PortalDatasetValidationResult& result
@@ -187,6 +209,70 @@ private:
                 result.addError(
                     "Project owner does not exist: " +
                     std::to_string(project.ownerId)
+                );
+            }
+        }
+    }
+
+    void validateProjectTypeIds(
+        PortalDatasetValidationResult& result
+    ) const {
+        std::set<int> ids;
+
+        for (const auto& projectType : projectTypes_) {
+            if (projectType.id <= 0) {
+                result.addError("Project type id must be positive");
+                continue;
+            }
+
+            if (!ids.insert(projectType.id).second) {
+                result.addError(
+                    "Duplicate project type id: " +
+                    std::to_string(projectType.id)
+                );
+            }
+        }
+    }
+
+    void validateProjectTypeCodes(
+        PortalDatasetValidationResult& result
+    ) const {
+        std::set<std::string> codes;
+
+        for (const auto& projectType : projectTypes_) {
+            if (projectType.code.empty()) {
+                result.addError("Project type code must not be empty");
+                continue;
+            }
+
+            if (!codes.insert(projectType.code).second) {
+                result.addError(
+                    "Duplicate project type code: " +
+                    projectType.code
+                );
+            }
+        }
+    }
+
+    void validateProjectTypes(
+        PortalDatasetValidationResult& result
+    ) const {
+        std::set<int> projectTypeIds;
+
+        for (const auto& projectType : projectTypes_) {
+            projectTypeIds.insert(projectType.id);
+        }
+
+        for (const auto& project : projects_) {
+            if (project.projectTypeId <= 0) {
+                result.addError("Project projectTypeId must be positive");
+                continue;
+            }
+
+            if (!projectTypeIds.contains(project.projectTypeId)) {
+                result.addError(
+                    "Project type does not exist: " +
+                    std::to_string(project.projectTypeId)
                 );
             }
         }

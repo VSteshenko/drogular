@@ -9,7 +9,9 @@ drogular::gql::Query ProjectQueries::all() {
                 .children({
                     drogular::gql::field("id"),
                     drogular::gql::field("title"),
-                    drogular::gql::field("status")
+                    drogular::gql::field("status"),
+                    drogular::gql::field("ownerId"),
+                    drogular::gql::field("projectTypeId")
                 })
         );
 }
@@ -29,7 +31,8 @@ drogular::gql::Query ProjectQueries::findById(
                     drogular::gql::field("id"),
                     drogular::gql::field("title"),
                     drogular::gql::field("status"),
-                    drogular::gql::field("ownerId")
+                    drogular::gql::field("ownerId"),
+                    drogular::gql::field("projectTypeId")
                 })
         );
 }

@@ -27,25 +27,35 @@ public:
         const auto text =
             query.toString();
 
-        if (text.find("projects") != std::string::npos) {
+        if (isQuery(text, "PortalProjectTypes")) {
+            return projectTypesResponse();
+        }
+
+        if (isQuery(text, "PortalProjectTypeById")) {
+            return projectTypeResponse(
+                variables.json()["id"].asInt()
+            );
+        }
+
+        if (isQuery(text, "PortalProjects")) {
             return projectsResponse();
         }
 
-        if (text.find("project") != std::string::npos) {
+        if (isQuery(text, "PortalProjectById")) {
             return projectResponse(
                 variables.json()["id"].asInt()
             );
         }
 
-        if (text.find("userByCredentials") != std::string::npos) {
+        if (isQuery(text, "PortalUsers")) {
+            return usersResponse();
+        }
+
+        if (isQuery(text, "PortalUserByCredentials")) {
             return userByCredentialsResponse(
                 variables.json()["username"].asString(),
                 variables.json()["password"].asString()
             );
-        }
-
-        if (text.find("users") != std::string::npos) {
-            return usersResponse();
         }
 
         return emptyResponse();
@@ -58,32 +68,32 @@ public:
         const auto text =
             mutation.toString();
 
-        if (text.find("createProject") != std::string::npos) {
+        if (isMutation(text, "CreatePortalProject")) {
             return createProjectResponse(
                 variables.json()["project"]
             );
         }
 
-        if (text.find("updateProject") != std::string::npos) {
+        if (isMutation(text, "UpdatePortalProject")) {
             return updateProjectResponse(
                 variables.json()["project"]
             );
         }
 
-        if (text.find("removeProject") != std::string::npos) {
+        if (isMutation(text, "RemovePortalProject")) {
             return removeProjectResponse(
                 variables.json()["id"].asInt()
             );
         }
 
-        if (text.find("updateUser") != std::string::npos) {
-            return updateUserResponse(
+        if (isMutation(text, "CreatePortalUser")) {
+            return createUserResponse(
                 variables.json()["user"]
             );
         }
 
-        if (text.find("createUser") != std::string::npos) {
-            return createUserResponse(
+        if (isMutation(text, "UpdatePortalUser")) {
+            return updateUserResponse(
                 variables.json()["user"]
             );
         }
@@ -98,6 +108,38 @@ public:
     }
 
 private:
+    static bool hasOperationName(
+        const std::string& text,
+        const std::string& type,
+        const std::string& name
+    ) {
+        return text.starts_with(
+            type + " " + name
+        );
+    }
+
+    static bool isQuery(
+        const std::string& text,
+        const std::string& name
+    ) {
+        return hasOperationName(
+            text,
+            "query",
+            name
+        );
+    }
+
+    static bool isMutation(
+        const std::string& text,
+        const std::string& name
+    ) {
+        return hasOperationName(
+            text,
+            "mutation",
+            name
+        );
+    }
+
     static Json::Value projectJson(
         const PortalProject& project
     ) {
@@ -107,6 +149,7 @@ private:
         value["title"] = project.title;
         value["status"] = project.status;
         value["ownerId"] = project.ownerId;
+        value["projectTypeId"] = project.projectTypeId;
 
         return value;
     }
@@ -153,6 +196,8 @@ private:
             value["status"].asString();
         project.ownerId =
             value["ownerId"].asInt();
+        project.projectTypeId =
+            value["projectTypeId"].asInt();
 
         dataset_->projects().push_back(project);
 
@@ -179,6 +224,8 @@ private:
                     value["status"].asString();
                 project.ownerId =
                     value["ownerId"].asInt();
+                project.projectTypeId =
+                    value["projectTypeId"].asInt();
 
                 data["updateProject"] =
                     projectJson(project);
@@ -337,6 +384,47 @@ private:
 
     static drogular::GraphQLResponse emptyResponse() {
         return response(Json::Value(Json::objectValue));
+    }
+
+    static Json::Value projectTypeJson(
+        const PortalProjectType& type
+    ) {
+        Json::Value value(Json::objectValue);
+
+        value["id"] = type.id;
+        value["code"] = type.code;
+        value["title"] = type.title;
+
+        return value;
+    }
+
+    drogular::GraphQLResponse projectTypesResponse() const {
+        Json::Value values(Json::arrayValue);
+
+        for (const auto& type : dataset_->projectTypes()) {
+            values.append(projectTypeJson(type));
+        }
+
+        Json::Value data(Json::objectValue);
+        data["projectTypes"] = values;
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse projectTypeResponse(
+        int id
+    ) const {
+        Json::Value data(Json::objectValue);
+        data["projectType"] = Json::Value();
+
+        for (const auto& type : dataset_->projectTypes()) {
+            if (type.id == id) {
+                data["projectType"] = projectTypeJson(type);
+                break;
+            }
+        }
+
+        return response(data);
     }
 
     std::shared_ptr<PortalDataset> dataset_;

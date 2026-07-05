@@ -43,6 +43,11 @@
     @endif
 </p>
 @endif
+@if(hasProjectType)
+<p>
+    <strong>Type:</strong> {{ projectTypeTitle }}
+</p>
+@endif
 
 <p>
     <a href="/projects/{{ projectId }}/edit">{{ projectsUpdate }}</a>
