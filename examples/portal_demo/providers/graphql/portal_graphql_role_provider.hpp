@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../../data/portal_dataset.hpp"
 #include "../role_provider.hpp"
+#include "documents/role_queries.hpp"
+#include "mappers/role_mapper.hpp"
 
 #include <memory>
 
@@ -10,28 +11,42 @@ class PortalGraphQLRoleProvider final
 {
 public:
     explicit PortalGraphQLRoleProvider(
-        std::shared_ptr<PortalDataset> dataset
+        std::shared_ptr<drogular::GraphQLClient> client
     )
-        : dataset_(std::move(dataset))
+        : client_(std::move(client))
     {
     }
 
     std::vector<PortalRole> all() const override {
-        return dataset_->roles();
+        const auto response =
+            client_->execute(
+                RoleQueries::all()
+            );
+
+        const auto roles =
+            response.field("roles");
+
+        if (!roles.has_value()) {
+            return {};
+        }
+
+        return RoleMapper::fromList(*roles);
     }
 
     std::optional<PortalRole> findByCode(
         const std::string& code
     ) const override {
-        for (const auto& role : dataset_->roles()) {
-            if (role.code == code) {
-                return role;
-            }
-        }
+        const auto response =
+            client_->execute(
+                RoleQueries::findByCode(code),
+                RoleMapper::rolesVariables(code)
+            );
 
-        return std::nullopt;
+        return RoleMapper::optionalRole(
+            response.field("roleByCode")
+        );
     }
 
 private:
-    std::shared_ptr<PortalDataset> dataset_;
+    std::shared_ptr<drogular::GraphQLClient> client_;
 };

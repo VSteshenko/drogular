@@ -1,14 +1,16 @@
 #include "project_type_queries.hpp"
+#include "../../../data/portal_graphql_selection_builder.hpp"
+#include "../../../data/portal_schema.hpp"
 
 drogular::gql::Query ProjectTypeQueries::all() {
     return drogular::gql::query("PortalProjectTypes")
         .select(
             drogular::gql::field("projectTypes")
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("code"),
-                    drogular::gql::field("title")
-                })
+            .children(
+                PortalGraphQLSelectionBuilder::from(
+                    PortalSchema::projectTypes()
+                )
+            )
         );
 }
 
@@ -18,10 +20,10 @@ drogular::gql::Query ProjectTypeQueries::findById() {
         .select(
             drogular::gql::field("projectType")
                 .arg("id", drogular::gql::variable("id"))
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("code"),
-                    drogular::gql::field("title")
-                })
+                .children(
+                    PortalGraphQLSelectionBuilder::from(
+                        PortalSchema::projectTypes()
+                    )
+                )
         );
 }

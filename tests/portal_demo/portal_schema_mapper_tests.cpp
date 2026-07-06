@@ -4,8 +4,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(PortalSchemaMapperTests, MapsUserToJson)
-{
+TEST(PortalSchemaMapperTests, MapsUserToJson) {
     PortalUser user;
     user.id = 1;
     user.username = "admin";

@@ -49,6 +49,16 @@ public:
             );
         }
 
+        if (isQuery(text, "PortalRoles")) {
+            return rolesResponse();
+        }
+
+        if (isQuery(text, "PortalRoleByCode")) {
+            return roleByCodeResponse(
+                variables.json()["code"].asString()
+            );
+        }
+
         if (isQuery(text, "PortalUsers")) {
             return usersResponse();
         }
@@ -279,6 +289,36 @@ private:
             PortalSchema::users(),
             user
         );
+    }
+
+    drogular::GraphQLResponse rolesResponse() const {
+        Json::Value roles(Json::arrayValue);
+
+        for (const auto& role : dataset_->roles()) {
+            roles.append(roleJson(role));
+        }
+
+        Json::Value data(Json::objectValue);
+        data["roles"] = roles;
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse roleByCodeResponse(
+        const std::string& code
+    ) const {
+        Json::Value data(Json::objectValue);
+        data["roleByCode"] = Json::Value();
+
+        for (const auto& role : dataset_->roles()) {
+            if (role.code == code) {
+                data["roleByCode"] =
+                    roleJson(role);
+                break;
+            }
+        }
+
+        return response(data);
     }
 
     drogular::GraphQLResponse usersResponse() const {

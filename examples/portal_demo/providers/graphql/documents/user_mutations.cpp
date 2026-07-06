@@ -1,4 +1,6 @@
 #include "user_mutations.hpp"
+#include "../../../data/portal_graphql_selection_builder.hpp"
+#include "../../../data/portal_schema.hpp"
 
 drogular::gql::Mutation UserMutations::create(
     const PortalUser&
@@ -8,12 +10,11 @@ drogular::gql::Mutation UserMutations::create(
         .select(
             drogular::gql::field("createUser")
                 .arg("user", drogular::gql::variable("user"))
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("username"),
-                    drogular::gql::field("password"),
-                    drogular::gql::field("role")
-                })
+                .children(
+                    PortalGraphQLSelectionBuilder::from(
+                        PortalSchema::users()
+                    )
+                )
         );
 }
 
@@ -25,11 +26,10 @@ drogular::gql::Mutation UserMutations::update(
         .select(
             drogular::gql::field("updateUser")
                 .arg("user", drogular::gql::variable("user"))
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("username"),
-                    drogular::gql::field("password"),
-                    drogular::gql::field("role")
-                })
+                .children(
+                    PortalGraphQLSelectionBuilder::from(
+                        PortalSchema::users()
+                    )
+                )
         );
 }

@@ -2,8 +2,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(PortalSchemaTests, DefinesUserSchema)
-{
+TEST(PortalSchemaTests, DefinesUserSchema) {
     const auto schema =
         PortalSchema::users();
 

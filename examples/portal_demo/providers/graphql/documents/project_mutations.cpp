@@ -1,4 +1,6 @@
 #include "project_mutations.hpp"
+#include "../../../data/portal_graphql_selection_builder.hpp"
+#include "../../../data/portal_schema.hpp"
 
 drogular::gql::Mutation ProjectMutations::create(
     const PortalProject&
@@ -8,13 +10,11 @@ drogular::gql::Mutation ProjectMutations::create(
         .select(
             drogular::gql::field("createProject")
                 .arg("project", drogular::gql::variable("project"))
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("title"),
-                    drogular::gql::field("status"),
-                    drogular::gql::field("ownerId"),
-                    drogular::gql::field("projectTypeId")
-                })
+                .children(
+                    PortalGraphQLSelectionBuilder::from(
+                        PortalSchema::projects()
+                    )
+                )
         );
 }
 
@@ -26,13 +26,11 @@ drogular::gql::Mutation ProjectMutations::update(
         .select(
             drogular::gql::field("updateProject")
                 .arg("project", drogular::gql::variable("project"))
-                .children({
-                    drogular::gql::field("id"),
-                    drogular::gql::field("title"),
-                    drogular::gql::field("status"),
-                    drogular::gql::field("ownerId"),
-                    drogular::gql::field("projectTypeId")
-                })
+                .children(
+                    PortalGraphQLSelectionBuilder::from(
+                        PortalSchema::projects()
+                    )
+                )
         );
 }
 

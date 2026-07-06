@@ -74,9 +74,9 @@ int main() {
 
     app.services().addFactory<PortalRoleProvider>(
         drogular::ServiceLifetime::Singleton,
-        [dataset] {
+        [graphQLClient] {
             return std::make_shared<PortalGraphQLRoleProvider>(
-                dataset
+                graphQLClient
             );
         }
     );
