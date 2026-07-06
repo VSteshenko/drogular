@@ -87,6 +87,7 @@ add_executable(drogular_tests
     portal_demo/portal_dataset_tests.cpp
     portal_demo/portal_schema_tests.cpp
     portal_demo/portal_dataset_schema_validator_tests.cpp
+    portal_demo/portal_schema_mapper_tests.cpp
 )
 
 target_link_libraries(drogular_tests

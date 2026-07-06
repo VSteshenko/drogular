@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../data/portal_dataset.hpp"
+#include "../../data/portal_schema.hpp"
+#include "../../data/portal_schema_mapper.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
@@ -143,15 +145,10 @@ private:
     static Json::Value projectJson(
         const PortalProject& project
     ) {
-        Json::Value value(Json::objectValue);
-
-        value["id"] = project.id;
-        value["title"] = project.title;
-        value["status"] = project.status;
-        value["ownerId"] = project.ownerId;
-        value["projectTypeId"] = project.projectTypeId;
-
-        return value;
+        return PortalSchemaMapper::toJson(
+            PortalSchema::projects(),
+            project
+        );
     }
 
     drogular::GraphQLResponse projectsResponse() const {
@@ -278,14 +275,10 @@ private:
     static Json::Value userJson(
         const PortalUser& user
     ) {
-        Json::Value value(Json::objectValue);
-
-        value["id"] = user.id;
-        value["username"] = user.username;
-        value["password"] = user.password;
-        value["role"] = user.role;
-
-        return value;
+        return PortalSchemaMapper::toJson(
+            PortalSchema::users(),
+            user
+        );
     }
 
     drogular::GraphQLResponse usersResponse() const {
@@ -389,13 +382,10 @@ private:
     static Json::Value projectTypeJson(
         const PortalProjectType& type
     ) {
-        Json::Value value(Json::objectValue);
-
-        value["id"] = type.id;
-        value["code"] = type.code;
-        value["title"] = type.title;
-
-        return value;
+        return PortalSchemaMapper::toJson(
+            PortalSchema::projectTypes(),
+            type
+        );
     }
 
     drogular::GraphQLResponse projectTypesResponse() const {
@@ -425,6 +415,15 @@ private:
         }
 
         return response(data);
+    }
+
+    static Json::Value roleJson(
+        const PortalRole& role
+    ) {
+        return PortalSchemaMapper::toJson(
+            PortalSchema::roles(),
+            role
+        );
     }
 
     std::shared_ptr<PortalDataset> dataset_;

@@ -5,7 +5,6 @@
 #include <drogular/graphql_variables.hpp>
 
 #include <json/value.h>
-
 #include <optional>
 #include <vector>
 

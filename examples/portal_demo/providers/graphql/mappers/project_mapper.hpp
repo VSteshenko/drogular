@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../../portal_project.hpp"
+#include "../../../data/portal_schema.hpp"
+#include "../../../data/portal_schema_mapper.hpp"
 
 #include <drogular/graphql_variables.hpp>
 #include <drogular/graphql_response.hpp>
@@ -13,16 +15,11 @@ public:
     static drogular::GraphQLVariables toVariables(
         const PortalProject& project
     ) {
-        Json::Value value;
-
-        if (project.id > 0) {
-            value["id"] = project.id;
-        }
-
-        value["title"] = project.title;
-        value["status"] = project.status;
-        value["ownerId"] = project.ownerId;
-        value["projectTypeId"] = project.projectTypeId;
+        const auto value =
+            PortalSchemaMapper::toJson(
+                PortalSchema::projects(),
+                project
+            );
 
         drogular::GraphQLVariables variables;
 

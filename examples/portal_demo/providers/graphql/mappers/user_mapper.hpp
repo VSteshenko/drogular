@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../../portal_user.hpp"
+#include "../../../data/portal_schema.hpp"
+#include "../../../data/portal_schema_mapper.hpp"
 
 #include <drogular/graphql_variables.hpp>
 
@@ -27,14 +29,11 @@ public:
     static drogular::GraphQLVariables toVariables(
         const PortalUser& user
     ) {
-        Json::Value value(Json::objectValue);
-
-        if (user.id > 0) {
-            value["id"] = user.id;
-        }
-        value["username"] = user.username;
-        value["password"] = user.password;
-        value["role"] = user.role;
+        const auto value =
+            PortalSchemaMapper::toJson(
+                PortalSchema::users(),
+                user
+            );
 
         drogular::GraphQLVariables variables;
         variables.set("user", value);
