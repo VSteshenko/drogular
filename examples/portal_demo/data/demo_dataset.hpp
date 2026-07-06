@@ -1,6 +1,7 @@
 #pragma once
 
 #include "portal_dataset.hpp"
+#include "portal_dataset_schema_validator.hpp"
 
 #include <stdexcept>
 
@@ -58,7 +59,7 @@ public:
             });
 
         const auto validation =
-            dataset.validate();
+            PortalDatasetSchemaValidator::validate(dataset);
 
         if (!validation.valid()) {
             throw std::runtime_error(

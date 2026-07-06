@@ -7,7 +7,7 @@ TEST(PortalDatasetTests, ValidatesValidDataset) {
         DemoDataset::create();
 
     EXPECT_TRUE(
-        dataset.validate().valid()
+        PortalDatasetSchemaValidator::validate(dataset).valid()
     );
 }
 
@@ -19,7 +19,7 @@ TEST(PortalDatasetTests, DetectsDuplicateUserIds) {
         .addUser({.id = 1, .username = "user", .password = "x", .role = "user"});
 
     const auto validation =
-        dataset.validate();
+        PortalDatasetSchemaValidator::validate(dataset);
 
     EXPECT_FALSE(validation.valid());
 }
@@ -32,7 +32,7 @@ TEST(PortalDatasetTests, DetectsDuplicateRoleCodes) {
         .addRole({.id = 2, .code = "admin", .title = "Admin Copy"});
 
     EXPECT_FALSE(
-        dataset.validate().valid()
+        PortalDatasetSchemaValidator::validate(dataset).valid()
     );
 }
 
@@ -47,7 +47,7 @@ TEST(PortalDatasetTests, DetectsMissingProjectOwner) {
     });
 
     EXPECT_FALSE(
-        dataset.validate().valid()
+        PortalDatasetSchemaValidator::validate(dataset).valid()
     );
 }
 
@@ -58,7 +58,9 @@ TEST(PortalDatasetTests, DetectsDuplicateProjectTypeIds) {
         .addProjectType({.id = 1, .code = "customer", .title = "Customer"})
         .addProjectType({.id = 1, .code = "internal", .title = "Internal"});
 
-    EXPECT_FALSE(dataset.validate().valid());
+    EXPECT_FALSE(
+        PortalDatasetSchemaValidator::validate(dataset).valid()
+    );
 }
 
 TEST(PortalDatasetTests, DetectsDuplicateProjectTypeCodes) {
@@ -68,7 +70,9 @@ TEST(PortalDatasetTests, DetectsDuplicateProjectTypeCodes) {
         .addProjectType({.id = 1, .code = "customer", .title = "Customer"})
         .addProjectType({.id = 2, .code = "customer", .title = "Copy"});
 
-    EXPECT_FALSE(dataset.validate().valid());
+    EXPECT_FALSE(
+        PortalDatasetSchemaValidator::validate(dataset).valid()
+    );
 }
 
 TEST(PortalDatasetTests, DetectsMissingProjectType) {
@@ -84,5 +88,7 @@ TEST(PortalDatasetTests, DetectsMissingProjectType) {
             .projectTypeId = 99
         });
 
-    EXPECT_FALSE(dataset.validate().valid());
+    EXPECT_FALSE(
+        PortalDatasetSchemaValidator::validate(dataset).valid()
+    );
 }

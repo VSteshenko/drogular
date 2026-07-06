@@ -4,12 +4,10 @@
 #include "../portal_user.hpp"
 #include "../portal_role.hpp"
 #include "../portal_project_type.hpp"
-#include "portal_dataset_validation_result.hpp"
 
 #include <set>
-#include <string>
-#include <utility>
 #include <vector>
+#include <utility>
 
 class PortalDataset {
 public:
@@ -52,8 +50,7 @@ public:
         return users_;
     }
 
-    std::vector<PortalUser>& users()
-    {
+    std::vector<PortalUser>& users() {
         return users_;
     }
 
@@ -67,36 +64,17 @@ public:
 
     PortalDataset& addProjectType(
         PortalProjectType projectType
-    )
-    {
+    ) {
         projectTypes_.push_back(std::move(projectType));
         return *this;
     }
 
-    std::vector<PortalProjectType>& projectTypes()
-    {
+    std::vector<PortalProjectType>& projectTypes() {
         return projectTypes_;
     }
 
-    const std::vector<PortalProjectType>& projectTypes() const
-    {
+    const std::vector<PortalProjectType>& projectTypes() const {
         return projectTypes_;
-    }
-
-    PortalDatasetValidationResult validate() const {
-        PortalDatasetValidationResult result;
-
-        validateUserIds(result);
-        validateUsernames(result);
-        validateRoleIds(result);
-        validateRoleCodes(result);
-        validateProjectIds(result);
-        validateProjectOwners(result);
-        validateProjectTypeIds(result);
-        validateProjectTypeCodes(result);
-        validateProjectTypes(result);
-
-        return result;
     }
 
 private:
@@ -104,177 +82,4 @@ private:
     std::vector<PortalUser> users_;
     std::vector<PortalProject> projects_;
     std::vector<PortalProjectType> projectTypes_;
-
-    void validateUserIds(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<int> ids;
-
-        for (const auto& user : users_) {
-            if (user.id <= 0) {
-                result.addError("User id must be positive");
-                continue;
-            }
-
-            if (!ids.insert(user.id).second) {
-                result.addError("Duplicate user id: " + std::to_string(user.id));
-            }
-        }
-    }
-
-    void validateUsernames(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<std::string> usernames;
-
-        for (const auto& user : users_) {
-            if (user.username.empty()) {
-                result.addError("User username must not be empty");
-                continue;
-            }
-
-            if (!usernames.insert(user.username).second) {
-                result.addError("Duplicate username: " + user.username);
-            }
-        }
-    }
-
-    void validateRoleIds(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<int> ids;
-
-        for (const auto& role : roles_) {
-            if (role.id <= 0) {
-                result.addError("Role id must be positive");
-                continue;
-            }
-
-            if (!ids.insert(role.id).second) {
-                result.addError("Duplicate role id: " + std::to_string(role.id));
-            }
-        }
-    }
-
-    void validateRoleCodes(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<std::string> codes;
-
-        for (const auto& role : roles_) {
-            if (role.code.empty()) {
-                result.addError("Role code must not be empty");
-                continue;
-            }
-
-            if (!codes.insert(role.code).second) {
-                result.addError("Duplicate role code: " + role.code);
-            }
-        }
-    }
-
-    void validateProjectIds(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<int> ids;
-
-        for (const auto& project : projects_) {
-            if (project.id <= 0) {
-                result.addError("Project id must be positive");
-                continue;
-            }
-
-            if (!ids.insert(project.id).second) {
-                result.addError("Duplicate project id: " + std::to_string(project.id));
-            }
-        }
-    }
-
-    void validateProjectOwners(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<int> userIds;
-
-        for (const auto& user : users_) {
-            userIds.insert(user.id);
-        }
-
-        for (const auto& project : projects_) {
-            if (project.ownerId <= 0) {
-                result.addError("Project ownerId must be positive");
-                continue;
-            }
-
-            if (!userIds.contains(project.ownerId)) {
-                result.addError(
-                    "Project owner does not exist: " +
-                    std::to_string(project.ownerId)
-                );
-            }
-        }
-    }
-
-    void validateProjectTypeIds(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<int> ids;
-
-        for (const auto& projectType : projectTypes_) {
-            if (projectType.id <= 0) {
-                result.addError("Project type id must be positive");
-                continue;
-            }
-
-            if (!ids.insert(projectType.id).second) {
-                result.addError(
-                    "Duplicate project type id: " +
-                    std::to_string(projectType.id)
-                );
-            }
-        }
-    }
-
-    void validateProjectTypeCodes(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<std::string> codes;
-
-        for (const auto& projectType : projectTypes_) {
-            if (projectType.code.empty()) {
-                result.addError("Project type code must not be empty");
-                continue;
-            }
-
-            if (!codes.insert(projectType.code).second) {
-                result.addError(
-                    "Duplicate project type code: " +
-                    projectType.code
-                );
-            }
-        }
-    }
-
-    void validateProjectTypes(
-        PortalDatasetValidationResult& result
-    ) const {
-        std::set<int> projectTypeIds;
-
-        for (const auto& projectType : projectTypes_) {
-            projectTypeIds.insert(projectType.id);
-        }
-
-        for (const auto& project : projects_) {
-            if (project.projectTypeId <= 0) {
-                result.addError("Project projectTypeId must be positive");
-                continue;
-            }
-
-            if (!projectTypeIds.contains(project.projectTypeId)) {
-                result.addError(
-                    "Project type does not exist: " +
-                    std::to_string(project.projectTypeId)
-                );
-            }
-        }
-    }
 };

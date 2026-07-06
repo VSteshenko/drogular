@@ -2,7 +2,6 @@
 
 #include "../../../portal_project.hpp"
 
-#include <drogular/graphql.hpp>
 #include <drogular/graphql_variables.hpp>
 #include <drogular/graphql_response.hpp>
 
