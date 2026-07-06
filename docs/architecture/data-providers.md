@@ -2,227 +2,264 @@
 
 ## Overview
 
-Drogular encourages applications to separate business logic from data access.
+Drogular applications should separate UI, business actions, data access, and data representation.
 
-Pages and Actions should depend only on Provider interfaces. Providers are responsible for business operations, while concrete implementations decide how data is stored or retrieved.
+Pages and Actions depend on Provider interfaces. Providers expose business operations using application models. Concrete implementations decide where data comes from: memory, GraphQL, dataset-backed clients, or a real transport.
 
-This architecture makes it possible to replace the data source without changing UI or application logic.
+Portal Demo currently uses this architecture to switch data sources without changing Pages, Actions, Templates, or business logic.
 
 ```text
-Pages / Actions
-        │
-        ▼
-Provider Interface
-        │
-        ├───────────────┐
-        ▼               ▼
-Memory Provider   GraphQL Provider
-        │               │
-        ▼               ▼
-      Models        Documents
-                        │
-                        ▼
-                  GraphQL Client
-                        │
-                        ▼
-                     Transport
+    Pages / Actions
+            │
+            ▼
+    Provider Interface
+            │
+            ▼
+    Provider Implementation
+            │
+            ▼
+    GraphQL Client / Dataset / Transport
+            │
+            ▼
+          Models
 ```
----
 
-## Responsibilities
+## Core Idea
 
-### Provider
-
-A Provider exposes business operations.
-
-It does not know about HTTP, GraphQL queries, JSON, SQL, or transport details.
-
-Example:
+The application works with models.
 ```c++
-class ProjectProvider {
-public:
-    virtual std::vector<Project> all() const = 0;
-    virtual std::optional<Project> findById(int id) const = 0;
-    virtual Project create(Project project) = 0;
-    virtual bool update(Project project) = 0;
-    virtual bool remove(int id) = 0;
-};
+    PortalUser
+    PortalProject
+    PortalRole
+    PortalProjectType
 ```
-Pages and Actions communicate only with Providers.
-
----
-
-### Memory Provider
-
-A Memory Provider is the simplest Provider implementation.
-
-It stores application models directly in memory.
-
-Example:
-```text
-ProjectProvider
-↓
-MemoryProjectProvider
-↓
-std::vector<Project>
-```
-Memory Providers are useful for:
-
-- examples
-- tests
-- prototypes
-- offline mode
-
----
-
-### GraphQL Provider
-
-A GraphQL Provider implements the same Provider interface but retrieves data through GraphQL.
-```text
-ProjectProvider
-↓
-GraphQLProjectProvider
-↓
-GraphQL Client
-```
-The application does not know which implementation is registered.
-
----
-
-### Documents
-
-Documents build GraphQL requests.
-
-They contain GraphQL operations only.
-
-Examples:
-```c++
-ProjectQueries::all()
-ProjectQueries::findById(id)
-ProjectMutations::create(project)
-ProjectMutations::update(project)
-ProjectMutations::remove(id)
-```
-Documents do not contain business logic.
-
----
-
-### Mapper
-
-A Mapper converts between application models and GraphQL data.
-
-Responsibilities:
-
-- GraphQL Result → Model
-- Model → GraphQL Variables
-
-A Mapper never performs network requests.
-
----
-
-### GraphQL Client
-
-The GraphQL Client executes GraphQL requests.
-
-It knows nothing about application models.
-
-Responsibilities:
-
-- execute request
-- return response
-- transport
-- serialization
-
----
-
-## Dependency Rule
-
-Dependencies always point downwards.
-```text
-Pages
-↓
-Provider
-↓
-Documents
-↓
-GraphQL Client
-↓
-Transport
-```
-Mapping is independent from transport.
-```text
-GraphQL Result
-↓
-Mapper
-↓
-Model
-```
-Providers connect these two independent flows.
-
----
-
-## Model-Based APIs
-
-Providers should exchange models instead of individual fields.
+Providers exchange complete models instead of long parameter lists.
 
 Preferred:
 ```c++
-provider->update(project);
+    provider->update(project);
 ```
 Instead of:
 ```c++
-provider->update(
-    id,
-    title,
-    status
-);
+    provider->update(id, title, status, ownerId, projectTypeId);
 ```
-Benefits:
+This keeps APIs stable when models evolve.
 
-- easier evolution of models
-- fewer breaking API changes
-- cleaner implementations
-- simpler GraphQL integration
+## Dataset
 
----
+`PortalDataset` is the in-memory domain state used by Portal Demo, tests, and dataset-backed GraphQL clients.
 
+It stores application models directly:
+```c++
+    users
+    roles
+    projects
+    projectTypes
+```
+The Dataset is not tied to GraphQL, HTTP, JSON, or UI. It is the canonical demo/test state.
+
+## Schema
+
+`PortalSchema` describes model fields once.
+
+Example:
+```c++
+    PortalSchema::projects()
+        .key("id", &PortalProject::id)
+        .required("title", &PortalProject::title)
+        .required("status", &PortalProject::status)
+        .reference("ownerId", &PortalProject::ownerId, "users", "id")
+        .reference("projectTypeId", &PortalProject::projectTypeId, "projectTypes", "id");
+```
+The schema is used by:
+
+- dataset validation
+- JSON mapping
+- GraphQL selection building
+
+This reduces duplicated field lists and lowers the risk of forgetting a field in one layer.
+
+## Schema-Driven Validation
+
+Dataset validation is driven by `PortalSchema`.
+
+The validator checks:
+
+- required fields
+- positive keys
+- unique values
+- references between tables
+
+Examples:
+```c++
+    users.id is unique
+    users.username is unique
+    users.role references roles.code
+    projects.ownerId references users.id
+    projects.projectTypeId references projectTypes.id
+```
+## GraphQL Providers
+
+GraphQL Providers implement the same Provider interfaces as memory providers.
+```text
+    PortalProjectProvider
+            │
+            ▼
+    PortalGraphQLProjectProvider
+            │
+            ▼
+    GraphQLClient
+```
+The Provider does not know whether the client talks to:
+
+- a real HTTP GraphQL server
+- `StaticGraphQLClient`
+- `PortalDatasetGraphQLClient`
+
+## Documents
+
+Documents build GraphQL operations.
+
+Examples:
+```c++
+    ProjectQueries::all()
+    ProjectQueries::findById(id)
+    ProjectMutations::create(project)
+    UserQueries::all()
+    RoleQueries::findByCode()
+    ProjectTypeQueries::findById()
+```
+Documents should contain GraphQL operation structure only.
+
+Field selections can be generated from `PortalSchema`:
+```c++
+    PortalGraphQLSelectionBuilder::from(
+        PortalSchema::projects()
+    );
+```
+## Mappers
+
+Mappers convert between GraphQL data and application models.
+
+Responsibilities:
+
+- GraphQL response → Model
+- Model → GraphQL variables
+
+For model-to-JSON conversion, mappers can use:
+```c++
+    PortalSchemaMapper::toJson(
+        PortalSchema::projects(),
+        project
+    );
+```
+This avoids repeating field assignments manually.
+
+## Dataset GraphQL Client
+
+`PortalDatasetGraphQLClient` is an application-level in-memory GraphQL client.
+
+It interprets named GraphQL operations and reads/writes `PortalDataset`.
+```text
+    GraphQL operation
+            │
+            ▼
+    PortalDatasetGraphQLClient
+            │
+            ▼
+    PortalDataset
+```
+This allows Portal Demo and application tests to run without:
+
+- HTTP server
+- browser
+- database
+- Docker
+
+## Reference Data
+
+Reference entities are normal models.
+
+Current examples:
+
+    PortalRole
+    PortalProjectType
+
+They have:
+
+- model
+- schema
+- provider
+- GraphQL queries
+- dataset-backed GraphQL support
+
+References are declared in schema:
+```c++
+    users.role -> roles.code
+    projects.projectTypeId -> projectTypes.id
+```
+## Application Tests
+
+`PortalApplicationTestHost` allows testing real application flows without browser or HTTP infrastructure.
+
+Example:
+```c++
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    app.post<PortalCreateProjectAction>({
+        {"title", "Application Test Project"},
+        {"status", "active"}
+    });
+
+    EXPECT_EQ(app.projectCount(), 3);
+```
+This tests:
+```text
+    Action
+        ↓
+    Validation / Auth
+        ↓
+    Provider
+        ↓
+    GraphQL Client
+        ↓
+    Dataset
+```
 ## Switching Data Sources
 
-Changing the data source should require only a different service registration.
+Changing the data source should require only DI registration changes.
 
-Development:
+Example:
 ```c++
-services.addFactory<ProjectProvider>(
-    ServiceLifetime::Singleton,
-    [] {
-        return std::make_shared<MemoryProjectProvider>();
-    }
-);
-```
-Production:
-```c++
-services.addFactory<ProjectProvider>(
-    ServiceLifetime::Singleton,
-    [] {
-        return std::make_shared<GraphQLProjectProvider>();
-    }
-);
+    services.addFactory<PortalProjectProvider>(
+        ServiceLifetime::Singleton,
+        [graphQLClient] {
+            return std::make_shared<PortalGraphQLProjectProvider>(
+                graphQLClient
+            );
+        }
+    );
 ```
 No changes should be required in:
 
 - Pages
 - Actions
 - Templates
-- Business logic
-
----
+- business logic
 
 ## Design Principles
 
-- Depend on Provider interfaces.
-- Keep Providers transport-independent.
-- Keep Documents GraphQL-specific.
-- Keep Mappers focused on data transformation.
-- Exchange models instead of parameter lists.
-- Replace implementations through Dependency Injection.
-- Validate architecture using real applications rather than hypothetical use cases.
+- Pages and Actions depend on Provider interfaces.
+- Providers exchange models, not parameter lists.
+- Concrete data access is replaceable through DI.
+- Dataset is the canonical demo/test state.
+- Schema is the source of truth for fields, keys, uniqueness, required values, and references.
+- Validation and mapping should reuse schema metadata.
+- GraphQL field selections should be generated from schema where possible.
+- Reference data should use the same architecture as normal models.
+- Test infrastructure should reuse the same application building blocks as runtime code.
+- New abstractions should be promoted only after they prove useful in Portal Demo.
