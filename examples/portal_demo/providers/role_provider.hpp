@@ -15,4 +15,8 @@ public:
     virtual std::optional<PortalRole> findByCode(
         const std::string& code
     ) const = 0;
+
+    virtual std::optional<PortalRole> findById(
+        int id
+    ) const = 0;
 };

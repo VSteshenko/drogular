@@ -4,6 +4,8 @@
 #include "documents/role_queries.hpp"
 #include "mappers/role_mapper.hpp"
 
+#include <drogular/graphql_client.hpp>
+
 #include <memory>
 
 class PortalGraphQLRoleProvider final
@@ -38,12 +40,26 @@ public:
     ) const override {
         const auto response =
             client_->execute(
-                RoleQueries::findByCode(code),
+                RoleQueries::findByCode(),
                 RoleMapper::rolesVariables(code)
             );
 
         return RoleMapper::optionalRole(
             response.field("roleByCode")
+        );
+    }
+
+    std::optional<PortalRole> findById(
+        int id
+    ) const override {
+        const auto response =
+            client_->execute(
+                RoleQueries::findById(),
+                RoleMapper::idVariables(id)
+            );
+
+        return RoleMapper::optionalRole(
+            response.field("role")
         );
     }
 

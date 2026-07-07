@@ -91,6 +91,7 @@ add_executable(drogular_tests
     portal_demo/portal_dataset_schema_validator_tests.cpp
     portal_demo/portal_schema_mapper_tests.cpp
     portal_demo/portal_graphql_selection_builder_tests.cpp
+    portal_demo/portal_graphql_document_builder_tests.cpp
 )
 
 target_link_libraries(drogular_tests

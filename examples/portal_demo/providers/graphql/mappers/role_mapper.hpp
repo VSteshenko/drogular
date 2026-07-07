@@ -16,9 +16,16 @@ public:
         const std::string& code
     ) {
         drogular::GraphQLVariables variables;
+        variables.set("code", code);
 
-        variables
-            .set("code", code);
+        return variables;
+    }
+
+    static drogular::GraphQLVariables idVariables(
+        int id
+    ) {
+        drogular::GraphQLVariables variables;
+        variables.set("id", id);
 
         return variables;
     }
