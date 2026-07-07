@@ -19,6 +19,7 @@ template <typename TModel>
 struct PortalFieldSchema {
     std::string name;
     std::function<PortalFieldValue(const TModel&)> value;
+    std::function<void(TModel&, const PortalFieldValue&)> setValue;
     bool key = false;
     bool unique = false;
     bool required = false;
@@ -49,9 +50,8 @@ public:
     ) {
         fields_.push_back({
             .name = std::move(name),
-            .value = [member](const TModel& model) {
-                return model.*member;
-            },
+            .value = getter(member),
+            .setValue = setter(member),
             .key = true,
             .unique = true,
             .required = true
@@ -66,9 +66,8 @@ public:
     ) {
         fields_.push_back({
             .name = std::move(name),
-            .value = [member](const TModel& model) {
-                return model.*member;
-            },
+            .value = getter(member),
+            .setValue = setter(member),
             .unique = true,
             .required = true
         });
@@ -82,9 +81,8 @@ public:
     ) {
         fields_.push_back({
             .name = std::move(name),
-            .value = [member](const TModel& model) {
-                return model.*member;
-            },
+            .value = getter(member),
+            .setValue = setter(member),
             .required = true
         });
 
@@ -97,9 +95,8 @@ public:
     ) {
         fields_.push_back({
             .name = std::move(name),
-            .value = [member](const TModel& model) {
-                return model.*member;
-            },
+            .value = getter(member),
+            .setValue = setter(member),
             .required = true
         });
 
@@ -114,9 +111,8 @@ public:
     ) {
         fields_.push_back({
             .name = std::move(name),
-            .value = [member](const TModel& model) {
-                return model.*member;
-            },
+            .value = getter(member),
+            .setValue = setter(member),
             .required = true,
             .reference = PortalReferenceSchema{
                 .table = std::move(table),
@@ -135,9 +131,8 @@ public:
     ) {
         fields_.push_back({
             .name = std::move(name),
-            .value = [member](const TModel& model) {
-                return model.*member;
-            },
+            .value = getter(member),
+            .setValue = setter(member),
             .required = true,
             .reference = PortalReferenceSchema{
                 .table = std::move(table),
@@ -159,4 +154,32 @@ public:
 private:
     std::string name_;
     std::vector<PortalFieldSchema<TModel>> fields_;
+
+    static std::function<PortalFieldValue(const TModel&)>
+    getter(int TModel::*member) {
+        return [member](const TModel& model) {
+            return model.*member;
+        };
+    }
+
+    static std::function<PortalFieldValue(const TModel&)>
+    getter(std::string TModel::*member) {
+        return [member](const TModel& model) {
+            return model.*member;
+        };
+    }
+
+    static std::function<void(TModel&, const PortalFieldValue&)>
+    setter(int TModel::*member) {
+        return [member](TModel& model, const PortalFieldValue& value) {
+            model.*member = std::get<int>(value);
+        };
+    }
+
+    static std::function<void(TModel&, const PortalFieldValue&)>
+    setter(std::string TModel::*member) {
+        return [member](TModel& model, const PortalFieldValue& value) {
+            model.*member = std::get<std::string>(value);
+        };
+    }
 };

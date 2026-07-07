@@ -44,14 +44,10 @@ public:
     static PortalUser fromValue(
         const Json::Value& value
     ) {
-        PortalUser user;
-
-        user.id = value["id"].asInt();
-        user.username = value["username"].asString();
-        user.password = value["password"].asString();
-        user.role = value["role"].asString();
-
-        return user;
+        return PortalSchemaMapper::fromJson(
+            PortalSchema::users(),
+            value
+        );
     }
 
     static std::vector<PortalUser> fromList(

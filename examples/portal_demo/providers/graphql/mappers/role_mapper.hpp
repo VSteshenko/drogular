@@ -41,13 +41,10 @@ public:
     static PortalRole fromValue(
         const Json::Value& value
     ) {
-        PortalRole role;
-
-        role.id = value["id"].asInt();
-        role.code = value["code"].asString();
-        role.title = value["title"].asString();
-
-        return role;
+        return PortalSchemaMapper::fromJson(
+            PortalSchema::roles(),
+            value
+        );
     }
 
     static std::vector<PortalRole> fromList(

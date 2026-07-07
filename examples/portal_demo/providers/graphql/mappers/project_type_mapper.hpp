@@ -21,13 +21,10 @@ public:
     static PortalProjectType fromValue(
         const Json::Value& value
     ) {
-        PortalProjectType type;
-
-        type.id = value["id"].asInt();
-        type.code = value["code"].asString();
-        type.title = value["title"].asString();
-
-        return type;
+        return PortalSchemaMapper::fromJson(
+            PortalSchema::projectTypes(),
+            value
+        );
     }
 
     static std::vector<PortalProjectType> fromList(

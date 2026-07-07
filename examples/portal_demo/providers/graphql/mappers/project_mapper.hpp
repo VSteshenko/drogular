@@ -34,15 +34,10 @@ public:
     static PortalProject fromValue(
         const Json::Value& value
     ) {
-        PortalProject project;
-
-        project.id = value["id"].asInt();
-        project.title = value["title"].asString();
-        project.status = value["status"].asString();
-        project.ownerId = value["ownerId"].asInt();
-        project.projectTypeId = value["projectTypeId"].asInt();
-
-        return project;
+        return PortalSchemaMapper::fromJson(
+            PortalSchema::projects(),
+            value
+        );
     }
 
     static std::vector<PortalProject> fromList(
