@@ -193,18 +193,14 @@ private:
     drogular::GraphQLResponse createProjectResponse(
         const Json::Value& value
     ) {
-        PortalProject project;
+        auto project =
+            PortalSchemaMapper::fromJson(
+                PortalSchema::projects(),
+                value
+            );
 
         project.id =
             nextProjectId();
-        project.title =
-            value["title"].asString();
-        project.status =
-            value["status"].asString();
-        project.ownerId =
-            value["ownerId"].asInt();
-        project.projectTypeId =
-            value["projectTypeId"].asInt();
 
         dataset_->projects().push_back(project);
 
@@ -217,26 +213,20 @@ private:
     drogular::GraphQLResponse updateProjectResponse(
         const Json::Value& value
     ) {
-        const auto id =
-            value["id"].asInt();
+        const auto incoming =
+            PortalSchemaMapper::fromJson(
+                PortalSchema::projects(),
+                value
+            );
 
         Json::Value data(Json::objectValue);
         data["updateProject"] = Json::Value();
 
         for (auto& project : dataset_->projects()) {
-            if (project.id == id) {
-                project.title =
-                    value["title"].asString();
-                project.status =
-                    value["status"].asString();
-                project.ownerId =
-                    value["ownerId"].asInt();
-                project.projectTypeId =
-                    value["projectTypeId"].asInt();
-
+            if (project.id == incoming.id) {
+                project = incoming;
                 data["updateProject"] =
                     projectJson(project);
-
                 break;
             }
         }
@@ -366,12 +356,14 @@ private:
     drogular::GraphQLResponse createUserResponse(
         const Json::Value& value
     ) {
-        PortalUser user;
+        auto user =
+            PortalSchemaMapper::fromJson(
+                PortalSchema::users(),
+                value
+            );
 
-        user.id = nextUserId();
-        user.username = value["username"].asString();
-        user.password = value["password"].asString();
-        user.role = value["role"].asString();
+        user.id =
+            nextUserId();
 
         dataset_->users().push_back(user);
 
@@ -384,21 +376,20 @@ private:
     drogular::GraphQLResponse updateUserResponse(
         const Json::Value& value
     ) {
-        const auto id =
-            value["id"].asInt();
+        const auto incoming =
+            PortalSchemaMapper::fromJson(
+                PortalSchema::users(),
+                value
+            );
 
         Json::Value data(Json::objectValue);
         data["updateUser"] = Json::Value();
 
         for (auto& user : dataset_->users()) {
-            if (user.id == id) {
-                user.username = value["username"].asString();
-                user.password = value["password"].asString();
-                user.role = value["role"].asString();
-
+            if (user.id == incoming.id) {
+                user = incoming;
                 data["updateUser"] =
                     userJson(user);
-
                 break;
             }
         }
