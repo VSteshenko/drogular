@@ -78,4 +78,37 @@ public:
                     )
             );
     }
+
+    template <typename TModel>
+    static drogular::gql::Mutation mutation(
+        std::string operationName,
+        std::string fieldName,
+        std::string variableName,
+        std::string variableType,
+        const PortalTableSchema<TModel>& schema
+    ) {
+        return drogular::gql::mutation(
+                   std::move(operationName)
+               )
+               .variable(
+                   variableName,
+                   variableType
+               )
+               .select(
+                   drogular::gql::field(
+                       std::move(fieldName)
+                   )
+                   .arg(
+                       variableName,
+                       drogular::gql::variable(
+                           variableName
+                       )
+                   )
+                   .children(
+                       PortalGraphQLSelectionBuilder::from(
+                           schema
+                       )
+                   )
+               );
+    }
 };
