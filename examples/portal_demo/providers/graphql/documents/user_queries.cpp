@@ -1,17 +1,13 @@
 #include "user_queries.hpp"
-#include "../../../data/portal_graphql_selection_builder.hpp"
+#include "../../../data/portal_graphql_document_builder.hpp"
 #include "../../../data/portal_schema.hpp"
 
 drogular::gql::Query UserQueries::all() {
-    return drogular::gql::query("PortalUsers")
-        .select(
-            drogular::gql::field("users")
-            .children(
-                PortalGraphQLSelectionBuilder::from(
-                    PortalSchema::users()
-                )
-            )
-        );
+    return PortalGraphQLDocumentBuilder::all(
+        "PortalUsers",
+        "users",
+        PortalSchema::users()
+    );
 }
 
 drogular::gql::Query UserQueries::findByCredentials() {

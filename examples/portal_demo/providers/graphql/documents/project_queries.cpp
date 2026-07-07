@@ -1,19 +1,15 @@
 #include "project_queries.hpp"
-#include "../../../data/portal_graphql_selection_builder.hpp"
+#include "../../../data/portal_graphql_document_builder.hpp"
 #include "../../../data/portal_schema.hpp"
 
 #include <drogular/graphql.hpp>
 
 drogular::gql::Query ProjectQueries::all() {
-    return drogular::gql::query("PortalProjects")
-        .select(
-            drogular::gql::field("projects")
-            .children(
-                PortalGraphQLSelectionBuilder::from(
-                    PortalSchema::projects()
-                )
-            )
-        );
+    return PortalGraphQLDocumentBuilder::all(
+        "PortalProjects",
+        "projects",
+        PortalSchema::projects()
+    );
 }
 
 drogular::gql::Query ProjectQueries::findById(
