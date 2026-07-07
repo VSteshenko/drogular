@@ -10,33 +10,119 @@
 class PortalSchema {
 public:
     static PortalTableSchema<PortalUser> users() {
-        return PortalTableSchema<PortalUser>::forModel("users")
-            .key("id", &PortalUser::id)
-            .unique("username", &PortalUser::username)
-            .required("password", &PortalUser::password)
-            .reference("role", &PortalUser::role, "roles", "code");
+        auto schema =
+            PortalTableSchema<PortalUser>::forModel(
+                "users"
+            );
+
+        schema
+            .field("id", &PortalUser::id)
+                .key()
+                .displayName("ID");
+
+        schema
+            .field("username", &PortalUser::username)
+                .required()
+                .unique()
+                .displayName("Username");
+
+        schema
+            .field("password", &PortalUser::password)
+                .required()
+                .displayName("Password");
+
+        schema
+            .field("role", &PortalUser::role)
+                .required()
+                .reference("roles", "code", "title")
+                .displayName("Role");
+
+        return schema;
     }
 
     static PortalTableSchema<PortalRole> roles() {
-        return PortalTableSchema<PortalRole>::forModel("roles")
-            .key("id", &PortalRole::id)
-            .unique("code", &PortalRole::code)
-            .required("title", &PortalRole::title);
+        auto schema =
+            PortalTableSchema<PortalRole>::forModel(
+                "roles"
+            );
+
+        schema
+            .field("id", &PortalRole::id)
+                .key()
+                .displayName("ID");
+
+        schema
+            .field("code", &PortalRole::code)
+                .required()
+                .unique()
+                .displayName("Code");
+
+        schema
+            .field("title", &PortalRole::title)
+                .required()
+                .displayName("Title");
+
+        return schema;
     }
 
     static PortalTableSchema<PortalProject> projects() {
-        return PortalTableSchema<PortalProject>::forModel("projects")
-            .key("id", &PortalProject::id)
-            .required("title", &PortalProject::title)
-            .required("status", &PortalProject::status)
-            .reference("ownerId", &PortalProject::ownerId, "users", "id")
-            .reference("projectTypeId", &PortalProject::projectTypeId, "projectTypes", "id");
+        auto schema =
+            PortalTableSchema<PortalProject>::forModel(
+                "projects"
+            );
+
+        schema
+            .field("id", &PortalProject::id)
+                .key()
+                .displayName("ID");
+
+        schema
+            .field("title", &PortalProject::title)
+                .required()
+                .displayName("Title");
+
+        schema
+            .field("status", &PortalProject::status)
+                .required()
+                .displayName("Status");
+
+        schema
+            .field("ownerId", &PortalProject::ownerId)
+                .required()
+                .reference("users", "id", "username")
+                .displayName("Owner");
+
+        schema
+            .field("projectTypeId", &PortalProject::projectTypeId)
+                .required()
+                .reference("projectTypes", "id", "title")
+                .displayName("Type");
+
+        return schema;
     }
 
     static PortalTableSchema<PortalProjectType> projectTypes() {
-        return PortalTableSchema<PortalProjectType>::forModel("projectTypes")
-            .key("id", &PortalProjectType::id)
-            .unique("code", &PortalProjectType::code)
-            .required("title", &PortalProjectType::title);
+        auto schema =
+            PortalTableSchema<PortalProjectType>::forModel(
+                "projectTypes"
+            );
+
+        schema
+            .field("id", &PortalProjectType::id)
+                .key()
+                .displayName("ID");
+
+        schema
+            .field("code", &PortalProjectType::code)
+                .required()
+                .unique()
+                .displayName("Code");
+
+        schema
+            .field("title", &PortalProjectType::title)
+                .required()
+                .displayName("Title");
+
+        return schema;
     }
 };

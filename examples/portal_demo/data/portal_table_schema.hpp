@@ -13,17 +13,81 @@ using PortalFieldValue =
 struct PortalReferenceSchema {
     std::string table;
     std::string field;
+    std::string displayField;
 };
 
 template <typename TModel>
 struct PortalFieldSchema {
     std::string name;
+    std::string displayName;
     std::function<PortalFieldValue(const TModel&)> value;
     std::function<void(TModel&, const PortalFieldValue&)> setValue;
     bool key = false;
     bool unique = false;
     bool required = false;
     std::optional<PortalReferenceSchema> reference;
+};
+
+template <typename TModel>
+class PortalTableSchema;
+
+template <typename TModel>
+class PortalFieldBuilder {
+public:
+    PortalFieldBuilder(
+        PortalTableSchema<TModel>& table,
+        PortalFieldSchema<TModel>& field
+    )
+        : table_(table),
+          field_(field)
+    {
+    }
+
+    PortalFieldBuilder& key() {
+        field_.key = true;
+        field_.unique = true;
+        field_.required = true;
+        return *this;
+    }
+
+    PortalFieldBuilder& required() {
+        field_.required = true;
+        return *this;
+    }
+
+    PortalFieldBuilder& unique() {
+        field_.unique = true;
+        field_.required = true;
+        return *this;
+    }
+
+    PortalFieldBuilder& reference(
+        std::string table,
+        std::string field,
+        std::string displayField
+    )
+    {
+        field_.required = true;
+        field_.reference = PortalReferenceSchema{
+            .table = std::move(table),
+            .field = std::move(field),
+            .displayField = std::move(displayField)
+        };
+
+        return *this;
+    }
+
+    PortalFieldBuilder& displayName(
+        std::string name
+    )
+    {
+        field_.displayName = std::move(name);
+        return *this;
+    }
+
+private:
+    PortalTableSchema<TModel>& table_;
+    PortalFieldSchema<TModel>& field_;
 };
 
 template <typename TModel>
@@ -44,103 +108,40 @@ public:
         );
     }
 
-    PortalTableSchema& key(
+    PortalFieldBuilder<TModel> field(
         std::string name,
         int TModel::*member
     ) {
+        auto refName = std::move(name);
         fields_.push_back({
-            .name = std::move(name),
+            .name = refName,
+            .displayName = refName,
             .value = getter(member),
-            .setValue = setter(member),
-            .key = true,
-            .unique = true,
-            .required = true
+            .setValue = setter(member)
         });
 
-        return *this;
+        return PortalFieldBuilder<TModel>(
+            *this,
+            fields_.back()
+        );
     }
 
-    PortalTableSchema& unique(
+    PortalFieldBuilder<TModel> field(
         std::string name,
         std::string TModel::*member
     ) {
+        auto refName = std::move(name);
         fields_.push_back({
-            .name = std::move(name),
+            .name = refName,
+            .displayName = refName,
             .value = getter(member),
-            .setValue = setter(member),
-            .unique = true,
-            .required = true
+            .setValue = setter(member)
         });
 
-        return *this;
-    }
-
-    PortalTableSchema& required(
-        std::string name,
-        std::string TModel::*member
-    ) {
-        fields_.push_back({
-            .name = std::move(name),
-            .value = getter(member),
-            .setValue = setter(member),
-            .required = true
-        });
-
-        return *this;
-    }
-
-    PortalTableSchema& required(
-        std::string name,
-        int TModel::*member
-    ) {
-        fields_.push_back({
-            .name = std::move(name),
-            .value = getter(member),
-            .setValue = setter(member),
-            .required = true
-        });
-
-        return *this;
-    }
-
-    PortalTableSchema& reference(
-        std::string name,
-        int TModel::*member,
-        std::string table,
-        std::string field
-    ) {
-        fields_.push_back({
-            .name = std::move(name),
-            .value = getter(member),
-            .setValue = setter(member),
-            .required = true,
-            .reference = PortalReferenceSchema{
-                .table = std::move(table),
-                .field = std::move(field)
-            }
-        });
-
-        return *this;
-    }
-
-    PortalTableSchema& reference(
-        std::string name,
-        std::string TModel::*member,
-        std::string table,
-        std::string field
-    ) {
-        fields_.push_back({
-            .name = std::move(name),
-            .value = getter(member),
-            .setValue = setter(member),
-            .required = true,
-            .reference = PortalReferenceSchema{
-                .table = std::move(table),
-                .field = std::move(field)
-            }
-        });
-
-        return *this;
+        return PortalFieldBuilder<TModel>(
+            *this,
+            fields_.back()
+        );
     }
 
     const std::string& name() const {

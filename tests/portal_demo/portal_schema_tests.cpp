@@ -19,3 +19,26 @@ TEST(PortalSchemaTests, DefinesUserSchema) {
     EXPECT_EQ(schema.fields()[3].reference->table, "roles");
     EXPECT_EQ(schema.fields()[3].reference->field, "code");
 }
+
+TEST(PortalSchemaTests, ProjectReferencesHaveDisplayFields) {
+    const auto schema =
+        PortalSchema::projects();
+
+    const auto& owner =
+        schema.fields()[3];
+
+    ASSERT_TRUE(owner.reference.has_value());
+    EXPECT_EQ(owner.reference->table, "users");
+    EXPECT_EQ(owner.reference->field, "id");
+    EXPECT_EQ(owner.reference->displayField, "username");
+    EXPECT_EQ(owner.displayName, "Owner");
+
+    const auto& type =
+        schema.fields()[4];
+
+    ASSERT_TRUE(type.reference.has_value());
+    EXPECT_EQ(type.reference->table, "projectTypes");
+    EXPECT_EQ(type.reference->field, "id");
+    EXPECT_EQ(type.reference->displayField, "title");
+    EXPECT_EQ(type.displayName, "Type");
+}
