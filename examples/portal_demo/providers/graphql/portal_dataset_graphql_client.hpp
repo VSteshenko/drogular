@@ -10,107 +10,170 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <functional>
+#include <unordered_map>
 
 class PortalDatasetGraphQLClient final
     : public drogular::GraphQLClient
 {
+    using Handler =
+        std::function<drogular::GraphQLResponse(
+            const drogular::GraphQLVariables&
+        )>;
+
 public:
     explicit PortalDatasetGraphQLClient(
         std::shared_ptr<PortalDataset> dataset
     )
         : dataset_(std::move(dataset))
     {
+        registerHandlers();
     }
 
     drogular::GraphQLResponse execute(
         const drogular::gql::Query& query,
         const drogular::GraphQLVariables& variables = {}
-    ) override {
-        const auto text =
-            query.toString();
-
-        if (isQuery(text, "PortalProjectTypes")) {
-            return projectTypesResponse();
-        }
-
-        if (isQuery(text, "PortalProjectTypeById")) {
-            return projectTypeResponse(
-                variables.json()["id"].asInt()
-            );
-        }
-
-        if (isQuery(text, "PortalProjects")) {
-            return projectsResponse();
-        }
-
-        if (isQuery(text, "PortalProjectById")) {
-            return projectResponse(
-                variables.json()["id"].asInt()
-            );
-        }
-
-        if (isQuery(text, "PortalRoles")) {
-            return rolesResponse();
-        }
-
-        if (isQuery(text, "PortalRoleByCode")) {
-            return roleByCodeResponse(
-                variables.json()["code"].asString()
-            );
-        }
-
-        if (isQuery(text, "PortalUsers")) {
-            return usersResponse();
-        }
-
-        if (isQuery(text, "PortalUserByCredentials")) {
-            return userByCredentialsResponse(
-                variables.json()["username"].asString(),
-                variables.json()["password"].asString()
-            );
-        }
-
-        return emptyResponse();
+    ) override
+    {
+        return executeOperation(
+            queryHandlers_,
+            operationName(
+                query.toString(),
+                "query"
+            ),
+            variables
+        );
     }
 
     drogular::GraphQLResponse execute(
         const drogular::gql::Mutation& mutation,
         const drogular::GraphQLVariables& variables = {}
-    ) override {
-        const auto text =
-            mutation.toString();
+    ) override
+    {
+        return executeOperation(
+            mutationHandlers_,
+            operationName(
+                mutation.toString(),
+                "mutation"
+            ),
+            variables
+        );
+    }
 
-        if (isMutation(text, "CreatePortalProject")) {
-            return createProjectResponse(
-                variables.json()["project"]
-            );
+    static std::string operationName(
+        const std::string& text,
+        const std::string& type
+    ) {
+        const auto prefix =
+            type + " ";
+
+        if (!text.starts_with(prefix)) {
+            return "";
         }
 
-        if (isMutation(text, "UpdatePortalProject")) {
-            return updateProjectResponse(
-                variables.json()["project"]
+        const auto nameStart =
+            prefix.size();
+
+        const auto nameEnd =
+            text.find_first_of(
+                " (",
+                nameStart
             );
+
+        if (nameEnd == std::string::npos) {
+            return text.substr(nameStart);
         }
 
-        if (isMutation(text, "RemovePortalProject")) {
-            return removeProjectResponse(
-                variables.json()["id"].asInt()
-            );
-        }
+        return text.substr(
+            nameStart,
+            nameEnd - nameStart
+        );
+    }
 
-        if (isMutation(text, "CreatePortalUser")) {
-            return createUserResponse(
-                variables.json()["user"]
-            );
-        }
+    void registerHandlers() {
+        queryHandlers_["PortalProjects"] =
+            [this](const auto&) {
+                return projectsResponse();
+            };
 
-        if (isMutation(text, "UpdatePortalUser")) {
-            return updateUserResponse(
-                variables.json()["user"]
-            );
-        }
+        queryHandlers_["PortalProjectById"] =
+            [this](const auto& variables) {
+                return projectResponse(
+                    variables.json()["id"].asInt()
+                );
+            };
 
-        return emptyResponse();
+        queryHandlers_["PortalUsers"] =
+            [this](const auto&) {
+                return usersResponse();
+            };
+
+        queryHandlers_["PortalUserByCredentials"] =
+            [this](const auto& variables) {
+                return userByCredentialsResponse(
+                    variables.json()["username"].asString(),
+                    variables.json()["password"].asString()
+                );
+            };
+
+        queryHandlers_["PortalRoles"] =
+            [this](const auto&) {
+                return rolesResponse();
+            };
+
+        queryHandlers_["PortalRoleByCode"] =
+            [this](const auto& variables) {
+                return roleByCodeResponse(
+                    variables.json()["code"].asString()
+                );
+            };
+
+        queryHandlers_["PortalProjectTypes"] =
+            [this](const auto&) {
+                return projectTypesResponse();
+            };
+
+        queryHandlers_["PortalProjectTypeById"] =
+            [this](const auto& variables) {
+                return projectTypeResponse(
+                    variables.json()["id"].asInt()
+                );
+            };
+
+        mutationHandlers_["CreatePortalProject"] =
+            [this](const auto& variables) {
+                return createProjectResponse(
+                    variables.json()["project"]
+                );
+            };
+
+        mutationHandlers_["UpdatePortalProject"] =
+            [this](const auto& variables) {
+                return updateProjectResponse(
+                    variables.json()["project"]
+                );
+            };
+
+        mutationHandlers_["RemovePortalProject"] =
+            [this](const auto& variables) {
+                return removeProjectResponse(
+                    variables.json()["id"].asInt()
+                );
+            };
+
+        mutationHandlers_["CreatePortalUser"] =
+            [this](const auto& variables) {
+                return createUserResponse(
+                    variables.json()["user"]
+                );
+            };
+
+        mutationHandlers_["UpdatePortalUser"] =
+            [this](const auto& variables) {
+                return updateUserResponse(
+                    variables.json()["user"]
+                );
+            };
     }
 
     drogular::GraphQLResponse executeRequest(
@@ -120,35 +183,21 @@ public:
     }
 
 private:
-    static bool hasOperationName(
-        const std::string& text,
-        const std::string& type,
-        const std::string& name
-    ) {
-        return text.starts_with(
-            type + " " + name
-        );
-    }
+    drogular::GraphQLResponse executeOperation(
+        const std::unordered_map<std::string, Handler>& handlers,
+        const std::string& name,
+        const drogular::GraphQLVariables& variables
+    ) const
+    {
+        const auto handler =
+            handlers.find(name);
 
-    static bool isQuery(
-        const std::string& text,
-        const std::string& name
-    ) {
-        return hasOperationName(
-            text,
-            "query",
-            name
-        );
-    }
+        if (handler == handlers.end()) {
+            return emptyResponse();
+        }
 
-    static bool isMutation(
-        const std::string& text,
-        const std::string& name
-    ) {
-        return hasOperationName(
-            text,
-            "mutation",
-            name
+        return handler->second(
+            variables
         );
     }
 
@@ -458,4 +507,6 @@ private:
     }
 
     std::shared_ptr<PortalDataset> dataset_;
+    std::unordered_map<std::string, Handler> queryHandlers_;
+    std::unordered_map<std::string, Handler> mutationHandlers_;
 };
