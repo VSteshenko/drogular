@@ -4,6 +4,7 @@
 #include "../providers/project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../providers/role_provider.hpp"
+#include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -59,6 +60,26 @@ public:
                 context,
                 success
             );
+
+        const auto schema =
+            PortalSchema::projects();
+
+        context.set(
+            "titleLabel",
+            context.translate(schema.fieldLabelKey("title"))
+        );
+        context.set(
+            "statusLabel",
+            context.translate(schema.fieldLabelKey("status"))
+        );
+        context.set(
+            "ownerLabel",
+            context.translate(schema.fieldLabelKey("ownerId"))
+        );
+        context.set(
+            "typeLabel",
+            context.translate(schema.fieldLabelKey("projectTypeId"))
+        );
 
         context.set("hasProjectsSuccess", !projectsSuccess.empty());
         context.set("alertMessage", projectsSuccess);

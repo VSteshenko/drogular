@@ -20,25 +20,98 @@ TEST(PortalSchemaTests, DefinesUserSchema) {
     EXPECT_EQ(schema.fields()[3].reference->field, "code");
 }
 
+TEST(PortalSchemaTests, UsesLabelKeyBeforeGeneratedKey) {
+    auto schema =
+        PortalTableSchema<PortalProject>::forModel("projects");
+
+    schema
+        .field("title", &PortalProject::title)
+            .labelKey("custom.title");
+
+    EXPECT_EQ(
+        schema.fieldLabelKey(
+            "title"
+        ),
+        "custom.title"
+    );
+}
+
+TEST(PortalSchemaTests, UsesGeneratedKeyWhenNoLabelMetadataExists) {
+    auto schema =
+        PortalTableSchema<PortalProject>::forModel("projects");
+
+    schema.field("title", &PortalProject::title);
+
+    EXPECT_EQ(
+        schema.fieldLabelKey(
+            "title"
+        ),
+        "projects.title"
+    );
+}
+
+TEST(PortalSchemaTests, BuildsDefaultFieldLabelKeys) {
+    const auto schema =
+        PortalSchema::projects();
+
+    EXPECT_EQ(
+        schema.fieldLabelKey("title"),
+        "projects.title.label"
+    );
+
+    EXPECT_EQ(
+        schema.fieldLabelKey("status"),
+        "projects.status.label"
+    );
+
+    EXPECT_EQ(
+        schema.fieldLabelKey("ownerId"),
+        "Owner"
+    );
+
+    EXPECT_EQ(
+        schema.fieldLabelKey("projectTypeId"),
+        "Type"
+    );
+}
+
+TEST(PortalSchemaTests, SupportsCustomFieldLabelKey) {
+    auto schema =
+        PortalTableSchema<PortalProject>::forModel(
+            "projects"
+        );
+
+    schema
+        .field("ownerId", &PortalProject::ownerId)
+            .labelKey("projects.owner");
+
+    EXPECT_EQ(
+        schema.fieldLabelKey("ownerId"),
+        "projects.owner"
+    );
+}
+
 TEST(PortalSchemaTests, ProjectReferencesHaveDisplayFields) {
     const auto schema =
         PortalSchema::projects();
 
-    const auto& owner =
-        schema.fields()[3];
+    const auto owner =
+        schema.fieldByName("ownerId");
 
-    ASSERT_TRUE(owner.reference.has_value());
-    EXPECT_EQ(owner.reference->table, "users");
-    EXPECT_EQ(owner.reference->field, "id");
-    EXPECT_EQ(owner.reference->displayField, "username");
-    EXPECT_EQ(owner.displayName, "Owner");
+    ASSERT_NE(owner, nullptr);
+    ASSERT_TRUE(owner->reference.has_value());
 
-    const auto& type =
-        schema.fields()[4];
+    EXPECT_EQ(owner->reference->table, "users");
+    EXPECT_EQ(owner->reference->field, "id");
+    EXPECT_EQ(owner->reference->displayField, "username");
 
-    ASSERT_TRUE(type.reference.has_value());
-    EXPECT_EQ(type.reference->table, "projectTypes");
-    EXPECT_EQ(type.reference->field, "id");
-    EXPECT_EQ(type.reference->displayField, "title");
-    EXPECT_EQ(type.displayName, "Type");
+    const auto type =
+        schema.fieldByName("projectTypeId");
+
+    ASSERT_NE(type, nullptr);
+    ASSERT_TRUE(type->reference.has_value());
+
+    EXPECT_EQ(type->reference->table, "projectTypes");
+    EXPECT_EQ(type->reference->field, "id");
+    EXPECT_EQ(type->reference->displayField, "title");
 }

@@ -21,7 +21,10 @@
 </p>
 @else
 
-<h2>{{ projectTitle }}</h2>
+<p>
+    <strong>{{ titleLabel }}:</strong>
+    {{ projectTitle }}
+</p>
 
 @if(hasProjectsSuccess)
 @include("partials/alert_success.html")
@@ -32,12 +35,14 @@
 </p>
 
 <p>
-    <strong>{{ projectsStatusLabel }}:</strong> {{ projectStatus }}
+    <strong>{{ statusLabel }}:</strong>
+    {{ projectStatus }}
 </p>
 
 @if(hasProjectOwner)
 <p>
-    <strong>Owner:</strong> {{ projectOwnerName }}
+    <strong>{{ ownerLabel }}:</strong>
+    {{ projectOwnerName }}
     @if(projectOwnerRole)
     ({{ projectOwnerRole }})
     @endif
@@ -45,7 +50,8 @@
 @endif
 @if(hasProjectType)
 <p>
-    <strong>Type:</strong> {{ projectTypeTitle }}
+    <strong>{{ typeLabel }}:</strong>
+    {{ projectTypeTitle }}
 </p>
 @endif
 

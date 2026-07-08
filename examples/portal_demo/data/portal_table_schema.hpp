@@ -19,7 +19,7 @@ struct PortalReferenceSchema {
 template <typename TModel>
 struct PortalFieldSchema {
     std::string name;
-    std::string displayName;
+    std::optional<std::string> labelKey;
     std::function<PortalFieldValue(const TModel&)> value;
     std::function<void(TModel&, const PortalFieldValue&)> setValue;
     bool key = false;
@@ -65,8 +65,7 @@ public:
         std::string table,
         std::string field,
         std::string displayField
-    )
-    {
+    ) {
         field_.required = true;
         field_.reference = PortalReferenceSchema{
             .table = std::move(table),
@@ -77,11 +76,10 @@ public:
         return *this;
     }
 
-    PortalFieldBuilder& displayName(
-        std::string name
-    )
-    {
-        field_.displayName = std::move(name);
+    PortalFieldBuilder& labelKey(
+        std::string key
+    ) {
+        field_.labelKey = std::move(key);
         return *this;
     }
 
@@ -112,10 +110,8 @@ public:
         std::string name,
         int TModel::*member
     ) {
-        auto refName = std::move(name);
         fields_.push_back({
-            .name = refName,
-            .displayName = refName,
+            .name = std::move(name),
             .value = getter(member),
             .setValue = setter(member)
         });
@@ -130,10 +126,8 @@ public:
         std::string name,
         std::string TModel::*member
     ) {
-        auto refName = std::move(name);
         fields_.push_back({
-            .name = refName,
-            .displayName = refName,
+            .name = std::move(name),
             .value = getter(member),
             .setValue = setter(member)
         });
@@ -150,6 +144,34 @@ public:
 
     const std::vector<PortalFieldSchema<TModel>>& fields() const {
         return fields_;
+    }
+
+    const PortalFieldSchema<TModel>* fieldByName(
+        const std::string& name
+    ) const {
+        for (const auto& field : fields_) {
+            if (field.name == name) {
+                return &field;
+            }
+        }
+
+        return nullptr;
+    }
+
+    std::string fieldLabelKey(
+        const std::string& fieldName
+    ) const {
+        const auto field = fieldByName(fieldName);
+
+        if (field == nullptr) {
+            return name_ + "." + fieldName;
+        }
+
+        if (field->labelKey.has_value()) {
+            return *field->labelKey;
+        }
+
+        return name_ + "." + field->name;
     }
 
 private:

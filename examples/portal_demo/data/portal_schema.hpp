@@ -18,24 +18,21 @@ public:
         schema
             .field("id", &PortalUser::id)
                 .key()
-                .displayName("ID");
+                .labelKey("ID");
 
         schema
             .field("username", &PortalUser::username)
                 .required()
-                .unique()
-                .displayName("Username");
+                .unique();
 
         schema
             .field("password", &PortalUser::password)
-                .required()
-                .displayName("Password");
+                .required();
 
         schema
             .field("role", &PortalUser::role)
                 .required()
-                .reference("roles", "code", "title")
-                .displayName("Role");
+                .reference("roles", "code", "title");
 
         return schema;
     }
@@ -49,18 +46,16 @@ public:
         schema
             .field("id", &PortalRole::id)
                 .key()
-                .displayName("ID");
+                .labelKey("ID");
 
         schema
             .field("code", &PortalRole::code)
                 .required()
-                .unique()
-                .displayName("Code");
+                .unique();
 
         schema
             .field("title", &PortalRole::title)
-                .required()
-                .displayName("Title");
+                .required();
 
         return schema;
     }
@@ -74,29 +69,29 @@ public:
         schema
             .field("id", &PortalProject::id)
                 .key()
-                .displayName("ID");
+                .labelKey("ID");
 
         schema
             .field("title", &PortalProject::title)
                 .required()
-                .displayName("Title");
+                .labelKey("projects.title.label");
 
         schema
             .field("status", &PortalProject::status)
                 .required()
-                .displayName("Status");
+                .labelKey("projects.status.label");
 
         schema
             .field("ownerId", &PortalProject::ownerId)
                 .required()
                 .reference("users", "id", "username")
-                .displayName("Owner");
+                .labelKey("Owner");
 
         schema
             .field("projectTypeId", &PortalProject::projectTypeId)
                 .required()
                 .reference("projectTypes", "id", "title")
-                .displayName("Type");
+                .labelKey("Type");
 
         return schema;
     }
@@ -110,18 +105,16 @@ public:
         schema
             .field("id", &PortalProjectType::id)
                 .key()
-                .displayName("ID");
+                .labelKey("ID");
 
         schema
             .field("code", &PortalProjectType::code)
                 .required()
-                .unique()
-                .displayName("Code");
+                .unique();
 
         schema
             .field("title", &PortalProjectType::title)
-                .required()
-                .displayName("Title");
+                .required();
 
         return schema;
     }
