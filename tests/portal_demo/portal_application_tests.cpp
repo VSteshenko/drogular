@@ -18,6 +18,7 @@ TEST(PortalApplicationTests, AdminCreatesProject) {
     const auto result =
         app.post<PortalCreateProjectAction>({
             {"title", "Application Test Project"},
+            {"projectTypeId", "2"},
             {"status", "active"}
         });
 
@@ -35,6 +36,11 @@ TEST(PortalApplicationTests, AdminCreatesProject) {
         app.dataset().projects().back().title,
         "Application Test Project"
     );
+
+    EXPECT_EQ(
+        app.dataset().projects().back().projectTypeId,
+        2
+    );
 }
 
 TEST(PortalApplicationTests, GuestCannotCreateProject) {
@@ -45,6 +51,7 @@ TEST(PortalApplicationTests, GuestCannotCreateProject) {
     const auto result =
         app.post<PortalCreateProjectAction>({
             {"title", "Guest Project"},
+            {"projectTypeId", "2"},
             {"status", "active"}
         });
 
@@ -148,6 +155,7 @@ TEST(PortalApplicationTests, AdminUpdatesProject) {
         app.post<PortalUpdateProjectAction>(
             {
                 {"title", "Updated Portal"},
+                {"projectTypeId", "2"},
                 {"status", "done"}
             },
             {
@@ -163,6 +171,11 @@ TEST(PortalApplicationTests, AdminUpdatesProject) {
     EXPECT_EQ(
         app.dataset().projects()[0].title,
         "Updated Portal"
+    );
+
+    EXPECT_EQ(
+        app.dataset().projects()[0].projectTypeId,
+        2
     );
 
     EXPECT_EQ(

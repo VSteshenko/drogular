@@ -28,13 +28,11 @@ public:
         const auto title =
             context.form<std::string>("title").value_or("");
 
-        const auto status =
-            context.form<std::string>("status").value_or("");
-
         const auto validation =
             drogular::FormValidator(context)
                 .required("title")
                 .minLength("title", 2)
+                .required("projectTypeId")
                 .required("status")
                 .validate();
 
@@ -52,6 +50,7 @@ public:
         PortalProject project;
         project.id = id;
         project.title = context.requireForm<std::string>("title");
+        project.projectTypeId = context.requireForm<int>("projectTypeId");
         project.status = context.requireForm<std::string>("status");
 
         const auto updated =

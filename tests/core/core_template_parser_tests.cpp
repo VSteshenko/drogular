@@ -113,3 +113,42 @@ TEST(CoreTemplateParserTests, ParsesForeachWithIfNode) {
     ASSERT_EQ(foreachNode->body().size(), 1);
     EXPECT_EQ(foreachNode->body()[0]->type(), NodeType::If);
 }
+
+TEST(CoreTemplateParserTests, ParsesInlineIfInsideHtmlAttribute) {
+    const auto nodes =
+        parse(tokenize("<option @if(selected)selected@endif>Admin</option>"));
+
+    ASSERT_EQ(nodes.size(), 3);
+
+    EXPECT_EQ(nodes[0]->type(), NodeType::Text);
+    EXPECT_EQ(nodes[1]->type(), NodeType::If);
+    EXPECT_EQ(nodes[2]->type(), NodeType::Text);
+
+    const auto condition =
+        std::dynamic_pointer_cast<IfNode>(nodes[1]);
+
+    ASSERT_NE(condition, nullptr);
+    ASSERT_EQ(condition->condition(), "selected");
+    ASSERT_EQ(condition->trueBranch().size(), 1);
+    EXPECT_EQ(condition->trueBranch()[0]->type(), NodeType::Text);
+}
+
+TEST(CoreTemplateParserTests, ParsesInlineIfBetweenHtmlAttributes) {
+    const auto nodes =
+        parse(tokenize(
+            R"(<option value="1" @if(selected)selected@endif class="item">Admin</option>)"
+        ));
+
+    ASSERT_EQ(nodes.size(), 3);
+
+    EXPECT_EQ(nodes[0]->type(), NodeType::Text);
+    EXPECT_EQ(nodes[1]->type(), NodeType::If);
+    EXPECT_EQ(nodes[2]->type(), NodeType::Text);
+
+    const auto condition =
+        std::dynamic_pointer_cast<IfNode>(nodes[1]);
+
+    ASSERT_NE(condition, nullptr);
+    ASSERT_EQ(condition->condition(), "selected");
+    ASSERT_EQ(condition->trueBranch().size(), 1);
+}

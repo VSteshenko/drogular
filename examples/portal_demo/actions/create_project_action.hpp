@@ -25,6 +25,7 @@ public:
             drogular::FormValidator(context)
                 .required("title")
                 .minLength("title", 2)
+                .required("projectTypeId")
                 .required("status")
                 .validate();
 
@@ -45,6 +46,7 @@ public:
 
         PortalProject project;
         project.title = context.requireForm<std::string>("title");
+        project.projectTypeId = context.requireForm<int>("projectTypeId");
         project.status = context.requireForm<std::string>("status");
         project.ownerId = 1;
 

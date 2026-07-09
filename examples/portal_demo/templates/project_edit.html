@@ -23,6 +23,17 @@
     </div>
 
     <div>
+        <label for="projectTypeId">{{ typeLabel }}</label>
+        <select id="projectTypeId" name="projectTypeId" required>
+            @foreach(item in projectTypeOptions)
+            <option value="{{ item.value }}" @if(item.selected)selected@endif>
+                {{ item.label }}
+            </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
         <label>{{ projectsStatusLabel }}</label>
         <select name="status">
             <option value="active" @if(isActive)selected@endif>{{ projectStatusActive }}</option>

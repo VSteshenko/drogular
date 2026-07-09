@@ -1,8 +1,10 @@
 #pragma once
 
 #include "../providers/project_provider.hpp"
+#include "../providers/project_type_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../localization/portal_error_translator.hpp"
+#include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -51,6 +53,42 @@ public:
                 context,
                 error
             );
+
+        const auto schema =
+            PortalSchema::projects();
+
+        auto projectTypes =
+            context.requireService<PortalProjectTypeProvider>();
+
+        Json::Value options(Json::arrayValue);
+
+        for (const auto& type : projectTypes->all()) {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = type.id;
+            option["label"] = type.title;
+            option["selected"] = type.id == project->projectTypeId;
+
+            options.append(option);
+        }
+
+        context.set(
+            "projectTypeOptions",
+            options
+        );
+
+        context.set(
+            "projectsTitleLabel",
+            context.translate(schema.fieldLabelKey("title"))
+        );
+        context.set(
+            "typeLabel",
+            context.translate(schema.fieldLabelKey("projectTypeId"))
+        );
+        context.set(
+            "projectsStatusLabel",
+            context.translate(schema.fieldLabelKey("status"))
+        );
 
         context.set("hasProjectsError", !projectsError.empty());
         context.set("alertMessage", projectsError);

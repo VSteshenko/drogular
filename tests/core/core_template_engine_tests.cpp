@@ -303,6 +303,18 @@ TEST(CoreTemplateEngineTests, RendersElseBlockWhenConditionIsMissing) {
     EXPECT_EQ(html, "<p>Please log in</p>");
 }
 
+TEST(CoreTemplateEngineTests, RendersInlineIfInsideHtmlAttribute) {
+    drogular::RenderContext context;
+    context.set("selected", true);
+
+    EXPECT_EQ(
+        drogular::template_engine::render("<option @if(selected)selected@endif>Admin</option>",
+            context
+        ),
+        "<option selected>Admin</option>"
+    );
+}
+
 TEST(CoreTemplateEngineTests, RendersForeachBlock) {
     drogular::RenderContext context;
 

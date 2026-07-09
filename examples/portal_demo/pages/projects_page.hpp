@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../providers/project_provider.hpp"
+#include "../providers/project_type_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "data/portal_schema.hpp"
 
@@ -61,9 +62,29 @@ public:
         const auto schema =
             PortalSchema::projects();
 
+        auto projectTypes =
+            context.requireService<PortalProjectTypeProvider>();
+
+        Json::Value options(Json::arrayValue);
+
+        for (const auto& type : projectTypes->all()) {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = type.id;
+            option["label"] = type.title;
+
+            options.append(option);
+        }
+
+        context.set("projectTypeOptions", options);
+
         context.set(
             "projectsTitleLabel",
             context.translate(schema.fieldLabelKey("title"))
+        );
+        context.set(
+            "typeLabel",
+            context.translate(schema.fieldLabelKey("projectTypeId"))
         );
         context.set(
             "projectsStatusLabel",
