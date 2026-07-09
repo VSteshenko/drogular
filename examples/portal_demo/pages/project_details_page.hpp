@@ -65,6 +65,10 @@ public:
             PortalSchema::projects();
 
         context.set(
+            "idLabel",
+            context.translate(schema.fieldLabelKey("id"))
+        );
+        context.set(
             "titleLabel",
             context.translate(schema.fieldLabelKey("title"))
         );

@@ -2,6 +2,7 @@
 
 #include "../providers/project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
+#include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -56,6 +57,18 @@ public:
         if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
         }
+
+        const auto schema =
+            PortalSchema::projects();
+
+        context.set(
+            "projectsTitleLabel",
+            context.translate(schema.fieldLabelKey("title"))
+        );
+        context.set(
+            "projectsStatusLabel",
+            context.translate(schema.fieldLabelKey("status"))
+        );
 
         auto repository =
             context.requireService<PortalProjectProvider>();

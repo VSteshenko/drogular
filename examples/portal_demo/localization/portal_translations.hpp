@@ -120,6 +120,9 @@ private:
                 {"projects.delete", "Delete Project"},
                 {"projects.success.deleted", "Project was deleted successfully."},
                 {"projects.error.not_found", "Project was not found."},
+                {"common.id", "ID"},
+                {"projects.owner", "Owner"},
+                {"projects.type", "Type"},
             }
         },
         {
@@ -180,6 +183,9 @@ private:
                 {"projects.delete", "Projekt löschen"},
                 {"projects.success.deleted", "Das Projekt wurde erfolgreich gelöscht."},
                 {"projects.error.not_found", "Projekt wurde nicht gefunden."},
+                {"common.id", "ID"},
+                {"projects.owner", "Besitzer"},
+                {"projects.type", "Typ"},
             }
         }
     };

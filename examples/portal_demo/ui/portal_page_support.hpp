@@ -58,13 +58,8 @@ public:
             {"loginPassword", "login.password"},
             {"loginSubmit", "login.submit"},
 
-            {"usersUsername", "users.username"},
-            {"usersPassword", "users.password"},
-            {"usersRole", "users.role"},
             {"usersCreate", "users.create"},
 
-            {"projectsTitleLabel", "projects.title.label"},
-            {"projectsStatusLabel", "projects.status.label"},
             {"projectsCreate", "projects.create"},
             {"projectStatusActive", "projects.status.active"},
             {"projectStatusPaused", "projects.status.paused"},

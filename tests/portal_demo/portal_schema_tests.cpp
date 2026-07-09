@@ -66,12 +66,12 @@ TEST(PortalSchemaTests, BuildsDefaultFieldLabelKeys) {
 
     EXPECT_EQ(
         schema.fieldLabelKey("ownerId"),
-        "Owner"
+        "projects.owner"
     );
 
     EXPECT_EQ(
         schema.fieldLabelKey("projectTypeId"),
-        "Type"
+        "projects.type"
     );
 }
 

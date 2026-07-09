@@ -18,7 +18,7 @@ public:
         schema
             .field("id", &PortalUser::id)
                 .key()
-                .labelKey("ID");
+                .labelKey("common.id");
 
         schema
             .field("username", &PortalUser::username)
@@ -46,7 +46,7 @@ public:
         schema
             .field("id", &PortalRole::id)
                 .key()
-                .labelKey("ID");
+                .labelKey("common.id");
 
         schema
             .field("code", &PortalRole::code)
@@ -69,7 +69,7 @@ public:
         schema
             .field("id", &PortalProject::id)
                 .key()
-                .labelKey("ID");
+                .labelKey("common.id");
 
         schema
             .field("title", &PortalProject::title)
@@ -85,13 +85,13 @@ public:
             .field("ownerId", &PortalProject::ownerId)
                 .required()
                 .reference("users", "id", "username")
-                .labelKey("Owner");
+                .labelKey("projects.owner");
 
         schema
             .field("projectTypeId", &PortalProject::projectTypeId)
                 .required()
                 .reference("projectTypes", "id", "title")
-                .labelKey("Type");
+                .labelKey("projects.type");
 
         return schema;
     }
@@ -105,7 +105,7 @@ public:
         schema
             .field("id", &PortalProjectType::id)
                 .key()
-                .labelKey("ID");
+                .labelKey("common.id");
 
         schema
             .field("code", &PortalProjectType::code)

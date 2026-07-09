@@ -4,6 +4,7 @@
 #include "../ui/portal_page_support.hpp"
 #include "../providers/user_provider.hpp"
 #include "../localization/portal_error_translator.hpp"
+#include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -85,6 +86,22 @@ public:
         if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
         }
+
+        const auto schema =
+            PortalSchema::users();
+
+        context.set(
+            "usersUsername",
+            context.translate(schema.fieldLabelKey("username"))
+        );
+        context.set(
+            "usersPassword",
+            context.translate(schema.fieldLabelKey("password"))
+        );
+        context.set(
+            "usersRole",
+            context.translate(schema.fieldLabelKey("role"))
+        );
 
         auto repository =
             context.requireService<PortalUserProvider>();
