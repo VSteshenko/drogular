@@ -114,6 +114,18 @@ public:
         return std::nullopt;
     }
 
+    std::optional<PortalUser> findByUsername(
+        const std::string& username
+    ) const override {
+        for (const auto& user : all()) {
+            if (user.username == username) {
+                return user;
+            }
+        }
+
+        return std::nullopt;
+    }
+
 private:
     std::shared_ptr<drogular::GraphQLClient> client_;
 };

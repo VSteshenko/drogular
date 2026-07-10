@@ -1,10 +1,12 @@
 #pragma once
 
 #include "../portal_user.hpp"
+#include "../providers/user_provider.hpp"
 
 #include <drogular/render_context.hpp>
 #include <drogular/session_store.hpp>
 #include <drogular/auth_support.hpp>
+#include <drogular/page_auth_support.hpp>
 
 #include <optional>
 #include <string>
@@ -55,14 +57,60 @@ public:
         };
     }
 
+    static std::optional<PortalUser> currentUser(
+        drogular::ActionContext& context
+    ) {
+        const auto username =
+            drogular::AuthSupport::sessionValue(
+                context,
+                "username"
+            );
+
+        if (!username.has_value()) {
+            return std::nullopt;
+        }
+
+        auto users =
+            context.requireService<PortalUserProvider>();
+
+        return users->findByUsername(*username);
+    }
+
+    static std::optional<PortalUser> requireCurrentUser(
+        drogular::RenderContext& context
+    ) {
+        if (!drogular::PageAuthSupport::requireAuthentication(context)) {
+            return std::nullopt;
+        }
+
+        return currentUser(context);
+    }
+
     static bool isAuthenticated(
         drogular::RenderContext& context
     ) {
         return currentUser(context).has_value();
     }
 
+    static bool isAuthenticated(
+        drogular::ActionContext& context
+    ) {
+        return currentUser(context).has_value();
+    }
+
     static bool hasRole(
         drogular::RenderContext& context,
+        const std::string& role
+    ) {
+        return drogular::AuthSupport::hasSessionValue(
+            context,
+            "role",
+            role
+        );
+    }
+
+    static bool hasRole(
+        drogular::ActionContext& context,
         const std::string& role
     ) {
         return drogular::AuthSupport::hasSessionValue(

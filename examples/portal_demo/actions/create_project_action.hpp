@@ -1,8 +1,10 @@
 #pragma once
 
 #include "../providers/project_provider.hpp"
+#include "../auth/portal_auth_support.hpp"
 
 #include <drogular/action_handler.hpp>
+#include <drogular/action_result.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/url.hpp>
 #include <drogular/action_auth_support.hpp>
@@ -19,6 +21,15 @@ public:
                     context
                 )) {
             return *result;
+        }
+
+        const auto currentUser =
+            PortalAuthSupport::currentUser(context);
+
+        if (!currentUser.has_value()) {
+            return drogular::ActionResult::redirect(
+                "/login"
+            );
         }
 
         const auto validation =
@@ -48,7 +59,7 @@ public:
         project.title = context.requireForm<std::string>("title");
         project.projectTypeId = context.requireForm<int>("projectTypeId");
         project.status = context.requireForm<std::string>("status");
-        project.ownerId = 1;
+        project.ownerId = currentUser->id;
 
         repository->create(
             project

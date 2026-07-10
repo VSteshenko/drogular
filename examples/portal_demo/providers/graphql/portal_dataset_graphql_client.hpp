@@ -273,7 +273,9 @@ private:
 
         for (auto& project : dataset_->projects()) {
             if (project.id == incoming.id) {
-                project = incoming;
+                project.title = incoming.title;
+                project.status = incoming.status;
+                project.projectTypeId = incoming.projectTypeId;
                 data["updateProject"] =
                     projectJson(project);
                 break;

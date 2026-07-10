@@ -32,4 +32,9 @@ public:
     virtual std::optional<PortalUser> findById(
         int id
     ) const = 0;
+
+    virtual std::optional<PortalUser> findByUsername(
+        const std::string& username
+    ) const = 0;
+
 };
