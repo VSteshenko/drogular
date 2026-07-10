@@ -5,6 +5,7 @@
 #include "../../examples/portal_demo/actions/create_user_action.hpp"
 #include "../../examples/portal_demo/actions/update_project_action.hpp"
 #include "../../examples/portal_demo/actions/delete_project_action.hpp"
+#include "../../examples/portal_demo/pages/projects_page.hpp"
 #include "../../examples/portal_demo/pages/project_edit_page.hpp"
 
 #include <gtest/gtest.h>
@@ -256,6 +257,136 @@ TEST(PortalApplicationTests, ProjectEditRequiresAuthentication) {
 
     EXPECT_NE(
         html.find("/login"),
+        std::string::npos
+    );
+}
+
+static std::string openingTag(
+    const std::string& html,
+    const std::string& marker
+) {
+    const auto markerPosition =
+        html.find(marker);
+
+    if (markerPosition == std::string::npos) {
+        return {};
+    }
+
+    const auto tagStart =
+        html.rfind('<', markerPosition);
+
+    if (tagStart == std::string::npos) {
+        return {};
+    }
+
+    const auto tagEnd =
+        html.find('>', markerPosition);
+
+    if (tagEnd == std::string::npos) {
+        return {};
+    }
+
+    return html.substr(
+        tagStart,
+        tagEnd - tagStart + 1
+    );
+}
+
+TEST(PortalApplicationTests, ProjectCreateFormUsesRequiredSchemaMetadata) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectsPage>();
+
+    const auto titleInput =
+        openingTag(
+            html,
+            R"(name="title")"
+        );
+
+    ASSERT_FALSE(titleInput.empty());
+    EXPECT_NE(
+        titleInput.find("required"),
+        std::string::npos
+    );
+
+    const auto statusSelect =
+        openingTag(
+            html,
+            R"(name="status")"
+        );
+
+    ASSERT_FALSE(statusSelect.empty());
+    EXPECT_NE(
+        statusSelect.find("required"),
+        std::string::npos
+    );
+
+    const auto projectTypeSelect =
+        openingTag(
+            html,
+            R"(name="projectTypeId")"
+        );
+
+    ASSERT_FALSE(projectTypeSelect.empty());
+    EXPECT_NE(
+        projectTypeSelect.find("required"),
+        std::string::npos
+    );
+}
+
+TEST(PortalApplicationTests, ProjectEditFormUsesRequiredSchemaMetadata) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectEditPage>(
+            {},
+            {
+                {"id", "1"}
+            }
+        );
+
+    const auto titleInput =
+        openingTag(
+            html,
+            R"(name="title")"
+        );
+
+    ASSERT_FALSE(titleInput.empty());
+    EXPECT_NE(
+        titleInput.find("required"),
+        std::string::npos
+    );
+
+    const auto statusSelect =
+        openingTag(
+            html,
+            R"(name="status")"
+        );
+
+    ASSERT_FALSE(statusSelect.empty());
+    EXPECT_NE(
+        statusSelect.find("required"),
+        std::string::npos
+    );
+
+    const auto projectTypeSelect =
+        openingTag(
+            html,
+            R"(name="projectTypeId")"
+        );
+
+    ASSERT_FALSE(projectTypeSelect.empty());
+    EXPECT_NE(
+        projectTypeSelect.find("required"),
         std::string::npos
     );
 }

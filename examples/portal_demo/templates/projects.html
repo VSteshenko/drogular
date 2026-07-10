@@ -21,13 +21,29 @@
 
 <form method="post" action="/projects/create">
     <div>
-        <label>{{ projectsTitleLabel }}</label>
-        <input name="title" value="{{ createProjectTitle }}" />
+        <label>
+            {{ projectsTitleLabel }}
+            @if(projectTitleRequired):@endif
+        </label>
+
+        <input
+                name="title"
+                value="{{ createProjectTitle }}"
+                @if(projectTitleRequired)required@endif
+        />
     </div>
 
     <div>
-        <label for="projectTypeId">{{ typeLabel }}</label>
-        <select id="projectTypeId" name="projectTypeId" required>
+        <label for="projectTypeId">
+            {{ typeLabel }}
+            @if(projectTypeRequired):@endif
+        </label>
+
+        <select
+                id="projectTypeId"
+                name="projectTypeId"
+                @if(projectTypeRequired)required@endif
+        >
             @foreach(item in projectTypeOptions)
             <option value="{{ item.value }}">
                 {{ item.label }}
@@ -37,8 +53,15 @@
     </div>
 
     <div>
-        <label>{{ projectsStatusLabel }}</label>
-        <select name="status">
+        <label>
+            {{ projectsStatusLabel }}
+            @if(projectStatusRequired):@endif
+        </label>
+
+        <select
+                name="status"
+                @if(projectStatusRequired)required@endif
+        >
             <option value="active">{{ projectStatusActive }}</option>
             <option value="paused">{{ projectStatusPaused }}</option>
             <option value="done">{{ projectStatusDone }}</option>

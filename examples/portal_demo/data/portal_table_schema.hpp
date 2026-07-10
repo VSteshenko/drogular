@@ -174,6 +174,16 @@ public:
         return name_ + "." + field->name;
     }
 
+    bool fieldRequired(
+        const std::string& fieldName
+    ) const {
+        const auto field =
+            fieldByName(fieldName);
+
+        return field != nullptr &&
+               field->required;
+    }
+
 private:
     std::string name_;
     std::vector<PortalFieldSchema<TModel>> fields_;

@@ -57,6 +57,21 @@ public:
         const auto schema =
             PortalSchema::projects();
 
+        context.set(
+            "projectTitleRequired",
+            schema.fieldRequired("title")
+        );
+
+        context.set(
+            "projectTypeRequired",
+            schema.fieldRequired("projectTypeId")
+        );
+
+        context.set(
+            "projectStatusRequired",
+            schema.fieldRequired("status")
+        );
+
         auto projectTypes =
             context.requireService<PortalProjectTypeProvider>();
 

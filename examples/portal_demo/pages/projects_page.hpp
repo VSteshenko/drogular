@@ -3,7 +3,8 @@
 #include "../providers/project_provider.hpp"
 #include "../providers/project_type_provider.hpp"
 #include "../ui/portal_page_support.hpp"
-#include "data/portal_schema.hpp"
+#include "../data/portal_schema.hpp"
+#include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -61,6 +62,21 @@ public:
 
         const auto schema =
             PortalSchema::projects();
+
+        context.set(
+            "projectTitleRequired",
+            schema.fieldRequired("title")
+        );
+
+        context.set(
+            "projectTypeRequired",
+            schema.fieldRequired("projectTypeId")
+        );
+
+        context.set(
+            "projectStatusRequired",
+            schema.fieldRequired("status")
+        );
 
         auto projectTypes =
             context.requireService<PortalProjectTypeProvider>();

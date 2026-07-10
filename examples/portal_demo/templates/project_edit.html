@@ -18,13 +18,29 @@
 
 <form method="post" action="/projects/{{ projectId }}/update">
     <div>
-        <label>{{ projectsTitleLabel }}</label>
-        <input name="title" value="{{ projectTitle }}" />
+        <label>
+            {{ projectsTitleLabel }}
+            @if(projectTitleRequired):@endif
+        </label>
+
+        <input
+                name="title"
+                value="{{ projectTitle }}"
+                @if(projectTitleRequired)required@endif
+        />
     </div>
 
     <div>
-        <label for="projectTypeId">{{ typeLabel }}</label>
-        <select id="projectTypeId" name="projectTypeId" required>
+        <label for="projectTypeId">
+            {{ typeLabel }}
+            @if(projectTypeRequired):@endif
+        </label>
+
+        <select
+                id="projectTypeId"
+                name="projectTypeId"
+                @if(projectTypeRequired)required@endif
+        >
             @foreach(item in projectTypeOptions)
             <option value="{{ item.value }}" @if(item.selected)selected@endif>
                 {{ item.label }}
@@ -34,8 +50,15 @@
     </div>
 
     <div>
-        <label>{{ projectsStatusLabel }}</label>
-        <select name="status">
+        <label>
+            {{ projectsStatusLabel }}
+            @if(projectStatusRequired):@endif
+        </label>
+
+        <select
+                name="status"
+                @if(projectStatusRequired)required@endif
+        >
             <option value="active" @if(isActive)selected@endif>{{ projectStatusActive }}</option>
             <option value="paused" @if(isPaused)selected@endif>{{ projectStatusPaused }}</option>
             <option value="done" @if(isDone)selected@endif>{{ projectStatusDone }}</option>
@@ -49,5 +72,4 @@
     <a href="/projects/{{ projectId }}">{{ projectsBackToDetails }}</a>
 </p>
 
-@endif
 @endif
