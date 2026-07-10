@@ -4,7 +4,14 @@
 #include "../../examples/portal_demo/providers/graphql/portal_dataset_graphql_client.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_provider.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_user_provider.hpp"
+#include "../../examples/portal_demo/localization/portal_translations.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_graphql_project_type_provider.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_graphql_role_provider.hpp"
 
+#include <drogular/application_options.hpp>
+#include <drogular/page.hpp>
+#include <drogular/render_context.hpp>
+#include <drogular/translation_provider.hpp>
 #include <drogular/action_context.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/services.hpp>
@@ -15,6 +22,8 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <filesystem>
+#include <type_traits>
 
 class PortalApplicationTestHost {
 public:
@@ -32,6 +41,15 @@ public:
             )
         )
     {
+        options_.setTemplateRoot(
+            std::filesystem::path(
+                DROGULAR_SOURCE_DIR
+            ) / "examples/portal_demo/templates"
+        );
+
+        options_.setTemplateCacheEnabled(false);
+
+        services_.setOptions(&options_);
         services_.add<drogular::SessionStore>(
             drogular::ServiceLifetime::Singleton
         );
@@ -41,10 +59,28 @@ public:
                 graphQLClient_
             );
 
+        services_.addFactory<PortalRoleProvider>(
+            drogular::ServiceLifetime::Singleton,
+            [client = graphQLClient_] {
+                return std::make_shared<PortalGraphQLRoleProvider>(
+                    client
+                );
+            }
+        );
+
         services_.addFactory<PortalUserProvider>(
             drogular::ServiceLifetime::Singleton,
             [userProvider] {
                 return userProvider;
+            }
+        );
+
+        services_.addFactory<PortalProjectTypeProvider>(
+            drogular::ServiceLifetime::Singleton,
+            [client = graphQLClient_] {
+                return std::make_shared<PortalGraphQLProjectTypeProvider>(
+                    client
+                );
             }
         );
 
@@ -55,6 +91,13 @@ public:
                     client,
                     userProvider
                 );
+            }
+        );
+
+        services_.addFactory<drogular::TranslationProvider>(
+            drogular::ServiceLifetime::Singleton,
+            [] {
+                return std::make_shared<PortalTranslations>();
             }
         );
     }
@@ -128,35 +171,10 @@ public:
         const std::unordered_map<std::string, std::string>& routeParams = {}
     ) {
         auto request =
-            drogon::HttpRequest::newHttpRequest();
-
-        request->setMethod(drogon::Post);
+            createRequest(drogon::Post);
 
         for (const auto& [name, value] : form) {
             request->setParameter(name, value);
-        }
-
-        if (!username_.empty()) {
-            drogular::ActionContext setupContext(
-                request,
-                &services_
-            );
-
-            auto session =
-                setupContext.session();
-
-            session->set("username", username_);
-            session->set("role", role_);
-
-            const auto sessionId =
-                session->get("_id");
-
-            if (sessionId.has_value()) {
-                request->addCookie(
-                    "session_id",
-                    *sessionId
-                );
-            }
         }
 
         drogular::ActionContext context(
@@ -176,11 +194,84 @@ public:
         return action.handle(context);
     }
 
+    template <typename TPage>
+    std::string render(
+        const std::unordered_map<std::string, std::string>& query = {},
+        const std::unordered_map<std::string, std::string>& routeParams = {}
+    ) {
+        static_assert(
+            std::is_base_of_v<drogular::Page, TPage>,
+            "TPage must inherit from drogular::Page"
+        );
+
+        auto request =
+            createRequest(drogon::Get);
+
+        for (const auto& [name, value] : query) {
+            request->setParameter(name, value);
+        }
+
+        drogular::RenderContext context;
+
+        context.setServices(&services_);
+        context.setRequest(request);
+
+        for (const auto& [name, value] : routeParams) {
+            context.setRouteParam(
+                name,
+                value
+            );
+        }
+
+        TPage page;
+
+        page.onInit(context);
+
+        return page.render(context);
+    }
+
 private:
     std::shared_ptr<PortalDataset> dataset_;
     std::shared_ptr<PortalDatasetGraphQLClient> graphQLClient_;
     drogular::ApplicationServices services_;
+    drogular::ApplicationOptions options_;
 
     std::string username_;
     std::string role_;
+
+    drogon::HttpRequestPtr createRequest(
+        drogon::HttpMethod method
+    ) {
+        auto request =
+            drogon::HttpRequest::newHttpRequest();
+
+        request->setMethod(method);
+
+        if (username_.empty()) {
+            return request;
+        }
+
+        drogular::ActionContext setupContext(
+            request,
+            &services_
+        );
+
+        auto session =
+            setupContext.session();
+
+        session->set("username", username_);
+        session->set("role", role_);
+
+        const auto sessionId =
+            session->get("_id");
+
+        if (sessionId.has_value()) {
+            request->addCookie(
+                "session_id",
+                *sessionId
+            );
+        }
+
+        return request;
+    }
 };

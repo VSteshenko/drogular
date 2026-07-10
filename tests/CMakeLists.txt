@@ -94,6 +94,12 @@ add_executable(drogular_tests
     portal_demo/portal_graphql_document_builder_tests.cpp
 )
 
+target_compile_definitions(
+    drogular_tests
+    PRIVATE
+    DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
 target_link_libraries(drogular_tests
     PRIVATE
     Drogular::drogular

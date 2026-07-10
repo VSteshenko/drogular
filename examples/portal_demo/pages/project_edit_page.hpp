@@ -4,7 +4,7 @@
 #include "../providers/project_type_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../localization/portal_error_translator.hpp"
-#include "data/portal_schema.hpp"
+#include "../data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>

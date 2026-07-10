@@ -5,6 +5,7 @@
 #include "../../examples/portal_demo/actions/create_user_action.hpp"
 #include "../../examples/portal_demo/actions/update_project_action.hpp"
 #include "../../examples/portal_demo/actions/delete_project_action.hpp"
+#include "../../examples/portal_demo/pages/project_edit_page.hpp"
 
 #include <gtest/gtest.h>
 
@@ -207,5 +208,54 @@ TEST(PortalApplicationTests, AdminDeletesProject) {
     EXPECT_EQ(
         app.projectCount(),
         1
+    );
+}
+
+TEST(PortalApplicationTests, ProjectEditSelectsCurrentProjectType) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectEditPage>(
+            {},
+            {
+                {"id", "1"}
+            }
+        );
+
+    EXPECT_NE(
+        html.find(
+            R"(option value="1" selected)"
+        ),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        html.find(
+            R"(option value="2")"
+        ),
+        std::string::npos
+    );
+}
+
+TEST(PortalApplicationTests, ProjectEditRequiresAuthentication) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    const auto html =
+        app.render<PortalProjectEditPage>(
+            {},
+            {
+                {"id", "1"}
+            }
+        );
+
+    EXPECT_NE(
+        html.find("/login"),
+        std::string::npos
     );
 }
