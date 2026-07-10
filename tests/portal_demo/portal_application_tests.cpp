@@ -7,6 +7,7 @@
 #include "../../examples/portal_demo/actions/delete_project_action.hpp"
 #include "../../examples/portal_demo/pages/projects_page.hpp"
 #include "../../examples/portal_demo/pages/project_edit_page.hpp"
+#include "../../examples/portal_demo/pages/users_page.hpp"
 
 #include <gtest/gtest.h>
 
@@ -387,6 +388,77 @@ TEST(PortalApplicationTests, ProjectEditFormUsesRequiredSchemaMetadata) {
     ASSERT_FALSE(projectTypeSelect.empty());
     EXPECT_NE(
         projectTypeSelect.find("required"),
+        std::string::npos
+    );
+}
+
+TEST(PortalApplicationTests, UserCreateFormBuildsRoleSelectFromProvider) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalUsersPage>();
+
+    const auto roleSelect =
+        openingTag(
+            html,
+            R"(name="role")"
+        );
+
+    ASSERT_FALSE(
+        roleSelect.empty()
+    );
+
+    EXPECT_NE(
+        roleSelect.find("required"),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        html.find(R"(value="admin")"),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        html.find("Administrator"),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        html.find(R"(value="user")"),
+        std::string::npos
+    );
+}
+
+TEST(PortalApplicationTests, UserCreateFormRendersAllDatasetRoles) {
+    auto dataset =
+        DemoDataset::create();
+
+    dataset.addRole({
+        .id = 3,
+        .code = "manager",
+        .title = "Manager"
+    });
+
+    PortalApplicationTestHost app(
+        std::move(dataset)
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalUsersPage>();
+
+    EXPECT_NE(
+        html.find(R"(value="manager")"),
+        std::string::npos
+    );
+
+    EXPECT_NE(
+        html.find("Manager"),
         std::string::npos
     );
 }

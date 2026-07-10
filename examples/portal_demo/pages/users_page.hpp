@@ -3,8 +3,9 @@
 #include "../auth/portal_auth_support.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../providers/user_provider.hpp"
+#include "../providers/role_provider.hpp"
 #include "../localization/portal_error_translator.hpp"
-#include "data/portal_schema.hpp"
+#include "../data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -103,8 +104,32 @@ public:
             context.translate(schema.fieldLabelKey("role"))
         );
 
+        context.set(
+            "usersRoleRequired",
+            schema.fieldRequired("role")
+        );
+
         auto repository =
             context.requireService<PortalUserProvider>();
+
+        auto roles =
+            context.requireService<PortalRoleProvider>();
+
+        Json::Value roleOptions(Json::arrayValue);
+
+        for (const auto& role : roles->all()) {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = role.code;
+            option["label"] = role.title;
+            option["selected"] = false;
+
+            roleOptions.append(
+                std::move(option)
+            );
+        }
+
+        context.set("roleOptions", roleOptions);
 
         Json::Value users(Json::arrayValue);
 
