@@ -1,4 +1,5 @@
 #include "portal_application_test_host.hpp"
+#include "../support/html_test_support.hpp"
 
 #include "../../examples/portal_demo/actions/create_project_action.hpp"
 #include "../../examples/portal_demo/data/demo_dataset.hpp"
@@ -262,37 +263,6 @@ TEST(PortalApplicationTests, ProjectEditRequiresAuthentication) {
     );
 }
 
-static std::string openingTag(
-    const std::string& html,
-    const std::string& marker
-) {
-    const auto markerPosition =
-        html.find(marker);
-
-    if (markerPosition == std::string::npos) {
-        return {};
-    }
-
-    const auto tagStart =
-        html.rfind('<', markerPosition);
-
-    if (tagStart == std::string::npos) {
-        return {};
-    }
-
-    const auto tagEnd =
-        html.find('>', markerPosition);
-
-    if (tagEnd == std::string::npos) {
-        return {};
-    }
-
-    return html.substr(
-        tagStart,
-        tagEnd - tagStart + 1
-    );
-}
-
 TEST(PortalApplicationTests, ProjectCreateFormUsesRequiredSchemaMetadata) {
     PortalApplicationTestHost app(
         DemoDataset::create()
@@ -303,40 +273,28 @@ TEST(PortalApplicationTests, ProjectCreateFormUsesRequiredSchemaMetadata) {
     const auto html =
         app.render<PortalProjectsPage>();
 
-    const auto titleInput =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="title")"
-        );
-
-    ASSERT_FALSE(titleInput.empty());
-    EXPECT_NE(
-        titleInput.find("required"),
-        std::string::npos
+            R"(name="title")",
+            "required"
+        )
     );
 
-    const auto statusSelect =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="status")"
-        );
-
-    ASSERT_FALSE(statusSelect.empty());
-    EXPECT_NE(
-        statusSelect.find("required"),
-        std::string::npos
+            R"(name="status")",
+            "required"
+        )
     );
 
-    const auto projectTypeSelect =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="projectTypeId")"
-        );
-
-    ASSERT_FALSE(projectTypeSelect.empty());
-    EXPECT_NE(
-        projectTypeSelect.find("required"),
-        std::string::npos
+            R"(name="projectTypeId")",
+            "required"
+        )
     );
 }
 
@@ -355,40 +313,35 @@ TEST(PortalApplicationTests, ProjectEditFormUsesRequiredSchemaMetadata) {
             }
         );
 
-    const auto titleInput =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="title")"
-        );
-
-    ASSERT_FALSE(titleInput.empty());
-    EXPECT_NE(
-        titleInput.find("required"),
-        std::string::npos
+            R"(name="title")",
+            "required"
+        )
     );
 
-    const auto statusSelect =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="status")"
-        );
-
-    ASSERT_FALSE(statusSelect.empty());
-    EXPECT_NE(
-        statusSelect.find("required"),
-        std::string::npos
+            R"(name="status")",
+            "required"
+        )
     );
 
-    const auto projectTypeSelect =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="projectTypeId")"
-        );
+            R"(name="projectTypeId")",
+            "required"
+        )
+    );
 
-    ASSERT_FALSE(projectTypeSelect.empty());
-    EXPECT_NE(
-        projectTypeSelect.find("required"),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::optionSelected(
+            html,
+            "1"
+        )
     );
 }
 
@@ -402,34 +355,26 @@ TEST(PortalApplicationTests, UserCreateFormBuildsRoleSelectFromProvider) {
     const auto html =
         app.render<PortalUsersPage>();
 
-    const auto roleSelect =
-        openingTag(
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
             html,
-            R"(name="role")"
-        );
-
-    ASSERT_FALSE(
-        roleSelect.empty()
+            R"(name="role")",
+            "required"
+        )
     );
 
-    EXPECT_NE(
-        roleSelect.find("required"),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::containsOption(
+            html,
+            "admin"
+        )
     );
 
-    EXPECT_NE(
-        html.find(R"(value="admin")"),
-        std::string::npos
-    );
-
-    EXPECT_NE(
-        html.find("Administrator"),
-        std::string::npos
-    );
-
-    EXPECT_NE(
-        html.find(R"(value="user")"),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::containsOption(
+            html,
+            "user"
+        )
     );
 }
 
@@ -452,13 +397,32 @@ TEST(PortalApplicationTests, UserCreateFormRendersAllDatasetRoles) {
     const auto html =
         app.render<PortalUsersPage>();
 
-    EXPECT_NE(
-        html.find(R"(value="manager")"),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="role")",
+            "required"
+        )
     );
 
-    EXPECT_NE(
-        html.find("Manager"),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::containsOption(
+            html,
+            "admin"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsOption(
+            html,
+            "user"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Manager"
+        )
     );
 }
