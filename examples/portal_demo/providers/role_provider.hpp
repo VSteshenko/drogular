@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_role.hpp"
+#include "../data/models/portal_role.hpp"
 
 #include <optional>
 #include <string>

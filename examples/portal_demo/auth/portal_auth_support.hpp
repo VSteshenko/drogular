@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_user.hpp"
+#include "../data/models/portal_user.hpp"
 #include "../providers/user_provider.hpp"
 
 #include <drogular/render_context.hpp>

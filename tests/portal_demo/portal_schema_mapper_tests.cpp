@@ -1,6 +1,6 @@
 #include "../../examples/portal_demo/data/portal_schema.hpp"
 #include "../../examples/portal_demo/data/portal_schema_mapper.hpp"
-#include "../../examples/portal_demo/portal_user.hpp"
+#include "../../examples/portal_demo/data/models/portal_user.hpp"
 
 #include <gtest/gtest.h>
 

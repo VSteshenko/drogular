@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../portal_project.hpp"
-#include "../portal_user.hpp"
+#include "../data/models/portal_project.hpp"
+#include "../data/models/portal_user.hpp"
 
 #include <optional>
 #include <vector>

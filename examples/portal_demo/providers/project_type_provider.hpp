@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../portal_project_type.hpp"
+#include "../data/models/portal_project_type.hpp"
 
 #include <optional>
 #include <vector>

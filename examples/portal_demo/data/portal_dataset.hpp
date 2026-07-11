@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../portal_project.hpp"
-#include "../portal_user.hpp"
-#include "../portal_role.hpp"
-#include "../portal_project_type.hpp"
+#include "models/portal_project.hpp"
+#include "models/portal_user.hpp"
+#include "models/portal_role.hpp"
+#include "models/portal_project_type.hpp"
 
 #include <set>
 #include <vector>

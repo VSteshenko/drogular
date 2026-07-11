@@ -1,6 +1,6 @@
 #pragma once
 
-#include "portal_project.hpp"
+#include "../../data/models/portal_project.hpp"
 #include "../project_provider.hpp"
 
 #include <string>
