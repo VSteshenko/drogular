@@ -78,11 +78,10 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesProjectInDataset) {
 
     PortalDatasetGraphQLClient client(dataset);
 
-    PortalProject project;
+    PortalProjectUpdate project;
     project.id = 1;
     project.title = "Updated Project";
     project.status = "done";
-    project.ownerId = 1;
 
     const auto response =
         client.execute(

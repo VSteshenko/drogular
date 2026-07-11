@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../../data/models/portal_project.hpp"
+#include "../../data/models/portal_project_create.hpp"
+#include "../../data/models/portal_project_update.hpp"
 #include "../project_provider.hpp"
 
 #include <string>
-#include <utility>
 #include <vector>
 #include <optional>
 #include <algorithm>
@@ -26,11 +27,49 @@ public:
     }
 
     PortalProject create(
-        PortalProject project
+        const PortalProjectCreate& input,
+        int ownerId
     ) override {
+        PortalProject project;
+
         project.id = nextId_++;
+        project.title = input.title;
+        project.status = input.status.value_or("active");
+        project.ownerId = ownerId;
+        project.projectTypeId = input.projectTypeId;
+
         projects_.push_back(project);
+
         return project;
+    }
+
+    PortalProject update(
+        const PortalProjectUpdate& input
+    ) override {
+        for (auto& project : projects_) {
+            if (project.id != input.id) {
+                continue;
+            }
+
+            if (input.title.has_value()) {
+                project.title =
+                    *input.title;
+            }
+
+            if (input.status.has_value()) {
+                project.status =
+                    *input.status;
+            }
+
+            if (input.projectTypeId.has_value()) {
+                project.projectTypeId =
+                    *input.projectTypeId;
+            }
+
+            return project;
+        }
+
+        return {};
     }
 
     std::optional<PortalProject> findById(
@@ -43,19 +82,6 @@ public:
         }
 
         return std::nullopt;
-    }
-
-    bool update(
-        PortalProject project
-    ) override {
-        for (auto& existing : projects_) {
-            if (existing.id == project.id) {
-                existing = std::move(project);
-                return true;
-            }
-        }
-
-        return false;
     }
 
     bool remove(

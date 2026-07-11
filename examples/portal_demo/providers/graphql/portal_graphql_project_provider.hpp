@@ -59,29 +59,45 @@ public:
     }
 
     PortalProject create(
-        PortalProject project
+        const PortalProjectCreate& input,
+        int ownerId
     ) override {
+        PortalProject project;
+
+        project.title = input.title;
+        project.status = input.status.value_or("active");
+        project.ownerId = ownerId;
+        project.projectTypeId = input.projectTypeId;
+
+        const auto variables =
+            ProjectMapper::toVariables(project);
+
         const auto response =
             client_->execute(
                 ProjectMutations::create(project),
-                ProjectMapper::toVariables(project)
+                variables
             );
 
         return ProjectMapper::fromValue(
-            *response.field("createProject")
+            response.data()["createProject"]
         );
     }
 
-    bool update(
-        PortalProject project
+    PortalProject update(
+        const PortalProjectUpdate& input
     ) override {
+        const auto variables =
+            ProjectMapper::toVariables(input);
+
         const auto response =
             client_->execute(
-                ProjectMutations::update(project),
-                ProjectMapper::toVariables(project)
+                ProjectMutations::update(input),
+                variables
             );
 
-        return response.field("updateProject").has_value();
+        return ProjectMapper::fromValue(
+            response.data()["updateProject"]
+        );
     }
 
     bool remove(

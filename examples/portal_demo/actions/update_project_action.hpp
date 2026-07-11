@@ -7,7 +7,6 @@
 #include <drogular/form_validator.hpp>
 #include <drogular/url.hpp>
 
-#include <cstdlib>
 #include <string>
 
 class PortalUpdateProjectAction final
@@ -30,10 +29,7 @@ public:
 
         const auto validation =
             drogular::FormValidator(context)
-                .required("title")
                 .minLength("title", 2)
-                .required("projectTypeId")
-                .required("status")
                 .validate();
 
         if (!validation.valid()) {
@@ -47,18 +43,34 @@ public:
         auto repository =
             context.requireService<PortalProjectProvider>();
 
-        PortalProject project;
-        project.id = id;
-        project.title = context.requireForm<std::string>("title");
-        project.projectTypeId = context.requireForm<int>("projectTypeId");
-        project.status = context.requireForm<std::string>("status");
+        PortalProjectUpdate input;
+        input.id = id;
+
+        if (!title.empty()) {
+            input.title = title;
+        }
+
+        const auto status =
+            context.form<std::string>("status").value_or("");
+
+        if (!status.empty()) {
+            input.status = status;
+        }
+
+        const auto projectTypeId =
+            context.form<int>("projectTypeId").value_or(0);
+
+        if (projectTypeId > 0) {
+            input.projectTypeId =
+                projectTypeId;
+        }
 
         const auto updated =
             repository->update(
-                project
+                input
             );
 
-        if (!updated) {
+        if (updated.id != id) {
             return drogular::ActionResult::redirect(
                 "/projects/" + std::to_string(id) +
                 "/edit?error=not_found"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../../data/models/portal_project.hpp"
+#include "../../../data/models/portal_project_update.hpp"
 
 #include <drogular/graphql.hpp>
 
@@ -11,7 +12,7 @@ public:
     );
 
     static drogular::gql::Mutation update(
-        const PortalProject& project
+        const PortalProjectUpdate& project
     );
 
     static drogular::gql::Mutation remove(

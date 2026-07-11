@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../data/models/portal_project.hpp"
+#include "../data/models/portal_project_create.hpp"
+#include "../data/models/portal_project_update.hpp"
 #include "../data/models/portal_user.hpp"
 
 #include <optional>
@@ -17,11 +19,12 @@ public:
     ) const = 0;
 
     virtual PortalProject create(
-        PortalProject project
+        const PortalProjectCreate& input,
+        int ownerId
     ) = 0;
 
-    virtual bool update(
-        PortalProject project
+    virtual PortalProject update(
+        const PortalProjectUpdate& input
     ) = 0;
 
     virtual bool remove(

@@ -110,15 +110,6 @@ GraphQLResponse HttpGraphQLClient::executeRequest(
     }
 
     return GraphQLResponse(*json);
-/*    GraphQLResponse graphQLResponse(*json);
-
-    if (graphQLResponse.hasErrors()) {
-        throw GraphQLClientError(
-            "GraphQL response contains errors"
-        );
-    }
-
-    return graphQLResponse;*/
 }
 
 } // namespace drogular

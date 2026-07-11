@@ -37,7 +37,6 @@ public:
                 .required("title")
                 .minLength("title", 2)
                 .required("projectTypeId")
-                .required("status")
                 .validate();
 
         const auto title =
@@ -55,14 +54,16 @@ public:
         auto repository =
             context.requireService<PortalProjectProvider>();
 
-        PortalProject project;
-        project.title = context.requireForm<std::string>("title");
-        project.projectTypeId = context.requireForm<int>("projectTypeId");
-        project.status = context.requireForm<std::string>("status");
-        project.ownerId = currentUser->id;
+        PortalProjectCreate input;
+        input.title = context.requireForm<std::string>("title");
+        input.projectTypeId = context.requireForm<int>("projectTypeId");
+        input.status = context
+            .form<std::string>("status")
+            .value_or("active");
 
         repository->create(
-            project
+            input,
+            currentUser->id
         );
 
         // success

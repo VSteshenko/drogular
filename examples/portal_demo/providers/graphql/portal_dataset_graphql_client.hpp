@@ -262,24 +262,36 @@ private:
     drogular::GraphQLResponse updateProjectResponse(
         const Json::Value& value
     ) {
-        const auto incoming =
-            PortalSchemaMapper::fromJson(
-                PortalSchema::projects(),
-                value
-            );
-
         Json::Value data(Json::objectValue);
         data["updateProject"] = Json::Value();
 
+        const auto id =
+            value["id"].asInt();
+
         for (auto& project : dataset_->projects()) {
-            if (project.id == incoming.id) {
-                project.title = incoming.title;
-                project.status = incoming.status;
-                project.projectTypeId = incoming.projectTypeId;
-                data["updateProject"] =
-                    projectJson(project);
-                break;
+            if (project.id != id) {
+                continue;
             }
+
+            if (value.isMember("title")) {
+                project.title =
+                    value["title"].asString();
+            }
+
+            if (value.isMember("status")) {
+                project.status =
+                    value["status"].asString();
+            }
+
+            if (value.isMember("projectTypeId")) {
+                project.projectTypeId =
+                    value["projectTypeId"].asInt();
+            }
+
+            data["updateProject"] =
+                projectJson(project);
+
+            break;
         }
 
         return response(data);

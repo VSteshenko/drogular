@@ -1,6 +1,7 @@
 #include "project_mutations.hpp"
 #include "../../../data/portal_graphql_document_builder.hpp"
 #include "../../../data/portal_schema.hpp"
+#include "../../../data/models/portal_project_update.hpp"
 
 drogular::gql::Mutation ProjectMutations::create(
     const PortalProject&
@@ -15,13 +16,13 @@ drogular::gql::Mutation ProjectMutations::create(
 }
 
 drogular::gql::Mutation ProjectMutations::update(
-    const PortalProject&
+    const PortalProjectUpdate&
 ) {
     return PortalGraphQLDocumentBuilder::mutation(
         "UpdatePortalProject",
         "updateProject",
         "project",
-        "ProjectInput!",
+        "ProjectUpdateInput!",
         PortalSchema::projects()
     );
 }

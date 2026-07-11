@@ -36,14 +36,48 @@ TEST(PortalApplicationTests, AdminCreatesProject) {
         3
     );
 
+    const auto project =
+        app.dataset().projects().back();
+
     EXPECT_EQ(
-        app.dataset().projects().back().title,
+        project.title,
         "Application Test Project"
     );
 
     EXPECT_EQ(
-        app.dataset().projects().back().projectTypeId,
+        project.status,
+        "active"
+    );
+
+    EXPECT_EQ(
+        project.projectTypeId,
         2
+    );
+
+    EXPECT_EQ(
+        project.ownerId,
+        1
+    );
+}
+
+TEST(PortalApplicationTests, UsesDefaultStatusWhenCreateStatusIsMissing) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    app.execute<PortalCreateProjectAction>({
+        {"title", "Default status project"},
+        {"projectTypeId", "1"}
+    });
+
+    const auto project =
+        app.dataset().projects().back();
+
+    EXPECT_EQ(
+        project.status,
+        "active"
     );
 }
 
@@ -148,22 +182,23 @@ TEST(PortalApplicationTests, UserCannotCreateUser) {
     );
 }
 
-TEST(PortalApplicationTests, AdminUpdatesProject) {
+TEST(PortalApplicationTests, UpdatesOnlyProvidedProjectFields) {
     PortalApplicationTestHost app(
         DemoDataset::create()
     );
 
     app.loginAsAdmin();
 
+    const auto before =
+        app.dataset().projects().front();
+
     const auto result =
-        app.post<PortalUpdateProjectAction>(
+        app.execute<PortalUpdateProjectAction>(
             {
-                {"title", "Updated Portal"},
-                {"projectTypeId", "2"},
-                {"status", "done"}
+                {"title", "Updated title"}
             },
             {
-                {"id", "1"}
+                {"id", std::to_string(before.id)}
             }
         );
 
@@ -172,19 +207,27 @@ TEST(PortalApplicationTests, AdminUpdatesProject) {
         "/projects/1?success=project_updated"
     );
 
+    const auto& after =
+        app.dataset().projects().front();
+
     EXPECT_EQ(
-        app.dataset().projects()[0].title,
-        "Updated Portal"
+        after.title,
+        "Updated title"
     );
 
     EXPECT_EQ(
-        app.dataset().projects()[0].projectTypeId,
-        2
+        after.status,
+        before.status
     );
 
     EXPECT_EQ(
-        app.dataset().projects()[0].status,
-        "done"
+        after.projectTypeId,
+        before.projectTypeId
+    );
+
+    EXPECT_EQ(
+        after.ownerId,
+        before.ownerId
     );
 }
 

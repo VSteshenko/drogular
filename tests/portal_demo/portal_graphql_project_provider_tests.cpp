@@ -153,13 +153,15 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
         userProvider
     );
 
-    PortalProject project;
+    PortalProjectCreate project;
     project.title = "New Project";
     project.status = "active";
-    project.ownerId = 1;
     project.projectTypeId = 1;
 
-    const auto result = provider.create(project);
+    const auto result = provider.create(
+        project,
+        1
+    );
 
     EXPECT_EQ(result.id, 10);
     EXPECT_EQ(result.title, "New Project");
@@ -201,24 +203,22 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
         userProvider
     );
 
-    PortalProject project;
+    PortalProjectUpdate project;
     project.id = 10;
     project.title = "Updated Project";
     project.status = "done";
-    project.ownerId = 1;
     project.projectTypeId = 1;
 
-    EXPECT_TRUE(provider.update(project));
+    EXPECT_EQ(
+        provider.update(project).id,
+        10
+    );
 
     ASSERT_EQ(client->requestCount(), 1);
 
     EXPECT_EQ(
         client->lastRequest()->variables()["project"]["id"].asInt(),
         10
-    );
-    EXPECT_EQ(
-        client->lastRequest()->variables()["project"]["ownerId"].asInt(),
-        1
     );
 }
 

@@ -31,6 +31,36 @@ public:
         return variables;
     }
 
+    static drogular::GraphQLVariables toVariables(
+        const PortalProjectUpdate& input
+    ) {
+        Json::Value project(Json::objectValue);
+
+        project["id"] = input.id;
+
+        if (input.title.has_value()) {
+            project["title"] = *input.title;
+        }
+
+        if (input.status.has_value()) {
+            project["status"] = *input.status;
+        }
+
+        if (input.projectTypeId.has_value()) {
+            project["projectTypeId"] =
+                *input.projectTypeId;
+        }
+
+        drogular::GraphQLVariables variables;
+
+        variables.set(
+            "project",
+            std::move(project)
+        );
+
+        return variables;
+    }
+
     static PortalProject fromValue(
         const Json::Value& value
     ) {
@@ -70,7 +100,7 @@ public:
         if (!value.has_value() ||
             value->isNull()) {
             return std::nullopt;
-            }
+        }
 
         return fromValue(*value);
     }
