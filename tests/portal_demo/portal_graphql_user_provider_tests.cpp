@@ -105,7 +105,7 @@ TEST(PortalGraphQLUserProviderTests, CreatesUser) {
 
     PortalGraphQLUserProvider provider(client);
 
-    PortalUser user;
+    PortalUserCreate user;
     user.username = "newuser";
     user.password = "secret";
     user.role = "user";
@@ -144,6 +144,7 @@ TEST(PortalGraphQLUserProviderTests, ChecksUserExists) {
     EXPECT_FALSE(provider.exists("missing"));
 }
 
+//TODO: Update when password change action will be ready
 TEST(PortalGraphQLUserProviderTests, UpdatesUser) {
     Json::Value updated(Json::objectValue);
     updated["id"] = 2;
@@ -159,13 +160,15 @@ TEST(PortalGraphQLUserProviderTests, UpdatesUser) {
 
     PortalGraphQLUserProvider provider(client);
 
-    PortalUser user;
+    PortalUserUpdate user;
     user.id = 2;
     user.username = "user";
-    user.password = "newpass";
     user.role = "admin";
 
-    EXPECT_TRUE(provider.update(user));
+    EXPECT_EQ(
+        provider.update(user).id,
+        2
+    );
 
     ASSERT_EQ(client->requestCount(), 1);
     EXPECT_EQ(

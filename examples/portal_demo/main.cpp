@@ -7,6 +7,7 @@
 #include "pages/admin_page.hpp"
 #include "providers/memory/portal_memory_user_provider.hpp"
 #include "actions/create_user_action.hpp"
+#include "actions/update_user_action.hpp"
 #include "pages/offline_page.hpp"
 #include "localization/portal_translations.hpp"
 #include "actions/create_project_action.hpp"
@@ -120,6 +121,7 @@ int main() {
     app.action<PortalLoginAction>("/login");
     app.action<PortalLogoutAction>("/logout");
     app.action<PortalCreateUserAction>("/users/create");
+    app.action<PortalUpdateUserAction>("/users/{id}/update");
     app.action<PortalCreateProjectAction>("/projects/create");
     app.action<PortalUpdateProjectAction>("/projects/{id}/update");
     app.action<PortalDeleteProjectAction>("/projects/{id}/delete");

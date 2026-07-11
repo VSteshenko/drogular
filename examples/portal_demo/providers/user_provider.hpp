@@ -1,10 +1,13 @@
 #pragma once
 
 #include "../data/models/portal_user.hpp"
+#include "../data/models/portal_user_create.hpp"
+#include "../data/models/portal_user_update.hpp"
 
 #include <optional>
 #include <string>
 #include <vector>
+
 
 class PortalUserProvider {
 public:
@@ -22,11 +25,11 @@ public:
     ) const = 0;
 
     virtual PortalUser create(
-        PortalUser user
+        const PortalUserCreate& user
     ) = 0;
 
-    virtual bool update(
-        PortalUser user
+    virtual PortalUser update(
+        const PortalUserUpdate& user
     ) = 0;
 
     virtual std::optional<PortalUser> findById(

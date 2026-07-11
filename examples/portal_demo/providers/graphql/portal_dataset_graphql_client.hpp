@@ -439,22 +439,31 @@ private:
     drogular::GraphQLResponse updateUserResponse(
         const Json::Value& value
     ) {
-        const auto incoming =
-            PortalSchemaMapper::fromJson(
-                PortalSchema::users(),
-                value
-            );
-
         Json::Value data(Json::objectValue);
         data["updateUser"] = Json::Value();
 
+        const auto id =
+            value["id"].asInt();
+
         for (auto& user : dataset_->users()) {
-            if (user.id == incoming.id) {
-                user = incoming;
-                data["updateUser"] =
-                    userJson(user);
-                break;
+            if (user.id != id) {
+                continue;
             }
+
+            if (value.isMember("username")) {
+                user.username =
+                    value["username"].asString();
+            }
+
+            if (value.isMember("role")) {
+                user.role =
+                    value["role"].asString();
+            }
+
+            data["updateUser"] =
+                userJson(user);
+
+            break;
         }
 
         return response(data);

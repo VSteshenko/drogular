@@ -19,7 +19,7 @@ public:
         if (const auto result =
                 drogular::ActionAuthSupport::requireAuthentication(context)) {
             return *result;
-                }
+        }
 
         const auto id =
             std::atoi(context.requireRouteParam("id").c_str());

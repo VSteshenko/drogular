@@ -4,6 +4,7 @@
 #include "documents/user_queries.hpp"
 #include "documents/user_mutations.hpp"
 #include "mappers/user_mapper.hpp"
+#include "../../data/models/portal_user_create.hpp"
 
 #include <drogular/graphql_client.hpp>
 
@@ -73,35 +74,43 @@ public:
     }
 
     PortalUser create(
-        PortalUser user
+        const PortalUserCreate& input
     ) override {
+        PortalUser user;
+
+        user.username = input.username;
+        user.password = input.password;
+        user.role = input.role;
+
+        const auto variables =
+            UserMapper::toVariables(user);
+
         const auto response =
             client_->execute(
                 UserMutations::create(user),
-                UserMapper::toVariables(user)
+                variables
             );
 
-        const auto created =
-            response.field("createUser");
-
-        if (!created.has_value()) {
-            return user;
-        }
-
-        return UserMapper::fromValue(*created);
+        return UserMapper::fromValue(
+            response.data()["createUser"]
+        );
     }
 
-    bool update(
-        PortalUser user
+    PortalUser update(
+        const PortalUserUpdate& input
     ) override {
+        const auto variables =
+            UserMapper::toVariables(input);
+
         const auto response =
             client_->execute(
-                UserMutations::update(user),
-                UserMapper::toVariables(user)
+                UserMutations::update(input),
+                variables
             );
 
-        return response.field("updateUser").has_value() &&
-               !response.field("updateUser")->isNull();
+        return UserMapper::fromValue(
+            response.data()["updateUser"]
+        );
     }
 
     std::optional<PortalUser> findById(int id) const override {

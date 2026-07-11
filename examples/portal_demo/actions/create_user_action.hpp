@@ -68,16 +68,16 @@ public:
             );
         }
 
-        PortalUser user;
-        user.username =
+        PortalUserCreate input;
+        input.username =
             context.requireForm<std::string>("username");
-        user.password =
+        input.password =
             context.requireForm<std::string>("password");
-        user.role =
+        input.role =
             context.requireForm<std::string>("role");
 
         repository->create(
-            user
+            input
         );
 
         // success

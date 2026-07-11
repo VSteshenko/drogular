@@ -250,6 +250,7 @@ TEST(PortalDatasetGraphQLClientTests, CreatesUserInDataset) {
     EXPECT_EQ((*created)["role"].asString(), "user");
 }
 
+//TODO: Update when password change action will be ready
 TEST(PortalDatasetGraphQLClientTests, UpdatesUserInDataset) {
     auto dataset =
         std::make_shared<PortalDataset>();
@@ -263,10 +264,9 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesUserInDataset) {
 
     PortalDatasetGraphQLClient client(dataset);
 
-    PortalUser user;
+    PortalUserUpdate user;
     user.id = 2;
     user.username = "user";
-    user.password = "newpass";
     user.role = "admin";
 
     const auto response =
@@ -276,7 +276,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesUserInDataset) {
         );
 
     ASSERT_EQ(dataset->users().size(), 1);
-    EXPECT_EQ(dataset->users()[0].password, "newpass");
+    // EXPECT_EQ(dataset->users()[0].password, "newpass");
     EXPECT_EQ(dataset->users()[0].role, "admin");
 
     const auto updated =

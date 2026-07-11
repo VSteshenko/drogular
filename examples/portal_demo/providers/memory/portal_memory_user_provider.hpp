@@ -32,23 +32,42 @@ public:
     }
 
     PortalUser create(
-        PortalUser user
+        const PortalUserCreate& input
     ) override {
+        PortalUser user;
+
+        user.id = nextId_++;
+        user.username = input.username;
+        user.password = input.password;
+        user.role = input.role;
+
         users_.push_back(user);
+
         return user;
     }
 
-    bool update(
-        PortalUser user
+    PortalUser update(
+        const PortalUserUpdate& input
     ) override {
-        for (auto& existing : users_) {
-            if (existing.id == user.id) {
-                existing = std::move(user);
-                return true;
+        for (auto& user : users_) {
+            if (user.id != input.id) {
+                continue;
             }
+
+            if (input.username.has_value()) {
+                user.username =
+                    *input.username;
+            }
+
+            if (input.role.has_value()) {
+                user.role =
+                    *input.role;
+            }
+
+            return user;
         }
 
-        return false;
+        return {};
     }
 
     std::optional<PortalUser> findByCredentials(
@@ -105,4 +124,5 @@ public:
 
 private:
     std::vector<PortalUser> users_;
+    int nextId_ = 1;
 };

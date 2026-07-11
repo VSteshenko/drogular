@@ -4,6 +4,7 @@
 #include "../../examples/portal_demo/actions/create_project_action.hpp"
 #include "../../examples/portal_demo/data/demo_dataset.hpp"
 #include "../../examples/portal_demo/actions/create_user_action.hpp"
+#include "../../examples/portal_demo/actions/update_user_action.hpp"
 #include "../../examples/portal_demo/actions/update_project_action.hpp"
 #include "../../examples/portal_demo/actions/delete_project_action.hpp"
 #include "../../examples/portal_demo/pages/projects_page.hpp"
@@ -113,7 +114,7 @@ TEST(PortalApplicationTests, AdminCreatesUser) {
 
     const auto result =
         app.post<PortalCreateUserAction>({
-            {"username", "john"},
+            {"username", "new-user"},
             {"password", "secret"},
             {"role", "user"}
         });
@@ -128,10 +129,13 @@ TEST(PortalApplicationTests, AdminCreatesUser) {
         3
     );
 
-    EXPECT_EQ(
-        app.dataset().users().back().username,
-        "john"
-    );
+    const auto& user =
+        app.dataset().users().back();
+
+    EXPECT_EQ(user.username, "new-user");
+    EXPECT_EQ(user.password, "secret");
+    EXPECT_EQ(user.role, "user");
+    EXPECT_GT(user.id, 0);
 }
 
 TEST(PortalApplicationTests, GuestCannotCreateUser) {
@@ -180,6 +184,39 @@ TEST(PortalApplicationTests, UserCannotCreateUser) {
         app.userCount(),
         2
     );
+}
+
+TEST(PortalApplicationTests, UpdatesOnlyProvidedUserFields) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto before =
+        app.dataset().users().front();
+
+    const auto result =
+        app.execute<PortalUpdateUserAction>(
+            {
+                {"role", "user"}
+            },
+            {
+                {"id", std::to_string(before.id)}
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/users?success=user_updated"
+    );
+
+    const auto& after =
+        app.dataset().users().front();
+
+    EXPECT_EQ(after.role, "user");
+    EXPECT_EQ(after.username, before.username);
+    EXPECT_EQ(after.password, before.password);
 }
 
 TEST(PortalApplicationTests, UpdatesOnlyProvidedProjectFields) {

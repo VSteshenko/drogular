@@ -41,6 +41,31 @@ public:
         return variables;
     }
 
+    static drogular::GraphQLVariables toVariables(
+        const PortalUserUpdate& input
+    ) {
+        Json::Value user(Json::objectValue);
+
+        user["id"] = input.id;
+
+        if (input.username.has_value()) {
+            user["username"] = *input.username;
+        }
+
+        if (input.role.has_value()) {
+            user["role"] = *input.role;
+        }
+
+        drogular::GraphQLVariables variables;
+
+        variables.set(
+            "user",
+            std::move(user)
+        );
+
+        return variables;
+    }
+
     static PortalUser fromValue(
         const Json::Value& value
     ) {
