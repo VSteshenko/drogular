@@ -59,6 +59,11 @@ public:
             {"loginSubmit", "login.submit"},
 
             {"usersCreate", "users.create"},
+            {"usersEdit", "users.edit"},
+            {"usersUpdate", "users.update"},
+            {"usersBack", "users.back"},
+            {"userNotFoundTitle", "users.not_found.title"},
+            {"userNotFoundMessage", "users.not_found.message"},
 
             {"projectsCreate", "projects.create"},
             {"projectStatusActive", "projects.status.active"},

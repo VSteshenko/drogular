@@ -48,6 +48,10 @@ public:
             return context.translate("users.success.created");
         }
 
+        if (success == "user_updated") {
+            return context.translate("users.success.updated");
+        }
+
         return "";
     }
 

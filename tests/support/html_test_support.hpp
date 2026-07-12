@@ -95,9 +95,40 @@ public:
         const std::string& html,
         const std::string& value
     ) {
-        return html.find(
-            "value=\"" + value + "\""
-        ) != std::string::npos;
+        const auto valueMarker =
+            "value=\"" + value + "\"";
+
+        std::size_t position = 0;
+
+        while (true) {
+            const auto optionStart =
+                html.find("<option", position);
+
+            if (optionStart == std::string::npos) {
+                return false;
+            }
+
+            const auto optionEnd =
+                html.find('>', optionStart);
+
+            if (optionEnd == std::string::npos) {
+                return false;
+            }
+
+            const auto optionTag =
+                html.substr(
+                    optionStart,
+                    optionEnd - optionStart + 1
+                );
+
+            if (optionTag.find(valueMarker) !=
+                std::string::npos) {
+                return true;
+                }
+
+            position =
+                optionEnd + 1;
+        }
     }
 
     static bool containsText(
@@ -112,17 +143,40 @@ public:
         const std::string& html,
         const std::string& value
     ) {
-        const auto option =
-            openingTag(
-                html,
-                "value=\"" + value + "\""
-            );
+        const auto valueMarker =
+            "value=\"" + value + "\"";
 
-        if (option.empty()) {
-            return false;
+        std::size_t position = 0;
+
+        while (true) {
+            const auto optionStart =
+                html.find("<option", position);
+
+            if (optionStart == std::string::npos) {
+                return false;
+            }
+
+            const auto optionEnd =
+                html.find('>', optionStart);
+
+            if (optionEnd == std::string::npos) {
+                return false;
+            }
+
+            const auto optionTag =
+                html.substr(
+                    optionStart,
+                    optionEnd - optionStart + 1
+                );
+
+            if (optionTag.find(valueMarker) !=
+                std::string::npos) {
+                return optionTag.find("selected") !=
+                       std::string::npos;
+                }
+
+            position =
+                optionEnd + 1;
         }
-
-        return option.find("selected") !=
-               std::string::npos;
     }
 };

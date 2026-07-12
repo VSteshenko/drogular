@@ -134,10 +134,15 @@ public:
         Json::Value users(Json::arrayValue);
 
         for (const auto& user : repository->all()) {
-            Json::Value value;
+            Json::Value value(Json::objectValue);
+
+            value["id"] = user.id;
             value["username"] = user.username;
             value["role"] = user.role;
-            users.append(value);
+
+            users.append(
+                std::move(value)
+            );
         }
 
         context.set("users", users);

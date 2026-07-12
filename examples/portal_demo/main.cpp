@@ -4,6 +4,7 @@
 #include "actions/login_action.hpp"
 #include "actions/logout_action.hpp"
 #include "pages/users_page.hpp"
+#include "pages/user_edit_page.hpp"
 #include "pages/admin_page.hpp"
 #include "providers/memory/portal_memory_user_provider.hpp"
 #include "actions/create_user_action.hpp"
@@ -112,6 +113,7 @@ int main() {
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
     app.page<PortalUsersPage>("/users");
+    app.page<PortalUserEditPage>("/users/{id}/edit");
     app.page<PortalAdminPage>("/admin");
     app.page<PortalProjectsPage>("/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");

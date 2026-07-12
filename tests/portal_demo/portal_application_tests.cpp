@@ -10,6 +10,7 @@
 #include "../../examples/portal_demo/pages/projects_page.hpp"
 #include "../../examples/portal_demo/pages/project_edit_page.hpp"
 #include "../../examples/portal_demo/pages/users_page.hpp"
+#include "../../examples/portal_demo/pages/user_edit_page.hpp"
 
 #include <gtest/gtest.h>
 
@@ -503,6 +504,103 @@ TEST(PortalApplicationTests, UserCreateFormRendersAllDatasetRoles) {
         HtmlTestSupport::containsText(
             html,
             "Manager"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, AdminRendersUserEditForm) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto user =
+        app.dataset().users().back();
+
+    const auto html =
+        app.render<PortalUserEditPage>(
+            {},
+            {
+                {
+                    "id",
+                    std::to_string(user.id)
+                }
+            }
+        );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="username")",
+            "required"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="role")",
+            "required"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::optionSelected(
+            html,
+            user.role
+        )
+    );
+
+    const auto username =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(name="username")",
+            "value"
+        );
+
+    ASSERT_TRUE(
+        username.has_value()
+    );
+
+    EXPECT_EQ(
+        *username,
+        user.username
+    );
+}
+
+TEST(PortalApplicationTests, UserCannotRenderUserEditForm) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsUser();
+
+    const auto user =
+        app.dataset().users().front();
+
+    const auto html =
+        app.render<PortalUserEditPage>(
+            {},
+            {
+                {
+                    "id",
+                    std::to_string(user.id)
+                }
+            }
+        );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Access denied"
+        )
+    );
+
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(name="username")"
         )
     );
 }

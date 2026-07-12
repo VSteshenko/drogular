@@ -1,0 +1,88 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>
+    {{ authLoginRequiredMessage }}
+</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@else
+
+@if(accessDenied)
+<h2>{{ authAccessDeniedTitle }}</h2>
+
+<p>
+    {{ authAccessDeniedMessage }}
+</p>
+@else
+
+@if(userNotFound)
+<h2>{{ userNotFoundTitle }}</h2>
+
+<p>{{ userNotFoundMessage }}</p>
+
+<p>
+    <a href="/users">{{ usersBack }}</a>
+</p>
+@else
+
+<h2>{{ pageTitle }}</h2>
+
+@if(hasUsersError)
+@include("partials/alert_error.html")
+@endif
+
+<form
+        method="post"
+        action="/users/{{ userId }}/update"
+>
+    <div>
+        <label for="username">
+            {{ usernameLabel }}
+            @if(usernameRequired):@endif
+        </label>
+
+        <input
+                id="username"
+                name="username"
+                value="{{ username }}"
+                @if(usernameRequired)required@endif
+        />
+    </div>
+
+    <div>
+        <label for="role">
+            {{ roleLabel }}
+            @if(roleRequired):@endif
+        </label>
+
+        <select
+                id="role"
+                name="role"
+                @if(roleRequired)required@endif
+        >
+            @foreach(option in roleOptions)
+            <option
+                    value="{{ option.value }}"
+                    @if(option.selected)selected@endif
+            >
+                {{ option.label }}
+            </option>
+            @endforeach
+        </select>
+    </div>
+
+    <button type="submit">
+        {{ usersUpdate }}
+    </button>
+</form>
+
+<p>
+    <a href="/users">{{ usersBack }}</a>
+</p>
+
+@endif
+@endif
+@endif

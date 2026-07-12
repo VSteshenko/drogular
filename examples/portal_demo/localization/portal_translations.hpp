@@ -123,6 +123,13 @@ private:
                 {"common.id", "ID"},
                 {"projects.owner", "Owner"},
                 {"projects.type", "Type"},
+                {"users.edit.title", "Edit User"},
+                {"users.edit", "Edit"},
+                {"users.update", "Update User"},
+                {"users.back", "Back to users"},
+                {"users.not_found.title", "User not found"},
+                {"users.not_found.message", "The requested user does not exist."},
+                {"users.success.updated", "User was updated successfully."},
             }
         },
         {
@@ -186,6 +193,13 @@ private:
                 {"common.id", "ID"},
                 {"projects.owner", "Besitzer"},
                 {"projects.type", "Typ"},
+                {"users.edit.title", "Benutzer bearbeiten"},
+                {"users.edit", "Bearbeiten"},
+                {"users.update", "Benutzer aktualisieren"},
+                {"users.back", "Zurück zu Benutzern"},
+                {"users.not_found.title", "Benutzer nicht gefunden"},
+                {"users.not_found.message", "Der angeforderte Benutzer existiert nicht."},
+                {"users.success.updated", "Der Benutzer wurde erfolgreich aktualisiert."},
             }
         }
     };

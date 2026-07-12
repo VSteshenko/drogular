@@ -58,11 +58,17 @@
 @endif
 
 <ul>
-@foreach(user in users)
+    @foreach(user in users)
     <li>
         <strong>{{ user.username }}</strong>
         — {{ user.role }}
+
+        @if(isAdmin)
+        <a href="/users/{{ user.id }}/edit">
+            {{ usersEdit }}
+        </a>
+        @endif
     </li>
-@endforeach
+    @endforeach
 </ul>
 @endif
