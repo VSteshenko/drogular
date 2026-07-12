@@ -8,6 +8,9 @@
 #include "pages/admin_page.hpp"
 #include "pages/project_types_page.hpp"
 #include "actions/create_project_type_action.hpp"
+#include "actions/delete_project_type_action.hpp"
+#include "actions/update_project_type_action.hpp"
+#include "pages/project_type_edit_page.hpp"
 #include "actions/create_user_action.hpp"
 #include "actions/update_user_action.hpp"
 #include "pages/offline_page.hpp"
@@ -117,6 +120,9 @@ int main() {
     app.page<PortalUserEditPage>("/users/{id}/edit");
     app.page<PortalAdminPage>("/admin");
     app.page<PortalProjectTypesPage>("/project-types");
+    app.page<PortalProjectTypeEditPage>("/project-types/{id}/edit");
+    app.action<PortalUpdateProjectTypeAction>("/project-types/{id}/update");
+    app.action<PortalDeleteProjectTypeAction>("/project-types/{id}/delete");
     app.page<PortalProjectsPage>("/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");
     app.page<PortalProjectEditPage>("/projects/{id}/edit");

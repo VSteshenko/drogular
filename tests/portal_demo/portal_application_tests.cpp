@@ -12,7 +12,10 @@
 #include "../../examples/portal_demo/pages/users_page.hpp"
 #include "../../examples/portal_demo/pages/user_edit_page.hpp"
 #include "../../examples/portal_demo/pages/project_types_page.hpp"
+#include "../../examples/portal_demo/pages/project_type_edit_page.hpp"
 #include "../../examples/portal_demo/actions/create_project_type_action.hpp"
+#include "../../examples/portal_demo/actions/update_project_type_action.hpp"
+#include "../../examples/portal_demo/actions/delete_project_type_action.hpp"
 
 #include <algorithm>
 
@@ -788,6 +791,172 @@ TEST(PortalApplicationTests, ProjectTypeCreateFormUsesSchemaMetadata) {
             html,
             R"(name="title")",
             "required"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, AdminRendersProjectTypeEditForm) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto type =
+        app.dataset().projectTypes().front();
+
+    const auto html =
+        app.render<PortalProjectTypeEditPage>(
+            {},
+            {
+                {
+                    "id",
+                    std::to_string(type.id)
+                }
+            }
+        );
+
+    const auto code =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(name="code")",
+            "value"
+        );
+
+    ASSERT_TRUE(code.has_value());
+    EXPECT_EQ(*code, type.code);
+
+    const auto title =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(name="title")",
+            "value"
+        );
+
+    ASSERT_TRUE(title.has_value());
+    EXPECT_EQ(*title, type.title);
+}
+
+TEST(PortalApplicationTests, UpdatesOnlyProvidedProjectTypeFields) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto before =
+        app.dataset().projectTypes().front();
+
+    const auto result =
+        app.execute<PortalUpdateProjectTypeAction>(
+            {
+                {"title", "Updated Type"}
+            },
+            {
+                {
+                    "id",
+                    std::to_string(before.id)
+                }
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/project-types?success=project_type_updated"
+    );
+
+    const auto& after =
+        app.dataset().projectTypes().front();
+
+    EXPECT_EQ(
+        after.title,
+        "Updated Type"
+    );
+
+    EXPECT_EQ(
+        after.code,
+        before.code
+    );
+}
+
+TEST(PortalApplicationTests, DeletesUnusedProjectType) {
+    auto dataset =
+        DemoDataset::create();
+
+    dataset.addProjectType({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(
+        std::move(dataset)
+    );
+
+    app.loginAsAdmin();
+
+    const auto result =
+        app.execute<PortalDeleteProjectTypeAction>(
+            {},
+            {
+                {"id", "99"}
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/project-types?success=project_type_deleted"
+    );
+
+    EXPECT_TRUE(
+        std::none_of(
+            app.dataset().projectTypes().begin(),
+            app.dataset().projectTypes().end(),
+            [](const PortalProjectType& type) {
+                return type.id == 99;
+            }
+        )
+    );
+}
+
+TEST(PortalApplicationTests, RejectsDeletingUsedProjectType) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto usedId =
+        app.dataset()
+            .projects()
+            .front()
+            .projectTypeId;
+
+    const auto result =
+        app.execute<PortalDeleteProjectTypeAction>(
+            {},
+            {
+                {
+                    "id",
+                    std::to_string(usedId)
+                }
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/project-types?error=project_type_in_use"
+    );
+
+    EXPECT_TRUE(
+        std::any_of(
+            app.dataset().projectTypes().begin(),
+            app.dataset().projectTypes().end(),
+            [usedId](
+                const PortalProjectType& projectType
+            ) {
+                return projectType.id == usedId;
+            }
         )
     );
 }

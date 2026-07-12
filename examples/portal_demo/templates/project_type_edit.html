@@ -1,0 +1,85 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>{{ authLoginRequiredMessage }}</p>
+
+<p>
+  <a href="/login">{{ navLogin }}</a>
+</p>
+@endif
+
+@if(accessDenied)
+<h2>{{ authAccessDeniedTitle }}</h2>
+
+<p>{{ authAccessDeniedMessage }}</p>
+@endif
+
+@if(projectTypeNotFound)
+<h2>{{ projectTypeNotFoundTitle }}</h2>
+
+<p>{{ projectTypeNotFoundMessage }}</p>
+
+<p>
+  <a href="/project-types">
+    {{ projectTypesBack }}
+  </a>
+</p>
+@endif
+
+@if(isAuthenticated)
+@if(isAdmin)
+@if(projectTypeNotFound)
+@else
+
+<h2>{{ pageTitle }}</h2>
+
+@if(hasProjectTypesError)
+@include("partials/alert_error.html")
+@endif
+
+<form
+        method="post"
+        action="/project-types/{{ projectTypeId }}/update"
+>
+  <div>
+    <label for="code">
+      {{ projectTypeCodeLabel }}
+      @if(projectTypeCodeRequired):@endif
+    </label>
+
+    <input
+            id="code"
+            name="code"
+            value="{{ projectTypeCode }}"
+            @if(projectTypeCodeRequired)required@endif
+    />
+  </div>
+
+  <div>
+    <label for="title">
+      {{ projectTypeTitleLabel }}
+      @if(projectTypeTitleRequired):@endif
+    </label>
+
+    <input
+            id="title"
+            name="title"
+            value="{{ projectTypeTitle }}"
+            @if(projectTypeTitleRequired)required@endif
+    />
+  </div>
+
+  <button type="submit">
+    {{ projectTypesUpdate }}
+  </button>
+</form>
+
+<p>
+  <a href="/project-types">
+    {{ projectTypesBack }}
+  </a>
+</p>
+
+@endif
+@endif
+@endif

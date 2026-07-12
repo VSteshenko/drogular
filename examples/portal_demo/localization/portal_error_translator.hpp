@@ -93,9 +93,27 @@ public:
         drogular::RenderContext& context,
         const std::string& error
     ) {
+        if (error == "validation") {
+            return context.translate(
+                "project_types.error.validation"
+            );
+        }
+
         if (error == "duplicate_code") {
             return context.translate(
                 "project_types.error.duplicate_code"
+            );
+        }
+
+        if (error == "not_found") {
+            return context.translate(
+                "project_types.error.not_found"
+            );
+        }
+
+        if (error == "project_type_in_use") {
+            return context.translate(
+                "project_types.error.in_use"
             );
         }
 
@@ -109,6 +127,18 @@ public:
         if (success == "project_type_created") {
             return context.translate(
                 "project_types.success.created"
+            );
+        }
+
+        if (success == "project_type_updated") {
+            return context.translate(
+                "project_types.success.updated"
+            );
+        }
+
+        if (success == "project_type_deleted") {
+            return context.translate(
+                "project_types.success.deleted"
             );
         }
 

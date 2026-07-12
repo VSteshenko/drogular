@@ -141,6 +141,16 @@ private:
                 {"project_types.create", "Create Project Type"},
                 {"project_types.success.created", "Project type was created successfully."},
                 {"project_types.error.duplicate_code", "A project type with this code already exists."},
+                {"project_types.edit_page.title", "Edit Project Type"},
+                {"project_types.update", "Update Project Type"},
+                {"project_types.back", "Back to project types"},
+                {"project_types.not_found.title", "Project type not found"},
+                {"project_types.not_found.message", "The requested project type does not exist."},
+                {"project_types.success.updated", "Project type was updated successfully."},
+                {"project_types.success.deleted", "Project type was deleted successfully."},
+                {"project_types.error.validation", "Please check the project type fields."},
+                {"project_types.error.not_found", "Project type was not found."},
+                {"project_types.error.in_use", "This project type is used by one or more projects and cannot be deleted."},
             }
         },
         {
@@ -222,6 +232,16 @@ private:
                 {"project_types.create", "Projekttyp erstellen"},
                 {"project_types.success.created", "Der Projekttyp wurde erfolgreich erstellt."},
                 {"project_types.error.duplicate_code", "Ein Projekttyp mit diesem Code existiert bereits."},
+                {"project_types.edit_page.title", "Projekttyp bearbeiten"},
+                {"project_types.update", "Projekttyp aktualisieren"},
+                {"project_types.back", "Zurück zu den Projekttypen"},
+                {"project_types.not_found.title", "Projekttyp nicht gefunden"},
+                {"project_types.not_found.message", "Der angeforderte Projekttyp existiert nicht."},
+                {"project_types.success.updated", "Der Projekttyp wurde erfolgreich aktualisiert."},
+                {"project_types.success.deleted", "Der Projekttyp wurde erfolgreich gelöscht."},
+                {"project_types.error.validation", "Bitte überprüfen Sie die Felder des Projekttyps."},
+                {"project_types.error.not_found", "Der Projekttyp wurde nicht gefunden."},
+                {"project_types.error.in_use", "Dieser Projekttyp wird von einem oder mehreren Projekten verwendet und kann nicht gelöscht werden."},
             }
         }
     };
