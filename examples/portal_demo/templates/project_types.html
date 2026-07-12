@@ -1,0 +1,57 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>
+    {{ authLoginRequiredMessage }}
+</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@endif
+
+@if(accessDenied)
+<h2>{{ authAccessDeniedTitle }}</h2>
+
+<p>
+    {{ authAccessDeniedMessage }}
+</p>
+@endif
+
+@if(hasAdminAccess)
+<h2>{{ pageTitle }}</h2>
+
+<p>
+    <a href="/admin">
+        {{ projectTypesBackToAdmin }}
+    </a>
+</p>
+
+<ul>
+    @foreach(item in projectTypes)
+    <li>
+        <strong>{{ item.title }}</strong>
+        — {{ item.code }}
+
+        <span>
+            ({{ item.projectCount }} {{ projectTypesProjects }})
+        </span>
+
+        <a href="/project-types/{{ item.id }}/edit">
+            {{ projectTypesEdit }}
+        </a>
+
+        @if(item.canDelete)
+        <form
+                method="post"
+                action="/project-types/{{ item.id }}/delete"
+        >
+            <button type="submit">
+                {{ projectTypesDelete }}
+            </button>
+        </form>
+        @endif
+    </li>
+    @endforeach
+</ul>
+@endif

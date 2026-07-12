@@ -6,7 +6,7 @@
 #include "pages/users_page.hpp"
 #include "pages/user_edit_page.hpp"
 #include "pages/admin_page.hpp"
-#include "providers/memory/portal_memory_user_provider.hpp"
+#include "pages/project_types_page.hpp"
 #include "actions/create_user_action.hpp"
 #include "actions/update_user_action.hpp"
 #include "pages/offline_page.hpp"
@@ -115,6 +115,7 @@ int main() {
     app.page<PortalUsersPage>("/users");
     app.page<PortalUserEditPage>("/users/{id}/edit");
     app.page<PortalAdminPage>("/admin");
+    app.page<PortalProjectTypesPage>("/project-types");
     app.page<PortalProjectsPage>("/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");
     app.page<PortalProjectEditPage>("/projects/{id}/edit");

@@ -130,6 +130,12 @@ private:
                 {"users.not_found.title", "User not found"},
                 {"users.not_found.message", "The requested user does not exist."},
                 {"users.success.updated", "User was updated successfully."},
+                {"project_types.title", "Project Types"},
+                {"project_types.manage", "Manage Project Types"},
+                {"project_types.projects", "projects"},
+                {"project_types.edit", "Edit"},
+                {"project_types.delete", "Delete"},
+                {"project_types.back_to_admin", "Back to administration"},
             }
         },
         {
@@ -200,6 +206,12 @@ private:
                 {"users.not_found.title", "Benutzer nicht gefunden"},
                 {"users.not_found.message", "Der angeforderte Benutzer existiert nicht."},
                 {"users.success.updated", "Der Benutzer wurde erfolgreich aktualisiert."},
+                {"project_types.title", "Projekttypen"},
+                {"project_types.manage", "Projekttypen verwalten"},
+                {"project_types.projects", "Projekte"},
+                {"project_types.edit", "Bearbeiten"},
+                {"project_types.delete", "Löschen"},
+                {"project_types.back_to_admin", "Zurück zur Administration"},
             }
         }
     };

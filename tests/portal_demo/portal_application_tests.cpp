@@ -11,6 +11,9 @@
 #include "../../examples/portal_demo/pages/project_edit_page.hpp"
 #include "../../examples/portal_demo/pages/users_page.hpp"
 #include "../../examples/portal_demo/pages/user_edit_page.hpp"
+#include "../../examples/portal_demo/pages/project_types_page.hpp"
+
+#include <algorithm>
 
 #include <gtest/gtest.h>
 
@@ -601,6 +604,125 @@ TEST(PortalApplicationTests, UserCannotRenderUserEditForm) {
         HtmlTestSupport::containsText(
             html,
             R"(name="username")"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectTypesPageDisplaysProjectCounts) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectTypesPage>();
+
+    for (const auto& type :
+         app.dataset().projectTypes()) {
+        const auto count =
+            std::count_if(
+                app.dataset().projects().begin(),
+                app.dataset().projects().end(),
+                [&type](const PortalProject& project) {
+                    return project.projectTypeId ==
+                           type.id;
+                }
+            );
+
+        EXPECT_TRUE(
+            HtmlTestSupport::containsText(
+                html,
+                type.title
+            )
+        );
+
+        EXPECT_TRUE(
+            HtmlTestSupport::containsText(
+                html,
+                std::to_string(count)
+            )
+        );
+         }
+}
+
+TEST(PortalApplicationTests, ProjectTypesPageHidesDeleteForUsedType) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto usedId =
+        app.dataset()
+            .projects()
+            .front()
+            .projectTypeId;
+
+    const auto html =
+        app.render<PortalProjectTypesPage>();
+
+    const auto deleteAction =
+        "/project-types/" +
+        std::to_string(usedId) +
+        "/delete";
+
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            deleteAction
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectTypesPageShowsDeleteForUnusedType) {
+    auto dataset =
+        DemoDataset::create();
+
+    dataset.addProjectType({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(
+        std::move(dataset)
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectTypesPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "/project-types/99/delete"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, RegularUserCannotManageProjectTypes) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsUser();
+
+    const auto html =
+        app.render<PortalProjectTypesPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Access denied"
+        )
+    );
+
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(action="/project-types/)"
         )
     );
 }
