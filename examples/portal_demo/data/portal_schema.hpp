@@ -99,7 +99,7 @@ public:
     static PortalTableSchema<PortalProjectType> projectTypes() {
         auto schema =
             PortalTableSchema<PortalProjectType>::forModel(
-                "projectTypes"
+                "project_types"
             );
 
         schema

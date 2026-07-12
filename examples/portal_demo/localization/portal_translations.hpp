@@ -130,12 +130,17 @@ private:
                 {"users.not_found.title", "User not found"},
                 {"users.not_found.message", "The requested user does not exist."},
                 {"users.success.updated", "User was updated successfully."},
-                {"project_types.title", "Project Types"},
+                {"project_types.page.title", "Project Types"},
+                {"project_types.code", "Code"},
+                {"project_types.title", "Type"},
                 {"project_types.manage", "Manage Project Types"},
                 {"project_types.projects", "projects"},
                 {"project_types.edit", "Edit"},
                 {"project_types.delete", "Delete"},
                 {"project_types.back_to_admin", "Back to administration"},
+                {"project_types.create", "Create Project Type"},
+                {"project_types.success.created", "Project type was created successfully."},
+                {"project_types.error.duplicate_code", "A project type with this code already exists."},
             }
         },
         {
@@ -206,12 +211,17 @@ private:
                 {"users.not_found.title", "Benutzer nicht gefunden"},
                 {"users.not_found.message", "Der angeforderte Benutzer existiert nicht."},
                 {"users.success.updated", "Der Benutzer wurde erfolgreich aktualisiert."},
-                {"project_types.title", "Projekttypen"},
+                {"project_types.page.title", "Projekttypen"},
+                {"project_types.code", "Kode"},
+                {"project_types.page.title", "Typ"},
                 {"project_types.manage", "Projekttypen verwalten"},
                 {"project_types.projects", "Projekte"},
                 {"project_types.edit", "Bearbeiten"},
                 {"project_types.delete", "Löschen"},
                 {"project_types.back_to_admin", "Zurück zur Administration"},
+                {"project_types.create", "Projekttyp erstellen"},
+                {"project_types.success.created", "Der Projekttyp wurde erfolgreich erstellt."},
+                {"project_types.error.duplicate_code", "Ein Projekttyp mit diesem Code existiert bereits."},
             }
         }
     };

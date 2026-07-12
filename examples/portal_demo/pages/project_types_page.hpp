@@ -3,11 +3,13 @@
 #include "../providers/project_provider.hpp"
 #include "../providers/project_type_provider.hpp"
 #include "../ui/portal_page_support.hpp"
+#include "../localization/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
 #include <unordered_map>
+#include <algorithm>
 
 class PortalProjectTypesPage final
     : public drogular::TemplatePage
@@ -18,7 +20,7 @@ public:
     ) override {
         PortalPageSupport::apply(
             context,
-            "project_types.title"
+            "project_types.page.title"
         );
 
         context.set("hasAdminAccess", false);
@@ -36,6 +38,90 @@ public:
             )) {
             return;
         }
+
+        const auto request =
+            context.request();
+
+        const auto error =
+            request != nullptr
+                ? request->getParameter("error")
+                : std::string("");
+
+        const auto success =
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string("");
+
+        const auto createTitle =
+            request != nullptr
+                ? request->getParameter("title")
+                : std::string("");
+
+        const auto projectTypesError =
+            PortalErrorTranslator::projectTypesError(
+                context,
+                error
+            );
+
+        const auto projectTypesSuccess =
+            PortalErrorTranslator::projectTypesSuccess(
+                context,
+                success
+            );
+
+        context.set("hasProjectTypesError", !projectTypesError.empty());
+        context.set("hasProjectTypesSuccess", !projectTypesSuccess.empty());
+        context.set("alertMessage", !projectTypesError.empty()
+            ? projectTypesError
+            : projectTypesSuccess);
+        context.set("createProjectTypeTitle", createTitle);
+
+        const auto code =
+            request != nullptr
+                ? request->getParameter("code")
+                : std::string("");
+
+        const auto title =
+            request != nullptr
+                ? request->getParameter("title")
+                : std::string("");
+
+        context.set(
+            "createProjectTypeCode",
+            code
+        );
+
+        context.set(
+            "createProjectTypeTitle",
+            title
+        );
+
+        const auto schema =
+            PortalSchema::projectTypes();
+
+        context.set(
+            "projectTypeCodeLabel",
+            context.translate(
+                schema.fieldLabelKey("code")
+            )
+        );
+
+        context.set(
+            "projectTypeTitleLabel",
+            context.translate(
+                schema.fieldLabelKey("title")
+            )
+        );
+
+        context.set(
+            "projectTypeCodeRequired",
+            schema.fieldRequired("code")
+        );
+
+        context.set(
+            "projectTypeTitleRequired",
+            schema.fieldRequired("title")
+        );
 
         context.set("hasAdminAccess", true);
 

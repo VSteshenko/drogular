@@ -12,6 +12,7 @@
 #include "../../examples/portal_demo/pages/users_page.hpp"
 #include "../../examples/portal_demo/pages/user_edit_page.hpp"
 #include "../../examples/portal_demo/pages/project_types_page.hpp"
+#include "../../examples/portal_demo/actions/create_project_type_action.hpp"
 
 #include <algorithm>
 
@@ -723,6 +724,70 @@ TEST(PortalApplicationTests, RegularUserCannotManageProjectTypes) {
         HtmlTestSupport::containsText(
             html,
             R"(action="/project-types/)"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, AdminCreatesProjectType) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result =
+        app.execute<PortalCreateProjectTypeAction>({
+            {"code", "support"},
+            {"title", "Support"}
+        });
+
+    EXPECT_EQ(
+        result.location(),
+        "/project-types?success=project_type_created"
+    );
+
+    const auto& created =
+        app.dataset().projectTypes().back();
+
+    EXPECT_EQ(
+        created.code,
+        "support"
+    );
+
+    EXPECT_EQ(
+        created.title,
+        "Support"
+    );
+
+    EXPECT_GT(
+        created.id,
+        0
+    );
+}
+
+TEST(PortalApplicationTests, ProjectTypeCreateFormUsesSchemaMetadata) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectTypesPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="code")",
+            "required"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="title")",
+            "required"
         )
     );
 }

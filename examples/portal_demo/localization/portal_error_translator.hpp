@@ -88,4 +88,30 @@ public:
 
         return "";
     }
+
+    static std::string projectTypesError(
+        drogular::RenderContext& context,
+        const std::string& error
+    ) {
+        if (error == "duplicate_code") {
+            return context.translate(
+                "project_types.error.duplicate_code"
+            );
+        }
+
+        return "";
+    }
+
+    static std::string projectTypesSuccess(
+        drogular::RenderContext& context,
+        const std::string& success
+    ) {
+        if (success == "project_type_created") {
+            return context.translate(
+                "project_types.success.created"
+            );
+        }
+
+        return "";
+    }
 };

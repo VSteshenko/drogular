@@ -80,6 +80,7 @@ public:
             {"projectTypesEdit", "project_types.edit"},
             {"projectTypesDelete", "project_types.delete"},
             {"projectTypesBackToAdmin", "project_types.back_to_admin"},
+            {"projectTypesCreate", "project_types.create"},
 
             {"authLoginRequiredTitle", "auth.login_required.title"},
             {"authLoginRequiredMessage", "auth.login_required.message"},

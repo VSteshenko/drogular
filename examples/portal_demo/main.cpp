@@ -7,6 +7,7 @@
 #include "pages/user_edit_page.hpp"
 #include "pages/admin_page.hpp"
 #include "pages/project_types_page.hpp"
+#include "actions/create_project_type_action.hpp"
 #include "actions/create_user_action.hpp"
 #include "actions/update_user_action.hpp"
 #include "pages/offline_page.hpp"
@@ -128,6 +129,7 @@ int main() {
     app.action<PortalCreateProjectAction>("/projects/create");
     app.action<PortalUpdateProjectAction>("/projects/{id}/update");
     app.action<PortalDeleteProjectAction>("/projects/{id}/delete");
+    app.action<PortalCreateProjectTypeAction>("/project-types/create");
 
     app.run(8083);
 
