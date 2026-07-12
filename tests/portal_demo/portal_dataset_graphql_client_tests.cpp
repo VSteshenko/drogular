@@ -1,11 +1,15 @@
 #include "../../examples/portal_demo/data/portal_dataset.hpp"
-#include "../../examples/portal_demo//providers/graphql/portal_dataset_graphql_client.hpp"
-#include "../../examples/portal_demo//providers/graphql/documents/project_queries.hpp"
-#include "../../examples/portal_demo//providers/graphql/documents/project_mutations.hpp"
-#include "../../examples/portal_demo//providers/graphql/mappers/project_mapper.hpp"
-#include "../../examples/portal_demo//providers/graphql/documents/user_queries.hpp"
-#include "../../examples/portal_demo//providers/graphql/documents/user_mutations.hpp"
-#include "../../examples/portal_demo//providers/graphql/mappers/user_mapper.hpp"
+#include "../../examples/portal_demo/data/demo_dataset.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_dataset_graphql_client.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/project_queries.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/project_mutations.hpp"
+#include "../../examples/portal_demo/providers/graphql/mappers/project_mapper.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/user_queries.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/user_mutations.hpp"
+#include "../../examples/portal_demo/providers/graphql/mappers/user_mapper.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/project_type_queries.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/project_type_mutations.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_graphql_project_type_provider.hpp"
 
 #include <gtest/gtest.h>
 
@@ -284,4 +288,112 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesUserInDataset) {
 
     ASSERT_TRUE(updated.has_value());
     EXPECT_EQ((*updated)["role"].asString(), "admin");
+}
+
+TEST(PortalDatasetGraphQLClientTests, CreatesProjectType) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        );
+
+    PortalGraphQLProjectTypeProvider provider(client);
+
+    PortalProjectTypeCreate input;
+    input.code = "support";
+    input.title = "Support";
+
+    const auto created =
+        provider.create(input);
+
+    EXPECT_GT(created.id, 0);
+    EXPECT_EQ(created.code, "support");
+    EXPECT_EQ(created.title, "Support");
+    EXPECT_EQ(dataset->projectTypes().back().code, "support");
+}
+
+TEST(PortalDatasetGraphQLClientTests, UpdatesOnlyProvidedProjectTypeFields ) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        );
+
+    PortalGraphQLProjectTypeProvider provider(client);
+
+    const auto before =
+        dataset->projectTypes().front();
+
+    PortalProjectTypeUpdate input;
+    input.id = before.id;
+    input.title = "Updated type";
+
+    const auto updated =
+        provider.update(input);
+
+    EXPECT_EQ(updated.title, "Updated type");
+    EXPECT_EQ(updated.code, before.code);
+}
+
+TEST(PortalDatasetGraphQLClientTests, RejectsRemovingUsedProjectType) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        );
+
+    PortalGraphQLProjectTypeProvider provider(client);
+
+    const auto usedId =
+        dataset->projects().front().projectTypeId;
+
+    EXPECT_FALSE(
+        provider.remove(usedId)
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, RemovesUnusedProjectType) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    dataset->addProjectType({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    auto client =
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        );
+
+    PortalGraphQLProjectTypeProvider provider(client);
+
+    EXPECT_TRUE(
+        provider.remove(99)
+    );
+
+    EXPECT_TRUE(
+        std::none_of(
+            dataset->projectTypes().begin(),
+            dataset->projectTypes().end(),
+            [](const PortalProjectType& type) {
+                return type.id == 99;
+            }
+        )
+    );
 }

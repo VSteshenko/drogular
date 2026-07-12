@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../project_type_provider.hpp"
-
 #include "documents/project_type_queries.hpp"
+#include "documents/project_type_mutations.hpp"
 #include "mappers/project_type_mapper.hpp"
 
 #include <drogular/graphql_client.hpp>
@@ -48,6 +48,60 @@ public:
         return ProjectTypeMapper::optionalType(
             response.field("projectType")
         );
+    }
+
+    PortalProjectType create(
+        const PortalProjectTypeCreate& input
+    ) override {
+        const auto response =
+            client_->execute(
+                ProjectTypeMutations::create(input),
+                ProjectTypeMapper::toVariables(input)
+            );
+
+        const auto value =
+            response.field("createProjectType");
+
+        if (!value.has_value()) {
+            return {};
+        }
+
+        return ProjectTypeMapper::fromValue(*value);
+    }
+
+    PortalProjectType update(
+        const PortalProjectTypeUpdate& input
+    ) override {
+        const auto response =
+            client_->execute(
+                ProjectTypeMutations::update(input),
+                ProjectTypeMapper::toVariables(input)
+            );
+
+        const auto value =
+            response.field("updateProjectType");
+
+        if (!value.has_value()) {
+            return {};
+        }
+
+        return ProjectTypeMapper::fromValue(*value);
+    }
+
+    bool remove(
+        int id
+    ) override {
+        const auto response =
+            client_->execute(
+                ProjectTypeMutations::remove(),
+                ProjectTypeMapper::idVariables(id)
+            );
+
+        const auto value =
+            response.field("removeProjectType");
+
+        return value.has_value() &&
+               value->asBool();
     }
 
 private:

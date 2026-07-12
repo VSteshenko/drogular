@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../../data/models/portal_project_type.hpp"
+#include "../../../data/models/portal_project_type_create.hpp"
+#include "../../../data/models/portal_project_type_update.hpp"
 
 #include <drogular/graphql_variables.hpp>
 
@@ -15,6 +17,47 @@ public:
     ) {
         drogular::GraphQLVariables variables;
         variables.set("id", id);
+        return variables;
+    }
+
+    static drogular::GraphQLVariables toVariables(
+        const PortalProjectTypeCreate& input
+    ) {
+        Json::Value value(Json::objectValue);
+
+        value["code"] = input.code;
+        value["title"] = input.title;
+
+        drogular::GraphQLVariables variables;
+        variables.set(
+            "projectType",
+            value
+        );
+
+        return variables;
+    }
+
+    static drogular::GraphQLVariables toVariables(
+        const PortalProjectTypeUpdate& input
+    ) {
+        Json::Value value(Json::objectValue);
+
+        value["id"] = input.id;
+
+        if (input.code.has_value()) {
+            value["code"] = *input.code;
+        }
+
+        if (input.title.has_value()) {
+            value["title"] = *input.title;
+        }
+
+        drogular::GraphQLVariables variables;
+        variables.set(
+            "projectType",
+            value
+        );
+
         return variables;
     }
 
