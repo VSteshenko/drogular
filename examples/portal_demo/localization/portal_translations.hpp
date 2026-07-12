@@ -213,7 +213,7 @@ private:
                 {"users.success.updated", "Der Benutzer wurde erfolgreich aktualisiert."},
                 {"project_types.page.title", "Projekttypen"},
                 {"project_types.code", "Kode"},
-                {"project_types.page.title", "Typ"},
+                {"project_types.title", "Typ"},
                 {"project_types.manage", "Projekttypen verwalten"},
                 {"project_types.projects", "Projekte"},
                 {"project_types.edit", "Bearbeiten"},
