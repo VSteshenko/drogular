@@ -48,10 +48,7 @@ TEST(PortalGraphQLRoleProviderTests, CreatesRole) {
     );
 }
 
-TEST(
-    PortalGraphQLRoleProviderTests,
-    SendsOnlyProvidedRoleUpdateFields
-) {
+TEST(PortalGraphQLRoleProviderTests, SendsOnlyProvidedRoleUpdateFields) {
     Json::Value updated(Json::objectValue);
 
     updated["id"] = 3;
@@ -106,10 +103,7 @@ TEST(
     );
 }
 
-TEST(
-    PortalGraphQLRoleProviderTests,
-    RemovesRole
-) {
+TEST(PortalGraphQLRoleProviderTests, RemovesRole) {
     Json::Value data(Json::objectValue);
     data["removeRole"] = true;
 
@@ -138,10 +132,7 @@ TEST(
     );
 }
 
-TEST(
-    PortalGraphQLRoleProviderTests,
-    ReturnsFalseWhenRoleCannotBeRemoved
-) {
+TEST(PortalGraphQLRoleProviderTests, ReturnsFalseWhenRoleCannotBeRemoved) {
     Json::Value data(Json::objectValue);
     data["removeRole"] = false;
 
@@ -155,4 +146,29 @@ TEST(
     EXPECT_FALSE(
         provider.remove(1)
     );
+}
+
+TEST(PortalGraphQLRoleProviderTests, FindsRoleById) {
+    Json::Value role(Json::objectValue);
+    role["id"] = 2;
+    role["code"] = "user";
+    role["title"] = "User";
+
+    Json::Value data(Json::objectValue);
+    data["role"] = role;
+
+    auto client =
+        std::make_shared<
+            drogular::StaticGraphQLClient
+        >(data);
+
+    PortalGraphQLRoleProvider provider(client);
+
+    const auto result =
+        provider.findById(2);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->id, 2);
+    EXPECT_EQ(result->code, "user");
+    EXPECT_EQ(result->title, "User");
 }

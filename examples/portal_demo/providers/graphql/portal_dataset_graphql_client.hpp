@@ -128,6 +128,13 @@ public:
                 );
             };
 
+        queryHandlers_["PortalRoleById"] =
+            [this](const auto& variables) {
+                return roleByIdResponse(
+                    variables.json()["id"].asInt()
+                );
+        };
+
         queryHandlers_["PortalProjectTypes"] =
             [this](const auto&) {
                 return projectTypesResponse();
@@ -411,6 +418,29 @@ private:
                     roleJson(role);
                 break;
             }
+        }
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse roleByIdResponse(
+        int id
+    ) const {
+        Json::Value data(Json::objectValue);
+        data["role"] = Json::Value();
+
+        const auto role =
+            std::find_if(
+                dataset_->roles().begin(),
+                dataset_->roles().end(),
+                [id](const PortalRole& item) {
+                    return item.id == id;
+                }
+            );
+
+        if (role != dataset_->roles().end()) {
+            data["role"] =
+                roleJson(*role);
         }
 
         return response(data);

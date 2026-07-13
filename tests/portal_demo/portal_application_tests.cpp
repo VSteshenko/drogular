@@ -12,7 +12,10 @@
 #include "../../examples/portal_demo/pages/users_page.hpp"
 #include "../../examples/portal_demo/pages/user_edit_page.hpp"
 #include "../../examples/portal_demo/pages/roles_page.hpp"
+#include "../../examples/portal_demo/pages/role_edit_page.hpp"
 #include "../../examples/portal_demo/actions/create_role_action.hpp"
+#include "../../examples/portal_demo/actions/update_role_action.hpp"
+#include "../../examples/portal_demo/actions/delete_role_action.hpp"
 #include "../../examples/portal_demo/pages/project_types_page.hpp"
 #include "../../examples/portal_demo/pages/project_type_edit_page.hpp"
 #include "../../examples/portal_demo/actions/create_project_type_action.hpp"
@@ -1113,4 +1116,195 @@ TEST(PortalApplicationTests, AdminCreatesRole) {
 
     EXPECT_EQ(role.code, "manager");
     EXPECT_EQ(role.title, "Manager");
+}
+
+TEST(PortalApplicationTests, AdminRendersRoleEditForm) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto role =
+        app.dataset().roles().front();
+
+    const auto html =
+        app.render<PortalRoleEditPage>(
+            {},
+            {
+                {
+                    "id",
+                    std::to_string(role.id)
+                }
+            }
+        );
+
+    const auto code =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(name="code")",
+            "value"
+        );
+
+    ASSERT_TRUE(code.has_value());
+    EXPECT_EQ(*code, role.code);
+
+    const auto title =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(name="title")",
+            "value"
+        );
+
+    ASSERT_TRUE(title.has_value());
+    EXPECT_EQ(*title, role.title);
+
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="code")",
+            "required"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::hasAttribute(
+            html,
+            R"(name="title")",
+            "required"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, UpdatesOnlyProvidedRoleFields) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto before =
+        app.dataset().roles().front();
+
+    const auto result =
+        app.execute<PortalUpdateRoleAction>(
+            {
+                {"title", "Updated role"}
+            },
+            {
+                {
+                    "id",
+                    std::to_string(before.id)
+                }
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/roles?success=role_updated"
+    );
+
+    const auto& after =
+        app.dataset().roles().front();
+
+    EXPECT_EQ(
+        after.code,
+        before.code
+    );
+
+    EXPECT_EQ(
+        after.title,
+        "Updated role"
+    );
+}
+
+TEST(PortalApplicationTests, AdminDeletesUnusedRole) {
+    auto dataset =
+        DemoDataset::create();
+
+    dataset.addRole({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(
+        std::move(dataset)
+    );
+
+    app.loginAsAdmin();
+
+    const auto result =
+        app.execute<PortalDeleteRoleAction>(
+            {},
+            {
+                {"id", "99"}
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/roles?success=role_deleted"
+    );
+
+    EXPECT_TRUE(
+        std::none_of(
+            app.dataset().roles().begin(),
+            app.dataset().roles().end(),
+            [](const PortalRole& role) {
+                return role.id == 99;
+            }
+        )
+    );
+}
+
+TEST(PortalApplicationTests, RejectsDeletingUsedRole) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto usedCode =
+        app.dataset().users().front().role;
+
+    const auto role =
+        std::find_if(
+            app.dataset().roles().begin(),
+            app.dataset().roles().end(),
+            [&usedCode](const PortalRole& item) {
+                return item.code == usedCode;
+            }
+        );
+
+    ASSERT_NE(
+        role,
+        app.dataset().roles().end()
+    );
+
+    const auto result =
+        app.execute<PortalDeleteRoleAction>(
+            {},
+            {
+                {
+                    "id",
+                    std::to_string(role->id)
+                }
+            }
+        );
+
+    EXPECT_EQ(
+        result.location(),
+        "/roles?error=role_in_use"
+    );
+
+    EXPECT_TRUE(
+        std::any_of(
+            app.dataset().roles().begin(),
+            app.dataset().roles().end(),
+            [id = role->id](const PortalRole& item) {
+                return item.id == id;
+            }
+        )
+    );
 }

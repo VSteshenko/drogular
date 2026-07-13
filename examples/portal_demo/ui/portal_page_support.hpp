@@ -69,6 +69,10 @@ public:
             {"rolesDelete", "roles.delete"},
             {"rolesBackToAdmin", "roles.back_to_admin"},
             {"rolesManage", "roles.manage"},
+            {"rolesUpdate", "roles.update"},
+            {"rolesBack", "roles.back"},
+            {"roleNotFoundTitle", "roles.not_found.title"},
+            {"roleNotFoundMessage", "roles.not_found.message"},
 
             {"projectsCreate", "projects.create"},
             {"projectStatusActive", "projects.status.active"},

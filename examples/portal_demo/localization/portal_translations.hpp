@@ -164,6 +164,15 @@ private:
                 {"roles.error.duplicate_code", "A role with this code already exists."},
                 {"roles.error.access_denied", "Administrator access is required."},
                 {"roles.manage", "Manage Roles"},
+                {"roles.edit_page.title", "Edit Role"},
+                {"roles.update", "Update Role"},
+                {"roles.back", "Back to roles"},
+                {"roles.not_found.title", "Role not found"},
+                {"roles.not_found.message", "The requested role does not exist."},
+                {"roles.success.updated", "Role was updated successfully."},
+                {"roles.success.deleted", "Role was deleted successfully."},
+                {"roles.error.not_found", "Role was not found."},
+                {"roles.error.in_use", "This role is used by one or more users and cannot be deleted."},
             }
         },
         {
@@ -268,6 +277,15 @@ private:
                 {"roles.error.duplicate_code", "Eine Rolle mit diesem Code existiert bereits."},
                 {"roles.error.access_denied", "Administratorzugriff ist erforderlich."},
                 {"roles.manage", "Rollen verwalten"},
+                {"roles.edit_page.title", "Rolle bearbeiten"},
+                {"roles.update", "Rolle aktualisieren"},
+                {"roles.back", "Zurück zu den Rollen"},
+                {"roles.not_found.title", "Rolle nicht gefunden"},
+                {"roles.not_found.message", "Die angeforderte Rolle existiert nicht."},
+                {"roles.success.updated", "Die Rolle wurde erfolgreich aktualisiert."},
+                {"roles.success.deleted", "Die Rolle wurde erfolgreich gelöscht."},
+                {"roles.error.not_found", "Die Rolle wurde nicht gefunden."},
+                {"roles.error.in_use", "Diese Rolle wird von einem oder mehreren Benutzern verwendet und kann nicht gelöscht werden."},
             }
         }
     };

@@ -1,0 +1,85 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>{{ authLoginRequiredMessage }}</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@endif
+
+@if(accessDenied)
+<h2>{{ authAccessDeniedTitle }}</h2>
+
+<p>{{ authAccessDeniedMessage }}</p>
+@endif
+
+@if(roleNotFound)
+<h2>{{ roleNotFoundTitle }}</h2>
+
+<p>{{ roleNotFoundMessage }}</p>
+
+<p>
+    <a href="/roles">
+        {{ rolesBack }}
+    </a>
+</p>
+@endif
+
+@if(isAuthenticated)
+@if(isAdmin)
+@if(roleNotFound)
+@else
+
+<h2>{{ pageTitle }}</h2>
+
+@if(hasRolesError)
+@include("partials/alert_error.html")
+@endif
+
+<form
+    method="post"
+    action="/roles/{{ roleId }}/update"
+>
+    <div>
+        <label for="code">
+            {{ roleCodeLabel }}
+            @if(roleCodeRequired):@endif
+        </label>
+
+        <input
+            id="code"
+            name="code"
+            value="{{ roleCode }}"
+            @if(roleCodeRequired)required@endif
+        />
+    </div>
+
+    <div>
+        <label for="title">
+            {{ roleTitleLabel }}
+            @if(roleTitleRequired):@endif
+        </label>
+
+        <input
+            id="title"
+            name="title"
+            value="{{ roleTitle }}"
+            @if(roleTitleRequired)required@endif
+        />
+    </div>
+
+    <button type="submit">
+        {{ rolesUpdate }}
+    </button>
+</form>
+
+<p>
+    <a href="/roles">
+        {{ rolesBack }}
+    </a>
+</p>
+
+@endif
+@endif
+@endif

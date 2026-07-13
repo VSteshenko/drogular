@@ -161,6 +161,18 @@ public:
             return context.translate("roles.error.access_denied");
         }
 
+        if (error == "not_found") {
+            return context.translate(
+                "roles.error.not_found"
+            );
+        }
+
+        if (error == "role_in_use") {
+            return context.translate(
+                "roles.error.in_use"
+            );
+        }
+
         return "";
     }
 
@@ -170,6 +182,18 @@ public:
     ) {
         if (success == "role_created") {
             return context.translate("roles.success.created");
+        }
+
+        if (success == "role_updated") {
+            return context.translate(
+                "roles.success.updated"
+            );
+        }
+
+        if (success == "role_deleted") {
+            return context.translate(
+                "roles.success.deleted"
+            );
         }
 
         return "";

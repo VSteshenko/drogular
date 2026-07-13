@@ -22,7 +22,7 @@ drogular::gql::Query RoleQueries::findByCode() {
 
 drogular::gql::Query RoleQueries::findById() {
     return PortalGraphQLDocumentBuilder::findById(
-        "PortalRoleTypeById",
+        "PortalRoleById",
         "role",
         PortalSchema::roles()
     );
