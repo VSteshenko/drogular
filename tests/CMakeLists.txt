@@ -83,6 +83,7 @@ add_executable(drogular_tests
     ../examples/portal_demo/providers/graphql/documents/project_type_queries.cpp
     ../examples/portal_demo/providers/graphql/documents/project_type_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/role_queries.cpp
+    ../examples/portal_demo/providers/graphql/documents/role_mutations.cpp
     ../examples/portal_demo/data/portal_dataset.cpp
     portal_demo/portal_graphql_project_provider_tests.cpp
     portal_demo/portal_dataset_graphql_client_tests.cpp
@@ -95,6 +96,7 @@ add_executable(drogular_tests
     portal_demo/portal_graphql_selection_builder_tests.cpp
     portal_demo/portal_graphql_document_builder_tests.cpp
     portal_demo/portal_startup_tests.cpp
+    portal_demo/portal_graphql_role_provider_tests.cpp
 
 )
 

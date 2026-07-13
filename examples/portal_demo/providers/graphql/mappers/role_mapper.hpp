@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../../data/models/portal_role.hpp"
+#include "../../../data/models/portal_role_create.hpp"
+#include "../../../data/models/portal_role_update.hpp"
 #include "../../../data/portal_schema.hpp"
 #include "../../../data/portal_schema_mapper.hpp"
 
@@ -45,6 +47,41 @@ public:
         return variables;
     }
 
+    static drogular::GraphQLVariables toVariables(
+        const PortalRoleCreate& input
+    ) {
+        Json::Value value(Json::objectValue);
+
+        value["code"] = input.code;
+        value["title"] = input.title;
+
+        drogular::GraphQLVariables variables;
+        variables.set("role", value);
+
+        return variables;
+    }
+
+    static drogular::GraphQLVariables toVariables(
+        const PortalRoleUpdate& input
+    ) {
+        Json::Value value(Json::objectValue);
+
+        value["id"] = input.id;
+
+        if (input.code.has_value()) {
+            value["code"] = *input.code;
+        }
+
+        if (input.title.has_value()) {
+            value["title"] = *input.title;
+        }
+
+        drogular::GraphQLVariables variables;
+        variables.set("role", value);
+
+        return variables;
+    }
+
     static PortalRole fromValue(
         const Json::Value& value
     ) {
@@ -74,7 +111,7 @@ public:
         if (!value.has_value() ||
             value->isNull()) {
             return std::nullopt;
-            }
+        }
 
         return fromValue(*value);
     }

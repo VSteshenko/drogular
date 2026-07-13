@@ -7,8 +7,8 @@
 #include "../../examples/portal_demo/providers/graphql/documents/user_queries.hpp"
 #include "../../examples/portal_demo/providers/graphql/documents/user_mutations.hpp"
 #include "../../examples/portal_demo/providers/graphql/mappers/user_mapper.hpp"
-#include "../../examples/portal_demo/providers/graphql/documents/project_type_queries.hpp"
-#include "../../examples/portal_demo/providers/graphql/documents/project_type_mutations.hpp"
+#include "../../examples/portal_demo/providers/graphql/documents/role_mutations.hpp"
+#include "../../examples/portal_demo/providers/graphql/mappers/role_mapper.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_type_provider.hpp"
 
 #include <gtest/gtest.h>
@@ -395,5 +395,185 @@ TEST(PortalDatasetGraphQLClientTests, RemovesUnusedProjectType) {
                 return type.id == 99;
             }
         )
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, CreatesRoleInDataset) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    PortalRoleCreate input;
+    input.code = "manager";
+    input.title = "Manager";
+
+    const auto response =
+        client.execute(
+            RoleMutations::create(input),
+            RoleMapper::toVariables(input)
+        );
+
+    ASSERT_EQ(
+        dataset->roles().size(),
+        1
+    );
+
+    EXPECT_EQ(
+        dataset->roles()[0].id,
+        1
+    );
+
+    EXPECT_EQ(
+        dataset->roles()[0].code,
+        "manager"
+    );
+
+    EXPECT_EQ(
+        dataset->roles()[0].title,
+        "Manager"
+    );
+
+    const auto created =
+        response.field("createRole");
+
+    ASSERT_TRUE(
+        created.has_value()
+    );
+
+    EXPECT_EQ(
+        (*created)["id"].asInt(),
+        1
+    );
+
+    EXPECT_EQ(
+        (*created)["code"].asString(),
+        "manager"
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, UpdatesOnlyProvidedRoleFields) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    dataset->addRole({
+        .id = 1,
+        .code = "manager",
+        .title = "Manager"
+    });
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    PortalRoleUpdate input;
+    input.id = 1;
+    input.title = "Project Manager";
+
+    const auto response =
+        client.execute(
+            RoleMutations::update(input),
+            RoleMapper::toVariables(input)
+        );
+
+    ASSERT_EQ(
+        dataset->roles().size(),
+        1
+    );
+
+    EXPECT_EQ(
+        dataset->roles()[0].code,
+        "manager"
+    );
+
+    EXPECT_EQ(
+        dataset->roles()[0].title,
+        "Project Manager"
+    );
+
+    const auto updated =
+        response.field("updateRole");
+
+    ASSERT_TRUE(
+        updated.has_value()
+    );
+
+    EXPECT_EQ(
+        (*updated)["title"].asString(),
+        "Project Manager"
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, RemovesUnusedRole) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    dataset->addRole({
+        .id = 1,
+        .code = "manager",
+        .title = "Manager"
+    });
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    const auto response =
+        client.execute(
+            RoleMutations::remove(),
+            RoleMapper::idVariables(1)
+        );
+
+    EXPECT_TRUE(
+        dataset->roles().empty()
+    );
+
+    const auto removed =
+        response.field("removeRole");
+
+    ASSERT_TRUE(
+        removed.has_value()
+    );
+
+    EXPECT_TRUE(
+        removed->asBool()
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, RejectsRemovingUsedRole) {
+    auto dataset =
+        std::make_shared<PortalDataset>();
+
+    dataset
+        ->addRole({
+            .id = 1,
+            .code = "admin",
+            .title = "Administrator"
+        })
+        .addUser({
+            .id = 1,
+            .username = "admin",
+            .password = "secret",
+            .role = "admin"
+        });
+
+    PortalDatasetGraphQLClient client(dataset);
+
+    const auto response =
+        client.execute(
+            RoleMutations::remove(),
+            RoleMapper::idVariables(1)
+        );
+
+    ASSERT_EQ(
+        dataset->roles().size(),
+        1
+    );
+
+    const auto removed =
+        response.field("removeRole");
+
+    ASSERT_TRUE(
+        removed.has_value()
+    );
+
+    EXPECT_FALSE(
+        removed->asBool()
     );
 }

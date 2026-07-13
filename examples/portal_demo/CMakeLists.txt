@@ -7,6 +7,7 @@ add_executable(portal_demo
     providers/graphql/documents/project_type_queries.cpp
     providers/graphql/documents/project_type_mutations.cpp
     providers/graphql/documents/role_queries.cpp
+    providers/graphql/documents/role_mutations.cpp
     data/portal_dataset.cpp
 )
 

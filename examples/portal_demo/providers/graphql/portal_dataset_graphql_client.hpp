@@ -195,6 +195,27 @@ public:
                     variables.json()["id"].asInt()
                 );
         };
+
+        mutationHandlers_["CreatePortalRole"] =
+            [this](const auto& variables) {
+                return createRoleResponse(
+                    variables.json()["role"]
+                );
+        };
+
+        mutationHandlers_["UpdatePortalRole"] =
+            [this](const auto& variables) {
+                return updateRoleResponse(
+                    variables.json()["role"]
+                );
+        };
+
+        mutationHandlers_["RemovePortalRole"] =
+            [this](const auto& variables) {
+                return removeRoleResponse(
+                    variables.json()["id"].asInt()
+                );
+        };
     }
 
     drogular::GraphQLResponse executeRequest(
@@ -653,6 +674,111 @@ private:
 
         data["removeProjectType"] =
             types.size() != originalSize;
+
+        return response(data);
+    }
+
+    int nextRoleId() const {
+        int nextId = 1;
+
+        for (const auto& role : dataset_->roles()) {
+            nextId =
+                std::max(nextId, role.id + 1);
+        }
+
+        return nextId;
+    }
+
+    drogular::GraphQLResponse createRoleResponse(
+        const Json::Value& value
+    ) {
+        auto role =
+            PortalSchemaMapper::fromJson(
+                PortalSchema::roles(),
+                value
+            );
+
+        role.id =
+            nextRoleId();
+
+        dataset_->roles().push_back(role);
+
+        Json::Value data(Json::objectValue);
+        data["createRole"] =
+            roleJson(role);
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse updateRoleResponse(
+        const Json::Value& value
+    ) {
+        Json::Value data(Json::objectValue);
+        data["updateRole"] = Json::Value();
+
+        const auto id =
+            value["id"].asInt();
+
+        for (auto& role : dataset_->roles()) {
+            if (role.id != id) {
+                continue;
+            }
+
+            if (value.isMember("code")) {
+                role.code =
+                    value["code"].asString();
+            }
+
+            if (value.isMember("title")) {
+                role.title =
+                    value["title"].asString();
+            }
+
+            data["updateRole"] =
+                roleJson(role);
+
+            break;
+        }
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse removeRoleResponse(
+        int id
+    ) {
+        Json::Value data(Json::objectValue);
+
+        const auto role =
+            std::find_if(
+                dataset_->roles().begin(),
+                dataset_->roles().end(),
+                [id](const PortalRole& item) {
+                    return item.id == id;
+                }
+            );
+
+        if (role == dataset_->roles().end()) {
+            data["removeRole"] = false;
+            return response(data);
+        }
+
+        const auto used =
+            std::any_of(
+                dataset_->users().begin(),
+                dataset_->users().end(),
+                [&role](const PortalUser& user) {
+                    return user.role == role->code;
+                }
+            );
+
+        if (used) {
+            data["removeRole"] = false;
+            return response(data);
+        }
+
+        dataset_->roles().erase(role);
+
+        data["removeRole"] = true;
 
         return response(data);
     }
