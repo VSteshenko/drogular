@@ -76,20 +76,23 @@
     @foreach(item in projectTypes)
     <li>
         <strong>{{ item.title }}</strong>
-        — {{ item.code }}
 
         <span>
-            ({{ item.projectCount }} {{ projectTypesProjects }})
+            {{ item.subtitle }}
         </span>
 
-        <a href="/project-types/{{ item.id }}/edit">
+        <span>
+            ({{ item.count }} {{ item.countLabel }})
+        </span>
+
+        <a href="{{ item.editUrl }}">
             {{ projectTypesEdit }}
         </a>
 
         @if(item.canDelete)
         <form
                 method="post"
-                action="/project-types/{{ item.id }}/delete"
+                action="{{ item.deleteUrl }}"
         >
             <button type="submit">
                 {{ projectTypesDelete }}

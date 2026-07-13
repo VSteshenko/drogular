@@ -76,7 +76,6 @@ public:
             {"projectsDelete", "projects.delete"},
             {"projectsBackToDetails", "projects.back_to_details"},
             {"projectTypesManage", "project_types.manage"},
-            {"projectTypesProjects", "project_types.projects"},
             {"projectTypesEdit", "project_types.edit"},
             {"projectTypesDelete", "project_types.delete"},
             {"projectTypesBackToAdmin", "project_types.back_to_admin"},

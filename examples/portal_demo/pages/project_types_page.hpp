@@ -10,6 +10,7 @@
 
 #include <unordered_map>
 #include <algorithm>
+#include <string>
 
 class PortalProjectTypesPage final
     : public drogular::TemplatePage
@@ -74,16 +75,10 @@ public:
         context.set("alertMessage", !projectTypesError.empty()
             ? projectTypesError
             : projectTypesSuccess);
-        context.set("createProjectTypeTitle", createTitle);
 
         const auto code =
             request != nullptr
                 ? request->getParameter("code")
-                : std::string("");
-
-        const auto title =
-            request != nullptr
-                ? request->getParameter("title")
                 : std::string("");
 
         context.set(
@@ -93,7 +88,7 @@ public:
 
         context.set(
             "createProjectTypeTitle",
-            title
+            createTitle
         );
 
         const auto schema =
@@ -154,11 +149,32 @@ public:
 
             Json::Value item(Json::objectValue);
 
-            item["id"] = type.id;
-            item["code"] = type.code;
-            item["title"] = type.title;
-            item["projectCount"] = projectCount;
-            item["canDelete"] = projectCount == 0;
+            item["title"] =
+                type.title;
+
+            item["subtitle"] =
+                type.code;
+
+            item["count"] =
+                projectCount;
+
+            item["countLabel"] =
+                context.translate(
+                    "project_types.projects"
+                );
+
+            item["canDelete"] =
+                projectCount == 0;
+
+            item["editUrl"] =
+                "/project-types/" +
+                std::to_string(type.id) +
+                "/edit";
+
+            item["deleteUrl"] =
+                "/project-types/" +
+                std::to_string(type.id) +
+                "/delete";
 
             items.append(
                 std::move(item)

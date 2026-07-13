@@ -960,3 +960,28 @@ TEST(PortalApplicationTests, RejectsDeletingUsedProjectType) {
         )
     );
 }
+
+TEST(PortalApplicationTests, ProjectTypesPageBuildsReferenceListUrls) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto projectType =
+        app.dataset()
+            .projectTypes()
+            .front();
+
+    const auto html =
+        app.render<PortalProjectTypesPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "/project-types/" +
+            std::to_string(projectType.id) +
+            "/edit"
+        )
+    );
+}
