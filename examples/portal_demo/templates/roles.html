@@ -1,0 +1,101 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>{{ authLoginRequiredMessage }}</p>
+
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@endif
+
+@if(accessDenied)
+<h2>{{ authAccessDeniedTitle }}</h2>
+
+<p>{{ authAccessDeniedMessage }}</p>
+@endif
+
+@if(hasAdminAccess)
+<h2>{{ pageTitle }}</h2>
+
+<p>
+    <a href="/admin">
+        {{ rolesBackToAdmin }}
+    </a>
+</p>
+
+@if(hasRolesError)
+@include("partials/alert_error.html")
+@endif
+
+@if(hasRolesSuccess)
+@include("partials/alert_success.html")
+@endif
+
+<form
+    method="post"
+    action="/roles/create"
+>
+    <div>
+        <label for="code">
+            {{ roleCodeLabel }}
+            @if(roleCodeRequired):@endif
+        </label>
+
+        <input
+            id="code"
+            name="code"
+            value="{{ createRoleCode }}"
+            @if(roleCodeRequired)required@endif
+        />
+    </div>
+
+    <div>
+        <label for="title">
+            {{ roleTitleLabel }}
+            @if(roleTitleRequired):@endif
+        </label>
+
+        <input
+            id="title"
+            name="title"
+            value="{{ createRoleTitle }}"
+            @if(roleTitleRequired)required@endif
+        />
+    </div>
+
+    <button type="submit">
+        {{ rolesCreate }}
+    </button>
+</form>
+
+<ul>
+    @foreach(item in roles)
+    <li>
+        <strong>{{ item.title }}</strong>
+
+        <span>
+            {{ item.subtitle }}
+        </span>
+
+        <span>
+            ({{ item.count }} {{ item.countLabel }})
+        </span>
+
+        <a href="{{ item.editUrl }}">
+            {{ rolesEdit }}
+        </a>
+
+        @if(item.canDelete)
+        <form
+            method="post"
+            action="{{ item.deleteUrl }}"
+        >
+            <button type="submit">
+                {{ rolesDelete }}
+            </button>
+        </form>
+        @endif
+    </li>
+    @endforeach
+</ul>
+@endif

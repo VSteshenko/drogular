@@ -144,4 +144,34 @@ public:
 
         return "";
     }
+
+    static std::string rolesError(
+        drogular::RenderContext& context,
+        const std::string& error
+    ) {
+        if (error == "validation") {
+            return context.translate("roles.error.validation");
+        }
+
+        if (error == "duplicate_code") {
+            return context.translate("roles.error.duplicate_code");
+        }
+
+        if (error == "access_denied") {
+            return context.translate("roles.error.access_denied");
+        }
+
+        return "";
+    }
+
+    static std::string rolesSuccess(
+        drogular::RenderContext& context,
+        const std::string& success
+    ) {
+        if (success == "role_created") {
+            return context.translate("roles.success.created");
+        }
+
+        return "";
+    }
 };

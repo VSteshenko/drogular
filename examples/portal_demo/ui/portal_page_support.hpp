@@ -64,6 +64,11 @@ public:
             {"usersBack", "users.back"},
             {"userNotFoundTitle", "users.not_found.title"},
             {"userNotFoundMessage", "users.not_found.message"},
+            {"rolesCreate", "roles.create"},
+            {"rolesEdit", "roles.edit"},
+            {"rolesDelete", "roles.delete"},
+            {"rolesBackToAdmin", "roles.back_to_admin"},
+            {"rolesManage", "roles.manage"},
 
             {"projectsCreate", "projects.create"},
             {"projectStatusActive", "projects.status.active"},

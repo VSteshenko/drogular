@@ -6,6 +6,8 @@
 #include "actions/logout_action.hpp"
 #include "pages/users_page.hpp"
 #include "pages/user_edit_page.hpp"
+#include "actions/create_role_action.hpp"
+#include "pages/roles_page.hpp"
 #include "pages/admin_page.hpp"
 #include "pages/project_types_page.hpp"
 #include "actions/create_project_type_action.hpp"
@@ -151,6 +153,7 @@ int main(
     app.page<PortalDashboardPage>("/dashboard");
     app.page<PortalUsersPage>("/users");
     app.page<PortalUserEditPage>("/users/{id}/edit");
+    app.page<PortalRolesPage>("/roles");
     app.page<PortalAdminPage>("/admin");
     app.page<PortalProjectTypesPage>("/project-types");
     app.page<PortalProjectTypeEditPage>("/project-types/{id}/edit");
@@ -165,6 +168,7 @@ int main(
     app.action<PortalLogoutAction>("/logout");
     app.action<PortalCreateUserAction>("/users/create");
     app.action<PortalUpdateUserAction>("/users/{id}/update");
+    app.action<PortalCreateRoleAction>("/roles/create");
     app.action<PortalCreateProjectAction>("/projects/create");
     app.action<PortalUpdateProjectAction>("/projects/{id}/update");
     app.action<PortalDeleteProjectAction>("/projects/{id}/delete");

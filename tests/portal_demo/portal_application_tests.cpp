@@ -11,6 +11,8 @@
 #include "../../examples/portal_demo/pages/project_edit_page.hpp"
 #include "../../examples/portal_demo/pages/users_page.hpp"
 #include "../../examples/portal_demo/pages/user_edit_page.hpp"
+#include "../../examples/portal_demo/pages/roles_page.hpp"
+#include "../../examples/portal_demo/actions/create_role_action.hpp"
 #include "../../examples/portal_demo/pages/project_types_page.hpp"
 #include "../../examples/portal_demo/pages/project_type_edit_page.hpp"
 #include "../../examples/portal_demo/actions/create_project_type_action.hpp"
@@ -984,4 +986,131 @@ TEST(PortalApplicationTests, ProjectTypesPageBuildsReferenceListUrls) {
             "/edit"
         )
     );
+}
+
+TEST(PortalApplicationTests, RolesPageDisplaysUserCounts) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalRolesPage>();
+
+    for (const auto& role :
+         app.dataset().roles()) {
+        const auto count =
+            std::count_if(
+                app.dataset().users().begin(),
+                app.dataset().users().end(),
+                [&role](const PortalUser& user) {
+                    return user.role ==
+                           role.code;
+                }
+            );
+
+        EXPECT_TRUE(
+            HtmlTestSupport::containsText(
+                html,
+                role.title
+            )
+        );
+
+        EXPECT_TRUE(
+            HtmlTestSupport::containsText(
+                html,
+                std::to_string(count)
+            )
+        );
+         }
+}
+
+TEST(PortalApplicationTests, RolesPageHidesDeleteForUsedRole) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto usedCode =
+        app.dataset().users().front().role;
+
+    const auto role =
+        std::find_if(
+            app.dataset().roles().begin(),
+            app.dataset().roles().end(),
+            [&usedCode](const PortalRole& item) {
+                return item.code == usedCode;
+            }
+        );
+
+    ASSERT_NE(
+        role,
+        app.dataset().roles().end()
+    );
+
+    const auto html =
+        app.render<PortalRolesPage>();
+
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            "/roles/" +
+            std::to_string(role->id) +
+            "/delete"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, RolesPageShowsDeleteForUnusedRole) {
+    auto dataset =
+        DemoDataset::create();
+
+    dataset.addRole({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(
+        std::move(dataset)
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalRolesPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "/roles/99/delete"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, AdminCreatesRole) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result =
+        app.execute<PortalCreateRoleAction>({
+            {"code", "manager"},
+            {"title", "Manager"}
+        });
+
+    EXPECT_EQ(
+        result.location(),
+        "/roles?success=role_created"
+    );
+
+    const auto& role =
+        app.dataset().roles().back();
+
+    EXPECT_EQ(role.code, "manager");
+    EXPECT_EQ(role.title, "Manager");
 }
