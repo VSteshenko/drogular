@@ -1,3 +1,4 @@
+#include "startup/portal_demo_startup.hpp"
 #include "actions/language_action.hpp"
 #include "pages/dashboard_page.hpp"
 #include "pages/login_page.hpp"
@@ -33,7 +34,39 @@
 #include <drogular/static_file_cache_profile.hpp>
 #include <drogular/session_store.hpp>
 
-int main() {
+#include <exception>
+#include <iostream>
+
+int main(
+    int argc,
+    char* argv[]
+) {
+    PortalDemoOptions startupOptions;
+
+    try {
+        startupOptions =
+            PortalDemoStartup::parse(
+                argc,
+                argv
+            );
+    } catch (const std::exception& error) {
+        std::cerr
+            << "Error: "
+            << error.what()
+            << "\n\n";
+
+        PortalDemoStartup::printHelp(
+            std::cerr
+        );
+
+        return 1;
+    }
+
+    if (startupOptions.showHelp) {
+        PortalDemoStartup::printHelp();
+        return 0;
+    }
+
     drogular::App app;
 
     app.templateRoot(
@@ -137,7 +170,13 @@ int main() {
     app.action<PortalDeleteProjectAction>("/projects/{id}/delete");
     app.action<PortalCreateProjectTypeAction>("/project-types/create");
 
-    app.run(8083);
+    PortalDemoStartup::printBanner(
+        startupOptions
+    );
+
+    app.run(
+        startupOptions.port
+    );
 
     return 0;
 }
