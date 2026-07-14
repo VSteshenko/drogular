@@ -8,6 +8,7 @@
 #include "../../examples/portal_demo/actions/update_project_action.hpp"
 #include "../../examples/portal_demo/actions/delete_project_action.hpp"
 #include "../../examples/portal_demo/pages/projects_page.hpp"
+#include "../../examples/portal_demo/pages/project_details_page.hpp"
 #include "../../examples/portal_demo/pages/project_edit_page.hpp"
 #include "../../examples/portal_demo/pages/users_page.hpp"
 #include "../../examples/portal_demo/pages/user_edit_page.hpp"
@@ -1347,4 +1348,38 @@ TEST(PortalApplicationTests, ProjectsPageFiltersProjectsBySearch) {
             )
         );
     }
+}
+
+TEST(PortalApplicationTests, ProjectDetailsPreservesProjectsSearchReturnUrl) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto project =
+        app.dataset().projects().front();
+
+    const auto html =
+        app.render<PortalProjectDetailsPage>(
+            {
+                {
+                    "returnUrl",
+                    "/projects?search=portal"
+                }
+            },
+            {
+                {
+                    "id",
+                    std::to_string(project.id)
+                }
+            }
+        );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/projects?search=portal")"
+        )
+    );
 }

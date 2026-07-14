@@ -76,3 +76,25 @@ TEST(CoreTemplateRuntimeTests, ResolvesJsonValue) {
     EXPECT_TRUE(value->isString());
     EXPECT_EQ(value->asString(), "Vadim");
 }
+
+TEST(CoreTemplateRuntimeTests, ResolvesVariableContainingQueryString) {
+    drogular::RenderContext context;
+
+    context.set(
+        "url",
+        std::string("/projects?search=port")
+    );
+
+    const auto value =
+        resolveVariable(
+            "url",
+            context
+        );
+
+    ASSERT_TRUE(value.has_value());
+
+    EXPECT_EQ(
+        *value,
+        "/projects?search=port"
+    );
+}

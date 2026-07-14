@@ -4,7 +4,7 @@
 #include "../providers/project_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../providers/role_provider.hpp"
-#include "data/portal_schema.hpp"
+#include "../data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -49,6 +49,21 @@ public:
 
         const auto request =
             context.request();
+
+        const auto returnUrl =
+            request != nullptr
+                ? request->getParameter("returnUrl")
+                : std::string("");
+
+        const auto safeReturnUrl =
+            returnUrl.starts_with("/projects")
+                ? returnUrl
+                : std::string("/projects");
+
+        context.set(
+            "projectsBackUrl",
+            safeReturnUrl
+        );
 
         const auto success =
             request != nullptr

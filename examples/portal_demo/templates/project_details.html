@@ -17,7 +17,9 @@
     {{ projectNotFoundMessage }}</p>
 
 <p>
-    <a href="/projects">{{ projectsBack }}</a>
+    <a href="{{ projectsBackUrl }}">
+        {{ projectsBack }}
+    </a>
 </p>
 @else
 
@@ -64,7 +66,9 @@
 </form>
 
 <p>
-    <a href="/projects">{{ projectsBack }}</a>
+    <a href="{{ projectsBackUrl }}">
+        {{ projectsBack }}
+    </a>
 </p>
 
 @endif

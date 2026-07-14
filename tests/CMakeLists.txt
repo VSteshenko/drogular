@@ -98,7 +98,6 @@ add_executable(drogular_tests
     portal_demo/portal_startup_tests.cpp
     portal_demo/portal_graphql_role_provider_tests.cpp
     portal_demo/portal_reference_provider_contract_tests.cpp
-
 )
 
 target_compile_definitions(

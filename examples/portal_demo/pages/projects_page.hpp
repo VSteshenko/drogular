@@ -120,9 +120,14 @@ public:
         Json::Value projects(Json::arrayValue);
 
         PortalProjectFilter filter;
+        std::string returnUrl = "/projects";
 
         if (!search.empty()) {
             filter.search = search;
+
+            returnUrl +=
+                "?search=" +
+                drogular::Url::encode(search);
         }
 
         for (const auto& project :
@@ -132,6 +137,11 @@ public:
             value["id"] = project.id;
             value["title"] = project.title;
             value["status"] = project.status;
+            value["detailsUrl"] =
+                "/projects/" +
+                std::to_string(project.id) +
+                "?returnUrl=" +
+                drogular::Url::encode(returnUrl);
 
             projects.append(value);
         }
@@ -140,13 +150,11 @@ public:
         context.set("hasProjects", !projects.empty());
     }
 
-    std::string templatePath() const override
-    {
+    std::string templatePath() const override {
         return "projects.html";
     }
 
-    std::string layoutPath() const override
-    {
+    std::string layoutPath() const override {
         return "layouts/main.html";
     }
 };
