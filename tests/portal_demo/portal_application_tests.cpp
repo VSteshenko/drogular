@@ -1383,3 +1383,65 @@ TEST(PortalApplicationTests, ProjectDetailsPreservesProjectsSearchReturnUrl) {
         )
     );
 }
+
+TEST(PortalApplicationTests, ProjectsPagePreservesSelectedStatusFilter) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectsPage>({
+            {"status", "active"}
+        });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::optionSelectedInSelect(
+            html,
+            R"(id="statusFilter")",
+            "active"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectDetailsPreservesSearchAndStatusReturnUrl) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto project =
+        app.dataset().projects().front();
+
+    const auto html =
+        app.render<PortalProjectDetailsPage>(
+            {
+                {
+                    "returnUrl",
+                    "/projects?search=port&status=active"
+                }
+            },
+            {
+                {
+                    "id",
+                    std::to_string(project.id)
+                }
+            }
+        );
+
+    const auto href =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(id="projectsBackFromDetailsLink")",
+            "href"
+        );
+
+    ASSERT_TRUE(href.has_value());
+
+    EXPECT_EQ(
+        HtmlTestSupport::decodeEntities(*href),
+        "/projects?search=port&status=active"
+    );
+}

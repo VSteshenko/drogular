@@ -75,6 +75,13 @@ public:
             );
         }
 
+        if (filter.status.has_value()) {
+            variables.set(
+                "status",
+                *filter.status
+            );
+        }
+
         return variables;
     }
 

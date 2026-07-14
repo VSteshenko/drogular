@@ -114,6 +114,72 @@ public:
 
         context.set("projectSearch", search);
 
+        const auto status =
+            request != nullptr
+                ? request->getParameter("status")
+                : std::string("");
+
+        context.set("projectStatusFilter", status);
+
+        Json::Value statusOptions(
+            Json::arrayValue
+        );
+
+        const auto addStatusOption =
+            [&statusOptions, &status](
+                const std::string& value,
+                const std::string& label
+            ) {
+                Json::Value option(
+                    Json::objectValue
+                );
+
+                option["value"] = value;
+                option["label"] = label;
+                option["selected"] =
+                    status == value;
+
+                statusOptions.append(
+                    std::move(option)
+                );
+        };
+
+        addStatusOption(
+            "",
+            context.translate(
+                "projects.filter.status.all"
+            )
+        );
+
+        addStatusOption(
+            "active",
+            context.translate(
+                "projects.status.active"
+            )
+        );
+
+        addStatusOption(
+            "paused",
+            context.translate(
+                "projects.status.paused"
+            )
+        );
+
+        addStatusOption(
+            "done",
+            context.translate(
+                "projects.status.done"
+            )
+        );
+
+        context.set("projectStatusFilterOptions", statusOptions);
+
+        context.set(
+            "hasProjectFilters",
+            !search.empty() ||
+            !status.empty()
+        );
+
         auto repository =
             context.requireService<PortalProjectProvider>();
 
@@ -121,13 +187,25 @@ public:
 
         PortalProjectFilter filter;
         std::string returnUrl = "/projects";
+        std::string separator = "?";
 
         if (!search.empty()) {
             filter.search = search;
 
             returnUrl +=
-                "?search=" +
+                separator +
+                "search=" +
                 drogular::Url::encode(search);
+            separator = "&";
+        }
+
+        if (!status.empty()) {
+            filter.status = status;
+
+            returnUrl +=
+                separator +
+                "status=" +
+                drogular::Url::encode(status);
         }
 
         for (const auto& project :

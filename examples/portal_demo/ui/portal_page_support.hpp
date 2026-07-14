@@ -88,6 +88,7 @@ public:
             {"projectsSearch", "projects.search.button"},
             {"projectsClearSearch", "projects.search.clear"},
             {"projectsEmpty", "projects.empty"},
+            {"projectsStatusFilterLabel", "projects.filter.status"},
             {"projectTypesManage", "project_types.manage"},
             {"projectTypesEdit", "project_types.edit"},
             {"projectTypesDelete", "project_types.delete"},

@@ -84,11 +84,29 @@
                 type="search"
         />
 
+        <label for="statusFilter">
+            {{ projectsStatusFilterLabel }}
+        </label>
+
+        <select
+                id="statusFilter"
+                name="status"
+        >
+            @foreach(item in projectStatusFilterOptions)
+            <option
+                    value="{{ item.value }}"
+                    @if(item.selected)selected@endif
+            >
+                {{ item.label }}
+            </option>
+            @endforeach
+        </select>
+
         <button type="submit">
             {{ projectsSearch }}
         </button>
 
-        @if(projectSearch)
+        @if(hasProjectFilters)
         <a href="/projects">
             {{ projectsClearSearch }}
         </a>

@@ -22,11 +22,19 @@ drogular::gql::Query ProjectQueries::search(
             "search",
             "String"
         )
+        .variable(
+            "status",
+            "String"
+        )
         .select(
             drogular::gql::field("projects")
                 .arg(
                     "search",
                     drogular::gql::variable("search")
+                )
+                .arg(
+                    "status",
+                    drogular::gql::variable("status")
                 )
                 .children(
                     PortalGraphQLSelectionBuilder::from(

@@ -250,8 +250,14 @@ public:
                         ? json["search"].asString()
                         : std::string("");
 
+                const auto status =
+                    json.isMember("status")
+                        ? json["status"].asString()
+                        : std::string("");
+
                 return searchProjectsResponse(
-                    search
+                    search,
+                    status
                 );
         };
     }
@@ -845,7 +851,8 @@ private:
     }
 
     drogular::GraphQLResponse searchProjectsResponse(
-        const std::string& search
+        const std::string& search,
+        const std::string& status
     ) const {
         Json::Value projects(Json::arrayValue);
 
@@ -855,7 +862,13 @@ private:
         for (const auto& project :
             dataset_->projects()) {
             if (!needle.empty() &&
-                lower(project.title).find(needle) == std::string::npos) {
+                lower(project.title).find(needle) ==
+                    std::string::npos) {
+                continue;
+            }
+
+            if (!status.empty() &&
+                project.status != status) {
                 continue;
             }
 

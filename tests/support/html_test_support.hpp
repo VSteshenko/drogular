@@ -179,4 +179,98 @@ public:
                 optionEnd + 1;
         }
     }
+
+    static std::string elementContent(
+        const std::string& html,
+        const std::string& marker,
+        const std::string& closingTag
+    ) {
+        const auto markerPosition =
+            html.find(marker);
+
+        if (markerPosition == std::string::npos) {
+            return {};
+        }
+
+        const auto elementStart =
+            html.rfind('<', markerPosition);
+
+        if (elementStart == std::string::npos) {
+            return {};
+        }
+
+        const auto elementEnd =
+            html.find(
+                closingTag,
+                markerPosition
+            );
+
+        if (elementEnd == std::string::npos) {
+            return {};
+        }
+
+        return html.substr(
+            elementStart,
+            elementEnd + closingTag.size() -
+                elementStart
+        );
+    }
+
+    static bool optionSelectedInSelect(
+        const std::string& html,
+        const std::string& selectMarker,
+        const std::string& value
+    ) {
+        const auto select =
+            elementContent(
+                html,
+                selectMarker,
+                "</select>"
+            );
+
+        if (select.empty()) {
+            return false;
+        }
+
+        return optionSelected(
+            select,
+            value
+        );
+    }
+
+    static std::string decodeEntities(
+        std::string value
+    ) {
+        const auto replaceAll =
+            [&value](
+                const std::string& from,
+                const std::string& to
+            ) {
+                std::size_t position = 0;
+
+                while (
+                    (position = value.find(
+                        from,
+                        position
+                    )) != std::string::npos
+                ) {
+                    value.replace(
+                        position,
+                        from.size(),
+                        to
+                    );
+
+                    position +=
+                        to.size();
+                }
+        };
+
+        replaceAll("&amp;", "&");
+        replaceAll("&quot;", "\"");
+        replaceAll("&#39;", "'");
+        replaceAll("&lt;", "<");
+        replaceAll("&gt;", ">");
+
+        return value;
+    }
 };
