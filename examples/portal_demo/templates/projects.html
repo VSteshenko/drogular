@@ -72,13 +72,42 @@
 </form>
 
 <ul>
-    @foreach(project in projects)
-    <li>
-        <a href="/projects/{{ project.id }}">
-            {{ project.title }}
+    <form method="get" action="/projects">
+        <label for="search">
+            {{ projectsSearchLabel }}
+        </label>
+
+        <input
+                id="search"
+                name="search"
+                value="{{ projectSearch }}"
+                type="search"
+        />
+
+        <button type="submit">
+            {{ projectsSearch }}
+        </button>
+
+        @if(projectSearch)
+        <a href="/projects">
+            {{ projectsClearSearch }}
         </a>
-        — {{ project.status }}
-    </li>
-    @endforeach
+        @endif
+    </form>
+
+    @if(hasProjects)
+    <ul>
+        @foreach(project in projects)
+        <li>
+            <a href="/projects/{{ project.id }}">
+                {{ project.title }}
+            </a>
+            — {{ project.status }}
+        </li>
+        @endforeach
+    </ul>
+    @else
+    <p>{{ projectsEmpty }}</p>
+    @endif
 </ul>
 @endif

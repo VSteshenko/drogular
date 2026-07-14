@@ -9,6 +9,8 @@
 #include "../../examples/portal_demo/providers/graphql/mappers/user_mapper.hpp"
 #include "../../examples/portal_demo/providers/graphql/documents/role_mutations.hpp"
 #include "../../examples/portal_demo/providers/graphql/mappers/role_mapper.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_graphql_user_provider.hpp"
+#include "../../examples/portal_demo/providers/graphql/portal_graphql_project_provider.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_type_provider.hpp"
 
 #include <gtest/gtest.h>
@@ -576,4 +578,103 @@ TEST(PortalDatasetGraphQLClientTests, RejectsRemovingUsedRole) {
     EXPECT_FALSE(
         removed->asBool()
     );
+}
+
+TEST(PortalDatasetGraphQLClientTests, SearchesProjectsByPartialTitle) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto users =
+        std::make_shared<PortalGraphQLUserProvider>(
+            std::make_shared<PortalDatasetGraphQLClient>(
+                dataset
+            )
+        );
+
+    PortalGraphQLProjectProvider provider(
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        ),
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.search = "portal";
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& project : result) {
+        auto title = project.title;
+
+        std::transform(
+            title.begin(),
+            title.end(),
+            title.begin(),
+            [](unsigned char character) {
+                return static_cast<char>(
+                    std::tolower(character)
+                );
+            }
+        );
+
+        EXPECT_NE(
+            title.find("portal"),
+            std::string::npos
+        );
+    }
+}
+
+TEST(PortalDatasetGraphQLClientTests, ProjectSearchIsCaseInsensitive
+) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto users =
+        std::make_shared<PortalGraphQLUserProvider>(
+            std::make_shared<PortalDatasetGraphQLClient>(
+                dataset
+            )
+        );
+
+    PortalGraphQLProjectProvider provider(
+        std::make_shared<PortalDatasetGraphQLClient>(
+            dataset
+        ),
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.search = "PoRtAl";
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& project : result) {
+        auto title = project.title;
+
+        std::transform(
+            title.begin(),
+            title.end(),
+            title.begin(),
+            [](unsigned char character) {
+                return static_cast<char>(
+                    std::tolower(character)
+                );
+            }
+        );
+
+        EXPECT_NE(
+            title.find("portal"),
+            std::string::npos
+        );
+    }
 }

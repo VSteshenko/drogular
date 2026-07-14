@@ -1308,3 +1308,43 @@ TEST(PortalApplicationTests, RejectsDeletingUsedRole) {
         )
     );
 }
+
+TEST(PortalApplicationTests, ProjectsPageFiltersProjectsBySearch) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto& expected =
+        app.dataset().projects().front();
+
+    const auto html =
+        app.render<PortalProjectsPage>({
+            {
+                "search",
+                expected.title
+            }
+        });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            expected.title
+        )
+    );
+
+    for (const auto& project :
+         app.dataset().projects()) {
+        if (project.id == expected.id) {
+            continue;
+        }
+
+        EXPECT_FALSE(
+            HtmlTestSupport::containsText(
+                html,
+                project.title
+            )
+        );
+    }
+}

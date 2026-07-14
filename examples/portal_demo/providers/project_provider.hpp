@@ -3,6 +3,7 @@
 #include "../data/models/portal_project.hpp"
 #include "../data/models/portal_project_create.hpp"
 #include "../data/models/portal_project_update.hpp"
+#include "../data/models/portal_project_filter.hpp"
 #include "../data/models/portal_user.hpp"
 
 #include <optional>
@@ -33,5 +34,9 @@ public:
 
     virtual std::optional<PortalUser> owner(
         const PortalProject& project
+    ) const = 0;
+
+    virtual std::vector<PortalProject> search(
+        const PortalProjectFilter& filter
     ) const = 0;
 };

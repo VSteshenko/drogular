@@ -12,6 +12,22 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include <cctype>
+
+static std::string lower(std::string value) {
+    std::transform(
+        value.begin(),
+        value.end(),
+        value.begin(),
+        [](unsigned char character) {
+            return static_cast<char>(
+                std::tolower(character)
+            );
+        }
+    );
+
+    return value;
+}
 
 class PortalDatasetGraphQLClient final
     : public drogular::GraphQLClient
@@ -221,6 +237,21 @@ public:
             [this](const auto& variables) {
                 return removeRoleResponse(
                     variables.json()["id"].asInt()
+                );
+        };
+
+        queryHandlers_["SearchPortalProjects"] =
+            [this](const auto& variables) {
+                const auto& json =
+                    variables.json();
+
+                const auto search =
+                    json.isMember("search")
+                        ? json["search"].asString()
+                        : std::string("");
+
+                return searchProjectsResponse(
+                    search
                 );
         };
     }
@@ -809,6 +840,32 @@ private:
         dataset_->roles().erase(role);
 
         data["removeRole"] = true;
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse searchProjectsResponse(
+        const std::string& search
+    ) const {
+        Json::Value projects(Json::arrayValue);
+
+        const auto needle =
+            lower(search);
+
+        for (const auto& project :
+            dataset_->projects()) {
+            if (!needle.empty() &&
+                lower(project.title).find(needle) == std::string::npos) {
+                continue;
+            }
+
+            projects.append(
+                projectJson(project)
+            );
+        }
+
+        Json::Value data(Json::objectValue);
+        data["projects"] = projects;
 
         return response(data);
     }

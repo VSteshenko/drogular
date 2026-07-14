@@ -12,6 +12,30 @@ drogular::gql::Query ProjectQueries::all() {
     );
 }
 
+drogular::gql::Query ProjectQueries::search(
+    const PortalProjectFilter&
+) {
+    return drogular::gql::query(
+        "SearchPortalProjects"
+    )
+        .variable(
+            "search",
+            "String"
+        )
+        .select(
+            drogular::gql::field("projects")
+                .arg(
+                    "search",
+                    drogular::gql::variable("search")
+                )
+                .children(
+                    PortalGraphQLSelectionBuilder::from(
+                        PortalSchema::projects()
+                    )
+                )
+        );
+}
+
 drogular::gql::Query ProjectQueries::findById(
     int id
 ) {

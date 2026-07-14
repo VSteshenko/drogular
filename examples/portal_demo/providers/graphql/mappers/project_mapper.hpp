@@ -2,6 +2,7 @@
 
 #include "../../../data/models/portal_project.hpp"
 #include "../../../data/models/portal_project_update.hpp"
+#include "../../../data/models/portal_project_filter.hpp"
 #include "../../../data/portal_schema.hpp"
 #include "../../../data/portal_schema_mapper.hpp"
 
@@ -58,6 +59,21 @@ public:
             "project",
             std::move(project)
         );
+
+        return variables;
+    }
+
+    static drogular::GraphQLVariables toVariables(
+        const PortalProjectFilter& filter
+    ) {
+        drogular::GraphQLVariables variables;
+
+        if (filter.search.has_value()) {
+            variables.set(
+                "search",
+                *filter.search
+            );
+        }
 
         return variables;
     }

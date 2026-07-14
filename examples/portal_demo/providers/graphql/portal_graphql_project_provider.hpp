@@ -58,6 +58,27 @@ public:
         );
     }
 
+    std::vector<PortalProject> search(
+        const PortalProjectFilter& filter
+    ) const override {
+        const auto response =
+            client_->execute(
+                ProjectQueries::search(filter),
+                ProjectMapper::toVariables(filter)
+            );
+
+        const auto projects =
+            response.field("projects");
+
+        if (!projects.has_value()) {
+            return {};
+        }
+
+        return ProjectMapper::fromList(
+            *projects
+        );
+    }
+
     PortalProject create(
         const PortalProjectCreate& input,
         int ownerId

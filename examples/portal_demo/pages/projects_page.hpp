@@ -107,20 +107,37 @@ public:
             context.translate(schema.fieldLabelKey("status"))
         );
 
+        const auto search =
+            request != nullptr
+                ? request->getParameter("search")
+                : std::string("");
+
+        context.set("projectSearch", search);
+
         auto repository =
             context.requireService<PortalProjectProvider>();
 
         Json::Value projects(Json::arrayValue);
 
-        for (const auto& project : repository->all()) {
+        PortalProjectFilter filter;
+
+        if (!search.empty()) {
+            filter.search = search;
+        }
+
+        for (const auto& project :
+             repository->search(filter)) {
             Json::Value value;
+
             value["id"] = project.id;
             value["title"] = project.title;
             value["status"] = project.status;
+
             projects.append(value);
         }
 
         context.set("projects", projects);
+        context.set("hasProjects", !projects.empty());
     }
 
     std::string templatePath() const override
