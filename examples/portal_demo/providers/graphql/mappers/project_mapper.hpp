@@ -82,6 +82,13 @@ public:
             );
         }
 
+        if (filter.projectTypeId.has_value()) {
+            variables.set(
+                "projectTypeId",
+                *filter.projectTypeId
+            );
+        }
+
         return variables;
     }
 

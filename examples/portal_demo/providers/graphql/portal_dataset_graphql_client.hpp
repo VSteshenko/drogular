@@ -255,9 +255,17 @@ public:
                         ? json["status"].asString()
                         : std::string("");
 
+                const auto projectTypeId =
+                    json.isMember("projectTypeId")
+                        ? std::optional<int>(
+                            json["projectTypeId"].asInt()
+                        )
+                        : std::nullopt;
+
                 return searchProjectsResponse(
                     search,
-                    status
+                    status,
+                    projectTypeId
                 );
         };
     }
@@ -852,7 +860,8 @@ private:
 
     drogular::GraphQLResponse searchProjectsResponse(
         const std::string& search,
-        const std::string& status
+        const std::string& status,
+        const std::optional<int>& projectTypeId
     ) const {
         Json::Value projects(Json::arrayValue);
 
@@ -869,6 +878,12 @@ private:
 
             if (!status.empty() &&
                 project.status != status) {
+                continue;
+            }
+
+            if (projectTypeId.has_value() &&
+                project.projectTypeId !=
+                    *projectTypeId) {
                 continue;
             }
 

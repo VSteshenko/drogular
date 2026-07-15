@@ -102,6 +102,24 @@
             @endforeach
         </select>
 
+        <label for="projectTypeFilter">
+            {{ projectsTypeFilterLabel }}
+        </label>
+
+        <select
+                id="projectTypeFilter"
+                name="projectTypeId"
+        >
+            @foreach(item in projectTypeFilterOptions)
+            <option
+                    value="{{ item.value }}"
+                    @if(item.selected)selected@endif
+            >
+                {{ item.label }}
+            </option>
+            @endforeach
+        </select>
+
         <button type="submit">
             {{ projectsSearch }}
         </button>

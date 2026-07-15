@@ -81,18 +81,26 @@ public:
         auto projectTypes =
             context.requireService<PortalProjectTypeProvider>();
 
+        const auto allProjectTypes =
+            projectTypes->all();
+
         Json::Value options(Json::arrayValue);
 
-        for (const auto& type : projectTypes->all()) {
+        for (const auto& type : allProjectTypes) {
             Json::Value option(Json::objectValue);
 
             option["value"] = type.id;
             option["label"] = type.title;
 
-            options.append(option);
+            options.append(
+                std::move(option)
+            );
         }
 
-        context.set("projectTypeOptions", options);
+        context.set(
+            "projectTypeOptions",
+            options
+        );
 
         context.set(
             "projectsTitleLabel",
@@ -121,6 +129,25 @@ public:
 
         context.set("projectStatusFilter", status);
 
+        const auto projectTypeIdValue =
+            request != nullptr
+                ? request->getParameter("projectTypeId")
+                : std::string("");
+
+        std::optional<int> projectTypeId;
+
+        if (!projectTypeIdValue.empty()) {
+            try {
+                const auto value =
+                    std::stoi(projectTypeIdValue);
+
+                if (value > 0) {
+                    projectTypeId = value;
+                }
+            } catch (const std::exception&) {
+            }
+        }
+
         Json::Value statusOptions(
             Json::arrayValue
         );
@@ -143,6 +170,51 @@ public:
                     std::move(option)
                 );
         };
+
+        Json::Value filterOptions(
+            Json::arrayValue
+        );
+
+        {
+            Json::Value option(
+                Json::objectValue
+            );
+
+            option["value"] = "";
+            option["label"] =
+                context.translate(
+                    "projects.filter.type.all"
+                );
+
+            option["selected"] =
+                !projectTypeId.has_value();
+
+            filterOptions.append(
+                std::move(option)
+            );
+        }
+
+        for (const auto& type : allProjectTypes) {
+            Json::Value option(
+                Json::objectValue
+            );
+
+            option["value"] = type.id;
+            option["label"] = type.title;
+
+            option["selected"] =
+                projectTypeId.has_value() &&
+                *projectTypeId == type.id;
+
+            filterOptions.append(
+                std::move(option)
+            );
+        }
+
+        context.set(
+            "projectTypeFilterOptions",
+            filterOptions
+        );
 
         addStatusOption(
             "",
@@ -177,7 +249,8 @@ public:
         context.set(
             "hasProjectFilters",
             !search.empty() ||
-            !status.empty()
+            !status.empty() ||
+            projectTypeId.has_value()
         );
 
         auto repository =
@@ -206,10 +279,22 @@ public:
                 separator +
                 "status=" +
                 drogular::Url::encode(status);
+            separator = "&";
+        }
+
+        if (projectTypeId.has_value()) {
+            filter.projectTypeId = *projectTypeId;
+
+            returnUrl +=
+                separator +
+                "projectTypeId=" +
+                std::to_string(
+                    *projectTypeId
+                );
         }
 
         for (const auto& project :
-             repository->search(filter)) {
+            repository->search(filter)) {
             Json::Value value;
 
             value["id"] = project.id;

@@ -26,6 +26,10 @@ drogular::gql::Query ProjectQueries::search(
             "status",
             "String"
         )
+        .variable(
+            "projectTypeId",
+            "ID"
+        )
         .select(
             drogular::gql::field("projects")
                 .arg(
@@ -35,6 +39,12 @@ drogular::gql::Query ProjectQueries::search(
                 .arg(
                     "status",
                     drogular::gql::variable("status")
+                )
+                .arg(
+                    "projectTypeId",
+                    drogular::gql::variable(
+                        "projectTypeId"
+                    )
                 )
                 .children(
                     PortalGraphQLSelectionBuilder::from(

@@ -781,3 +781,115 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchAndStatusFilter) {
         )
     );
 }
+
+TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByProjectType) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    const auto expectedTypeId =
+        dataset->projects()
+            .front()
+            .projectTypeId;
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.projectTypeId =
+        expectedTypeId;
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& project : result) {
+        EXPECT_EQ(
+            project.projectTypeId,
+            expectedTypeId
+        );
+    }
+}
+
+TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchStatusAndTypeFilter) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    const auto expected =
+        dataset->projects().front();
+
+    dataset->addProject({
+        .id = 999,
+        .title = expected.title + " Copy",
+        .status = expected.status,
+        .ownerId = expected.ownerId,
+        .projectTypeId =
+            expected.projectTypeId == 1
+                ? 2
+                : 1
+    });
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.search = expected.title;
+    filter.status = expected.status;
+    filter.projectTypeId =
+        expected.projectTypeId;
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& project : result) {
+        EXPECT_EQ(
+            project.status,
+            expected.status
+        );
+
+        EXPECT_EQ(
+            project.projectTypeId,
+            expected.projectTypeId
+        );
+    }
+
+    EXPECT_TRUE(
+        std::none_of(
+            result.begin(),
+            result.end(),
+            [](const PortalProject& project) {
+                return project.id == 999;
+            }
+        )
+    );
+}

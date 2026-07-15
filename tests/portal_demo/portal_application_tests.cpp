@@ -1445,3 +1445,87 @@ TEST(PortalApplicationTests, ProjectDetailsPreservesSearchAndStatusReturnUrl) {
         "/projects?search=port&status=active"
     );
 }
+
+TEST(PortalApplicationTests, ProjectsPagePreservesSelectedProjectTypeFilter) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto projectType =
+        app.dataset()
+            .projectTypes()
+            .front();
+
+    const auto html =
+        app.render<PortalProjectsPage>({
+            {
+                "projectTypeId",
+                std::to_string(
+                    projectType.id
+                )
+            }
+        });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::
+            optionSelectedInSelect(
+                html,
+                R"(id="projectTypeFilter")",
+                std::to_string(
+                    projectType.id
+                )
+            )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectDetailsPreservesAllProjectFilters) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto project =
+        app.dataset().projects().front();
+
+    const auto returnUrl =
+        "/projects?search=port"
+        "&status=active"
+        "&projectTypeId=1";
+
+    const auto html =
+        app.render<PortalProjectDetailsPage>(
+            {
+                {
+                    "returnUrl",
+                    returnUrl
+                }
+            },
+            {
+                {
+                    "id",
+                    std::to_string(
+                        project.id
+                    )
+                }
+            }
+        );
+
+    const auto href =
+        HtmlTestSupport::attributeValue(
+            html,
+            R"(id="projectsBackFromDetailsLink")",
+            "href"
+        );
+
+    ASSERT_TRUE(href.has_value());
+
+    EXPECT_EQ(
+        HtmlTestSupport::decodeEntities(
+            *href
+        ),
+        returnUrl
+    );
+}
