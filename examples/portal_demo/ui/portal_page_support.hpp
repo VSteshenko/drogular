@@ -99,6 +99,8 @@ public:
             {"projectTypesBack", "project_types.back"},
             {"projectTypeNotFoundTitle", "project_types.not_found.title"},
             {"projectTypeNotFoundMessage", "project_types.not_found.message"},
+            {"projectsFiltersTitle", "projects.filters.title"},
+            {"projectsOwnerFilterLabel", "projects.filter.owner"},
 
             {"authLoginRequiredTitle", "auth.login_required.title"},
             {"authLoginRequiredMessage", "auth.login_required.message"},

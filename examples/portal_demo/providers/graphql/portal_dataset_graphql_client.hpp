@@ -262,10 +262,18 @@ public:
                         )
                         : std::nullopt;
 
+                const auto ownerId =
+                    json.isMember("ownerId")
+                        ? std::optional<int>(
+                            json["ownerId"].asInt()
+                        )
+                        : std::nullopt;
+
                 return searchProjectsResponse(
                     search,
                     status,
-                    projectTypeId
+                    projectTypeId,
+                    ownerId
                 );
         };
     }
@@ -861,7 +869,8 @@ private:
     drogular::GraphQLResponse searchProjectsResponse(
         const std::string& search,
         const std::string& status,
-        const std::optional<int>& projectTypeId
+        const std::optional<int>& projectTypeId,
+        const std::optional<int>& ownerId
     ) const {
         Json::Value projects(Json::arrayValue);
 
@@ -884,6 +893,11 @@ private:
             if (projectTypeId.has_value() &&
                 project.projectTypeId !=
                     *projectTypeId) {
+                continue;
+            }
+
+            if (ownerId.has_value() &&
+                project.ownerId != *ownerId) {
                 continue;
             }
 

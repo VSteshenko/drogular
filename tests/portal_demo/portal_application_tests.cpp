@@ -1493,7 +1493,8 @@ TEST(PortalApplicationTests, ProjectDetailsPreservesAllProjectFilters) {
     const auto returnUrl =
         "/projects?search=port"
         "&status=active"
-        "&projectTypeId=1";
+        "&projectTypeId=1"
+        "&ownerId=2";
 
     const auto html =
         app.render<PortalProjectDetailsPage>(
@@ -1527,5 +1528,36 @@ TEST(PortalApplicationTests, ProjectDetailsPreservesAllProjectFilters) {
             *href
         ),
         returnUrl
+    );
+}
+
+TEST(PortalApplicationTests, ProjectsPagePreservesSelectedOwnerFilter) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto ownerId =
+        app.dataset()
+            .projects()
+            .front()
+            .ownerId;
+
+    const auto html =
+        app.render<PortalProjectsPage>({
+            {
+                "ownerId",
+                std::to_string(ownerId)
+            }
+        });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::
+            optionSelectedInSelect(
+                html,
+                R"(id="projectOwnerFilter")",
+                std::to_string(ownerId)
+            )
     );
 }

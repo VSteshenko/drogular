@@ -893,3 +893,102 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchStatusAndTypeFilter) 
         )
     );
 }
+
+TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByOwner
+    ) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    const auto expectedOwnerId =
+        dataset->projects()
+            .front()
+            .ownerId;
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.ownerId =
+        expectedOwnerId;
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& project : result) {
+        EXPECT_EQ(
+            project.ownerId,
+            expectedOwnerId
+        );
+    }
+}
+
+TEST(PortalDatasetGraphQLClientTests, CombinesAllProjectFilters) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    const auto expected =
+        dataset->projects().front();
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.search = expected.title;
+    filter.status = expected.status;
+    filter.projectTypeId =
+        expected.projectTypeId;
+    filter.ownerId =
+        expected.ownerId;
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    for (const auto& project : result) {
+        EXPECT_EQ(
+            project.status,
+            expected.status
+        );
+
+        EXPECT_EQ(
+            project.projectTypeId,
+            expected.projectTypeId
+        );
+
+        EXPECT_EQ(
+            project.ownerId,
+            expected.ownerId
+        );
+    }
+}

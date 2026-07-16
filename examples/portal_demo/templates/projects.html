@@ -73,62 +73,100 @@
 
 <ul>
     <form method="get" action="/projects">
-        <label for="search">
-            {{ projectsSearchLabel }}
-        </label>
+        <fieldset>
+            <legend>
+                {{ projectsFiltersTitle }}
+            </legend>
 
-        <input
-                id="search"
-                name="search"
-                value="{{ projectSearch }}"
-                type="search"
-        />
+            <div>
+                <label for="search">
+                    {{ projectsSearchLabel }}
+                </label>
+                <br />
 
-        <label for="statusFilter">
-            {{ projectsStatusFilterLabel }}
-        </label>
+                <input
+                        id="search"
+                        name="search"
+                        value="{{ projectSearch }}"
+                        type="search"
+                />
+            </div>
 
-        <select
-                id="statusFilter"
-                name="status"
-        >
-            @foreach(item in projectStatusFilterOptions)
-            <option
-                    value="{{ item.value }}"
-                    @if(item.selected)selected@endif
-            >
-                {{ item.label }}
-            </option>
-            @endforeach
-        </select>
+            <div>
+                <label for="statusFilter">
+                    {{ projectsStatusFilterLabel }}
+                </label>
+                <br />
 
-        <label for="projectTypeFilter">
-            {{ projectsTypeFilterLabel }}
-        </label>
+                <select
+                        id="statusFilter"
+                        name="status"
+                >
+                    @foreach(item in projectStatusFilterOptions)
+                    <option
+                            value="{{ item.value }}"
+                            @if(item.selected)selected@endif
+                    >
+                        {{ item.label }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
 
-        <select
-                id="projectTypeFilter"
-                name="projectTypeId"
-        >
-            @foreach(item in projectTypeFilterOptions)
-            <option
-                    value="{{ item.value }}"
-                    @if(item.selected)selected@endif
-            >
-                {{ item.label }}
-            </option>
-            @endforeach
-        </select>
+            <div>
+                <label for="projectTypeFilter">
+                    {{ projectsTypeFilterLabel }}
+                </label>
+                <br />
 
-        <button type="submit">
-            {{ projectsSearch }}
-        </button>
+                <select
+                        id="projectTypeFilter"
+                        name="projectTypeId"
+                >
+                    @foreach(item in projectTypeFilterOptions)
+                    <option
+                            value="{{ item.value }}"
+                            @if(item.selected)selected@endif
+                    >
+                        {{ item.label }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
 
-        @if(hasProjectFilters)
-        <a href="/projects">
-            {{ projectsClearSearch }}
-        </a>
-        @endif
+            <div>
+                <label for="projectOwnerFilter">
+                    {{ projectsOwnerFilterLabel }}
+                </label>
+                <br />
+
+                <select
+                        id="projectOwnerFilter"
+                        name="ownerId"
+                >
+                    @foreach(item in projectOwnerFilterOptions)
+                    <option
+                            value="{{ item.value }}"
+                            @if(item.selected)selected@endif
+                    >
+                        {{ item.label }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <button type="submit">
+                    {{ projectsSearch }}
+                </button>
+
+                @if(hasProjectFilters)
+                <a href="/projects">
+                    {{ projectsClearSearch }}
+                </a>
+                @endif
+            </div>
+        </fieldset>
     </form>
 
     @if(hasProjects)

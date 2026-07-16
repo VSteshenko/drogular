@@ -89,6 +89,13 @@ public:
             );
         }
 
+        if (filter.ownerId.has_value()) {
+            variables.set(
+                "ownerId",
+                *filter.ownerId
+            );
+        }
+
         return variables;
     }
 

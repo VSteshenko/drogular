@@ -30,6 +30,10 @@ drogular::gql::Query ProjectQueries::search(
             "projectTypeId",
             "ID"
         )
+        .variable(
+            "ownerId",
+            "ID"
+        )
         .select(
             drogular::gql::field("projects")
                 .arg(
@@ -45,6 +49,10 @@ drogular::gql::Query ProjectQueries::search(
                     drogular::gql::variable(
                         "projectTypeId"
                     )
+                )
+                .arg(
+                    "ownerId",
+                    drogular::gql::variable("ownerId")
                 )
                 .children(
                     PortalGraphQLSelectionBuilder::from(

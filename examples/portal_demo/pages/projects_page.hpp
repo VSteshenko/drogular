@@ -2,6 +2,7 @@
 
 #include "../providers/project_provider.hpp"
 #include "../providers/project_type_provider.hpp"
+#include "../providers/user_provider.hpp"
 #include "../ui/portal_page_support.hpp"
 #include "../data/portal_schema.hpp"
 #include "../localization/portal_error_translator.hpp"
@@ -148,18 +149,33 @@ public:
             }
         }
 
-        Json::Value statusOptions(
-            Json::arrayValue
-        );
+        const auto ownerIdValue =
+            request != nullptr
+                ? request->getParameter("ownerId")
+                : std::string("");
+
+        std::optional<int> ownerId;
+
+        if (!ownerIdValue.empty()) {
+            try {
+                const auto value =
+                    std::stoi(ownerIdValue);
+
+                if (value > 0) {
+                    ownerId = value;
+                }
+            } catch (const std::exception&) {
+            }
+        }
+
+        Json::Value statusOptions(Json::arrayValue);
 
         const auto addStatusOption =
             [&statusOptions, &status](
                 const std::string& value,
                 const std::string& label
             ) {
-                Json::Value option(
-                    Json::objectValue
-                );
+                Json::Value option(Json::objectValue);
 
                 option["value"] = value;
                 option["label"] = label;
@@ -171,14 +187,47 @@ public:
                 );
         };
 
-        Json::Value filterOptions(
-            Json::arrayValue
-        );
+        auto users =
+            context.requireService<PortalUserProvider>();
+
+        const auto allUsers =
+            users->all();
+
+        Json::Value ownerFilterOptions(Json::arrayValue);
 
         {
-            Json::Value option(
-                Json::objectValue
+            Json::Value option(Json::objectValue);
+
+            option["value"] = "";
+            option["label"] =
+                context.translate("projects.filter.owner.all");
+            option["selected"] = !ownerId.has_value();
+
+            ownerFilterOptions.append(
+                std::move(option)
             );
+        }
+
+        for (const auto& user : allUsers) {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = user.id;
+            option["label"] = user.username;
+            option["selected"] =
+                ownerId.has_value() &&
+                *ownerId == user.id;
+
+            ownerFilterOptions.append(
+                std::move(option)
+            );
+        }
+
+        context.set("projectOwnerFilterOptions", ownerFilterOptions);
+
+        Json::Value filterOptions(Json::arrayValue);
+
+        {
+            Json::Value option(Json::objectValue);
 
             option["value"] = "";
             option["label"] =
@@ -195,9 +244,7 @@ public:
         }
 
         for (const auto& type : allProjectTypes) {
-            Json::Value option(
-                Json::objectValue
-            );
+            Json::Value option(Json::objectValue);
 
             option["value"] = type.id;
             option["label"] = type.title;
@@ -250,7 +297,8 @@ public:
             "hasProjectFilters",
             !search.empty() ||
             !status.empty() ||
-            projectTypeId.has_value()
+            projectTypeId.has_value() ||
+            ownerId.has_value()
         );
 
         auto repository =
@@ -288,9 +336,18 @@ public:
             returnUrl +=
                 separator +
                 "projectTypeId=" +
-                std::to_string(
-                    *projectTypeId
-                );
+                std::to_string(*projectTypeId);
+            separator = "&";
+        }
+
+        if (ownerId.has_value()) {
+            filter.ownerId =
+                *ownerId;
+
+            returnUrl +=
+                separator +
+                "ownerId=" +
+                std::to_string(*ownerId);
         }
 
         for (const auto& project :
