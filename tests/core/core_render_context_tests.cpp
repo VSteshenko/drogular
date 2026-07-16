@@ -386,3 +386,51 @@ TEST(CoreRenderContextTests, ThrowsForMissingRequiredRouteParam) {
         std::runtime_error
     );
 }
+
+namespace CoreRenderContextTests_models {
+
+struct Filter {
+    std::string search;
+    bool active = false;
+};
+
+Json::Value toJson(
+    const Filter& filter
+) {
+    Json::Value json(Json::objectValue);
+
+    json["search"] = filter.search;
+    json["active"] = filter.active;
+
+    return json;
+}
+
+} // namespace CoreRenderContextTests_models
+
+TEST(CoreRenderContextTests, StoresCustomStructureAsJson) {
+    drogular::RenderContext context;
+
+    context.setJson(
+        "filters",
+        CoreRenderContextTests_models::Filter{
+            .search = "portal",
+            .active = true
+        }
+    );
+
+    const auto stored =
+        context.get<Json::Value>(
+            "filters"
+        );
+
+    ASSERT_TRUE(stored.has_value());
+
+    EXPECT_EQ(
+        (*stored)["search"].asString(),
+        "portal"
+    );
+
+    EXPECT_TRUE(
+        (*stored)["active"].asBool()
+    );
+}

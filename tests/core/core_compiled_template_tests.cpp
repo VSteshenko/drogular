@@ -150,3 +150,46 @@ TEST(CoreCompiledTemplateTests, RendersForeachJsonObjects) {
         "<p>Learn</p><p>Build</p>"
     );
 }
+
+namespace CoreCompiledTemplateTests_models {
+
+struct Filter {
+    std::string search;
+    bool active = false;
+};
+
+Json::Value toJson(
+    const Filter& filter
+) {
+    Json::Value json(Json::objectValue);
+
+    json["search"] = filter.search;
+    json["active"] = filter.active;
+
+    return json;
+}
+
+} // namespace CoreCompiledTemplateTests_models
+
+TEST(CoreCompiledTemplateTests, RendersFieldsFromCustomStructureStoredAsJson) {
+    drogular::RenderContext context;
+
+    context.setJson(
+        "filters",
+        CoreCompiledTemplateTests_models::Filter{
+            .search = "portal",
+            .active = true
+        }
+    );
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "{{ filters.search }} "
+            "@if(filters.active)active@endif"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "portal active"
+    );
+}

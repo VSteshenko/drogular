@@ -2,6 +2,7 @@
 
 #include <drogular/services.hpp>
 #include <drogular/graphql_variables.hpp>
+#include <drogular/json_conversion.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -168,6 +169,19 @@ public:
     template <typename T>
     void set(std::string key, T value) {
         values_[std::move(key)] = std::move(value);
+    }
+
+    /**
+     * Converts a value to Json::Value and stores it
+     * for template rendering.
+     */
+    template <typename T>
+    void setJson(
+        std::string key,
+        const T& value
+    ) {
+        values_[std::move(key)] =
+            toJsonValue(value);
     }
 
     /**
