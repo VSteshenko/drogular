@@ -6,6 +6,7 @@
 #include "../ui/portal_page_support.hpp"
 #include "../data/portal_schema.hpp"
 #include "../localization/portal_error_translator.hpp"
+#include "../ui/models/portal_project_filter_view_model.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -222,9 +223,7 @@ public:
             );
         }
 
-        context.set("projectOwnerFilterOptions", ownerFilterOptions);
-
-        Json::Value filterOptions(Json::arrayValue);
+        Json::Value projectTypeFilterOptions(Json::arrayValue);
 
         {
             Json::Value option(Json::objectValue);
@@ -238,7 +237,7 @@ public:
             option["selected"] =
                 !projectTypeId.has_value();
 
-            filterOptions.append(
+            projectTypeFilterOptions.append(
                 std::move(option)
             );
         }
@@ -253,15 +252,10 @@ public:
                 projectTypeId.has_value() &&
                 *projectTypeId == type.id;
 
-            filterOptions.append(
+            projectTypeFilterOptions.append(
                 std::move(option)
             );
         }
-
-        context.set(
-            "projectTypeFilterOptions",
-            filterOptions
-        );
 
         addStatusOption(
             "",
@@ -291,15 +285,20 @@ public:
             )
         );
 
-        context.set("projectStatusFilterOptions", statusOptions);
+        portal::PortalProjectFilterViewModel filters;
 
-        context.set(
-            "hasProjectFilters",
+        filters.search = search;
+        filters.statusOptions = std::move(statusOptions);
+        filters.projectTypeOptions = std::move(projectTypeFilterOptions);
+        filters.ownerOptions = std::move(ownerFilterOptions);
+
+        filters.hasActiveFilters =
             !search.empty() ||
             !status.empty() ||
             projectTypeId.has_value() ||
-            ownerId.has_value()
-        );
+            ownerId.has_value();
+
+        context.setJson("filters", filters);
 
         auto repository =
             context.requireService<PortalProjectProvider>();

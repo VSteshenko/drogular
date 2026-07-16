@@ -87,7 +87,7 @@
                 <input
                         id="search"
                         name="search"
-                        value="{{ projectSearch }}"
+                        value="{{ filters.search }}"
                         type="search"
                 />
             </div>
@@ -102,7 +102,7 @@
                         id="statusFilter"
                         name="status"
                 >
-                    @foreach(item in projectStatusFilterOptions)
+                    @foreach(item in filters.statusOptions)
                     <option
                             value="{{ item.value }}"
                             @if(item.selected)selected@endif
@@ -123,7 +123,7 @@
                         id="projectTypeFilter"
                         name="projectTypeId"
                 >
-                    @foreach(item in projectTypeFilterOptions)
+                    @foreach(item in filters.projectTypeOptions)
                     <option
                             value="{{ item.value }}"
                             @if(item.selected)selected@endif
@@ -144,7 +144,7 @@
                         id="projectOwnerFilter"
                         name="ownerId"
                 >
-                    @foreach(item in projectOwnerFilterOptions)
+                    @foreach(item in filters.ownerOptions)
                     <option
                             value="{{ item.value }}"
                             @if(item.selected)selected@endif
@@ -160,7 +160,7 @@
                     {{ projectsSearch }}
                 </button>
 
-                @if(hasProjectFilters)
+                @if(filters.hasActiveFilters)
                 <a href="/projects">
                     {{ projectsClearSearch }}
                 </a>
