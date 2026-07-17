@@ -13,7 +13,7 @@ drogular::gql::Query ProjectQueries::all() {
 }
 
 drogular::gql::Query ProjectQueries::search(
-    const PortalProjectFilter&
+    const PortalProjectQuery&
 ) {
     return drogular::gql::query(
         "SearchPortalProjects"

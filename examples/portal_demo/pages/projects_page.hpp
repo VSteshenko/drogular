@@ -6,7 +6,7 @@
 #include "../ui/portal_page_support.hpp"
 #include "../data/portal_schema.hpp"
 #include "../localization/portal_error_translator.hpp"
-#include "../ui/models/portal_project_filter_view_model.hpp"
+#include "../ui/models/portal_project_query_view_model.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -193,7 +193,7 @@ public:
         addStatusOption(
             "",
             context.translate(
-                "projects.filter.status.all"
+                "projects.query.status.all"
             )
         );
 
@@ -389,7 +389,7 @@ public:
             )
         );
 
-        portal::PortalProjectFilterViewModel filters;
+        portal::PortalProjectQueryViewModel filters;
 
         filters.search = search;
         filters.statusOptions = std::move(statusOptions);
@@ -424,9 +424,9 @@ public:
         auto repository =
             context.requireService<PortalProjectProvider>();
 
-        PortalProjectFilter filter;
-        filter.page = requestedPage;
-        filter.pageSize = 10;
+        PortalProjectQuery query;
+        query.page = requestedPage;
+        query.pageSize = 10;
 
         std::string baseUrl = "/projects";
         std::string separator = "?";
@@ -445,17 +445,17 @@ public:
             };
 
         if (!search.empty()) {
-            filter.search = search;
+            query.search = search;
             appendParameter("search", search);
         }
 
         if (!status.empty()) {
-            filter.status = status;
+            query.status = status;
             appendParameter("status", status);
         }
 
         if (projectTypeId.has_value()) {
-            filter.projectTypeId = *projectTypeId;
+            query.projectTypeId = *projectTypeId;
             appendParameter(
                 "projectTypeId",
                 std::to_string(*projectTypeId)
@@ -463,14 +463,14 @@ public:
         }
 
         if (ownerId.has_value()) {
-            filter.ownerId = *ownerId;
+            query.ownerId = *ownerId;
             appendParameter(
                 "ownerId",
                 std::to_string(*ownerId)
             );
         }
 
-        filter.sorting.push_back({
+        query.sorting.push_back({
             .field = sortField,
             .direction = sortDirection
         });
@@ -489,7 +489,7 @@ public:
         }
 
         const auto pageResult =
-            repository->search(filter);
+            repository->search(query);
 
         const auto pageUrl =
             [&baseUrl](int page) {

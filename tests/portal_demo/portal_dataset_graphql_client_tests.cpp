@@ -601,11 +601,11 @@ TEST(PortalDatasetGraphQLClientTests, SearchesProjectsByPartialTitle) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.search = "portal";
+    PortalProjectQuery query;
+    query.search = "portal";
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -652,11 +652,11 @@ TEST(PortalDatasetGraphQLClientTests, ProjectSearchIsCaseInsensitive) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.search = "PoRtAl";
+    PortalProjectQuery query;
+    query.search = "PoRtAl";
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -704,11 +704,11 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByStatus) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.status = "active";
+    PortalProjectQuery query;
+    query.status = "active";
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -755,12 +755,12 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchAndStatusFilter) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.search = source.title;
-    filter.status = source.status;
+    PortalProjectQuery query;
+    query.search = source.title;
+    query.status = source.status;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -817,12 +817,12 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByProjectType) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.projectTypeId =
+    PortalProjectQuery query;
+    query.projectTypeId =
         expectedTypeId;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -871,14 +871,14 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchStatusAndTypeFilter) 
         users
     );
 
-    PortalProjectFilter filter;
-    filter.search = expected.title;
-    filter.status = expected.status;
-    filter.projectTypeId =
+    PortalProjectQuery query;
+    query.search = expected.title;
+    query.status = expected.status;
+    query.projectTypeId =
         expected.projectTypeId;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -934,12 +934,12 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByOwner
         users
     );
 
-    PortalProjectFilter filter;
-    filter.ownerId =
+    PortalProjectQuery query;
+    query.ownerId =
         expectedOwnerId;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -977,16 +977,14 @@ TEST(PortalDatasetGraphQLClientTests, CombinesAllProjectFilters) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.search = expected.title;
-    filter.status = expected.status;
-    filter.projectTypeId =
-        expected.projectTypeId;
-    filter.ownerId =
-        expected.ownerId;
+    PortalProjectQuery query;
+    query.search = expected.title;
+    query.status = expected.status;
+    query.projectTypeId = expected.projectTypeId;
+    query.ownerId = expected.ownerId;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -1031,9 +1029,9 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
         users
     );
 
-    PortalProjectFilter filter;
+    PortalProjectQuery query;
 
-    filter.sorting.push_back({
+    query.sorting.push_back({
         .field = "title",
         .direction =
             PortalProjectSortDirection::
@@ -1041,7 +1039,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
     });
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -1081,9 +1079,9 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
         users
     );
 
-    PortalProjectFilter filter;
+    PortalProjectQuery query;
 
-    filter.sorting.push_back({
+    query.sorting.push_back({
         .field = "title",
         .direction =
             PortalProjectSortDirection::
@@ -1091,7 +1089,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
     });
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& result = page.items;
 
@@ -1131,9 +1129,9 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
         users
     );
 
-    PortalProjectFilter filter;
+    PortalProjectQuery query;
 
-    filter.sorting.push_back({
+    query.sorting.push_back({
         .field = "status",
         .direction =
             PortalProjectSortDirection::
@@ -1141,7 +1139,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
     });
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& projects = page.items;
 
@@ -1183,9 +1181,9 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
         users
     );
 
-    PortalProjectFilter filter;
+    PortalProjectQuery query;
 
-    filter.sorting.push_back({
+    query.sorting.push_back({
         .field = "status",
         .direction =
             PortalProjectSortDirection::
@@ -1193,7 +1191,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
     });
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     const auto& projects = page.items;
 
@@ -1236,7 +1234,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscendingByDefault) {
     );
 
     const auto page =
-        provider.search(PortalProjectFilter());
+        provider.search(PortalProjectQuery());
 
     const auto& result =
         page.items;
@@ -1276,12 +1274,12 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsFirstProjectPage) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.page = 1;
-    filter.pageSize = 10;
+    PortalProjectQuery query;
+    query.page = 1;
+    query.pageSize = 10;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     EXPECT_EQ(page.page, 1);
     EXPECT_EQ(page.pageSize, 10);
@@ -1312,12 +1310,12 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsSecondProjectPage) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.page = 2;
-    filter.pageSize = 10;
+    PortalProjectQuery query;
+    query.page = 2;
+    query.pageSize = 10;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     EXPECT_EQ(page.page, 2);
     EXPECT_EQ(page.totalItems, 20);
@@ -1346,12 +1344,12 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsEmptyOutOfRangeProjectPage) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.page = 3;
-    filter.pageSize = 10;
+    PortalProjectQuery query;
+    query.page = 3;
+    query.pageSize = 10;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     EXPECT_EQ(page.page, 3);
     EXPECT_EQ(page.totalItems, 20);
@@ -1380,13 +1378,13 @@ TEST(PortalDatasetGraphQLClientTests, PaginatesFilteredProjects) {
         users
     );
 
-    PortalProjectFilter filter;
-    filter.status = "active";
-    filter.page = 1;
-    filter.pageSize = 3;
+    PortalProjectQuery query;
+    query.status = "active";
+    query.page = 1;
+    query.pageSize = 3;
 
     const auto page =
-        provider.search(filter);
+        provider.search(query);
 
     EXPECT_EQ(page.pageSize, 3);
     EXPECT_GT(page.totalItems, 3);

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-struct PortalProjectFilter {
+struct PortalProjectQuery {
     std::optional<std::string> search;
     std::optional<std::string> status;
     std::optional<int> projectTypeId;

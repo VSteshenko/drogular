@@ -3,7 +3,7 @@
 #include "../data/models/portal_project.hpp"
 #include "../data/models/portal_project_create.hpp"
 #include "../data/models/portal_project_update.hpp"
-#include "../data/models/portal_project_filter.hpp"
+#include "../data/models/portal_project_query.hpp"
 #include "../data/models/portal_page.hpp"
 #include "../data/models/portal_user.hpp"
 
@@ -38,6 +38,6 @@ public:
     ) const = 0;
 
     virtual PortalPage<PortalProject> search(
-        const PortalProjectFilter& filter
+        const PortalProjectQuery& query
     ) const = 0;
 };

@@ -59,12 +59,12 @@ public:
     }
 
     PortalPage<PortalProject> search(
-        const PortalProjectFilter& filter
+        const PortalProjectQuery& query
     ) const override {
         const auto response =
             client_->execute(
-                ProjectQueries::search(filter),
-                ProjectMapper::toVariables(filter)
+                ProjectQueries::search(query),
+                ProjectMapper::toVariables(query)
             );
 
         const auto page =

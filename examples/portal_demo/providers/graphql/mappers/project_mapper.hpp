@@ -2,7 +2,7 @@
 
 #include "../../../data/models/portal_project.hpp"
 #include "../../../data/models/portal_project_update.hpp"
-#include "../../../data/models/portal_project_filter.hpp"
+#include "../../../data/models/portal_project_query.hpp"
 #include "../../../data/models/portal_page.hpp"
 #include "../../../data/portal_schema.hpp"
 #include "../../../data/portal_schema_mapper.hpp"
@@ -65,46 +65,46 @@ public:
     }
 
     static drogular::GraphQLVariables toVariables(
-        const PortalProjectFilter& filter
+        const PortalProjectQuery& query
     ) {
         drogular::GraphQLVariables variables;
 
-        if (filter.search.has_value()) {
+        if (query.search.has_value()) {
             variables.set(
                 "search",
-                *filter.search
+                *query.search
             );
         }
 
-        if (filter.status.has_value()) {
+        if (query.status.has_value()) {
             variables.set(
                 "status",
-                *filter.status
+                *query.status
             );
         }
 
-        if (filter.projectTypeId.has_value()) {
+        if (query.projectTypeId.has_value()) {
             variables.set(
                 "projectTypeId",
-                *filter.projectTypeId
+                *query.projectTypeId
             );
         }
 
-        if (filter.ownerId.has_value()) {
+        if (query.ownerId.has_value()) {
             variables.set(
                 "ownerId",
-                *filter.ownerId
+                *query.ownerId
             );
         }
 
-        variables.set("page", filter.page);
-        variables.set("pageSize", filter.pageSize);
+        variables.set("page", query.page);
+        variables.set("pageSize", query.pageSize);
 
-        if (!filter.sorting.empty()) {
+        if (!query.sorting.empty()) {
             Json::Value sorting(Json::arrayValue);
 
             for (const auto& item :
-                filter.sorting) {
+                query.sorting) {
                 Json::Value value(Json::objectValue);
 
                 value["field"] = item.field;

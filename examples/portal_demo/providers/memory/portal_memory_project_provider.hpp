@@ -58,13 +58,13 @@ public:
     }
 
     PortalPage<PortalProject> search(
-        const PortalProjectFilter& filter
+        const PortalProjectQuery& query
     ) const override {
         std::vector<PortalProject> result;
 
         const auto needle =
-            filter.search.has_value()
-                ? lower(*filter.search)
+            query.search.has_value()
+                ? lower(*query.search)
                 : std::string();
 
         for (const auto& project : projects_) {
@@ -73,26 +73,26 @@ public:
                 continue;
             }
 
-            if (filter.status.has_value() &&
-                project.status != *filter.status) {
+            if (query.status.has_value() &&
+                project.status != *query.status) {
                 continue;
             }
 
-            if (filter.projectTypeId.has_value() &&
+            if (query.projectTypeId.has_value() &&
                 project.projectTypeId !=
-                    *filter.projectTypeId) {
+                    *query.projectTypeId) {
                 continue;
             }
 
-            if (filter.ownerId.has_value() &&
-                project.ownerId != *filter.ownerId) {
+            if (query.ownerId.has_value() &&
+                project.ownerId != *query.ownerId) {
                 continue;
             }
 
             result.push_back(project);
         }
 
-        auto sorting = filter.sorting;
+        auto sorting = query.sorting;
 
         if (sorting.empty()) {
             sorting.push_back({
@@ -155,8 +155,8 @@ public:
         );
 
         PortalPage<PortalProject> page;
-        page.page = std::max(1, filter.page);
-        page.pageSize = std::max(1, filter.pageSize);
+        page.page = std::max(1, query.page);
+        page.pageSize = std::max(1, query.pageSize);
         page.totalItems = static_cast<int>(result.size());
         page.totalPages = std::max(
             1,

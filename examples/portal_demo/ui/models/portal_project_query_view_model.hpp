@@ -5,7 +5,7 @@
 #include <string>
 
 namespace portal {
-struct PortalProjectFilterViewModel {
+struct PortalProjectQueryViewModel {
     std::string search;
 
     Json::Value statusOptions{
@@ -32,7 +32,7 @@ struct PortalProjectFilterViewModel {
 };
 
 inline Json::Value toJson(
-    const PortalProjectFilterViewModel& value
+    const PortalProjectQueryViewModel& value
 ) {
     Json::Value json(Json::objectValue);
 
