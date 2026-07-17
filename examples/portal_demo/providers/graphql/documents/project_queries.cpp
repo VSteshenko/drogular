@@ -34,6 +34,10 @@ drogular::gql::Query ProjectQueries::search(
             "ownerId",
             "ID"
         )
+        .variable(
+            "sorting",
+            "[ProjectSortInput!]"
+        )
         .select(
             drogular::gql::field("projects")
                 .arg(
@@ -53,6 +57,10 @@ drogular::gql::Query ProjectQueries::search(
                 .arg(
                     "ownerId",
                     drogular::gql::variable("ownerId")
+                )
+                .arg(
+                    "sorting",
+                    drogular::gql::variable("sorting")
                 )
                 .children(
                     PortalGraphQLSelectionBuilder::from(

@@ -188,40 +188,34 @@ public:
                 );
         };
 
-        auto users =
-            context.requireService<PortalUserProvider>();
+        addStatusOption(
+            "",
+            context.translate(
+                "projects.filter.status.all"
+            )
+        );
 
-        const auto allUsers =
-            users->all();
+        addStatusOption(
+            "active",
+            context.translate(
+                "projects.status.active"
+            )
+        );
 
-        Json::Value ownerFilterOptions(Json::arrayValue);
+        addStatusOption(
+            "paused",
+            context.translate(
+                "projects.status.paused"
+            )
+        );
 
-        {
-            Json::Value option(Json::objectValue);
+        addStatusOption(
+            "done",
+            context.translate(
+                "projects.status.done"
+            )
+        );
 
-            option["value"] = "";
-            option["label"] =
-                context.translate("projects.filter.owner.all");
-            option["selected"] = !ownerId.has_value();
-
-            ownerFilterOptions.append(
-                std::move(option)
-            );
-        }
-
-        for (const auto& user : allUsers) {
-            Json::Value option(Json::objectValue);
-
-            option["value"] = user.id;
-            option["label"] = user.username;
-            option["selected"] =
-                ownerId.has_value() &&
-                *ownerId == user.id;
-
-            ownerFilterOptions.append(
-                std::move(option)
-            );
-        }
 
         Json::Value projectTypeFilterOptions(Json::arrayValue);
 
@@ -257,31 +251,139 @@ public:
             );
         }
 
-        addStatusOption(
-            "",
+        auto users =
+            context.requireService<PortalUserProvider>();
+
+        const auto allUsers =
+            users->all();
+
+        Json::Value ownerFilterOptions(Json::arrayValue);
+
+        {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = "";
+            option["label"] =
+                context.translate("projects.filter.owner.all");
+            option["selected"] = !ownerId.has_value();
+
+            ownerFilterOptions.append(
+                std::move(option)
+            );
+        }
+
+        for (const auto& user : allUsers) {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = user.id;
+            option["label"] = user.username;
+            option["selected"] =
+                ownerId.has_value() &&
+                *ownerId == user.id;
+
+            ownerFilterOptions.append(
+                std::move(option)
+            );
+        }
+
+        const auto sortValue =
+            request != nullptr
+                ? request->getParameter("sort")
+                : std::string("");
+
+        const auto sortField =
+            sortValue == "id" ||
+            sortValue == "status" ||
+            sortValue == "title"
+                ? sortValue
+                : std::string("title");
+
+        Json::Value sortOptions(Json::arrayValue);
+
+        const auto addSortOption =
+            [&sortOptions, &sortField](
+                const std::string& value,
+                const std::string& label
+            ) {
+                Json::Value option(Json::objectValue);
+
+                option["value"] = value;
+                option["label"] = label;
+                option["selected"] =
+                    sortField == value;
+
+                sortOptions.append(
+                    std::move(option)
+                );
+        };
+
+        addSortOption(
+            "title",
             context.translate(
-                "projects.filter.status.all"
+                "projects.sort.title"
             )
         );
 
-        addStatusOption(
-            "active",
+        addSortOption(
+            "status",
             context.translate(
-                "projects.status.active"
+                "projects.sort.status"
             )
         );
 
-        addStatusOption(
-            "paused",
+        addSortOption(
+            "id",
             context.translate(
-                "projects.status.paused"
+                "projects.sort.id"
             )
         );
 
-        addStatusOption(
-            "done",
+        const auto directionValue =
+            request != nullptr
+                ? request->getParameter("direction")
+                : std::string("");
+
+        const auto sortDirection =
+            directionValue == "desc"
+                ? PortalProjectSortDirection::
+                      Descending
+                : PortalProjectSortDirection::
+                      Ascending;
+
+        Json::Value directionOptions(Json::arrayValue);
+
+        const auto selectedDirection =
+            toString(sortDirection);
+
+        const auto addDirectionOption =
+            [&directionOptions,
+             &selectedDirection](
+                const std::string& value,
+                const std::string& label
+            ) {
+                Json::Value option(Json::objectValue);
+
+                option["value"] = value;
+                option["label"] = label;
+                option["selected"] =
+                    selectedDirection == value;
+
+                directionOptions.append(
+                    std::move(option)
+                );
+        };
+
+        addDirectionOption(
+            "asc",
             context.translate(
-                "projects.status.done"
+                "projects.sort.ascending"
+            )
+        );
+
+        addDirectionOption(
+            "desc",
+            context.translate(
+                "projects.sort.descending"
             )
         );
 
@@ -291,6 +393,8 @@ public:
         filters.statusOptions = std::move(statusOptions);
         filters.projectTypeOptions = std::move(projectTypeFilterOptions);
         filters.ownerOptions = std::move(ownerFilterOptions);
+        filters.sortOptions = std::move(sortOptions);
+        filters.sortDirectionOptions = std::move(directionOptions);
 
         filters.hasActiveFilters =
             !search.empty() ||
@@ -347,6 +451,33 @@ public:
                 separator +
                 "ownerId=" +
                 std::to_string(*ownerId);
+            separator = "&";
+        }
+
+        filter.sorting.push_back({
+            .field = sortField,
+            .direction = sortDirection
+        });
+
+        const auto hasCustomSorting =
+            sortField != "title" ||
+            sortDirection !=
+                PortalProjectSortDirection::
+                    Ascending;
+
+        if (hasCustomSorting) {
+            returnUrl +=
+                separator +
+                "sort=" +
+                drogular::Url::encode(
+                    sortField
+                );
+            separator = "&";
+
+            returnUrl +=
+                separator +
+                "direction=" +
+                toString(sortDirection);
         }
 
         for (const auto& project :

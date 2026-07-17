@@ -12,6 +12,7 @@
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_user_provider.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_provider.hpp"
 #include "../../examples/portal_demo/providers/graphql/portal_graphql_project_type_provider.hpp"
+#include "portal_application_test_host.hpp"
 
 #include <gtest/gtest.h>
 
@@ -991,4 +992,239 @@ TEST(PortalDatasetGraphQLClientTests, CombinesAllProjectFilters) {
             expected.ownerId
         );
     }
+}
+
+TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+
+    filter.sorting.push_back({
+        .field = "title",
+        .direction =
+            PortalProjectSortDirection::
+                Ascending
+    });
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    EXPECT_TRUE(
+        std::is_sorted(
+            result.begin(),
+            result.end(),
+            [](const auto& left,
+               const auto& right) {
+                return left.title <
+                       right.title;
+            }
+        )
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+
+    filter.sorting.push_back({
+        .field = "title",
+        .direction =
+            PortalProjectSortDirection::
+                Descending
+    });
+
+    const auto result =
+        provider.search(filter);
+
+    ASSERT_FALSE(result.empty());
+
+    EXPECT_TRUE(
+        std::is_sorted(
+            result.begin(),
+            result.end(),
+            [](const auto& left,
+                const auto& right) {
+                return left.title >
+                       right.title;
+            }
+        )
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+
+    filter.sorting.push_back({
+        .field = "status",
+        .direction =
+            PortalProjectSortDirection::
+                Ascending
+    });
+
+    const auto projects =
+        provider.search(filter);
+
+    ASSERT_GT(projects.size(), 1);
+
+    EXPECT_TRUE(
+        std::is_sorted(
+            projects.begin(),
+            projects.end(),
+            [](const auto& left,
+                const auto& right) {
+                if (left.status != right.status) {
+                    return left.status < right.status;
+                }
+                return left.id < right.id;
+            }
+        )
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+
+    filter.sorting.push_back({
+        .field = "status",
+        .direction =
+            PortalProjectSortDirection::
+                Descending
+    });
+
+    const auto projects =
+        provider.search(filter);
+
+    ASSERT_GT(projects.size(), 1);
+
+    EXPECT_TRUE(
+        std::is_sorted(
+            projects.begin(),
+            projects.end(),
+            [](const auto& left,
+                const auto& right) {
+                if (left.status != right.status) {
+                    return left.status > right.status;
+                }
+                return left.id < right.id;
+            }
+        )
+    );
+}
+
+TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscendingByDefault) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    const auto result =
+        provider.search(PortalProjectFilter());
+
+    ASSERT_GT(result.size(), 1);
+
+    EXPECT_TRUE(
+        std::is_sorted(
+            result.begin(),
+            result.end(),
+            [](const auto& left,
+               const auto& right) {
+                return left.title <
+                       right.title;
+            }
+        )
+    );
 }

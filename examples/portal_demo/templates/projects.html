@@ -156,6 +156,48 @@
             </div>
 
             <div>
+                <label for="projectSort">
+                    {{ projectsSortLabel }}
+                </label>
+                <br />
+
+                <select
+                        id="projectSort"
+                        name="sort"
+                >
+                    @foreach(item in filters.sortOptions)
+                    <option
+                            value="{{ item.value }}"
+                            @if(item.selected)selected@endif
+                    >
+                        {{ item.label }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label for="projectSortDirection">
+                    {{ projectsSortDirectionLabel }}
+                </label>
+                <br />
+
+                <select
+                        id="projectSortDirection"
+                        name="direction"
+                >
+                    @foreach(item in filters.sortDirectionOptions)
+                    <option
+                            value="{{ item.value }}"
+                            @if(item.selected)selected@endif
+                    >
+                        {{ item.label }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
                 <button type="submit">
                     {{ projectsSearch }}
                 </button>

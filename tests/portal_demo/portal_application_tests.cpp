@@ -1561,3 +1561,64 @@ TEST(PortalApplicationTests, ProjectsPagePreservesSelectedOwnerFilter) {
             )
     );
 }
+
+TEST(PortalApplicationTests, ProjectsPagePreservesSelectedSorting) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectsPage>({
+            {"sort", "status"},
+            {"direction", "desc"}
+        });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::
+            optionSelectedInSelect(
+                html,
+                R"(id="projectSort")",
+                "status"
+            )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::
+            optionSelectedInSelect(
+                html,
+                R"(id="projectSortDirection")",
+                "desc"
+            )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectsPageSelectsDefaultSorting) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectsPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::
+            optionSelectedInSelect(
+                html,
+                R"(id="projectSort")",
+                "title"
+            )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::
+            optionSelectedInSelect(
+                html,
+                R"(id="projectSortDirection")",
+                "asc"
+            )
+    );
+}

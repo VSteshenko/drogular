@@ -20,6 +20,14 @@ struct PortalProjectFilterViewModel {
         Json::arrayValue
     };
 
+    Json::Value sortOptions{
+        Json::arrayValue
+    };
+
+    Json::Value sortDirectionOptions{
+        Json::arrayValue
+    };
+
     bool hasActiveFilters = false;
 };
 
@@ -33,6 +41,8 @@ inline Json::Value toJson(
     json["projectTypeOptions"] = value.projectTypeOptions;
     json["ownerOptions"] = value.ownerOptions;
     json["hasActiveFilters"] = value.hasActiveFilters;
+    json["sortOptions"] = value.sortOptions;
+    json["sortDirectionOptions"] = value.sortDirectionOptions;
 
     return json;
 }

@@ -96,6 +96,27 @@ public:
             );
         }
 
+        if (!filter.sorting.empty()) {
+            Json::Value sorting(Json::arrayValue);
+
+            for (const auto& item :
+                filter.sorting) {
+                Json::Value value(Json::objectValue);
+
+                value["field"] = item.field;
+                value["direction"] = toString(item.direction);
+
+                sorting.append(
+                    std::move(value)
+                );
+            }
+
+            variables.set(
+                "sorting",
+                std::move(sorting)
+            );
+        }
+
         return variables;
     }
 

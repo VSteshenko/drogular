@@ -101,6 +101,8 @@ public:
             {"projectTypeNotFoundMessage", "project_types.not_found.message"},
             {"projectsFiltersTitle", "projects.filters.title"},
             {"projectsOwnerFilterLabel", "projects.filter.owner"},
+            {"projectsSortLabel", "projects.sort.label"},
+            {"projectsSortDirectionLabel", "projects.sort.direction"},
 
             {"authLoginRequiredTitle", "auth.login_required.title"},
             {"authLoginRequiredMessage", "auth.login_required.message"},

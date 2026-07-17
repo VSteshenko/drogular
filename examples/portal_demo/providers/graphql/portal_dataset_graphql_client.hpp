@@ -3,7 +3,10 @@
 #include "../../data/portal_dataset.hpp"
 #include "../../data/portal_schema.hpp"
 #include "../../data/portal_schema_mapper.hpp"
+#include "../../data/models/portal_project_sort.hpp"
 
+#include <algorithm>
+#include <vector>
 #include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
 
@@ -269,11 +272,42 @@ public:
                         )
                         : std::nullopt;
 
+                std::vector<PortalProjectSort> sorting;
+
+                if (json.isMember("sorting") &&
+                    json["sorting"].isArray()) {
+                    for (const auto& item :
+                        json["sorting"]) {
+                        const auto field =
+                            item["field"].asString();
+
+                        if (field != "id" &&
+                            field != "title" &&
+                            field != "status") {
+                            continue;
+                            }
+
+                        const auto direction =
+                            item["direction"].asString() ==
+                                    "desc"
+                                ? PortalProjectSortDirection::
+                                      Descending
+                                : PortalProjectSortDirection::
+                                      Ascending;
+
+                        sorting.push_back({
+                            .field = field,
+                            .direction = direction
+                        });
+                    }
+                }
+
                 return searchProjectsResponse(
                     search,
                     status,
                     projectTypeId,
-                    ownerId
+                    ownerId,
+                    sorting
                 );
         };
     }
@@ -870,12 +904,13 @@ private:
         const std::string& search,
         const std::string& status,
         const std::optional<int>& projectTypeId,
-        const std::optional<int>& ownerId
+        const std::optional<int>& ownerId,
+        std::vector<PortalProjectSort> sorting
     ) const {
-        Json::Value projects(Json::arrayValue);
-
         const auto needle =
             lower(search);
+
+        std::vector<PortalProject> result;
 
         for (const auto& project :
             dataset_->projects()) {
@@ -901,13 +936,82 @@ private:
                 continue;
             }
 
+            result.push_back(project);
+        }
+
+        if (sorting.empty()) {
+            sorting.push_back({
+                .field = "title",
+                .direction =
+                    PortalProjectSortDirection::
+                        Ascending
+            });
+        }
+
+        const auto compare =
+            []<typename T>(
+                const T& left,
+                const T& right,
+                PortalProjectSortDirection direction
+            ) {
+                return direction ==
+                       PortalProjectSortDirection::
+                           Ascending
+                    ? left < right
+                    : right < left;
+            };
+
+        std::stable_sort(
+            result.begin(),
+            result.end(),
+            [&sorting, &compare](
+                const PortalProject& left,
+                const PortalProject& right
+            ) {
+                for (const auto& sort : sorting) {
+                    if (sort.field == "title" &&
+                        left.title != right.title) {
+                        return compare(
+                            left.title,
+                            right.title,
+                            sort.direction
+                        );
+                    }
+
+                    if (sort.field == "status" &&
+                        left.status != right.status) {
+                        return compare(
+                            left.status,
+                            right.status,
+                            sort.direction
+                        );
+                    }
+
+                    if (sort.field == "id" &&
+                        left.id != right.id) {
+                        return compare(
+                            left.id,
+                            right.id,
+                            sort.direction
+                        );
+                    }
+                }
+
+                return left.id < right.id;
+            }
+        );
+
+        Json::Value projects(Json::arrayValue);
+
+        for (const auto& project : result) {
             projects.append(
                 projectJson(project)
             );
         }
 
         Json::Value data(Json::objectValue);
-        data["projects"] = projects;
+
+        data["projects"] = std::move(projects);
 
         return response(data);
     }
