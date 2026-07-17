@@ -3,6 +3,7 @@
 #include "../../../data/models/portal_project.hpp"
 #include "../../../data/models/portal_project_update.hpp"
 #include "../../../data/models/portal_project_filter.hpp"
+#include "../../../data/models/portal_page.hpp"
 #include "../../../data/portal_schema.hpp"
 #include "../../../data/portal_schema_mapper.hpp"
 
@@ -96,6 +97,9 @@ public:
             );
         }
 
+        variables.set("page", filter.page);
+        variables.set("pageSize", filter.pageSize);
+
         if (!filter.sorting.empty()) {
             Json::Value sorting(Json::arrayValue);
 
@@ -118,6 +122,24 @@ public:
         }
 
         return variables;
+    }
+
+    static PortalPage<PortalProject> pageFromValue(
+        const Json::Value& value
+    ) {
+        PortalPage<PortalProject> page;
+
+        if (value.isNull() || !value.isObject()) {
+            return page;
+        }
+
+        page.items = fromList(value["items"]);
+        page.page = value.get("page", 1).asInt();
+        page.pageSize = value.get("pageSize", 10).asInt();
+        page.totalItems = value.get("totalItems", 0).asInt();
+        page.totalPages = value.get("totalPages", 1).asInt();
+
+        return page;
     }
 
     static PortalProject fromValue(

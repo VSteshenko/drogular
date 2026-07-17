@@ -38,8 +38,16 @@ drogular::gql::Query ProjectQueries::search(
             "sorting",
             "[ProjectSortInput!]"
         )
+        .variable(
+            "page",
+            "Int!"
+        )
+        .variable(
+            "pageSize",
+            "Int!"
+        )
         .select(
-            drogular::gql::field("projects")
+            drogular::gql::field("projectPage")
                 .arg(
                     "search",
                     drogular::gql::variable("search")
@@ -62,11 +70,26 @@ drogular::gql::Query ProjectQueries::search(
                     "sorting",
                     drogular::gql::variable("sorting")
                 )
-                .children(
-                    PortalGraphQLSelectionBuilder::from(
-                        PortalSchema::projects()
-                    )
+                .arg(
+                    "page",
+                    drogular::gql::variable("page")
                 )
+                .arg(
+                    "pageSize",
+                    drogular::gql::variable("pageSize")
+                )
+                .children({
+                    drogular::gql::field("items")
+                        .children(
+                            PortalGraphQLSelectionBuilder::from(
+                                PortalSchema::projects()
+                            )
+                        ),
+                    drogular::gql::field("page"),
+                    drogular::gql::field("pageSize"),
+                    drogular::gql::field("totalItems"),
+                    drogular::gql::field("totalPages")
+                })
         );
 }
 

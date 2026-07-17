@@ -1317,37 +1317,48 @@ TEST(PortalApplicationTests, ProjectsPageFiltersProjectsBySearch) {
 
     app.loginAsAdmin();
 
-    const std::string search = "Portal";
+    const auto expected =
+        std::find_if(
+            app.dataset().projects().begin(),
+            app.dataset().projects().end(),
+            [](const PortalProject& project) {
+                return project.title ==
+                    "Inventory Manager";
+            }
+        );
+
+    ASSERT_NE(
+        expected,
+        app.dataset().projects().end()
+    );
 
     const auto html =
         app.render<PortalProjectsPage>({
             {
                 "search",
-                search
+                expected->title
             }
         });
 
-    for (const auto& project :
-        app.dataset().projects()) {
-        const bool shouldBeVisible =
-            project.title.find(search) !=
-            std::string::npos;
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            expected->title
+        )
+    );
 
-        if (shouldBeVisible) {
-            EXPECT_TRUE(
-                HtmlTestSupport::containsText(
-                    html,
-                    project.title
-                )
-            ) << project.title;
-        } else {
-            EXPECT_FALSE(
-                HtmlTestSupport::containsText(
-                    html,
-                    project.title
-                )
-            ) << project.title;
+    for (const auto& project :
+         app.dataset().projects()) {
+        if (project.id == expected->id) {
+            continue;
         }
+
+        EXPECT_FALSE(
+            HtmlTestSupport::containsText(
+                html,
+                project.title
+            )
+        );
     }
 }
 
@@ -1621,5 +1632,99 @@ TEST(PortalApplicationTests, ProjectsPageSelectsDefaultSorting) {
                 R"(id="projectSortDirection")",
                 "asc"
             )
+    );
+}
+TEST(PortalApplicationTests, ProjectsPageShowsPagination) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectsPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(aria-label="Project pages")"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/projects?page=2")"
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(aria-current="page")"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectsPageShowsSecondPage) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    auto projects =
+        app.dataset().projects();
+
+    std::stable_sort(
+        projects.begin(),
+        projects.end(),
+        [](const PortalProject& left, const PortalProject& right) {
+            if (left.title != right.title) {
+                return left.title < right.title;
+            }
+            return left.id < right.id;
+        }
+    );
+
+    const auto html =
+        app.render<PortalProjectsPage>(
+            {{"page", "2"}}
+        );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "data-project-id=\"" + std::to_string(projects[10].id) + "\""
+        )
+    );
+
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            "data-project-id=\"" + std::to_string(projects[0].id) + "\""
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectPaginationPreservesFiltersAndSorting) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html =
+        app.render<PortalProjectsPage>({
+            {"search", "a"},
+            {"sort", "id"},
+            {"direction", "desc"}
+        });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/projects?search=a&amp;sort=id&amp;direction=desc&amp;page=2")"
+        )
     );
 }

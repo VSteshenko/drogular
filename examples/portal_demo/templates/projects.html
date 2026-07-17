@@ -214,7 +214,7 @@
     @if(hasProjects)
     <ul>
         @foreach(project in projects)
-        <li>
+        <li data-project-id="{{ project.id }}">
             <a href="{{ project.detailsUrl }}">
                 {{ project.title }}
             </a>
@@ -224,6 +224,26 @@
     </ul>
     @else
     <p>{{ projectsEmpty }}</p>
+    @endif
+
+    @if(hasPagination)
+    <nav aria-label="{{ projectsPaginationLabel }}">
+        @if(hasPreviousPage)
+        <a href="{{ previousPageUrl }}">{{ projectsPreviousPage }}</a>
+        @endif
+
+        @foreach(item in paginationPages)
+        @if(item.current)
+        <strong aria-current="page">{{ item.number }}</strong>
+        @else
+        <a href="{{ item.url }}">{{ item.number }}</a>
+        @endif
+        @endforeach
+
+        @if(hasNextPage)
+        <a href="{{ nextPageUrl }}">{{ projectsNextPage }}</a>
+        @endif
+    </nav>
     @endif
 </ul>
 @endif

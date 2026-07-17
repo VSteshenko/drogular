@@ -4,6 +4,7 @@
 #include "../data/models/portal_project_create.hpp"
 #include "../data/models/portal_project_update.hpp"
 #include "../data/models/portal_project_filter.hpp"
+#include "../data/models/portal_page.hpp"
 #include "../data/models/portal_user.hpp"
 
 #include <optional>
@@ -36,7 +37,7 @@ public:
         const PortalProject& project
     ) const = 0;
 
-    virtual std::vector<PortalProject> search(
+    virtual PortalPage<PortalProject> search(
         const PortalProjectFilter& filter
     ) const = 0;
 };

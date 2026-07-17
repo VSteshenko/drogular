@@ -9,6 +9,7 @@
 #include <vector>
 #include <optional>
 #include <algorithm>
+#include <cstddef>
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -56,26 +57,136 @@ public:
         return std::nullopt;
     }
 
-    std::vector<PortalProject> search(
+    PortalPage<PortalProject> search(
         const PortalProjectFilter& filter
     ) const override {
-        if (!filter.search.has_value() ||
-            filter.search->empty()) {
-            return all();
-            }
-
-        const auto needle =
-            lower(*filter.search);
-
         std::vector<PortalProject> result;
 
+        const auto needle =
+            filter.search.has_value()
+                ? lower(*filter.search)
+                : std::string();
+
         for (const auto& project : projects_) {
-            if (lower(project.title).contains(needle)) {
-                result.push_back(project);
+            if (!needle.empty() &&
+                !lower(project.title).contains(needle)) {
+                continue;
             }
+
+            if (filter.status.has_value() &&
+                project.status != *filter.status) {
+                continue;
+            }
+
+            if (filter.projectTypeId.has_value() &&
+                project.projectTypeId !=
+                    *filter.projectTypeId) {
+                continue;
+            }
+
+            if (filter.ownerId.has_value() &&
+                project.ownerId != *filter.ownerId) {
+                continue;
+            }
+
+            result.push_back(project);
         }
 
-        return result;
+        auto sorting = filter.sorting;
+
+        if (sorting.empty()) {
+            sorting.push_back({
+                .field = "title",
+                .direction =
+                    PortalProjectSortDirection::Ascending
+            });
+        }
+
+        const auto compare =
+            []<typename T>(
+                const T& left,
+                const T& right,
+                PortalProjectSortDirection direction
+            ) {
+                return direction ==
+                       PortalProjectSortDirection::Ascending
+                    ? left < right
+                    : right < left;
+            };
+
+        std::stable_sort(
+            result.begin(),
+            result.end(),
+            [&sorting, &compare](
+                const PortalProject& left,
+                const PortalProject& right
+            ) {
+                for (const auto& sort : sorting) {
+                    if (sort.field == "title" &&
+                        left.title != right.title) {
+                        return compare(
+                            left.title,
+                            right.title,
+                            sort.direction
+                        );
+                    }
+
+                    if (sort.field == "status" &&
+                        left.status != right.status) {
+                        return compare(
+                            left.status,
+                            right.status,
+                            sort.direction
+                        );
+                    }
+
+                    if (sort.field == "id" &&
+                        left.id != right.id) {
+                        return compare(
+                            left.id,
+                            right.id,
+                            sort.direction
+                        );
+                    }
+                }
+
+                return left.id < right.id;
+            }
+        );
+
+        PortalPage<PortalProject> page;
+        page.page = std::max(1, filter.page);
+        page.pageSize = std::max(1, filter.pageSize);
+        page.totalItems = static_cast<int>(result.size());
+        page.totalPages = std::max(
+            1,
+            (page.totalItems + page.pageSize - 1) /
+                page.pageSize
+        );
+
+        const auto beginIndex =
+            static_cast<std::size_t>(page.page - 1) *
+            static_cast<std::size_t>(page.pageSize);
+
+        if (beginIndex >= result.size()) {
+            return page;
+        }
+
+        const auto endIndex =
+            std::min(
+                result.size(),
+                beginIndex +
+                    static_cast<std::size_t>(page.pageSize)
+            );
+
+        page.items.assign(
+            result.begin() +
+                static_cast<std::ptrdiff_t>(beginIndex),
+            result.begin() +
+                static_cast<std::ptrdiff_t>(endIndex)
+        );
+
+        return page;
     }
 
     PortalProject create(

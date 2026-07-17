@@ -302,12 +302,24 @@ public:
                     }
                 }
 
+                const auto page =
+                    json.isMember("page")
+                        ? std::max(1, json["page"].asInt())
+                        : 1;
+
+                const auto pageSize =
+                    json.isMember("pageSize")
+                        ? std::max(1, json["pageSize"].asInt())
+                        : 10;
+
                 return searchProjectsResponse(
                     search,
                     status,
                     projectTypeId,
                     ownerId,
-                    sorting
+                    sorting,
+                    page,
+                    pageSize
                 );
         };
     }
@@ -905,7 +917,9 @@ private:
         const std::string& status,
         const std::optional<int>& projectTypeId,
         const std::optional<int>& ownerId,
-        std::vector<PortalProjectSort> sorting
+        std::vector<PortalProjectSort> sorting,
+        int page,
+        int pageSize
     ) const {
         const auto needle =
             lower(search);
@@ -1001,17 +1015,47 @@ private:
             }
         );
 
-        Json::Value projects(Json::arrayValue);
+        const auto totalItems =
+            static_cast<int>(result.size());
 
-        for (const auto& project : result) {
-            projects.append(
-                projectJson(project)
+        const auto totalPages =
+            std::max(
+                1,
+                (totalItems + pageSize - 1) / pageSize
             );
+
+        const auto beginIndex =
+            static_cast<std::size_t>(page - 1) *
+            static_cast<std::size_t>(pageSize);
+
+        const auto endIndex =
+            std::min(
+                result.size(),
+                beginIndex +
+                    static_cast<std::size_t>(pageSize)
+            );
+
+        Json::Value items(Json::arrayValue);
+
+        if (beginIndex < result.size()) {
+            for (auto index = beginIndex;
+                 index < endIndex;
+                 ++index) {
+                items.append(
+                    projectJson(result[index])
+                );
+            }
         }
 
-        Json::Value data(Json::objectValue);
+        Json::Value projectPage(Json::objectValue);
+        projectPage["items"] = std::move(items);
+        projectPage["page"] = page;
+        projectPage["pageSize"] = pageSize;
+        projectPage["totalItems"] = totalItems;
+        projectPage["totalPages"] = totalPages;
 
-        data["projects"] = std::move(projects);
+        Json::Value data(Json::objectValue);
+        data["projectPage"] = std::move(projectPage);
 
         return response(data);
     }

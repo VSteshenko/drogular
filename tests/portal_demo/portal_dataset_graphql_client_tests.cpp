@@ -604,8 +604,10 @@ TEST(PortalDatasetGraphQLClientTests, SearchesProjectsByPartialTitle) {
     PortalProjectFilter filter;
     filter.search = "portal";
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -653,8 +655,10 @@ TEST(PortalDatasetGraphQLClientTests, ProjectSearchIsCaseInsensitive) {
     PortalProjectFilter filter;
     filter.search = "PoRtAl";
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -703,8 +707,10 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByStatus) {
     PortalProjectFilter filter;
     filter.status = "active";
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -753,8 +759,10 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchAndStatusFilter) {
     filter.search = source.title;
     filter.status = source.status;
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -813,8 +821,10 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByProjectType) {
     filter.projectTypeId =
         expectedTypeId;
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -867,8 +877,10 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchStatusAndTypeFilter) 
     filter.projectTypeId =
         expected.projectTypeId;
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -926,8 +938,10 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByOwner
     filter.ownerId =
         expectedOwnerId;
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -971,8 +985,10 @@ TEST(PortalDatasetGraphQLClientTests, CombinesAllProjectFilters) {
     filter.ownerId =
         expected.ownerId;
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -1024,8 +1040,10 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
                 Ascending
     });
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -1072,8 +1090,10 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
                 Descending
     });
 
-    const auto result =
+    const auto page =
         provider.search(filter);
+
+    const auto& result = page.items;
 
     ASSERT_FALSE(result.empty());
 
@@ -1120,8 +1140,10 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
                 Ascending
     });
 
-    const auto projects =
+    const auto page =
         provider.search(filter);
+
+    const auto& projects = page.items;
 
     ASSERT_GT(projects.size(), 1);
 
@@ -1170,8 +1192,10 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
                 Descending
     });
 
-    const auto projects =
+    const auto page =
         provider.search(filter);
+
+    const auto& projects = page.items;
 
     ASSERT_GT(projects.size(), 1);
 
@@ -1211,8 +1235,11 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscendingByDefault) {
         users
     );
 
-    const auto result =
+    const auto page =
         provider.search(PortalProjectFilter());
+
+    const auto& result =
+        page.items;
 
     ASSERT_GT(result.size(), 1);
 
@@ -1227,4 +1254,149 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscendingByDefault) {
             }
         )
     );
+}
+TEST(PortalDatasetGraphQLClientTests, ReturnsFirstProjectPage) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.page = 1;
+    filter.pageSize = 10;
+
+    const auto page =
+        provider.search(filter);
+
+    EXPECT_EQ(page.page, 1);
+    EXPECT_EQ(page.pageSize, 10);
+    EXPECT_EQ(page.totalItems, 20);
+    EXPECT_EQ(page.totalPages, 2);
+    ASSERT_EQ(page.items.size(), 10);
+    EXPECT_EQ(page.items.front().title, "Analytics Platform");
+}
+
+TEST(PortalDatasetGraphQLClientTests, ReturnsSecondProjectPage) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.page = 2;
+    filter.pageSize = 10;
+
+    const auto page =
+        provider.search(filter);
+
+    EXPECT_EQ(page.page, 2);
+    EXPECT_EQ(page.totalItems, 20);
+    EXPECT_EQ(page.totalPages, 2);
+    ASSERT_EQ(page.items.size(), 10);
+}
+
+TEST(PortalDatasetGraphQLClientTests, ReturnsEmptyOutOfRangeProjectPage) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.page = 3;
+    filter.pageSize = 10;
+
+    const auto page =
+        provider.search(filter);
+
+    EXPECT_EQ(page.page, 3);
+    EXPECT_EQ(page.totalItems, 20);
+    EXPECT_EQ(page.totalPages, 2);
+    EXPECT_TRUE(page.items.empty());
+}
+
+TEST(PortalDatasetGraphQLClientTests, PaginatesFilteredProjects) {
+    auto dataset =
+        std::make_shared<PortalDataset>(
+            DemoDataset::create()
+        );
+
+    auto client =
+        std::make_shared<
+            PortalDatasetGraphQLClient
+        >(dataset);
+
+    auto users =
+        std::make_shared<
+            PortalGraphQLUserProvider
+        >(client);
+
+    PortalGraphQLProjectProvider provider(
+        client,
+        users
+    );
+
+    PortalProjectFilter filter;
+    filter.status = "active";
+    filter.page = 1;
+    filter.pageSize = 3;
+
+    const auto page =
+        provider.search(filter);
+
+    EXPECT_EQ(page.pageSize, 3);
+    EXPECT_GT(page.totalItems, 3);
+    EXPECT_EQ(
+        page.totalPages,
+        (page.totalItems + page.pageSize - 1) / page.pageSize
+    );
+    ASSERT_EQ(page.items.size(), 3);
+
+    for (const auto& project : page.items) {
+        EXPECT_EQ(project.status, "active");
+    }
 }

@@ -13,4 +13,7 @@ struct PortalProjectFilter {
     std::optional<int> ownerId;
 
     std::vector<PortalProjectSort> sorting;
+
+    int page = 1;
+    int pageSize = 10;
 };

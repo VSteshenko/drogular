@@ -103,6 +103,9 @@ public:
             {"projectsOwnerFilterLabel", "projects.filter.owner"},
             {"projectsSortLabel", "projects.sort.label"},
             {"projectsSortDirectionLabel", "projects.sort.direction"},
+            {"projectsPaginationLabel", "projects.pagination.label"},
+            {"projectsPreviousPage", "projects.pagination.previous"},
+            {"projectsNextPage", "projects.pagination.next"},
 
             {"authLoginRequiredTitle", "auth.login_required.title"},
             {"authLoginRequiredMessage", "auth.login_required.message"},

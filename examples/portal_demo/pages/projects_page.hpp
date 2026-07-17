@@ -11,6 +11,8 @@
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
+#include <algorithm>
+
 class PortalProjectsPage final
     : public drogular::TemplatePage
 {
@@ -404,54 +406,68 @@ public:
 
         context.setJson("filters", filters);
 
+        const auto pageValue =
+            request != nullptr
+                ? request->getParameter("page")
+                : std::string();
+
+        int requestedPage = 1;
+
+        if (!pageValue.empty()) {
+            try {
+                requestedPage =
+                    std::max(1, std::stoi(pageValue));
+            } catch (const std::exception&) {
+            }
+        }
+
         auto repository =
             context.requireService<PortalProjectProvider>();
 
-        Json::Value projects(Json::arrayValue);
-
         PortalProjectFilter filter;
-        std::string returnUrl = "/projects";
+        filter.page = requestedPage;
+        filter.pageSize = 10;
+
+        std::string baseUrl = "/projects";
         std::string separator = "?";
+
+        const auto appendParameter =
+            [&baseUrl, &separator](
+                const std::string& name,
+                const std::string& value
+            ) {
+                baseUrl +=
+                    separator +
+                    name +
+                    "=" +
+                    drogular::Url::encode(value);
+                separator = "&";
+            };
 
         if (!search.empty()) {
             filter.search = search;
-
-            returnUrl +=
-                separator +
-                "search=" +
-                drogular::Url::encode(search);
-            separator = "&";
+            appendParameter("search", search);
         }
 
         if (!status.empty()) {
             filter.status = status;
-
-            returnUrl +=
-                separator +
-                "status=" +
-                drogular::Url::encode(status);
-            separator = "&";
+            appendParameter("status", status);
         }
 
         if (projectTypeId.has_value()) {
             filter.projectTypeId = *projectTypeId;
-
-            returnUrl +=
-                separator +
-                "projectTypeId=" +
-                std::to_string(*projectTypeId);
-            separator = "&";
+            appendParameter(
+                "projectTypeId",
+                std::to_string(*projectTypeId)
+            );
         }
 
         if (ownerId.has_value()) {
-            filter.ownerId =
-                *ownerId;
-
-            returnUrl +=
-                separator +
-                "ownerId=" +
-                std::to_string(*ownerId);
-            separator = "&";
+            filter.ownerId = *ownerId;
+            appendParameter(
+                "ownerId",
+                std::to_string(*ownerId)
+            );
         }
 
         filter.sorting.push_back({
@@ -462,26 +478,41 @@ public:
         const auto hasCustomSorting =
             sortField != "title" ||
             sortDirection !=
-                PortalProjectSortDirection::
-                    Ascending;
+                PortalProjectSortDirection::Ascending;
 
         if (hasCustomSorting) {
-            returnUrl +=
-                separator +
-                "sort=" +
-                drogular::Url::encode(
-                    sortField
-                );
-            separator = "&";
-
-            returnUrl +=
-                separator +
-                "direction=" +
-                toString(sortDirection);
+            appendParameter("sort", sortField);
+            appendParameter(
+                "direction",
+                toString(sortDirection)
+            );
         }
 
+        const auto pageResult =
+            repository->search(filter);
+
+        const auto pageUrl =
+            [&baseUrl](int page) {
+                if (page <= 1) {
+                    return baseUrl;
+                }
+
+                return baseUrl +
+                    (baseUrl.find('?') ==
+                             std::string::npos
+                         ? "?"
+                         : "&") +
+                    "page=" +
+                    std::to_string(page);
+            };
+
+        const auto returnUrl =
+            pageUrl(pageResult.page);
+
+        Json::Value projects(Json::arrayValue);
+
         for (const auto& project :
-            repository->search(filter)) {
+            pageResult.items) {
             Json::Value value;
 
             value["id"] = project.id;
@@ -496,8 +527,42 @@ public:
             projects.append(value);
         }
 
+        Json::Value paginationPages(Json::arrayValue);
+
+        for (int page = 1;
+             page <= pageResult.totalPages;
+             ++page) {
+            Json::Value item(Json::objectValue);
+            item["number"] = page;
+            item["url"] = pageUrl(page);
+            item["current"] =
+                page == pageResult.page;
+
+            paginationPages.append(
+                std::move(item)
+            );
+        }
+
         context.set("projects", projects);
         context.set("hasProjects", !projects.empty());
+        context.set("hasPagination", pageResult.totalPages > 1);
+        context.set("paginationPages", paginationPages);
+        context.set("currentPage", pageResult.page);
+        context.set("totalPages", pageResult.totalPages);
+        context.set("totalItems", pageResult.totalItems);
+        context.set("hasPreviousPage", pageResult.page > 1);
+        context.set(
+            "previousPageUrl",
+            pageUrl(pageResult.page - 1)
+        );
+        context.set(
+            "hasNextPage",
+            pageResult.page < pageResult.totalPages
+        );
+        context.set(
+            "nextPageUrl",
+            pageUrl(pageResult.page + 1)
+        );
     }
 
     std::string templatePath() const override {

@@ -58,7 +58,7 @@ public:
         );
     }
 
-    std::vector<PortalProject> search(
+    PortalPage<PortalProject> search(
         const PortalProjectFilter& filter
     ) const override {
         const auto response =
@@ -67,15 +67,15 @@ public:
                 ProjectMapper::toVariables(filter)
             );
 
-        const auto projects =
-            response.field("projects");
+        const auto page =
+            response.field("projectPage");
 
-        if (!projects.has_value()) {
+        if (!page.has_value()) {
             return {};
         }
 
-        return ProjectMapper::fromList(
-            *projects
+        return ProjectMapper::pageFromValue(
+            *page
         );
     }
 
