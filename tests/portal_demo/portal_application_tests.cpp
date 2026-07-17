@@ -48,7 +48,7 @@ TEST(PortalApplicationTests, AdminCreatesProject) {
 
     ASSERT_EQ(
         app.projectCount(),
-        3
+        21
     );
 
     const auto project =
@@ -115,7 +115,7 @@ TEST(PortalApplicationTests, GuestCannotCreateProject) {
 
     EXPECT_EQ(
         app.projectCount(),
-        2
+        20
     );
 }
 
@@ -140,7 +140,7 @@ TEST(PortalApplicationTests, AdminCreatesUser) {
 
     EXPECT_EQ(
         app.userCount(),
-        3
+        9
     );
 
     const auto& user =
@@ -171,7 +171,7 @@ TEST(PortalApplicationTests, GuestCannotCreateUser) {
 
     EXPECT_EQ(
         app.userCount(),
-        2
+        8
     );
 }
 
@@ -196,7 +196,7 @@ TEST(PortalApplicationTests, UserCannotCreateUser) {
 
     EXPECT_EQ(
         app.userCount(),
-        2
+        8
     );
 }
 
@@ -304,7 +304,7 @@ TEST(PortalApplicationTests, AdminDeletesProject) {
 
     EXPECT_EQ(
         app.projectCount(),
-        1
+        19
     );
 }
 
@@ -1317,36 +1317,37 @@ TEST(PortalApplicationTests, ProjectsPageFiltersProjectsBySearch) {
 
     app.loginAsAdmin();
 
-    const auto& expected =
-        app.dataset().projects().front();
+    const std::string search = "Portal";
 
     const auto html =
         app.render<PortalProjectsPage>({
             {
                 "search",
-                expected.title
+                search
             }
         });
 
-    EXPECT_TRUE(
-        HtmlTestSupport::containsText(
-            html,
-            expected.title
-        )
-    );
-
     for (const auto& project :
-         app.dataset().projects()) {
-        if (project.id == expected.id) {
-            continue;
-        }
+        app.dataset().projects()) {
+        const bool shouldBeVisible =
+            project.title.find(search) !=
+            std::string::npos;
 
-        EXPECT_FALSE(
-            HtmlTestSupport::containsText(
-                html,
-                project.title
-            )
-        );
+        if (shouldBeVisible) {
+            EXPECT_TRUE(
+                HtmlTestSupport::containsText(
+                    html,
+                    project.title
+                )
+            ) << project.title;
+        } else {
+            EXPECT_FALSE(
+                HtmlTestSupport::containsText(
+                    html,
+                    project.title
+                )
+            ) << project.title;
+        }
     }
 }
 

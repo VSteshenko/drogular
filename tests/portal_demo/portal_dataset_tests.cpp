@@ -1,5 +1,7 @@
 #include "../../examples/portal_demo/data/demo_dataset.hpp"
 
+#include <algorithm>
+
 #include <gtest/gtest.h>
 
 TEST(PortalDatasetTests, ValidatesValidDataset) {
@@ -91,4 +93,57 @@ TEST(PortalDatasetTests, DetectsMissingProjectType) {
     EXPECT_FALSE(
         PortalDatasetSchemaValidator::validate(dataset).valid()
     );
+}
+
+TEST(PortalDatasetTests, CreatesRepresentativeDemoDataset) {
+    const auto dataset =
+        DemoDataset::create();
+
+    EXPECT_EQ(dataset.roles().size(), 2);
+    EXPECT_EQ(dataset.users().size(), 8);
+    EXPECT_EQ(dataset.projectTypes().size(), 5);
+    EXPECT_EQ(dataset.projects().size(), 20);
+
+    const auto activeCount =
+        std::count_if(
+            dataset.projects().begin(),
+            dataset.projects().end(),
+            [](const PortalProject& project) {
+                return project.status == "active";
+            }
+        );
+
+    const auto pausedCount =
+        std::count_if(
+            dataset.projects().begin(),
+            dataset.projects().end(),
+            [](const PortalProject& project) {
+                return project.status == "paused";
+            }
+        );
+
+    const auto doneCount =
+        std::count_if(
+            dataset.projects().begin(),
+            dataset.projects().end(),
+            [](const PortalProject& project) {
+                return project.status == "done";
+            }
+        );
+
+    EXPECT_GT(activeCount, 0);
+    EXPECT_GT(pausedCount, 0);
+    EXPECT_GT(doneCount, 0);
+
+    const auto duplicateTitleCount =
+        std::count_if(
+            dataset.projects().begin(),
+            dataset.projects().end(),
+            [](const PortalProject& project) {
+                return project.title ==
+                       "Customer Portal";
+            }
+        );
+
+    EXPECT_EQ(duplicateTitleCount, 2);
 }
