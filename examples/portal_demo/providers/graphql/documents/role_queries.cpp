@@ -1,6 +1,6 @@
 #include "role_queries.hpp"
-#include "../../../data/portal_graphql_document_builder.hpp"
-#include "../../../data/portal_schema.hpp"
+#include "data/portal_graphql_document_builder.hpp"
+#include "data/portal_schema.hpp"
 
 drogular::gql::Query RoleQueries::all() {
     return PortalGraphQLDocumentBuilder::all(

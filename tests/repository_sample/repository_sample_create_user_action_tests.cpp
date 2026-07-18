@@ -1,5 +1,5 @@
-#include "../../examples/repository_sample/create_user_action.hpp"
-#include "../../examples/repository_sample/user_repository.hpp"
+#include "create_user_action.hpp"
+#include "user_repository.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>

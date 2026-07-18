@@ -1,4 +1,4 @@
-#include "../../examples/portal_demo/data/demo_dataset.hpp"
+#include "data/demo_dataset.hpp"
 
 #include <algorithm>
 

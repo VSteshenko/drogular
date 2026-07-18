@@ -1,4 +1,4 @@
-#include "../../examples/portal_demo/data/portal_schema.hpp"
+#include "data/portal_schema.hpp"
 
 #include <gtest/gtest.h>
 

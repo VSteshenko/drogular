@@ -1,4 +1,4 @@
-#include "../examples/todo_pwa/todo_store.hpp"
+#include "todo_store.hpp"
 
 #include <gtest/gtest.h>
 

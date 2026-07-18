@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../data/models/portal_project.hpp"
-#include "../data/models/portal_project_create.hpp"
-#include "../data/models/portal_project_update.hpp"
-#include "../data/models/portal_project_query.hpp"
-#include "../data/models/portal_page.hpp"
-#include "../data/models/portal_user.hpp"
+#include "features/projects/data/portal_project.hpp"
+#include "features/projects/data/portal_project_create.hpp"
+#include "features/projects/data/portal_project_update.hpp"
+#include "features/projects/data/portal_project_query.hpp"
+#include "data/models/portal_page.hpp"
+#include "data/models/portal_user.hpp"
 
 #include <optional>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "../../examples/repository_sample/user_repository.hpp"
+#include "user_repository.hpp"
 
 #include <gtest/gtest.h>
 

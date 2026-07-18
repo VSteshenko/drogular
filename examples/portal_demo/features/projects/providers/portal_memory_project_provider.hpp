@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../data/models/portal_project.hpp"
-#include "../../data/models/portal_project_create.hpp"
-#include "../../data/models/portal_project_update.hpp"
-#include "../project_provider.hpp"
+#include "features/projects/data/portal_project.hpp"
+#include "features/projects/data/portal_project_create.hpp"
+#include "features/projects/data/portal_project_update.hpp"
+#include "features/projects/providers/project_provider.hpp"
 
 #include <string>
 #include <vector>

@@ -1,7 +1,7 @@
-#include "../../examples/portal_demo/data/portal_schema.hpp"
-#include "../../examples/portal_demo/data/portal_graphql_document_builder.hpp"
-#include "../../examples/portal_demo/providers/graphql/documents/role_queries.hpp"
-#include "../../examples/portal_demo/providers/graphql/documents/project_type_queries.hpp"
+#include "data/portal_schema.hpp"
+#include "data/portal_graphql_document_builder.hpp"
+#include "providers/graphql/documents/role_queries.hpp"
+#include "providers/graphql/documents/project_type_queries.hpp"
 
 #include <gtest/gtest.h>
 

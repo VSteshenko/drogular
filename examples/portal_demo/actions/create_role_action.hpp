@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../data/models/portal_role_create.hpp"
-#include "../providers/role_provider.hpp"
+#include "data/models/portal_role_create.hpp"
+#include "providers/role_provider.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>

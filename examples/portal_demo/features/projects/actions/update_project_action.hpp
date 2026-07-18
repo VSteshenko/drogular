@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../providers/project_provider.hpp"
+#include "features/projects/providers/project_provider.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>

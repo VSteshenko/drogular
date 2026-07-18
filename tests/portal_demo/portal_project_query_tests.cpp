@@ -1,5 +1,5 @@
-#include "../../examples/portal_demo/ui/query/portal_project_query_parser.hpp"
-#include "../../examples/portal_demo/ui/query/portal_project_query_serializer.hpp"
+#include "features/projects/ui/portal_project_query_parser.hpp"
+#include "features/projects/ui/portal_project_query_serializer.hpp"
 
 #include <drogon/HttpRequest.h>
 

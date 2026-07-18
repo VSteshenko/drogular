@@ -1,5 +1,5 @@
-#include "../../examples/portal_demo/data/portal_graphql_selection_builder.hpp"
-#include "../../examples/portal_demo/data/portal_schema.hpp"
+#include "data/portal_graphql_selection_builder.hpp"
+#include "data/portal_schema.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 

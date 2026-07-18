@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../data/portal_dataset.hpp"
-#include "../../data/models/portal_project.hpp"
+#include "data/portal_dataset.hpp"
+#include "features/projects/data/portal_project.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 

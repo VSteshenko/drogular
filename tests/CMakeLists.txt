@@ -64,21 +64,25 @@ add_executable(drogular_tests
     core/core_route_pattern_tests.cpp
     core/core_json_conversion_tests.cpp
     support/html_test_support_tests.cpp
+    # todo_pwa
+    ../examples/todo_pwa/todo_page.cpp
     todo_pwa/todo_pwa_todo_page_tests.cpp
     todo_pwa/todo_pwa_todo_store_tests.cpp
-    ../examples/todo_pwa/todo_page.cpp
+    # auth_sample
+    ../examples/auth_sample/auth_service.cpp
     auth_sample/auth_sample_auth_service_tests.cpp
     auth_sample/auth_sample_login_action_tests.cpp
     auth_sample/auth_sample_logout_action_tests.cpp
     auth_sample/auth_sample_home_page_tests.hpp
     auth_sample/auth_sample_dashboard_page_tests.cpp
     auth_sample/auth_sample_admin_page_tests.cpp
-    ../examples/auth_sample/auth_service.cpp
+    # repository_sample
     repository_sample/repository_sample_user_repository_tests.cpp
     repository_sample/repository_sample_users_page_tests.cpp
     repository_sample/repository_sample_create_user_action_tests.cpp
-    ../examples/portal_demo/providers/graphql/documents/project_queries.cpp
-    ../examples/portal_demo/providers/graphql/documents/project_mutations.cpp
+    # portal_demo
+    ../examples/portal_demo/features/projects/graphql/documents/project_queries.cpp
+    ../examples/portal_demo/features/projects/graphql/documents/project_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/user_queries.cpp
     ../examples/portal_demo/providers/graphql/documents/user_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/project_type_queries.cpp
@@ -116,7 +120,11 @@ target_link_libraries(drogular_tests
 
 target_include_directories(drogular_tests
     PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests
     ${CMAKE_SOURCE_DIR}/examples/todo_pwa
+    ${CMAKE_SOURCE_DIR}/examples/auth_sample
+    ${CMAKE_SOURCE_DIR}/examples/repository_sample
+    ${CMAKE_SOURCE_DIR}/examples/portal_demo
 )
 
 include(GoogleTest)

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../data/models/portal_user.hpp"
-#include "../user_provider.hpp"
+#include "data/models/portal_user.hpp"
+#include "providers/user_provider.hpp"
 
 #include <optional>
 #include <string>

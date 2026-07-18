@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../role_provider.hpp"
-#include "documents/role_queries.hpp"
-#include "documents/role_mutations.hpp"
-#include "mappers/role_mapper.hpp"
+#include "providers/role_provider.hpp"
+#include "providers/graphql/documents/role_queries.hpp"
+#include "providers/graphql/documents/role_mutations.hpp"
+#include "providers/graphql/mappers/role_mapper.hpp"
 
 #include <drogular/graphql_client.hpp>
 

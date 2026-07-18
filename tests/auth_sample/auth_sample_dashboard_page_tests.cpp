@@ -1,4 +1,4 @@
-#include "../examples/auth_sample/dashboard_page.hpp"
+#include "dashboard_page.hpp"
 #include "auth_sample_test_services.hpp"
 #include "auth_sample_test_helpers.hpp"
 

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "../../examples/portal_demo/data/portal_dataset.hpp"
-#include "../../examples/portal_demo/providers/graphql/portal_dataset_graphql_client.hpp"
-#include "../../examples/portal_demo/providers/graphql/portal_graphql_project_provider.hpp"
-#include "../../examples/portal_demo/providers/graphql/portal_graphql_user_provider.hpp"
-#include "../../examples/portal_demo/localization/portal_translations.hpp"
-#include "../../examples/portal_demo/providers/graphql/portal_graphql_project_type_provider.hpp"
-#include "../../examples/portal_demo/providers/graphql/portal_graphql_role_provider.hpp"
+#include "data/portal_dataset.hpp"
+#include "features/projects/graphql/portal_graphql_project_provider.hpp"
+#include "features/projects/providers/project_provider.hpp"
+#include "localization/portal_translations.hpp"
+#include "providers/graphql/portal_dataset_graphql_client.hpp"
+#include "providers/graphql/portal_graphql_project_type_provider.hpp"
+#include "providers/graphql/portal_graphql_role_provider.hpp"
+#include "providers/graphql/portal_graphql_user_provider.hpp"
 
 #include <drogular/application_options.hpp>
 #include <drogular/page.hpp>

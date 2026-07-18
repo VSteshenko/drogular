@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../data/models/portal_project_type_update.hpp"
-#include "../providers/project_type_provider.hpp"
+#include "data/models/portal_project_type_update.hpp"
+#include "providers/project_type_provider.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>

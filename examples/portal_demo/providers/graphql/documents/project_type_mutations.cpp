@@ -1,7 +1,7 @@
 #include "project_type_mutations.hpp"
 
-#include "../../../data/portal_graphql_document_builder.hpp"
-#include "../../../data/portal_schema.hpp"
+#include "data/portal_graphql_document_builder.hpp"
+#include "data/portal_schema.hpp"
 
 drogular::gql::Mutation ProjectTypeMutations::create(
     const PortalProjectTypeCreate&

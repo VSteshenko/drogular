@@ -1,4 +1,4 @@
-#include "../examples/auth_sample/auth_service.hpp"
+#include "auth_service.hpp"
 
 #include <gtest/gtest.h>
 

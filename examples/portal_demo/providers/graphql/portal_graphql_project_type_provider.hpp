@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../project_type_provider.hpp"
-#include "documents/project_type_queries.hpp"
-#include "documents/project_type_mutations.hpp"
-#include "mappers/project_type_mapper.hpp"
+#include "providers/project_type_provider.hpp"
+#include "providers/graphql/documents/project_type_queries.hpp"
+#include "providers/graphql/documents/project_type_mutations.hpp"
+#include "providers/graphql/mappers/project_type_mapper.hpp"
 
 #include <drogular/graphql_client.hpp>
 

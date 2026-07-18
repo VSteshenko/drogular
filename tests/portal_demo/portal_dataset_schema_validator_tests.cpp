@@ -1,6 +1,6 @@
-#include "../../examples/portal_demo/data/demo_dataset.hpp"
-#include "../../examples/portal_demo/data/portal_dataset.hpp"
-#include "../../examples/portal_demo/data/portal_dataset_schema_validator.hpp"
+#include "data/demo_dataset.hpp"
+#include "data/portal_dataset.hpp"
+#include "data/portal_dataset_schema_validator.hpp"
 
 #include <gtest/gtest.h>
 

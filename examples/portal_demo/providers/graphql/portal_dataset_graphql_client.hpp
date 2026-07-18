@@ -1,21 +1,19 @@
 #pragma once
 
-#include "../../data/portal_dataset.hpp"
-#include "../../data/portal_schema.hpp"
-#include "../../data/portal_schema_mapper.hpp"
-#include "../../data/models/portal_project_sort.hpp"
+#include "data/portal_dataset.hpp"
+#include "data/portal_schema.hpp"
+#include "data/portal_schema_mapper.hpp"
+#include "features/projects/data/portal_project_sort.hpp"
 
-#include <algorithm>
-#include <vector>
 #include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
 
 #include <algorithm>
+#include <vector>
 #include <memory>
 #include <string>
 #include <functional>
 #include <unordered_map>
-#include <cctype>
 
 static std::string lower(std::string value) {
     std::transform(

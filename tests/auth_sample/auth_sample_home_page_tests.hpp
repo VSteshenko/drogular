@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../examples/auth_sample/home_page.hpp"
 #include "auth_sample_test_services.hpp"
 #include "auth_sample_test_helpers.hpp"

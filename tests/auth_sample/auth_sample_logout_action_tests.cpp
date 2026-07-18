@@ -1,4 +1,4 @@
-#include "../examples/auth_sample/logout_action.hpp"
+#include "logout_action.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>

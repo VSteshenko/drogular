@@ -1,5 +1,5 @@
-#include "../../examples/repository_sample/users_page.hpp"
-#include "../../examples/repository_sample/user_repository.hpp"
+#include "users_page.hpp"
+#include "user_repository.hpp"
 
 #include <drogular/application_options.hpp>
 #include <drogular/services.hpp>

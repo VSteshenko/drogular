@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../data/models/portal_project_query.hpp"
+#include "features/projects/data/portal_project_query.hpp"
 
 #include <drogular/graphql.hpp>
 

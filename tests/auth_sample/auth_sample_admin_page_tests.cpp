@@ -1,5 +1,5 @@
-#include "../examples/auth_sample/auth_service.hpp"
-#include "../examples/auth_sample/admin_page.hpp"
+#include "auth_service.hpp"
+#include "admin_page.hpp"
 #include "auth_sample_test_services.hpp"
 #include "auth_sample_test_helpers.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../examples/auth_sample/auth_service.hpp"
-#include "../examples/auth_sample/auth_user.hpp"
+#include "auth_service.hpp"
+#include "auth_user.hpp"
 
 #include <drogular/application_options.hpp>
 #include <drogular/services.hpp>

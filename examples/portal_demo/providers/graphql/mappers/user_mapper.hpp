@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../../data/models/portal_user.hpp"
-#include "../../../data/portal_schema.hpp"
-#include "../../../data/portal_schema_mapper.hpp"
+#include "data/models/portal_user.hpp"
+#include "data/portal_schema.hpp"
+#include "data/portal_schema_mapper.hpp"
 
 #include <drogular/graphql_variables.hpp>
 

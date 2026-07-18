@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../user_provider.hpp"
-#include "documents/user_queries.hpp"
-#include "documents/user_mutations.hpp"
-#include "mappers/user_mapper.hpp"
-#include "../../data/models/portal_user_create.hpp"
+#include "providers/user_provider.hpp"
+#include "providers/graphql/documents/user_queries.hpp"
+#include "providers/graphql/documents/user_mutations.hpp"
+#include "providers/graphql/mappers/user_mapper.hpp"
+#include "data/models/portal_user_create.hpp"
 
 #include <drogular/graphql_client.hpp>
 

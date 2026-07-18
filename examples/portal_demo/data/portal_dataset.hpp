@@ -1,6 +1,6 @@
 #pragma once
 
-#include "models/portal_project.hpp"
+#include "features/projects/data/portal_project.hpp"
 #include "models/portal_user.hpp"
 #include "models/portal_role.hpp"
 #include "models/portal_project_type.hpp"
