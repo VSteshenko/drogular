@@ -3,12 +3,16 @@
 #include "auth/portal_auth_support.hpp"
 #include "ui/portal_page_support.hpp"
 #include "features/users/providers/user_provider.hpp"
+#include "features/users/ui/portal_user_query_parser.hpp"
+#include "features/users/ui/portal_user_query_serializer.hpp"
 #include "providers/role_provider.hpp"
 #include "localization/portal_error_translator.hpp"
 #include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
+
+#include <algorithm>
 
 class PortalUsersPage final
     : public drogular::TemplatePage
@@ -17,80 +21,39 @@ public:
     void onInit(
         drogular::RenderContext& context
     ) override {
-        PortalPageSupport::apply(
-            context,
-            "users.title"
-        );
+        PortalPageSupport::apply(context, "users.title");
 
-        const auto request =
-            context.request();
-
-        const auto error =
-            request != nullptr
-                ? request->getParameter("error")
-                : std::string("");
-
-        const auto success =
-            request != nullptr
-                ? request->getParameter("success")
-                : std::string("");
+        const auto request = context.request();
+        const auto error = request != nullptr
+            ? request->getParameter("error")
+            : std::string();
+        const auto success = request != nullptr
+            ? request->getParameter("success")
+            : std::string();
+        const auto username = request != nullptr
+            ? request->getParameter("username")
+            : std::string();
 
         const auto usersError =
-            PortalErrorTranslator::usersError(
-                context,
-                error
-            );
-
-        const auto username =
-            request != nullptr
-                ? request->getParameter("username")
-                : std::string("");
-
-        context.set(
-            "createUsername",
-            username
-        );
-
+            PortalErrorTranslator::usersError(context, error);
         const auto usersSuccess =
-            PortalErrorTranslator::usersSuccess(
-                context,
-                success
-            );
+            PortalErrorTranslator::usersSuccess(context, success);
 
-        context.set(
-            "hasUsersError",
-            !usersError.empty()
-        );
-
-        context.set(
-            "usersError",
-            usersError
-        );
-
-        context.set(
-            "hasUsersSuccess",
-            !usersSuccess.empty()
-        );
-
-        context.set(
-            "usersSuccess",
-            usersSuccess
-        );
-
+        context.set("createUsername", username);
+        context.set("hasUsersError", !usersError.empty());
+        context.set("usersError", usersError);
+        context.set("hasUsersSuccess", !usersSuccess.empty());
+        context.set("usersSuccess", usersSuccess);
         context.set(
             "alertMessage",
-            !usersError.empty()
-                ? usersError
-                : usersSuccess
+            !usersError.empty() ? usersError : usersSuccess
         );
 
         if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
         }
 
-        const auto schema =
-            PortalSchema::users();
-
+        const auto schema = PortalSchema::users();
         context.set(
             "usersUsername",
             context.translate(schema.fieldLabelKey("username"))
@@ -103,21 +66,16 @@ public:
             "usersRole",
             context.translate(schema.fieldLabelKey("role"))
         );
-
-        context.set(
-            "usersRoleRequired",
-            schema.fieldRequired("role")
-        );
-
-        auto repository =
-            context.requireService<PortalUserProvider>();
+        context.set("usersRoleRequired", schema.fieldRequired("role"));
 
         auto roles =
             context.requireService<PortalRoleProvider>();
+        const auto allRoles =
+            roles->all();
 
         Json::Value roleOptions(Json::arrayValue);
 
-        for (const auto& role : roles->all()) {
+        for (const auto& role : allRoles) {
             Json::Value option(Json::objectValue);
 
             option["value"] = role.code;
@@ -129,23 +87,180 @@ public:
             );
         }
 
-        context.set("roleOptions", roleOptions);
+        context.set(
+            "roleOptions",
+            roleOptions
+        );
+
+        const auto query =
+            PortalUserQueryParser::fromRequest(request);
+        const auto search =
+            query.search.value_or("");
+        const auto role =
+            query.role.value_or("");
+        const auto sort =
+            query.sorting.empty()
+            ? PortalUserSort{
+                  .field = "username",
+                  .direction = PortalUserSortDirection::Ascending
+              }
+            : query.sorting.front();
+
+        context.set("userSearch", search);
+
+        Json::Value roleFilterOptions(Json::arrayValue);
+        {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = "";
+            option["label"] = context.translate("users.filter.role.all");
+            option["selected"] = role.empty();
+
+            roleFilterOptions.append(std::move(option));
+        }
+        for (const auto& item : allRoles) {
+            Json::Value option(Json::objectValue);
+
+            option["value"] = item.code;
+            option["label"] = item.title;
+            option["selected"] = role == item.code;
+
+            roleFilterOptions.append(std::move(option));
+        }
+
+        context.set(
+            "userRoleFilterOptions",
+            roleFilterOptions
+        );
+
+        Json::Value sortOptions(Json::arrayValue);
+        const auto addSortOption =
+            [&sortOptions, &sort](
+                const std::string& value,
+                const std::string& label
+            ) {
+                Json::Value option(Json::objectValue);
+
+                option["value"] = value;
+                option["label"] = label;
+                option["selected"] = sort.field == value;
+
+                sortOptions.append(std::move(option));
+            };
+        addSortOption(
+            "username",
+            context.translate(
+                "users.sort.username"
+            )
+        );
+        addSortOption(
+            "role",
+            context.translate(
+                "users.sort.role"
+            )
+        );
+        addSortOption(
+            "id",
+            context.translate(
+                "users.sort.id"
+            )
+        );
+        context.set(
+            "userSortOptions",
+            sortOptions
+        );
+
+        Json::Value directionOptions(Json::arrayValue);
+
+        const auto selectedDirection = toString(sort.direction);
+        const auto addDirection =
+            [&directionOptions, &selectedDirection](
+                const std::string& value,
+                const std::string& label
+            ) {
+                Json::Value option(Json::objectValue);
+                option["value"] = value;
+                option["label"] = label;
+                option["selected"] = selectedDirection == value;
+                directionOptions.append(std::move(option));
+            };
+        addDirection(
+            "asc",
+            context.translate(
+                "users.sort.ascending"
+            )
+        );
+        addDirection(
+            "desc",
+            context.translate(
+                "users.sort.descending"
+            )
+        );
+        context.set(
+            "userSortDirectionOptions",
+            directionOptions
+        );
+        context.set(
+            "hasActiveUserFilters",
+            !search.empty() || !role.empty()
+        );
+
+        auto repository =
+            context.requireService<
+                PortalUserProvider
+            >();
+        const auto pageResult =
+            repository->search(query);
+
+        const auto pageUrl = [&query](int page) {
+            auto pageQuery = query;
+            pageQuery.page = std::max(1, page);
+            return std::string("/users") +
+                PortalUserQuerySerializer::toQueryString(pageQuery);
+        };
+        const auto returnUrl = pageUrl(pageResult.page);
 
         Json::Value users(Json::arrayValue);
-
-        for (const auto& user : repository->all()) {
+        for (const auto& user : pageResult.items) {
             Json::Value value(Json::objectValue);
 
             value["id"] = user.id;
             value["username"] = user.username;
             value["role"] = user.role;
+            value["editUrl"] =
+                "/users/" + std::to_string(user.id) +
+                "/edit?returnUrl=" +
+                drogular::Url::encode(returnUrl);
 
-            users.append(
-                std::move(value)
-            );
+            users.append(std::move(value));
+        }
+
+        Json::Value paginationPages(Json::arrayValue);
+        for (int page = 1; page <= pageResult.totalPages; ++page) {
+            Json::Value item(Json::objectValue);
+
+            item["number"] = page;
+            item["url"] = pageUrl(page);
+            item["current"] = page == pageResult.page;
+
+            paginationPages.append(std::move(item));
         }
 
         context.set("users", users);
+        context.set("hasUsers", !users.empty());
+        context.set("hasUserPagination", pageResult.totalPages > 1);
+        context.set("userPaginationPages", paginationPages);
+        context.set("hasPreviousUserPage", pageResult.page > 1);
+        context.set("previousUserPageUrl", pageUrl(pageResult.page - 1));
+        context.set(
+            "hasNextUserPage",
+            pageResult.page < pageResult.totalPages
+        );
+        context.set(
+            "nextUserPageUrl",
+            pageUrl(pageResult.page + 1)
+            );
+        context.set("userTotalItems", pageResult.totalItems);
     }
 
     std::string templatePath() const override {

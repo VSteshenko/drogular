@@ -176,3 +176,52 @@ TEST(PortalGraphQLUserProviderTests, UpdatesUser) {
         2
     );
 }
+TEST(PortalGraphQLUserProviderTests, SearchesUsersWithQueryState) {
+    Json::Value items(Json::arrayValue);
+    Json::Value admin(Json::objectValue);
+    admin["id"] = 1;
+    admin["username"] = "admin";
+    admin["password"] = "secret";
+    admin["role"] = "admin";
+    items.append(admin);
+
+    Json::Value page(Json::objectValue);
+    page["items"] = items;
+    page["page"] = 2;
+    page["pageSize"] = 1;
+    page["totalItems"] = 2;
+    page["totalPages"] = 2;
+
+    Json::Value data(Json::objectValue);
+    data["userPage"] = page;
+
+    auto client =
+        std::make_shared<drogular::StaticGraphQLClient>(data);
+    PortalGraphQLUserProvider provider(client);
+
+    PortalUserQuery query;
+    query.search = "adm";
+    query.role = "admin";
+    query.sorting.push_back({
+        .field = "role",
+        .direction = PortalUserSortDirection::Descending
+    });
+    query.page = 2;
+    query.pageSize = 1;
+
+    const auto result = provider.search(query);
+
+    ASSERT_EQ(result.items.size(), 1);
+    EXPECT_EQ(result.items.front().username, "admin");
+    EXPECT_EQ(result.page, 2);
+    EXPECT_EQ(result.totalPages, 2);
+    ASSERT_EQ(client->requestCount(), 1);
+    EXPECT_EQ(
+        client->lastRequest()->variables()["search"].asString(),
+        "adm"
+    );
+    EXPECT_EQ(
+        client->lastRequest()->variables()["sorting"][0]["field"].asString(),
+        "role"
+    );
+}

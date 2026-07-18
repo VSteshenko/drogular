@@ -1,13 +1,7 @@
 @if(loginRequired)
 <h2>{{ authLoginRequiredTitle }}</h2>
-
-<p>
-    {{ authLoginRequiredMessage }}
-</p>
-
-<p>
-    <a href="/login">{{ navLogin }}</a>
-</p>
+<p>{{ authLoginRequiredMessage }}</p>
+<p><a href="/login">{{ navLogin }}</a></p>
 @else
 <h2>{{ pageTitle }}</h2>
 
@@ -15,7 +9,6 @@
 @if(hasUsersError)
 @include("partials/alert_error.html")
 @endif
-
 @if(hasUsersSuccess)
 @include("partials/alert_success.html")
 @endif
@@ -25,50 +18,98 @@
         <label>{{ usersUsername }}</label>
         <input name="username" value="{{ createUsername }}" />
     </div>
-
     <div>
         <label>{{ usersPassword }}</label>
         <input name="password" type="password" />
     </div>
-
     <div>
-        <label for="role">
-            {{ usersRole }}
-            @if(usersRoleRequired):@endif
-        </label>
-
-        <select
-                id="role"
-                name="role"
-                @if(usersRoleRequired)required@endif
-        >
+        <label for="role">{{ usersRole }} @if(usersRoleRequired):@endif</label>
+        <select id="role" name="role" @if(usersRoleRequired)required@endif>
             @foreach(option in roleOptions)
-            <option
-                    value="{{ option.value }}"
-                    @if(option.selected)selected@endif
-            >
+            <option value="{{ option.value }}" @if(option.selected)selected@endif>
                 {{ option.label }}
             </option>
             @endforeach
         </select>
     </div>
-
     <button type="submit">{{ usersCreate }}</button>
 </form>
 @endif
 
+<form method="get" action="/users">
+    <fieldset>
+        <legend>{{ usersFiltersTitle }}</legend>
+        <div>
+            <label for="userSearch">{{ usersSearchLabel }}</label><br />
+            <input id="userSearch" name="search" value="{{ userSearch }}" type="search" />
+        </div>
+        <div>
+            <label for="userRoleFilter">{{ usersRoleFilterLabel }}</label><br />
+            <select id="userRoleFilter" name="role">
+                @foreach(option in userRoleFilterOptions)
+                <option value="{{ option.value }}" @if(option.selected)selected@endif>
+                    {{ option.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="userSort">{{ usersSortLabel }}</label><br />
+            <select id="userSort" name="sort">
+                @foreach(option in userSortOptions)
+                <option value="{{ option.value }}" @if(option.selected)selected@endif>
+                    {{ option.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="userSortDirection">{{ usersSortDirectionLabel }}</label><br />
+            <select id="userSortDirection" name="direction">
+                @foreach(option in userSortDirectionOptions)
+                <option value="{{ option.value }}" @if(option.selected)selected@endif>
+                    {{ option.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit">{{ usersSearch }}</button>
+        @if(hasActiveUserFilters)
+        <a href="/users">{{ usersClearSearch }}</a>
+        @endif
+    </fieldset>
+</form>
+
+@if(hasUsers)
 <ul>
     @foreach(user in users)
     <li>
-        <strong>{{ user.username }}</strong>
-        — {{ user.role }}
-
+        <strong>{{ user.username }}</strong> — {{ user.role }}
         @if(isAdmin)
-        <a href="/users/{{ user.id }}/edit">
-            {{ usersEdit }}
-        </a>
+        <a href="{{ user.editUrl }}">{{ usersEdit }}</a>
         @endif
     </li>
     @endforeach
 </ul>
+@else
+<p>{{ usersEmpty }}</p>
+@endif
+
+@if(hasUserPagination)
+<nav aria-label="{{ usersPaginationLabel }}">
+    @if(hasPreviousUserPage)
+    <a href="{{ previousUserPageUrl }}">{{ usersPreviousPage }}</a>
+    @endif
+    @foreach(item in userPaginationPages)
+    @if(item.current)
+    <strong aria-current="page">{{ item.number }}</strong>
+    @else
+    <a href="{{ item.url }}">{{ item.number }}</a>
+    @endif
+    @endforeach
+    @if(hasNextUserPage)
+    <a href="{{ nextUserPageUrl }}">{{ usersNextPage }}</a>
+    @endif
+</nav>
+@endif
 @endif

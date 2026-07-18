@@ -40,6 +40,25 @@ public:
         return UserMapper::fromList(*users);
     }
 
+    PortalPage<PortalUser> search(
+        const PortalUserQuery& query
+    ) const override {
+        const auto response =
+            client_->execute(
+                UserQueries::search(query),
+                UserMapper::toVariables(query)
+            );
+
+        const auto page =
+            response.field("userPage");
+
+        if (!page.has_value()) {
+            return {};
+        }
+
+        return UserMapper::pageFromValue(*page);
+    }
+
     std::optional<PortalUser> findByCredentials(
         const std::string& username,
         const std::string& password

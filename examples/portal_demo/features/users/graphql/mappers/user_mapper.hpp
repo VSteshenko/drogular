@@ -1,6 +1,8 @@
 #pragma once
 
 #include "features/users/data/portal_user.hpp"
+#include "features/users/data/portal_user_query.hpp"
+#include "data/models/portal_page.hpp"
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 
@@ -64,6 +66,60 @@ public:
         );
 
         return variables;
+    }
+
+    static drogular::GraphQLVariables toVariables(
+        const PortalUserQuery& query
+    ) {
+        drogular::GraphQLVariables variables;
+
+        if (query.search.has_value()) {
+            variables.set("search", *query.search);
+        }
+        if (query.role.has_value()) {
+            variables.set("role", *query.role);
+        }
+
+        variables.set("page", query.page);
+        variables.set("pageSize", query.pageSize);
+
+        if (!query.sorting.empty()) {
+            Json::Value sorting(Json::arrayValue);
+
+            for (const auto& item :
+                query.sorting) {
+                Json::Value value(Json::objectValue);
+
+                value["field"] = item.field;
+                value["direction"] = toString(item.direction);
+
+                sorting.append(std::move(value));
+            }
+
+            variables.set(
+                "sorting",
+                std::move(sorting)
+            );
+        }
+
+        return variables;
+    }
+
+    static PortalPage<PortalUser> pageFromValue(
+        const Json::Value& value
+    ) {
+        PortalPage<PortalUser> page;
+        if (value.isNull() || !value.isObject()) {
+            return page;
+        }
+
+        page.items = fromList(value["items"]);
+        page.page = value.get("page", 1).asInt();
+        page.pageSize = value.get("pageSize", 10).asInt();
+        page.totalItems = value.get("totalItems", 0).asInt();
+        page.totalPages = value.get("totalPages", 1).asInt();
+
+        return page;
     }
 
     static PortalUser fromValue(

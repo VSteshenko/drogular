@@ -3,6 +3,8 @@
 #include "features/users/data/portal_user.hpp"
 #include "features/users/data/portal_user_create.hpp"
 #include "features/users/data/portal_user_update.hpp"
+#include "features/users/data/portal_user_query.hpp"
+#include "data/models/portal_page.hpp"
 
 #include <optional>
 #include <string>
@@ -14,6 +16,10 @@ public:
     virtual ~PortalUserProvider() = default;
 
     virtual std::vector<PortalUser> all() const = 0;
+
+    virtual PortalPage<PortalUser> search(
+        const PortalUserQuery& query
+    ) const = 0;
 
     virtual std::optional<PortalUser> findByCredentials(
         const std::string& username,

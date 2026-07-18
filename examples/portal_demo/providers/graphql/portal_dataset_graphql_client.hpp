@@ -4,6 +4,7 @@
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 #include "features/projects/data/portal_project_sort.hpp"
+#include "features/users/data/portal_user_sort.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
@@ -240,6 +241,54 @@ public:
                     variables.json()["id"].asInt()
                 );
         };
+
+        queryHandlers_["SearchPortalUsers"] =
+            [this](const auto& variables) {
+                const auto& json = variables.json();
+
+                const auto search = json.isMember("search")
+                    ? json["search"].asString()
+                    : std::string();
+                const auto role = json.isMember("role")
+                    ? json["role"].asString()
+                    : std::string();
+
+                std::vector<PortalUserSort> sorting;
+                if (json.isMember("sorting") &&
+                    json["sorting"].isArray()) {
+                    for (const auto& item : json["sorting"]) {
+                        const auto field = item["field"].asString();
+                        if (field != "id" &&
+                            field != "username" &&
+                            field != "role") {
+                            continue;
+                        }
+
+                        sorting.push_back({
+                            .field = field,
+                            .direction =
+                                item["direction"].asString() == "desc"
+                                    ? PortalUserSortDirection::Descending
+                                    : PortalUserSortDirection::Ascending
+                        });
+                    }
+                }
+
+                const auto page = json.isMember("page")
+                    ? std::max(1, json["page"].asInt())
+                    : 1;
+                const auto pageSize = json.isMember("pageSize")
+                    ? std::max(1, json["pageSize"].asInt())
+                    : 10;
+
+                return searchUsersResponse(
+                    search,
+                    role,
+                    sorting,
+                    page,
+                    pageSize
+                );
+            };
 
         queryHandlers_["SearchPortalProjects"] =
             [this](const auto& variables) {
@@ -1055,6 +1104,117 @@ private:
         Json::Value data(Json::objectValue);
         data["projectPage"] = std::move(projectPage);
 
+        return response(data);
+    }
+
+
+    drogular::GraphQLResponse searchUsersResponse(
+        const std::string& search,
+        const std::string& role,
+        std::vector<PortalUserSort> sorting,
+        int page,
+        int pageSize
+    ) const {
+        std::vector<PortalUser> result;
+        const auto needle = lower(search);
+
+        for (const auto& user : dataset_->users()) {
+            if (!needle.empty() &&
+                lower(user.username).find(needle) ==
+                    std::string::npos) {
+                continue;
+            }
+            if (!role.empty() && user.role != role) {
+                continue;
+            }
+            result.push_back(user);
+        }
+
+        if (sorting.empty()) {
+            sorting.push_back({
+                .field = "username",
+                .direction = PortalUserSortDirection::Ascending
+            });
+        }
+
+        const auto compare = []<typename T>(
+            const T& left,
+            const T& right,
+            PortalUserSortDirection direction
+        ) {
+            return direction == PortalUserSortDirection::Ascending
+                ? left < right
+                : right < left;
+        };
+
+        std::stable_sort(
+            result.begin(),
+            result.end(),
+            [&sorting, &compare](
+                const PortalUser& left,
+                const PortalUser& right
+            ) {
+                for (const auto& sort : sorting) {
+                    if (sort.field == "username" &&
+                        left.username != right.username) {
+                        return compare(
+                            left.username,
+                            right.username,
+                            sort.direction
+                        );
+                    }
+                    if (sort.field == "role" &&
+                        left.role != right.role) {
+                        return compare(
+                            left.role,
+                            right.role,
+                            sort.direction
+                        );
+                    }
+                    if (sort.field == "id" &&
+                        left.id != right.id) {
+                        return compare(
+                            left.id,
+                            right.id,
+                            sort.direction
+                        );
+                    }
+                }
+                return left.id < right.id;
+            }
+        );
+
+        const auto totalItems = static_cast<int>(result.size());
+        const auto totalPages = std::max(
+            1,
+            (totalItems + pageSize - 1) / pageSize
+        );
+        const auto beginIndex =
+            static_cast<std::size_t>(page - 1) *
+            static_cast<std::size_t>(pageSize);
+        const auto endIndex = std::min(
+            result.size(),
+            beginIndex + static_cast<std::size_t>(pageSize)
+        );
+
+        Json::Value items(Json::arrayValue);
+        if (beginIndex < result.size()) {
+            for (auto index = beginIndex;
+                 index < endIndex;
+                 ++index) {
+                items.append(userJson(result[index]));
+            }
+        }
+
+        Json::Value userPage(Json::objectValue);
+        userPage["items"] = std::move(items);
+        userPage["page"] = page;
+        userPage["pageSize"] = pageSize;
+        userPage["totalItems"] = totalItems;
+        userPage["totalPages"] = totalPages;
+
+        Json::Value data(Json::objectValue);
+        data["userPage"] = std::move(userPage);
         return response(data);
     }
 
