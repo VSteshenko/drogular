@@ -7,6 +7,8 @@
 #include "../data/portal_schema.hpp"
 #include "../localization/portal_error_translator.hpp"
 #include "../ui/models/portal_project_query_view_model.hpp"
+#include "../ui/query/portal_project_query_parser.hpp"
+#include "../ui/query/portal_project_query_serializer.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -119,57 +121,30 @@ public:
             context.translate(schema.fieldLabelKey("status"))
         );
 
+        const auto query =
+            PortalProjectQueryParser::fromRequest(request);
+
         const auto search =
-            request != nullptr
-                ? request->getParameter("search")
-                : std::string("");
+            query.search.value_or("");
+        const auto status =
+            query.status.value_or("");
+        const auto projectTypeId =
+            query.projectTypeId;
+        const auto ownerId =
+            query.ownerId;
+        const auto sort =
+            query.sorting.empty()
+                ? PortalProjectSort{
+                      .field = "title",
+                      .direction =
+                          PortalProjectSortDirection::Ascending
+                  }
+                : query.sorting.front();
+        const auto& sortField = sort.field;
+        const auto sortDirection = sort.direction;
 
         context.set("projectSearch", search);
-
-        const auto status =
-            request != nullptr
-                ? request->getParameter("status")
-                : std::string("");
-
         context.set("projectStatusFilter", status);
-
-        const auto projectTypeIdValue =
-            request != nullptr
-                ? request->getParameter("projectTypeId")
-                : std::string("");
-
-        std::optional<int> projectTypeId;
-
-        if (!projectTypeIdValue.empty()) {
-            try {
-                const auto value =
-                    std::stoi(projectTypeIdValue);
-
-                if (value > 0) {
-                    projectTypeId = value;
-                }
-            } catch (const std::exception&) {
-            }
-        }
-
-        const auto ownerIdValue =
-            request != nullptr
-                ? request->getParameter("ownerId")
-                : std::string("");
-
-        std::optional<int> ownerId;
-
-        if (!ownerIdValue.empty()) {
-            try {
-                const auto value =
-                    std::stoi(ownerIdValue);
-
-                if (value > 0) {
-                    ownerId = value;
-                }
-            } catch (const std::exception&) {
-            }
-        }
 
         Json::Value statusOptions(Json::arrayValue);
 
@@ -182,13 +157,10 @@ public:
 
                 option["value"] = value;
                 option["label"] = label;
-                option["selected"] =
-                    status == value;
+                option["selected"] = status == value;
 
-                statusOptions.append(
-                    std::move(option)
-                );
-        };
+                statusOptions.append(std::move(option));
+            };
 
         addStatusOption(
             "",
@@ -196,21 +168,18 @@ public:
                 "projects.query.status.all"
             )
         );
-
         addStatusOption(
             "active",
             context.translate(
                 "projects.status.active"
             )
         );
-
         addStatusOption(
             "paused",
             context.translate(
                 "projects.status.paused"
             )
         );
-
         addStatusOption(
             "done",
             context.translate(
@@ -218,24 +187,15 @@ public:
             )
         );
 
-
         Json::Value projectTypeFilterOptions(Json::arrayValue);
-
         {
             Json::Value option(Json::objectValue);
 
             option["value"] = "";
-            option["label"] =
-                context.translate(
-                    "projects.filter.type.all"
-                );
+            option["label"] = context.translate("projects.filter.type.all");
+            option["selected"] = !projectTypeId.has_value();
 
-            option["selected"] =
-                !projectTypeId.has_value();
-
-            projectTypeFilterOptions.append(
-                std::move(option)
-            );
+            projectTypeFilterOptions.append(std::move(option));
         }
 
         for (const auto& type : allProjectTypes) {
@@ -243,35 +203,26 @@ public:
 
             option["value"] = type.id;
             option["label"] = type.title;
-
             option["selected"] =
                 projectTypeId.has_value() &&
                 *projectTypeId == type.id;
 
-            projectTypeFilterOptions.append(
-                std::move(option)
-            );
+            projectTypeFilterOptions.append(std::move(option));
         }
 
         auto users =
             context.requireService<PortalUserProvider>();
-
         const auto allUsers =
             users->all();
-
         Json::Value ownerFilterOptions(Json::arrayValue);
-
         {
             Json::Value option(Json::objectValue);
 
             option["value"] = "";
-            option["label"] =
-                context.translate("projects.filter.owner.all");
+            option["label"] = context.translate("projects.filter.owner.all");
             option["selected"] = !ownerId.has_value();
 
-            ownerFilterOptions.append(
-                std::move(option)
-            );
+            ownerFilterOptions.append(std::move(option));
         }
 
         for (const auto& user : allUsers) {
@@ -283,22 +234,8 @@ public:
                 ownerId.has_value() &&
                 *ownerId == user.id;
 
-            ownerFilterOptions.append(
-                std::move(option)
-            );
+            ownerFilterOptions.append(std::move(option));
         }
-
-        const auto sortValue =
-            request != nullptr
-                ? request->getParameter("sort")
-                : std::string("");
-
-        const auto sortField =
-            sortValue == "id" ||
-            sortValue == "status" ||
-            sortValue == "title"
-                ? sortValue
-                : std::string("title");
 
         Json::Value sortOptions(Json::arrayValue);
 
@@ -314,10 +251,8 @@ public:
                 option["selected"] =
                     sortField == value;
 
-                sortOptions.append(
-                    std::move(option)
-                );
-        };
+                sortOptions.append(std::move(option));
+            };
 
         addSortOption(
             "title",
@@ -325,14 +260,12 @@ public:
                 "projects.sort.title"
             )
         );
-
         addSortOption(
             "status",
             context.translate(
                 "projects.sort.status"
             )
         );
-
         addSortOption(
             "id",
             context.translate(
@@ -340,26 +273,11 @@ public:
             )
         );
 
-        const auto directionValue =
-            request != nullptr
-                ? request->getParameter("direction")
-                : std::string("");
-
-        const auto sortDirection =
-            directionValue == "desc"
-                ? PortalProjectSortDirection::
-                      Descending
-                : PortalProjectSortDirection::
-                      Ascending;
-
         Json::Value directionOptions(Json::arrayValue);
 
-        const auto selectedDirection =
-            toString(sortDirection);
-
+        const auto selectedDirection = toString(sortDirection);
         const auto addDirectionOption =
-            [&directionOptions,
-             &selectedDirection](
+            [&directionOptions, &selectedDirection](
                 const std::string& value,
                 const std::string& label
             ) {
@@ -370,10 +288,8 @@ public:
                 option["selected"] =
                     selectedDirection == value;
 
-                directionOptions.append(
-                    std::move(option)
-                );
-        };
+                directionOptions.append(std::move(option));
+            };
 
         addDirectionOption(
             "asc",
@@ -381,7 +297,6 @@ public:
                 "projects.sort.ascending"
             )
         );
-
         addDirectionOption(
             "desc",
             context.translate(
@@ -397,7 +312,6 @@ public:
         filters.ownerOptions = std::move(ownerFilterOptions);
         filters.sortOptions = std::move(sortOptions);
         filters.sortDirectionOptions = std::move(directionOptions);
-
         filters.hasActiveFilters =
             !search.empty() ||
             !status.empty() ||
@@ -406,104 +320,17 @@ public:
 
         context.setJson("filters", filters);
 
-        const auto pageValue =
-            request != nullptr
-                ? request->getParameter("page")
-                : std::string();
-
-        int requestedPage = 1;
-
-        if (!pageValue.empty()) {
-            try {
-                requestedPage =
-                    std::max(1, std::stoi(pageValue));
-            } catch (const std::exception&) {
-            }
-        }
-
         auto repository =
             context.requireService<PortalProjectProvider>();
-
-        PortalProjectQuery query;
-        query.page = requestedPage;
-        query.pageSize = 10;
-
-        std::string baseUrl = "/projects";
-        std::string separator = "?";
-
-        const auto appendParameter =
-            [&baseUrl, &separator](
-                const std::string& name,
-                const std::string& value
-            ) {
-                baseUrl +=
-                    separator +
-                    name +
-                    "=" +
-                    drogular::Url::encode(value);
-                separator = "&";
-            };
-
-        if (!search.empty()) {
-            query.search = search;
-            appendParameter("search", search);
-        }
-
-        if (!status.empty()) {
-            query.status = status;
-            appendParameter("status", status);
-        }
-
-        if (projectTypeId.has_value()) {
-            query.projectTypeId = *projectTypeId;
-            appendParameter(
-                "projectTypeId",
-                std::to_string(*projectTypeId)
-            );
-        }
-
-        if (ownerId.has_value()) {
-            query.ownerId = *ownerId;
-            appendParameter(
-                "ownerId",
-                std::to_string(*ownerId)
-            );
-        }
-
-        query.sorting.push_back({
-            .field = sortField,
-            .direction = sortDirection
-        });
-
-        const auto hasCustomSorting =
-            sortField != "title" ||
-            sortDirection !=
-                PortalProjectSortDirection::Ascending;
-
-        if (hasCustomSorting) {
-            appendParameter("sort", sortField);
-            appendParameter(
-                "direction",
-                toString(sortDirection)
-            );
-        }
-
         const auto pageResult =
             repository->search(query);
 
         const auto pageUrl =
-            [&baseUrl](int page) {
-                if (page <= 1) {
-                    return baseUrl;
-                }
-
-                return baseUrl +
-                    (baseUrl.find('?') ==
-                             std::string::npos
-                         ? "?"
-                         : "&") +
-                    "page=" +
-                    std::to_string(page);
+            [&query](int page) {
+                auto pageQuery = query;
+                pageQuery.page = std::max(1, page);
+                return std::string("/projects") +
+                    PortalProjectQuerySerializer::toQueryString(pageQuery);
             };
 
         const auto returnUrl =

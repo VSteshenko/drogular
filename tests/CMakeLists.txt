@@ -90,6 +90,7 @@ add_executable(drogular_tests
     portal_demo/portal_dataset_graphql_client_tests.cpp
     portal_demo/portal_graphql_user_provider_tests.cpp
     portal_demo/portal_application_tests.cpp
+    portal_demo/portal_project_query_tests.cpp
     portal_demo/portal_dataset_tests.cpp
     portal_demo/portal_schema_tests.cpp
     portal_demo/portal_dataset_schema_validator_tests.cpp
