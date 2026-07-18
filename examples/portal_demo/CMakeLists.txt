@@ -2,8 +2,8 @@ add_executable(portal_demo
     main.cpp
     features/projects/graphql/documents/project_queries.cpp
     features/projects/graphql/documents/project_mutations.cpp
-    providers/graphql/documents/user_queries.cpp
-    providers/graphql/documents/user_mutations.cpp
+    features/users/graphql/documents/user_queries.cpp
+    features/users/graphql/documents/user_mutations.cpp
     providers/graphql/documents/project_type_queries.cpp
     providers/graphql/documents/project_type_mutations.cpp
     providers/graphql/documents/role_queries.cpp

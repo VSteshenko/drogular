@@ -2,7 +2,7 @@
 
 #include "auth/portal_auth_support.hpp"
 #include "ui/portal_page_support.hpp"
-#include "providers/user_provider.hpp"
+#include "features/users/providers/user_provider.hpp"
 #include "providers/role_provider.hpp"
 #include "localization/portal_error_translator.hpp"
 #include "data/portal_schema.hpp"

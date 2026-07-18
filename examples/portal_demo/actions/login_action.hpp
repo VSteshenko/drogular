@@ -1,6 +1,6 @@
 #pragma once
 
-#include "providers/user_provider.hpp"
+#include "features/users/providers/user_provider.hpp"
 
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>

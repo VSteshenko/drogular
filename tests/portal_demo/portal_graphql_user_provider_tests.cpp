@@ -1,4 +1,4 @@
-#include "providers/graphql/portal_graphql_user_provider.hpp"
+#include "features/users/graphql/portal_graphql_user_provider.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 

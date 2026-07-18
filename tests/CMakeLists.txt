@@ -83,8 +83,8 @@ add_executable(drogular_tests
     # portal_demo
     ../examples/portal_demo/features/projects/graphql/documents/project_queries.cpp
     ../examples/portal_demo/features/projects/graphql/documents/project_mutations.cpp
-    ../examples/portal_demo/providers/graphql/documents/user_queries.cpp
-    ../examples/portal_demo/providers/graphql/documents/user_mutations.cpp
+    ../examples/portal_demo/features/users/graphql/documents/user_queries.cpp
+    ../examples/portal_demo/features/users/graphql/documents/user_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/project_type_queries.cpp
     ../examples/portal_demo/providers/graphql/documents/project_type_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/role_queries.cpp

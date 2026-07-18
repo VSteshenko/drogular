@@ -1,7 +1,7 @@
 #pragma once
 
-#include "data/models/portal_user.hpp"
-#include "providers/user_provider.hpp"
+#include "features/users/data/portal_user.hpp"
+#include "features/users/providers/user_provider.hpp"
 
 #include <drogular/render_context.hpp>
 #include <drogular/session_store.hpp>

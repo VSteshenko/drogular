@@ -1,7 +1,7 @@
 #include "user_mutations.hpp"
 #include "data/portal_graphql_document_builder.hpp"
 #include "data/portal_schema.hpp"
-#include "data/models/portal_user_update.hpp"
+#include "features/users/data/portal_user_update.hpp"
 
 drogular::gql::Mutation UserMutations::create(
     const PortalUser&

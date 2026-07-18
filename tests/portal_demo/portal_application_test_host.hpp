@@ -7,7 +7,7 @@
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "providers/graphql/portal_graphql_project_type_provider.hpp"
 #include "providers/graphql/portal_graphql_role_provider.hpp"
-#include "providers/graphql/portal_graphql_user_provider.hpp"
+#include "features/users/graphql/portal_graphql_user_provider.hpp"
 
 #include <drogular/application_options.hpp>
 #include <drogular/page.hpp>

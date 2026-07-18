@@ -1,7 +1,7 @@
 #pragma once
 
 #include "features/projects/data/portal_project.hpp"
-#include "models/portal_user.hpp"
+#include "features/users/data/portal_user.hpp"
 #include "models/portal_role.hpp"
 #include "models/portal_project_type.hpp"
 

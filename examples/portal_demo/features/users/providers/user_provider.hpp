@@ -1,8 +1,8 @@
 #pragma once
 
-#include "data/models/portal_user.hpp"
-#include "data/models/portal_user_create.hpp"
-#include "data/models/portal_user_update.hpp"
+#include "features/users/data/portal_user.hpp"
+#include "features/users/data/portal_user_create.hpp"
+#include "features/users/data/portal_user_update.hpp"
 
 #include <optional>
 #include <string>
