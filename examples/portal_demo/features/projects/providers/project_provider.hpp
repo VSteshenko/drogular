@@ -33,10 +33,6 @@ public:
         int id
     ) = 0;
 
-    virtual std::optional<PortalUser> owner(
-        const PortalProject& project
-    ) const = 0;
-
     virtual PortalPage<PortalProject> search(
         const PortalProjectQuery& query
     ) const = 0;

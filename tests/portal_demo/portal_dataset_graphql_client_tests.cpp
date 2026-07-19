@@ -587,18 +587,10 @@ TEST(PortalDatasetGraphQLClientTests, SearchesProjectsByPartialTitle) {
             DemoDataset::create()
         );
 
-    auto users =
-        std::make_shared<PortalGraphQLUserProvider>(
-            std::make_shared<PortalDatasetGraphQLClient>(
-                dataset
-            )
-        );
-
     PortalGraphQLProjectProvider provider(
         std::make_shared<PortalDatasetGraphQLClient>(
             dataset
-        ),
-        users
+        )
     );
 
     PortalProjectQuery query;
@@ -638,18 +630,10 @@ TEST(PortalDatasetGraphQLClientTests, ProjectSearchIsCaseInsensitive) {
             DemoDataset::create()
         );
 
-    auto users =
-        std::make_shared<PortalGraphQLUserProvider>(
-            std::make_shared<PortalDatasetGraphQLClient>(
-                dataset
-            )
-        );
-
     PortalGraphQLProjectProvider provider(
         std::make_shared<PortalDatasetGraphQLClient>(
             dataset
-        ),
-        users
+        )
     );
 
     PortalProjectQuery query;
@@ -694,14 +678,8 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByStatus) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -745,14 +723,8 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchAndStatusFilter) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -807,14 +779,8 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByProjectType) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -861,14 +827,8 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchStatusAndTypeFilter) 
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -924,14 +884,8 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByOwner
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -967,14 +921,8 @@ TEST(PortalDatasetGraphQLClientTests, CombinesAllProjectFilters) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1019,14 +967,8 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1069,14 +1011,8 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1119,14 +1055,8 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1171,14 +1101,8 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1223,14 +1147,8 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscendingByDefault) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     const auto page =
@@ -1264,14 +1182,8 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsFirstProjectPage) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1300,14 +1212,8 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsSecondProjectPage) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1334,14 +1240,8 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsEmptyOutOfRangeProjectPage) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;
@@ -1368,14 +1268,8 @@ TEST(PortalDatasetGraphQLClientTests, PaginatesFilteredProjects) {
             PortalDatasetGraphQLClient
         >(dataset);
 
-    auto users =
-        std::make_shared<
-            PortalGraphQLUserProvider
-        >(client);
-
     PortalGraphQLProjectProvider provider(
-        client,
-        users
+        client
     );
 
     PortalProjectQuery query;

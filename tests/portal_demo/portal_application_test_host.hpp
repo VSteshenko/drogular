@@ -87,10 +87,9 @@ public:
 
         services_.addFactory<PortalProjectProvider>(
             drogular::ServiceLifetime::Singleton,
-            [client = graphQLClient_, userProvider] {
+            [client = graphQLClient_] {
                 return std::make_shared<PortalGraphQLProjectProvider>(
-                    client,
-                    userProvider
+                    client
                 );
             }
         );

@@ -35,14 +35,8 @@ TEST(PortalGraphQLProjectProviderTests, ReadsProjects) {
             data
         );
 
-    auto userProvider =
-        std::make_shared<PortalGraphQLUserProvider>(
-            client
-        );
-
     PortalGraphQLProjectProvider provider(
-        client,
-        userProvider
+        client
     );
 
     const auto result = provider.all();
@@ -75,14 +69,8 @@ TEST(PortalGraphQLProjectProviderTests, FindsProjectById) {
             data
         );
 
-    auto userProvider =
-        std::make_shared<PortalGraphQLUserProvider>(
-            client
-        );
-
     PortalGraphQLProjectProvider provider(
-        client,
-        userProvider
+        client
     );
 
     const auto result = provider.findById(5);
@@ -111,14 +99,8 @@ TEST(PortalGraphQLProjectProviderTests, ReturnsNulloptForMissingProject) {
             data
         );
 
-    auto userProvider =
-        std::make_shared<PortalGraphQLUserProvider>(
-            client
-        );
-
     PortalGraphQLProjectProvider provider(
-        client,
-        userProvider
+        client
     );
 
     const auto result =
@@ -143,14 +125,8 @@ TEST(PortalGraphQLProjectProviderTests, CreatesProject) {
             data
         );
 
-    auto userProvider =
-        std::make_shared<PortalGraphQLUserProvider>(
-            client
-        );
-
     PortalGraphQLProjectProvider provider(
-        client,
-        userProvider
+        client
     );
 
     PortalProjectCreate project;
@@ -193,14 +169,8 @@ TEST(PortalGraphQLProjectProviderTests, UpdatesProject) {
             data
         );
 
-    auto userProvider =
-        std::make_shared<PortalGraphQLUserProvider>(
-            client
-        );
-
     PortalGraphQLProjectProvider provider(
-        client,
-        userProvider
+        client
     );
 
     PortalProjectUpdate project;
@@ -231,14 +201,8 @@ TEST(PortalGraphQLProjectProviderTests, RemovesProject) {
             data
         );
 
-    auto userProvider =
-        std::make_shared<PortalGraphQLUserProvider>(
-            client
-        );
-
     PortalGraphQLProjectProvider provider(
-        client,
-        userProvider
+        client
     );
 
     EXPECT_TRUE(provider.remove(10));

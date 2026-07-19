@@ -106,8 +106,13 @@ public:
         context.set("projectTitle", project->title);
         context.set("projectStatus", project->status);
 
+        auto userProvider =
+            context.requireService<PortalUserProvider>();
+
         const auto owner =
-            repository->owner(*project);
+            userProvider->findById(
+                project->ownerId
+            );
 
         context.set(
             "projectOwnerName",

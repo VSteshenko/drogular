@@ -157,8 +157,7 @@ int main(
         drogular::ServiceLifetime::Singleton,
         [graphQLClient, userProvider] {
             return std::make_shared<PortalGraphQLProjectProvider>(
-                graphQLClient,
-                userProvider
+                graphQLClient
             );
         }
     );

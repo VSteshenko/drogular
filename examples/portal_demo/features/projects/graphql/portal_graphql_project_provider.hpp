@@ -20,11 +20,9 @@ class PortalGraphQLProjectProvider final
 {
 public:
     explicit PortalGraphQLProjectProvider(
-        std::shared_ptr<drogular::GraphQLClient> client,
-        std::shared_ptr<PortalUserProvider> users
+        std::shared_ptr<drogular::GraphQLClient> client
     )
-        : client_(std::move(client)),
-          users_(std::move(users))
+        : client_(std::move(client))
     {
     }
 
@@ -137,13 +135,6 @@ public:
                removed->asBool();
     }
 
-    std::optional<PortalUser> owner(
-        const PortalProject& project
-    ) const override {
-        return users_->findById(project.ownerId);
-    }
-
 private:
     std::shared_ptr<drogular::GraphQLClient> client_;
-    std::shared_ptr<PortalUserProvider> users_;
 };
