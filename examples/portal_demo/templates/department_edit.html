@@ -1,0 +1,60 @@
+@if(departmentNotFound)
+<h2>{{ departmentsNotFound }}
+</h2>
+@else
+<h2>
+    {{ pageTitle }}
+</h2>
+
+<form method="post" action="/departments/{{ departmentId }}/update">
+    <div>
+        <label>
+            {{ departmentsName }}
+            <input
+                    name="name"
+                    value="{{ departmentName }}"
+                    required />
+        </label>
+    </div>
+
+    <div>
+        <label>
+            {{ departmentsDescription }}
+            <input
+                    name="description"
+                    value="{{ departmentDescription }}" />
+        </label>
+    </div>
+
+    <div>
+        <label>
+            {{ departmentsManager }}
+            <select name="managerId">
+                @foreach(manager in departmentManagers)
+                <option
+                        value="{{ manager.id }}"
+                        @if(manager.selected)selected@endif
+                >
+                    {{ manager.name }}
+                </option>
+                @endforeach
+            </select>
+        </label>
+    </div>
+
+    <div>
+        <label>
+            <input
+                    type="checkbox"
+                    name="isActive"
+                    @if(departmentActive)checked@endif
+            />
+            {{ departmentsActive }}
+        </label>
+    </div>
+
+    <div>
+        <button type="submit">{{ departmentsSave }}</button>
+    </div>
+</form>
+@endif

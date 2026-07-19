@@ -71,179 +71,177 @@
     <button type="submit">{{ projectsCreate }}</button>
 </form>
 
-<ul>
-    <form method="get" action="/projects">
-        <fieldset>
-            <legend>
-                {{ projectsFiltersTitle }}
-            </legend>
+<form method="get" action="/projects">
+    <fieldset>
+        <legend>
+            {{ projectsFiltersTitle }}
+        </legend>
 
-            <div>
-                <label for="search">
-                    {{ projectsSearchLabel }}
-                </label>
-                <br />
+        <div>
+            <label for="search">
+                {{ projectsSearchLabel }}
+            </label>
+            <br />
 
-                <input
-                        id="search"
-                        name="search"
-                        value="{{ filters.search }}"
-                        type="search"
-                />
-            </div>
+            <input
+                    id="search"
+                    name="search"
+                    value="{{ filters.search }}"
+                    type="search"
+            />
+        </div>
 
-            <div>
-                <label for="statusFilter">
-                    {{ projectsStatusFilterLabel }}
-                </label>
-                <br />
+        <div>
+            <label for="statusFilter">
+                {{ projectsStatusFilterLabel }}
+            </label>
+            <br />
 
-                <select
-                        id="statusFilter"
-                        name="status"
+            <select
+                    id="statusFilter"
+                    name="status"
+            >
+                @foreach(item in filters.statusOptions)
+                <option
+                        value="{{ item.value }}"
+                        @if(item.selected)selected@endif
                 >
-                    @foreach(item in filters.statusOptions)
-                    <option
-                            value="{{ item.value }}"
-                            @if(item.selected)selected@endif
-                    >
-                        {{ item.label }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{ item.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
 
-            <div>
-                <label for="projectTypeFilter">
-                    {{ projectsTypeFilterLabel }}
-                </label>
-                <br />
+        <div>
+            <label for="projectTypeFilter">
+                {{ projectsTypeFilterLabel }}
+            </label>
+            <br />
 
-                <select
-                        id="projectTypeFilter"
-                        name="projectTypeId"
+            <select
+                    id="projectTypeFilter"
+                    name="projectTypeId"
+            >
+                @foreach(item in filters.projectTypeOptions)
+                <option
+                        value="{{ item.value }}"
+                        @if(item.selected)selected@endif
                 >
-                    @foreach(item in filters.projectTypeOptions)
-                    <option
-                            value="{{ item.value }}"
-                            @if(item.selected)selected@endif
-                    >
-                        {{ item.label }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{ item.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
 
-            <div>
-                <label for="projectOwnerFilter">
-                    {{ projectsOwnerFilterLabel }}
-                </label>
-                <br />
+        <div>
+            <label for="projectOwnerFilter">
+                {{ projectsOwnerFilterLabel }}
+            </label>
+            <br />
 
-                <select
-                        id="projectOwnerFilter"
-                        name="ownerId"
+            <select
+                    id="projectOwnerFilter"
+                    name="ownerId"
+            >
+                @foreach(item in filters.ownerOptions)
+                <option
+                        value="{{ item.value }}"
+                        @if(item.selected)selected@endif
                 >
-                    @foreach(item in filters.ownerOptions)
-                    <option
-                            value="{{ item.value }}"
-                            @if(item.selected)selected@endif
-                    >
-                        {{ item.label }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{ item.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
 
-            <div>
-                <label for="projectSort">
-                    {{ projectsSortLabel }}
-                </label>
-                <br />
+        <div>
+            <label for="projectSort">
+                {{ projectsSortLabel }}
+            </label>
+            <br />
 
-                <select
-                        id="projectSort"
-                        name="sort"
+            <select
+                    id="projectSort"
+                    name="sort"
+            >
+                @foreach(item in filters.sortOptions)
+                <option
+                        value="{{ item.value }}"
+                        @if(item.selected)selected@endif
                 >
-                    @foreach(item in filters.sortOptions)
-                    <option
-                            value="{{ item.value }}"
-                            @if(item.selected)selected@endif
-                    >
-                        {{ item.label }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{ item.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
 
-            <div>
-                <label for="projectSortDirection">
-                    {{ projectsSortDirectionLabel }}
-                </label>
-                <br />
+        <div>
+            <label for="projectSortDirection">
+                {{ projectsSortDirectionLabel }}
+            </label>
+            <br />
 
-                <select
-                        id="projectSortDirection"
-                        name="direction"
+            <select
+                    id="projectSortDirection"
+                    name="direction"
+            >
+                @foreach(item in filters.sortDirectionOptions)
+                <option
+                        value="{{ item.value }}"
+                        @if(item.selected)selected@endif
                 >
-                    @foreach(item in filters.sortDirectionOptions)
-                    <option
-                            value="{{ item.value }}"
-                            @if(item.selected)selected@endif
-                    >
-                        {{ item.label }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{ item.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
 
-            <div>
-                <button type="submit">
-                    {{ projectsSearch }}
-                </button>
+        <div>
+            <button type="submit">
+                {{ projectsSearch }}
+            </button>
 
-                @if(filters.hasActiveFilters)
-                <a href="/projects">
-                    {{ projectsClearSearch }}
-                </a>
-                @endif
-            </div>
-        </fieldset>
-    </form>
-
-    @if(hasProjects)
-    <ul>
-        @foreach(project in projects)
-        <li data-project-id="{{ project.id }}">
-            <a href="{{ project.detailsUrl }}">
-                {{ project.title }}
+            @if(filters.hasActiveFilters)
+            <a href="/projects">
+                {{ projectsClearSearch }}
             </a>
-            — {{ project.status }}
-        </li>
-        @endforeach
-    </ul>
-    @else
-    <p>{{ projectsEmpty }}</p>
-    @endif
+            @endif
+        </div>
+    </fieldset>
+</form>
 
-    @if(hasPagination)
-    <nav aria-label="{{ projectsPaginationLabel }}">
-        @if(hasPreviousPage)
-        <a href="{{ previousPageUrl }}">{{ projectsPreviousPage }}</a>
-        @endif
-
-        @foreach(item in paginationPages)
-        @if(item.current)
-        <strong aria-current="page">{{ item.number }}</strong>
-        @else
-        <a href="{{ item.url }}">{{ item.number }}</a>
-        @endif
-        @endforeach
-
-        @if(hasNextPage)
-        <a href="{{ nextPageUrl }}">{{ projectsNextPage }}</a>
-        @endif
-    </nav>
-    @endif
+@if(hasProjects)
+<ul>
+    @foreach(project in projects)
+    <li data-project-id="{{ project.id }}">
+        <a href="{{ project.detailsUrl }}">
+            {{ project.title }}
+        </a>
+        — {{ project.status }}
+    </li>
+    @endforeach
 </ul>
+@else
+<p>{{ projectsEmpty }}</p>
+@endif
+
+@if(hasPagination)
+<nav aria-label="{{ projectsPaginationLabel }}">
+    @if(hasPreviousPage)
+    <a href="{{ previousPageUrl }}">{{ projectsPreviousPage }}</a>
+    @endif
+
+    @foreach(item in paginationPages)
+    @if(item.current)
+    <strong aria-current="page">{{ item.number }}</strong>
+    @else
+    <a href="{{ item.url }}">{{ item.number }}</a>
+    @endif
+    @endforeach
+
+    @if(hasNextPage)
+    <a href="{{ nextPageUrl }}">{{ projectsNextPage }}</a>
+    @endif
+</nav>
+@endif
 @endif

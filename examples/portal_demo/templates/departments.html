@@ -1,0 +1,207 @@
+@if(loginRequired)
+<h2>{{ authLoginRequiredTitle }}</h2>
+
+<p>
+    {{ authLoginRequiredMessage }}
+</p>
+<p>
+    <a href="/login">{{ navLogin }}</a>
+</p>
+@else
+<h2>{{ pageTitle }}</h2>
+
+@if(isAdmin)
+<form
+        method="post"
+        action="/departments/create"
+>
+    <div>
+    <label>
+        {{ departmentsName }}
+        <input
+                name="name" required
+        />
+    </label>
+    </div>
+
+    <div>
+        <label>
+            {{ departmentsDescription }}
+            <input
+                    name="description"
+            />
+        </label>
+    </div>
+
+    <div>
+        <label>
+            {{ departmentsManager }}
+            <select
+                    name="managerId"
+            >
+                @foreach(manager in departmentManagers)
+                <option value="{{ manager.id }}">
+                    {{ manager.name }}
+                </option>
+                @endforeach
+            </select>
+        </label>
+    </div>
+
+    <div>
+        <label>
+            <input
+                    type="checkbox"
+                    name="isActive"
+                    checked
+            />
+            {{ departmentsActive }}
+        </label>
+    </div>
+
+    <div>
+        <button type="submit">
+            {{ departmentsCreate }}
+        </button>
+    </div>
+</form>
+@endif
+
+<form method="get" action="/departments">
+    <fieldset>
+        <legend>
+            {{ departmentsFiltersTitle }}
+        </legend>
+
+        <div>
+            <label for="search">
+                {{ departmentsSearchLabel }}
+            </label>
+            <br />
+
+            <input
+                    id="search"
+                    type="search"
+                    name="search"
+                    value="{{ departmentSearch }}"
+            />
+        </div>
+
+        <div>
+            <label for="status">
+                {{ departmentsStatusFilterLabel }}
+            </label>
+            <br />
+
+            <select
+                    id="status"
+                    name="active"
+            >
+                @foreach(option in departmentActiveOptions)
+                <option
+                        value="{{ option.value }}"
+                        @if(option.selected)selected@endif
+                >
+                    {{ option.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label for="sort">
+                {{ departmentsSortLabel }}
+            </label>
+            <br />
+
+            <select
+                    id="sort"
+                    name="sort"
+            >
+                @foreach(option in departmentSortOptions)
+                <option
+                        value="{{ option.value }}"
+                        @if(option.selected)selected@endif
+                >
+                    {{ option.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label for="direction">
+                {{ departmentsDirectionLabel }}
+            </label>
+            <br />
+
+            <select
+                    id="direction"
+                    name="direction"
+            >
+                @foreach(option in departmentDirectionOptions)
+                <option
+                        value="{{ option.value }}"
+                        @if(option.selected)selected@endif
+                >
+                    {{ option.label }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <button type="submit">
+                {{ departmentsApply }}
+            </button>
+        </div>
+    </fieldset>
+</form>
+
+@if(hasDepartments)
+<ul>
+    @foreach(department in departments)
+    <li>
+        <strong>
+            {{ department.name }}
+        </strong>
+        — {{ department.manager }} — {{ department.status }}
+        <br />
+        {{ department.description }}
+
+        @if(isAdmin)
+        <a href="{{ department.editUrl }}">
+            {{ departmentsEdit }}
+        </a>
+        @endif
+    </li>
+    @endforeach
+</ul>
+@else
+<p>
+    {{ departmentsEmpty }}
+</p>
+@endif
+
+@if(hasDepartmentPagination)
+<nav>
+    @if(hasPreviousDepartmentPage)
+    <a href="{{ previousDepartmentPageUrl }}">{{ commonPrevious }}</a>
+    @endif
+
+    @foreach(item in departmentPaginationPages)
+    @if(item.current)
+    <strong>
+        {{ item.number }}
+    </strong>
+    @else
+    <a href="{{ item.url }}">{{ item.number }}</a>
+    @endif
+    @endforeach
+
+    @if(hasNextDepartmentPage)
+    <a href="{{ nextDepartmentPageUrl }}">{{ commonNext }}</a>
+    @endif
+</nav>
+@endif
+@endif
