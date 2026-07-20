@@ -1,24 +1,11 @@
 #pragma once
 
+#include "core/portal_sort_direction.hpp"
+
 #include <string>
 
-enum class PortalProjectSortDirection {
-    Ascending,
-    Descending
-};
-
 struct PortalProjectSort {
-    std::string field;
-
-    PortalProjectSortDirection direction =
-        PortalProjectSortDirection::Ascending;
+    std::string field = "title";
+    PortalSortDirection direction =
+        PortalSortDirection::Ascending;
 };
-
-inline std::string toString(
-    PortalProjectSortDirection direction
-) {
-    return direction ==
-           PortalProjectSortDirection::Descending
-        ? "desc"
-        : "asc";
-}

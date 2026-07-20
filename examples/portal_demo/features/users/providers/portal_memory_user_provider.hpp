@@ -1,10 +1,11 @@
 #pragma once
 
+#include "core/portal_paginator.hpp"
+#include "core/portal_string_utils.hpp"
 #include "features/users/data/portal_user.hpp"
 #include "features/users/providers/user_provider.hpp"
 
 #include <algorithm>
-#include <cstddef>
 #include <optional>
 #include <string>
 #include <vector>
@@ -95,27 +96,13 @@ public:
     ) const override {
         std::vector<PortalUser> result;
 
-        const auto lowercase = [](std::string value) {
-            std::transform(
-                value.begin(),
-                value.end(),
-                value.begin(),
-                [](unsigned char character) {
-                    return static_cast<char>(
-                        std::tolower(character)
-                    );
-                }
-            );
-            return value;
-        };
-
         const auto needle = query.search.has_value()
-            ? lowercase(*query.search)
+            ? portalAsciiLowercase(*query.search)
             : std::string();
 
         for (const auto& user : users_) {
             if (!needle.empty() &&
-                lowercase(user.username).find(needle) ==
+                portalAsciiLowercase(user.username).find(needle) ==
                     std::string::npos) {
                 continue;
             }
@@ -132,16 +119,16 @@ public:
         if (sorting.empty()) {
             sorting.push_back({
                 .field = "username",
-                .direction = PortalUserSortDirection::Ascending
+                .direction = PortalSortDirection::Ascending
             });
         }
 
         const auto compare = []<typename T>(
             const T& left,
             const T& right,
-            PortalUserSortDirection direction
+            PortalSortDirection direction
         ) {
-            return direction == PortalUserSortDirection::Ascending
+            return direction == PortalSortDirection::Ascending
                 ? left < right
                 : right < left;
         };
@@ -183,35 +170,7 @@ public:
             }
         );
 
-        PortalPage<PortalUser> page;
-        page.page = std::max(1, query.page);
-        page.pageSize = std::max(1, query.pageSize);
-        page.totalItems = static_cast<int>(result.size());
-        page.totalPages = std::max(
-            1,
-            (page.totalItems + page.pageSize - 1) /
-                page.pageSize
-        );
-
-        const auto beginIndex =
-            static_cast<std::size_t>(page.page - 1) *
-            static_cast<std::size_t>(page.pageSize);
-
-        if (beginIndex >= result.size()) {
-            return page;
-        }
-
-        const auto endIndex = std::min(
-            result.size(),
-            beginIndex + static_cast<std::size_t>(page.pageSize)
-        );
-
-        page.items.assign(
-            result.begin() + static_cast<std::ptrdiff_t>(beginIndex),
-            result.begin() + static_cast<std::ptrdiff_t>(endIndex)
-        );
-
-        return page;
+        return paginate(result, query.page, query.pageSize);
     }
 
     bool exists(

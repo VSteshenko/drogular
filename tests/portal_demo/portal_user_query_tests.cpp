@@ -19,7 +19,7 @@ TEST(PortalUserQueryParserTests, UsesDefaultsForEmptyRequest) {
     EXPECT_EQ(query.sorting.front().field, "username");
     EXPECT_EQ(
         query.sorting.front().direction,
-        PortalUserSortDirection::Ascending
+        PortalSortDirection::Ascending
     );
 }
 
@@ -46,7 +46,7 @@ TEST(PortalUserQueryParserTests, ParsesParameters) {
     EXPECT_EQ(query.sorting.front().field, "role");
     EXPECT_EQ(
         query.sorting.front().direction,
-        PortalUserSortDirection::Descending
+        PortalSortDirection::Descending
     );
 }
 
@@ -66,7 +66,7 @@ TEST(PortalUserQueryParserTests, RejectsInvalidValues) {
     EXPECT_EQ(query.sorting.front().field, "username");
     EXPECT_EQ(
         query.sorting.front().direction,
-        PortalUserSortDirection::Ascending
+        PortalSortDirection::Ascending
     );
 }
 
@@ -74,7 +74,7 @@ TEST(PortalUserQuerySerializerTests, OmitsDefaults) {
     PortalUserQuery query;
     query.sorting.push_back({
         .field = "username",
-        .direction = PortalUserSortDirection::Ascending
+        .direction = PortalSortDirection::Ascending
     });
 
     EXPECT_EQ(PortalUserQuerySerializer::toQueryString(query), "");
@@ -86,7 +86,7 @@ TEST(PortalUserQuerySerializerTests, SerializesAndEncodesQuery) {
     query.role = "admin";
     query.sorting.push_back({
         .field = "role",
-        .direction = PortalUserSortDirection::Descending
+        .direction = PortalSortDirection::Descending
     });
     query.page = 3;
     query.pageSize = 5;
@@ -109,7 +109,7 @@ TEST(PortalMemoryUserProviderTests, SearchesSortsAndPaginates) {
     query.search = "a";
     query.sorting.push_back({
         .field = "username",
-        .direction = PortalUserSortDirection::Ascending
+        .direction = PortalSortDirection::Ascending
     });
     query.pageSize = 2;
 

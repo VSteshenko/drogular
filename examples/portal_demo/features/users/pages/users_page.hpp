@@ -102,7 +102,7 @@ public:
             query.sorting.empty()
             ? PortalUserSort{
                   .field = "username",
-                  .direction = PortalUserSortDirection::Ascending
+                  .direction = PortalSortDirection::Ascending
               }
             : query.sorting.front();
 

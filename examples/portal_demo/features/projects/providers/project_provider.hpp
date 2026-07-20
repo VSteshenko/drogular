@@ -5,7 +5,6 @@
 #include "features/projects/data/portal_project_update.hpp"
 #include "features/projects/data/portal_project_query.hpp"
 #include "data/models/portal_page.hpp"
-#include "features/users/data/portal_user.hpp"
 
 #include <optional>
 #include <vector>

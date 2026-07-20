@@ -1,12 +1,9 @@
 #pragma once
 
+#include "core/portal_request_parameters.hpp"
 #include "features/departments/data/portal_department_query.hpp"
 
-#include <drogon/HttpRequest.h>
-
-#include <algorithm>
-#include <cstdlib>
-#include <memory>
+#include <string>
 
 class PortalDepartmentQueryParser {
 public:
@@ -14,68 +11,37 @@ public:
         const drogon::HttpRequestPtr& request
     ) {
         PortalDepartmentQuery query;
+        const PortalRequestParameters parameters(request);
 
-        if (!request) {
-            return query;
-        }
+        query.search = parameters.optionalString("search");
 
-        const auto search =
-            request->getParameter("search");
-        if (!search.empty()) {
-            query.search = search;
-        }
-
-        const auto active =
-            request->getParameter("active");
+        const auto active = parameters.value("active");
         if (active == "true") {
             query.isActive = true;
         } else if (active == "false") {
             query.isActive = false;
         }
 
-        const auto sort =
-            request->getParameter("sort");
-        const auto direction =
-            request->getParameter("direction");
-        if (sort == "id" || sort == "name" || sort == "managerId" || sort == "isActive") {
+        const auto sort = parameters.value("sort");
+        if (sort == "id" || sort == "name" ||
+            sort == "managerId" || sort == "isActive") {
             query.sorting.push_back({
                 sort,
-                direction == "desc"
-                    ? PortalDepartmentSortDirection::Descending
-                    : PortalDepartmentSortDirection::Ascending
+                parameters.value("direction") == "desc"
+                    ? PortalSortDirection::Descending
+                    : PortalSortDirection::Ascending
             });
         }
 
-        query.page = positive(
-            request->getParameter("page"),
+        query.page = parameters.positiveIntegerOr(
+            "page",
             1
         );
-        query.pageSize =
-            std::min(100,
-                positive(
-                    request->getParameter("pageSize"),
-                    10
-                )
-            );
+        query.pageSize = parameters.boundedPositiveIntegerOr(
+            "pageSize",
+            10,
+            100
+        );
         return query;
-    }
-
-private:
-    static int positive(
-        const std::string& value,
-        int fallback
-    ) {
-        if (value.empty()) {
-            return fallback;
-        }
-
-        char* end = nullptr;
-        const auto result =
-            std::strtol(value.c_str(), &end, 10);
-        return end != value.c_str()
-            && *end == '\0'
-            && result > 0
-                ? static_cast<int>(result)
-                : fallback;
     }
 };

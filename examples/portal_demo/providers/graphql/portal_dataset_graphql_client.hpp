@@ -268,8 +268,8 @@ public:
                             .field = field,
                             .direction =
                                 item["direction"].asString() == "desc"
-                                    ? PortalUserSortDirection::Descending
-                                    : PortalUserSortDirection::Ascending
+                                    ? PortalSortDirection::Descending
+                                    : PortalSortDirection::Ascending
                         });
                     }
                 }
@@ -335,12 +335,9 @@ public:
                             }
 
                         const auto direction =
-                            item["direction"].asString() ==
-                                    "desc"
-                                ? PortalProjectSortDirection::
-                                      Descending
-                                : PortalProjectSortDirection::
-                                      Ascending;
+                            item["direction"].asString() == "desc"
+                                ? PortalSortDirection::Descending
+                                : PortalSortDirection::Ascending;
 
                         sorting.push_back({
                             .field = field,
@@ -1003,9 +1000,7 @@ private:
         if (sorting.empty()) {
             sorting.push_back({
                 .field = "title",
-                .direction =
-                    PortalProjectSortDirection::
-                        Ascending
+                .direction = PortalSortDirection::Ascending
             });
         }
 
@@ -1013,11 +1008,9 @@ private:
             []<typename T>(
                 const T& left,
                 const T& right,
-                PortalProjectSortDirection direction
+                PortalSortDirection direction
             ) {
-                return direction ==
-                       PortalProjectSortDirection::
-                           Ascending
+                return direction == PortalSortDirection::Ascending
                     ? left < right
                     : right < left;
             };
@@ -1133,16 +1126,16 @@ private:
         if (sorting.empty()) {
             sorting.push_back({
                 .field = "username",
-                .direction = PortalUserSortDirection::Ascending
+                .direction = PortalSortDirection::Ascending
             });
         }
 
         const auto compare = []<typename T>(
             const T& left,
             const T& right,
-            PortalUserSortDirection direction
+            PortalSortDirection direction
         ) {
-            return direction == PortalUserSortDirection::Ascending
+            return direction == PortalSortDirection::Ascending
                 ? left < right
                 : right < left;
         };

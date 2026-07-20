@@ -1,24 +1,11 @@
 #pragma once
 
+#include "core/portal_sort_direction.hpp"
+
 #include <string>
 
-enum class PortalUserSortDirection {
-    Ascending,
-    Descending
-};
-
 struct PortalUserSort {
-    std::string field;
-
-    PortalUserSortDirection direction =
-        PortalUserSortDirection::Ascending;
+    std::string field = "username";
+    PortalSortDirection direction =
+        PortalSortDirection::Ascending;
 };
-
-inline std::string toString(
-    PortalUserSortDirection direction
-) {
-    return direction ==
-           PortalUserSortDirection::Descending
-        ? "desc"
-        : "asc";
-}

@@ -1,70 +1,49 @@
 #pragma once
 
+#include "core/portal_query_string_builder.hpp"
 #include "features/users/data/portal_user_query.hpp"
-
-#include <drogular/url.hpp>
 
 #include <string>
 
 class PortalUserQuerySerializer {
 public:
-    static std::string toQueryString(
-        const PortalUserQuery& query
-    ) {
-        std::string result;
-        std::string separator = "?";
+    static std::string toQueryString(const PortalUserQuery& query) {
+        PortalQueryStringBuilder builder;
 
-        const auto append =
-            [&result, &separator](
-                const std::string& name,
-                const std::string& value
-            ) {
-                result += separator + name + "=" +
-                    drogular::Url::encode(value);
-                separator = "&";
-            };
-
-        if (query.search.has_value() &&
-            !query.search->empty()) {
-            append("search", *query.search);
+        if (query.search && !query.search->empty()) {
+            builder.add("search", *query.search);
         }
-
-        if (query.role.has_value() &&
-            !query.role->empty()) {
-            append("role", *query.role);
+        if (query.role && !query.role->empty()) {
+            builder.add("role", *query.role);
         }
 
         const auto sort = effectiveSort(query);
-
-        if (sort.field != "username" ||
-            sort.direction !=
-                PortalUserSortDirection::Ascending) {
-            append("sort", sort.field);
-            append("direction", toString(sort.direction));
+        if (sort.field != "username" || sort.direction != PortalSortDirection::Ascending) {
+            builder
+                .add("sort", sort.field)
+                .add("direction", toString(sort.direction));
         }
 
-        if (query.pageSize != 10 && query.pageSize > 0) {
-            append("pageSize", std::to_string(query.pageSize));
-        }
-
-        if (query.page > 1) {
-            append("page", std::to_string(query.page));
-        }
-
-        return result;
+        builder.addIf(
+            query.pageSize != 10 && query.pageSize > 0,
+            "pageSize",
+            query.pageSize
+        );
+        builder.addIf(
+            query.page > 1,
+            "page",
+            query.page
+        );
+        return builder.build();
     }
 
 private:
-    static PortalUserSort effectiveSort(
-        const PortalUserQuery& query
-    ) {
-        if (!query.sorting.empty()) {
-            return query.sorting.front();
-        }
-
-        return {
-            .field = "username",
-            .direction = PortalUserSortDirection::Ascending
-        };
+    static PortalUserSort effectiveSort(const PortalUserQuery& query) {
+        return query.sorting.empty()
+            ? PortalUserSort{
+                .field = "username",
+                .direction = PortalSortDirection::Ascending
+            }
+            : query.sorting.front();
     }
 };

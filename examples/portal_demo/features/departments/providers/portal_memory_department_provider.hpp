@@ -1,9 +1,10 @@
 #pragma once
 
+#include "core/portal_paginator.hpp"
+#include "core/portal_string_utils.hpp"
 #include "department_provider.hpp"
 
 #include <algorithm>
-#include <cstddef>
 
 class PortalMemoryDepartmentProvider final
     : public PortalDepartmentProvider
@@ -65,13 +66,13 @@ public:
         std::optional<int> excludingId = std::nullopt
     ) const override {
         const auto normalized =
-            lowercase(name);
+            portalAsciiLowercase(name);
 
         for (const auto& item : departments_) {
             if (excludingId && item.id == *excludingId) {
                 continue;
             }
-            if (lowercase(item.name) == normalized) {
+            if (portalAsciiLowercase(item.name) == normalized) {
                 return true;
             }
         }
@@ -127,12 +128,12 @@ public:
 
         const auto needle =
             query.search
-            ? lowercase(*query.search)
+            ? portalAsciiLowercase(*query.search)
             : std::string();
 
         for (const auto& item : departments_) {
             if (!needle.empty() &&
-                lowercase(item.name + " " + item.description)
+                portalAsciiLowercase(item.name + " " + item.description)
                     .find(needle) == std::string::npos) {
                 continue;
             }
@@ -148,7 +149,7 @@ public:
         if (sorting.empty()) {
             sorting.push_back({
                 "name",
-                PortalDepartmentSortDirection::Ascending
+                PortalSortDirection::Ascending
             });
         }
 
@@ -173,7 +174,7 @@ public:
                     }
 
                     if (comparison != 0) {
-                        return sort.direction == PortalDepartmentSortDirection::Ascending
+                        return sort.direction == PortalSortDirection::Ascending
                             ? comparison < 0
                             : comparison > 0;
                     }
@@ -181,42 +182,10 @@ public:
             return a.id < b.id;
         });
 
-        PortalPage<PortalDepartment> page;
-
-        page.page = std::max(1, query.page);
-        page.pageSize = std::max(1, query.pageSize);
-        page.totalItems = static_cast<int>(result.size());
-        page.totalPages = std::max(1, (page.totalItems + page.pageSize - 1) / page.pageSize);
-
-        const auto begin =
-            static_cast<std::size_t>(page.page - 1) * static_cast<std::size_t>(page.pageSize);
-        if (begin < result.size()) {
-            const auto end =
-                std::min(result.size(), begin + static_cast<std::size_t>(page.pageSize));
-
-            page.items.assign(
-                result.begin() + static_cast<std::ptrdiff_t>(begin),
-                result.begin() + static_cast<std::ptrdiff_t>(end));
-        }
-
-        return page;
+        return paginate(result, query.page, query.pageSize);
     }
 
 private:
-    static std::string lowercase(
-        std::string value
-    ) {
-        std::transform(
-            value.begin(),
-            value.end(),
-            value.begin(),
-            [](unsigned char c) {
-                return static_cast<char>(std::tolower(c));
-            });
-
-        return value;
-    }
-
     std::vector<PortalDepartment> departments_;
     int nextId_ = 1;
 };

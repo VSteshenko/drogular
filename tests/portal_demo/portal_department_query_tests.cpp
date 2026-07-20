@@ -39,7 +39,7 @@ TEST(PortalDepartmentQueryTests, SerializesUrlState) {
     query.search = "Research & Development";
     query.isActive = false;
     query.sorting.push_back(
-    {"managerId", PortalDepartmentSortDirection::Descending}
+    {"managerId", PortalSortDirection::Descending}
     );
     query.page = 2;
 

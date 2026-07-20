@@ -137,7 +137,7 @@ public:
                 ? PortalProjectSort{
                       .field = "title",
                       .direction =
-                          PortalProjectSortDirection::Ascending
+                          PortalSortDirection::Ascending
                   }
                 : query.sorting.front();
         const auto& sortField = sort.field;

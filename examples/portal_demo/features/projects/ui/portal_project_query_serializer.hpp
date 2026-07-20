@@ -1,86 +1,58 @@
 #pragma once
 
+#include "core/portal_query_string_builder.hpp"
 #include "features/projects/data/portal_project_query.hpp"
-
-#include <drogular/url.hpp>
 
 #include <string>
 
 class PortalProjectQuerySerializer {
 public:
-    static std::string toQueryString(
-        const PortalProjectQuery& query
-    ) {
-        std::string result;
-        std::string separator = "?";
+    static std::string toQueryString(const PortalProjectQuery& query) {
+        PortalQueryStringBuilder builder;
 
-        const auto append =
-            [&result, &separator](
-                const std::string& name,
-                const std::string& value
-            ) {
-                result +=
-                    separator +
-                    name +
-                    "=" +
-                    drogular::Url::encode(value);
-                separator = "&";
-            };
-
-        if (query.search.has_value() &&
-            !query.search->empty()) {
-            append("search", *query.search);
+        if (query.search && !query.search->empty()) {
+            builder.add("search", *query.search);
         }
 
-        if (query.status.has_value() &&
-            !query.status->empty()) {
-            append("status", *query.status);
+        if (query.status && !query.status->empty()) {
+            builder.add("status", *query.status);
         }
 
-        if (query.projectTypeId.has_value() &&
-            *query.projectTypeId > 0) {
-            append(
-                "projectTypeId",
-                std::to_string(*query.projectTypeId)
-            );
+        if (query.projectTypeId && *query.projectTypeId > 0) {
+            builder.add("projectTypeId", *query.projectTypeId);
         }
 
-        if (query.ownerId.has_value() &&
-            *query.ownerId > 0) {
-            append(
-                "ownerId",
-                std::to_string(*query.ownerId)
-            );
+        if (query.ownerId && *query.ownerId > 0) {
+            builder.add("ownerId", *query.ownerId);
         }
 
         const auto sort = effectiveSort(query);
-
-        if (sort.field != "title" ||
-            sort.direction !=
-                PortalProjectSortDirection::Ascending) {
-            append("sort", sort.field);
-            append("direction", toString(sort.direction));
+        if (sort.field != "title" || sort.direction != PortalSortDirection::Ascending) {
+            builder
+                .add("sort", sort.field)
+                .add("direction", toString(sort.direction));
         }
 
-        if (query.page > 1) {
-            append("page", std::to_string(query.page));
-        }
-
-        return result;
+        builder.addIf(
+            query.pageSize != 10 && query.pageSize > 0,
+            "pageSize",
+            query.pageSize
+        );
+        builder.addIf(
+            query.page > 1,
+            "page",
+            query.page
+        );
+        return builder.build();
     }
 
 private:
-    static PortalProjectSort effectiveSort(
-        const PortalProjectQuery& query
-    ) {
-        if (!query.sorting.empty()) {
-            return query.sorting.front();
-        }
-
-        return {
-            .field = "title",
-            .direction =
-                PortalProjectSortDirection::Ascending
-        };
+    static PortalProjectSort effectiveSort(const PortalProjectQuery& query) {
+        return query.sorting.empty()
+            ? PortalProjectSort{
+                .field = "title",
+                .direction = PortalSortDirection::Ascending
+            }
+            : query.sorting.front();
     }
 };

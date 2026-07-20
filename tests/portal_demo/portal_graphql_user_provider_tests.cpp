@@ -204,7 +204,7 @@ TEST(PortalGraphQLUserProviderTests, SearchesUsersWithQueryState) {
     query.role = "admin";
     query.sorting.push_back({
         .field = "role",
-        .direction = PortalUserSortDirection::Descending
+        .direction = PortalSortDirection::Descending
     });
     query.page = 2;
     query.pageSize = 1;

@@ -22,7 +22,7 @@ TEST(PortalProjectQueryParserTests, UsesDefaultsForEmptyRequest) {
     EXPECT_EQ(query.sorting.front().field, "title");
     EXPECT_EQ(
         query.sorting.front().direction,
-        PortalProjectSortDirection::Ascending
+        PortalSortDirection::Ascending
     );
 }
 
@@ -54,7 +54,7 @@ TEST(PortalProjectQueryParserTests, ParsesProjectQueryParameters) {
     EXPECT_EQ(query.sorting.front().field, "status");
     EXPECT_EQ(
         query.sorting.front().direction,
-        PortalProjectSortDirection::Descending
+        PortalSortDirection::Descending
     );
 }
 
@@ -78,7 +78,7 @@ TEST(PortalProjectQueryParserTests, RejectsInvalidValues) {
     EXPECT_EQ(query.sorting.front().field, "title");
     EXPECT_EQ(
         query.sorting.front().direction,
-        PortalProjectSortDirection::Ascending
+        PortalSortDirection::Ascending
     );
 }
 
@@ -86,7 +86,7 @@ TEST(PortalProjectQuerySerializerTests, OmitsDefaultValues) {
     PortalProjectQuery query;
     query.sorting.push_back({
         .field = "title",
-        .direction = PortalProjectSortDirection::Ascending
+        .direction = PortalSortDirection::Ascending
     });
 
     EXPECT_EQ(
@@ -103,7 +103,7 @@ TEST(PortalProjectQuerySerializerTests, SerializesAndEncodesQuery) {
     query.ownerId = 7;
     query.sorting.push_back({
         .field = "status",
-        .direction = PortalProjectSortDirection::Descending
+        .direction = PortalSortDirection::Descending
     });
     query.page = 4;
 

@@ -976,7 +976,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
     query.sorting.push_back({
         .field = "title",
         .direction =
-            PortalProjectSortDirection::
+            PortalSortDirection::
                 Ascending
     });
 
@@ -1020,7 +1020,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
     query.sorting.push_back({
         .field = "title",
         .direction =
-            PortalProjectSortDirection::
+            PortalSortDirection::
                 Descending
     });
 
@@ -1064,7 +1064,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
     query.sorting.push_back({
         .field = "status",
         .direction =
-            PortalProjectSortDirection::
+            PortalSortDirection::
                 Ascending
     });
 
@@ -1110,7 +1110,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
     query.sorting.push_back({
         .field = "status",
         .direction =
-            PortalProjectSortDirection::
+            PortalSortDirection::
                 Descending
     });
 
