@@ -163,7 +163,9 @@
     @foreach(department in departments)
     <li>
         <strong>
-            {{ department.name }}
+            <a href="{{ department.detailsUrl }}">
+                {{ department.name }}
+            </a>
         </strong>
         — {{ department.manager }} — {{ department.status }}
         <br />

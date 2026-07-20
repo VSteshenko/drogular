@@ -37,6 +37,10 @@
 #include "features/departments/providers/portal_memory_department_provider.hpp"
 #include "features/departments/pages/departments_page.hpp"
 #include "features/departments/pages/department_edit_page.hpp"
+#include "features/departments/pages/department_details_page.hpp"
+#include "features/department_members/providers/portal_memory_department_member_provider.hpp"
+#include "features/department_members/actions/add_department_member_action.hpp"
+#include "features/department_members/actions/remove_department_member_action.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 
@@ -153,6 +157,13 @@ int main(
         }
     );
 
+    app.services().addFactory<PortalDepartmentMemberProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [] {
+            return std::make_shared<PortalMemoryDepartmentMemberProvider>();
+        }
+    );
+
     app.services().addFactory<PortalProjectProvider>(
         drogular::ServiceLifetime::Singleton,
         [graphQLClient, userProvider] {
@@ -177,6 +188,7 @@ int main(
     app.action<PortalUpdateProjectTypeAction>("/project-types/{id}/update");
     app.action<PortalDeleteProjectTypeAction>("/project-types/{id}/delete");
     app.page<PortalDepartmentsPage>("/departments");
+    app.page<PortalDepartmentDetailsPage>("/departments/{id}");
     app.page<PortalDepartmentEditPage>("/departments/{id}/edit");
     app.page<PortalProjectsPage>("/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");
@@ -190,6 +202,8 @@ int main(
     app.action<PortalCreateRoleAction>("/roles/create");
     app.action<PortalCreateDepartmentAction>("/departments/create");
     app.action<PortalUpdateDepartmentAction>("/departments/{id}/update");
+    app.action<PortalAddDepartmentMemberAction>("/departments/{id}/members/add");
+    app.action<PortalRemoveDepartmentMemberAction>("/departments/{id}/members/{userId}/remove");
     app.action<PortalCreateProjectAction>("/projects/create");
     app.action<PortalUpdateProjectAction>("/projects/{id}/update");
     app.action<PortalDeleteProjectAction>("/projects/{id}/delete");

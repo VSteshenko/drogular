@@ -178,7 +178,22 @@ public:
             Json::Value item(Json::objectValue);
 
             item["id"] = value.id;
-            item["name"] = value.name; item["description"] = value.description; item["manager"] = managerName(value.managerId); item["active"] = value.isActive; item["status"] = context.translate(value.isActive ? "departments.active" : "departments.inactive"); item["editUrl"] = "/departments/" + std::to_string(value.id) + "/edit"; departments.append(std::move(item));
+            item["name"] = value.name;
+            item["description"] = value.description;
+            item["manager"] = managerName(value.managerId);
+            item["active"] = value.isActive;
+            item["status"] = context.translate(
+                value.isActive
+                ? "departments.active"
+                : "departments.inactive");
+            item["detailsUrl"] =
+                "/departments/" + std::to_string(value.id);
+            item["editUrl"] =
+                "/departments/" +
+                std::to_string(value.id) +
+                "/edit";
+
+            departments.append(std::move(item));
         }
 
         context.set(

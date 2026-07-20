@@ -97,6 +97,7 @@ add_executable(drogular_tests
     portal_demo/portal_project_query_tests.cpp
     portal_demo/portal_user_query_tests.cpp
     portal_demo/portal_department_query_tests.cpp
+    portal_demo/portal_department_member_provider_tests.cpp
     portal_demo/portal_core_tests.cpp
     portal_demo/portal_dataset_tests.cpp
     portal_demo/portal_schema_tests.cpp

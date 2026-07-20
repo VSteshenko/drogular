@@ -7,7 +7,7 @@ enum class PortalSortDirection {
     Descending
 };
 
-inline constexpr std::string_view toString(
+inline constexpr const char* toString(
     PortalSortDirection direction
 ) noexcept {
     return direction == PortalSortDirection::Descending
