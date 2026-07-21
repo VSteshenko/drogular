@@ -13,6 +13,7 @@
 #include "features/users/graphql/portal_graphql_user_provider.hpp"
 #include "features/projects/graphql/portal_graphql_project_provider.hpp"
 #include "providers/graphql/portal_graphql_project_type_provider.hpp"
+#include "core/portal_string_utils.hpp"
 
 #include <gtest/gtest.h>
 
@@ -745,8 +746,8 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchAndStatusFilter) {
         );
 
         EXPECT_NE(
-            lower(project.title).find(
-                lower(source.title)
+            portalAsciiLowercase(project.title).find(
+                portalAsciiLowercase(source.title)
             ),
             std::string::npos
         );
