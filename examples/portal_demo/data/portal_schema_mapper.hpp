@@ -24,8 +24,9 @@ public:
                 value[field.name] =
                     std::get<int>(fieldValue);
             } else if (std::holds_alternative<std::string>(fieldValue)) {
-                value[field.name] =
-                    std::get<std::string>(fieldValue);
+                value[field.name] = std::get<std::string>(fieldValue);
+            } else if (std::holds_alternative<bool>(fieldValue)) {
+                value[field.name] = std::get<bool>(fieldValue);
             }
         }
 
@@ -53,10 +54,9 @@ public:
                     value.asInt()
                 );
             } else if (value.isString()) {
-                field.setValue(
-                    model,
-                    value.asString()
-                );
+                field.setValue(model, value.asString());
+            } else if (value.isBool()) {
+                field.setValue(model, value.asBool());
             }
         }
 

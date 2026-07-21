@@ -4,6 +4,10 @@ add_executable(portal_demo
     features/projects/graphql/documents/project_mutations.cpp
     features/users/graphql/documents/user_queries.cpp
     features/users/graphql/documents/user_mutations.cpp
+    features/departments/graphql/documents/department_queries.cpp
+    features/departments/graphql/documents/department_mutations.cpp
+    features/department_members/graphql/documents/department_member_queries.cpp
+    features/department_members/graphql/documents/department_member_mutations.cpp
     providers/graphql/documents/project_type_queries.cpp
     providers/graphql/documents/project_type_mutations.cpp
     providers/graphql/documents/role_queries.cpp

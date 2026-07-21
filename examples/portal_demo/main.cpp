@@ -34,11 +34,11 @@
 #include "providers/graphql/portal_graphql_role_provider.hpp"
 #include "providers/graphql/portal_graphql_project_type_provider.hpp"
 #include "data/demo_dataset.hpp"
-#include "features/departments/providers/portal_memory_department_provider.hpp"
+#include "features/departments/graphql/portal_graphql_department_provider.hpp"
 #include "features/departments/pages/departments_page.hpp"
 #include "features/departments/pages/department_edit_page.hpp"
 #include "features/departments/pages/department_details_page.hpp"
-#include "features/department_members/providers/portal_memory_department_member_provider.hpp"
+#include "features/department_members/graphql/portal_graphql_department_member_provider.hpp"
 #include "features/department_members/actions/add_department_member_action.hpp"
 #include "features/department_members/actions/remove_department_member_action.hpp"
 #include "features/departments/actions/create_department_action.hpp"
@@ -152,15 +152,19 @@ int main(
 
     app.services().addFactory<PortalDepartmentProvider>(
         drogular::ServiceLifetime::Singleton,
-        [] {
-            return std::make_shared<PortalMemoryDepartmentProvider>();
+        [graphQLClient] {
+            return std::make_shared<PortalGraphQLDepartmentProvider>(
+                graphQLClient
+            );
         }
     );
 
     app.services().addFactory<PortalDepartmentMemberProvider>(
         drogular::ServiceLifetime::Singleton,
-        [] {
-            return std::make_shared<PortalMemoryDepartmentMemberProvider>();
+        [graphQLClient] {
+            return std::make_shared<PortalGraphQLDepartmentMemberProvider>(
+                graphQLClient
+            );
         }
     );
 

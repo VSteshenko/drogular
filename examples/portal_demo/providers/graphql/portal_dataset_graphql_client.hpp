@@ -5,6 +5,7 @@
 #include "data/portal_schema_mapper.hpp"
 #include "features/projects/data/portal_project_sort.hpp"
 #include "features/users/data/portal_user_sort.hpp"
+#include "features/departments/data/portal_department_sort.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 #include <drogular/graphql_response.hpp>
@@ -164,6 +165,18 @@ public:
                     variables.json()["id"].asInt()
                 );
             };
+
+        queryHandlers_["PortalDepartments"] = [this](const auto&) { return departmentsResponse(); };
+        queryHandlers_["PortalDepartmentById"] = [this](const auto& v) { return departmentResponse(v.json()["id"].asInt()); };
+        queryHandlers_["SearchPortalDepartments"] = [this](const auto& v) { return searchDepartmentsResponse(v.json()); };
+        queryHandlers_["PortalDepartmentMembers"] = [this](const auto& v) { return departmentMembersResponse(v.json()["departmentId"].asInt()); };
+        queryHandlers_["PortalUserDepartments"] = [this](const auto& v) { return userDepartmentsResponse(v.json()["userId"].asInt()); };
+        queryHandlers_["PortalDepartmentMember"] = [this](const auto& v) { return departmentMemberResponse(v.json()["departmentId"].asInt(), v.json()["userId"].asInt()); };
+
+        mutationHandlers_["CreatePortalDepartment"] = [this](const auto& v) { return createDepartmentResponse(v.json()["department"]); };
+        mutationHandlers_["UpdatePortalDepartment"] = [this](const auto& v) { return updateDepartmentResponse(v.json()["department"]); };
+        mutationHandlers_["AddPortalDepartmentMember"] = [this](const auto& v) { return addDepartmentMemberResponse(v.json()["departmentId"].asInt(), v.json()["userId"].asInt()); };
+        mutationHandlers_["RemovePortalDepartmentMember"] = [this](const auto& v) { return removeDepartmentMemberResponse(v.json()["departmentId"].asInt(), v.json()["userId"].asInt()); };
 
         mutationHandlers_["CreatePortalProject"] =
             [this](const auto& variables) {
@@ -1100,6 +1113,253 @@ private:
         return response(data);
     }
 
+    static Json::Value departmentJson(
+        const PortalDepartment& value
+    ) {
+        return PortalSchemaMapper::toJson(PortalSchema::departments(), value);
+    }
+
+    static Json::Value departmentMemberJson(
+        const PortalDepartmentMember& value
+    ) {
+        return PortalSchemaMapper::toJson(PortalSchema::departmentMembers(), value);
+    }
+
+    int nextDepartmentId() const {
+        int id = 1;
+        for (const auto& department: dataset_->departments()) {
+            id = std::max(id,department.id + 1);
+        }
+
+        return id;
+    }
+
+    int nextDepartmentMemberId() const {
+        int id = 1;
+        for (const auto& member: dataset_->departmentMembers()) {
+            id = std::max(id,member.id + 1);
+        }
+
+        return id;
+    }
+
+    drogular::GraphQLResponse departmentsResponse() const {
+        Json::Value departments(Json::arrayValue);
+        for (const auto& department: dataset_->departments()) {
+            departments.append(departmentJson(department));
+        }
+
+        Json::Value data(Json::objectValue);
+        data["departments"] = departments;
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse departmentResponse(
+        int id
+    ) const {
+        Json::Value data(Json::objectValue);
+
+        data["department"] = Json::Value();
+        for (const auto& department:dataset_->departments()) {
+            if (department.id == id) {
+                data["department"] = departmentJson(department);
+                break;
+            }
+        }
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse searchDepartmentsResponse(
+        const Json::Value& value
+    ) const {
+        std::vector<PortalDepartment> values;
+        const auto needle=
+            lower(value.get("search","").asString());
+        for (const auto& department:dataset_->departments()) {
+            if (!needle.empty() &&
+                lower(department.name + " " + department.description).find(needle) ==
+                std::string::npos
+            ) {
+                continue;
+            }
+            if(value.isMember("isActive") &&
+                department.isActive!=value["isActive"].asBool()
+            ) {
+                continue;
+            }
+
+            values.push_back(department);
+        }
+        std::stable_sort(
+            values.begin(),
+            values.end(),
+            [](const auto& left,const auto& right) {
+                return left.name < right.name;
+            }
+        );
+
+        int page = std::max(1,value.get("page",1).asInt());
+        int size = std::max(1,value.get("pageSize",10).asInt());
+        int total = values.size();
+        int pages = std::max(1,(total + size - 1) / size);
+        size_t begin = (page - 1) * size;
+        size_t end = std::min(values.size(),begin + size_t(size));
+
+        Json::Value items(Json::arrayValue);
+        if (begin < values.size()) {
+            for (size_t i = begin; i < end; ++i) {
+                items.append(departmentJson(values[i]));
+            }
+        }
+
+        Json::Value departmentPage(Json::objectValue);
+
+        departmentPage["items"] = items;
+        departmentPage["page"]= page;
+        departmentPage["pageSize"]= size;
+        departmentPage["totalItems"]=total;
+        departmentPage["totalPages"]=pages;
+
+        Json::Value data(Json::objectValue);
+        data["departmentPage"] = departmentPage;
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse createDepartmentResponse(
+        const Json::Value& value
+    ) {
+        auto department =
+            PortalSchemaMapper::fromJson(PortalSchema::departments(), value);
+        department.id = nextDepartmentId();
+        dataset_->departments().push_back(department);
+
+        Json::Value data(Json::objectValue);
+        data["createDepartment"] = departmentJson(department);
+
+        return response(data);
+    }
+
+    drogular::GraphQLResponse updateDepartmentResponse(
+        const Json::Value& value
+    ) {
+        Json::Value department(Json::objectValue);
+
+        department["updateDepartment"] = Json::Value();
+        for (auto& item: dataset_->departments()) {
+            if (item.id == value["id"].asInt()) {
+                if (value.isMember("name")) {
+                    item.name = value["name"].asString();
+                }
+                if (value.isMember("description")) {
+                    item.description = value["description"].asString();
+                }
+                if (value.isMember("managerId")) {
+                    item.managerId = value["managerId"].asInt();
+                }
+                if (value.isMember("isActive")) {
+                    item.isActive = value["isActive"].asBool();
+                }
+                department["updateDepartment"] = departmentJson(item);
+                break;
+            }
+        }
+
+        return response(department);
+    }
+
+    drogular::GraphQLResponse departmentMembersResponse(
+        int id
+    ) const {
+        Json::Value members(Json::arrayValue);
+        for (const auto& member: dataset_->departmentMembers()) {
+            if (member.departmentId == id) {
+                members.append(departmentMemberJson(member));
+            }
+        }
+
+        Json::Value departmentMembers(Json::objectValue);
+        departmentMembers["departmentMembers"] = members;
+
+        return response(departmentMembers);
+    }
+
+    drogular::GraphQLResponse userDepartmentsResponse(
+        int id
+    ) const {
+        Json::Value members(Json::arrayValue);
+        for (const auto& member: dataset_->departmentMembers()) {
+            if (member.userId == id) {
+                members.append(departmentMemberJson(member));
+            }
+        }
+
+        Json::Value userDepartments(Json::objectValue);
+        userDepartments["userDepartments"] = members;
+
+        return response(userDepartments);
+    }
+
+    drogular::GraphQLResponse departmentMemberResponse(
+        int dep,
+        int user
+    ) const {
+        Json::Value departments(Json::objectValue);
+        departments["departmentMember"] = Json::Value();
+        for (const auto& department: dataset_->departmentMembers()) {
+            if (department.departmentId == dep && department.userId == user) {
+                departments["departmentMember"] = departmentMemberJson(department);
+                break;
+            }
+        }
+        return response(departments);
+    }
+
+    drogular::GraphQLResponse addDepartmentMemberResponse(
+        int dep,
+        int user
+    ) {
+        for (const auto& member: dataset_->departmentMembers()) {
+            if (member.departmentId == dep && member.userId == user) {
+                Json::Value department(Json::objectValue);
+                department["addDepartmentMember"] = departmentMemberJson(member);
+
+                return response(department);
+            }
+        }
+
+        PortalDepartmentMember v{
+            nextDepartmentMemberId(),
+            dep,user
+        };
+        dataset_->departmentMembers().push_back(v);
+
+        Json::Value department(Json::objectValue);
+        department["addDepartmentMember"] = departmentMemberJson(v);
+
+        return response(department);
+    }
+
+    drogular::GraphQLResponse removeDepartmentMemberResponse(
+        int dep,
+        int user
+    ) {
+        auto& members=
+            dataset_->departmentMembers();
+        auto size = members.size();
+
+        std::erase_if(members,
+            [=](const auto& value) {
+                return value.departmentId == dep && value.userId == user;
+            });
+
+        Json::Value department(Json::objectValue);
+        department["removeDepartmentMember"]= members.size() != size;
+
+        return response(department);
+    }
 
     drogular::GraphQLResponse searchUsersResponse(
         const std::string& search,

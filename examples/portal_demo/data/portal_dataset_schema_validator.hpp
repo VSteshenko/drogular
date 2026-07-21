@@ -35,10 +35,11 @@ public:
         );
 
         validateTable(
-            result,
-            PortalSchema::projectTypes(),
-            dataset.projectTypes()
-        );
+            result, PortalSchema::projectTypes(), dataset.projectTypes());
+        validateTable(
+            result, PortalSchema::departments(), dataset.departments());
+        validateTable(
+            result, PortalSchema::departmentMembers(), dataset.departmentMembers());
 
         validateReferences(
             result,
@@ -48,11 +49,11 @@ public:
         );
 
         validateReferences(
-            result,
-            PortalSchema::projects(),
-            dataset.projects(),
-            dataset
-        );
+            result, PortalSchema::projects(), dataset.projects(), dataset);
+        validateReferences(
+            result, PortalSchema::departments(), dataset.departments(), dataset);
+        validateReferences(
+            result, PortalSchema::departmentMembers(), dataset.departmentMembers(), dataset);
 
         return result;
     }
@@ -225,7 +226,7 @@ private:
             );
         }
 
-        if (reference.table == "projectTypes" &&
+        if ((reference.table == "projectTypes" || reference.table == "project_types") &&
             reference.field == "id") {
             return contains(
                 dataset.projectTypes(),
@@ -234,6 +235,10 @@ private:
                     return PortalFieldValue(type.id);
                 }
             );
+        }
+
+        if (reference.table == "departments" && reference.field == "id") {
+            return contains(dataset.departments(), value, [](const PortalDepartment& item) { return PortalFieldValue(item.id); });
         }
 
         return false;

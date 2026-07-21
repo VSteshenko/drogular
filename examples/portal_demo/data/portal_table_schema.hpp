@@ -8,7 +8,7 @@
 #include <vector>
 
 using PortalFieldValue =
-    std::variant<int, std::string>;
+    std::variant<int, std::string, bool>;
 
 struct PortalReferenceSchema {
     std::string table;
@@ -138,6 +138,18 @@ public:
         );
     }
 
+    PortalFieldBuilder<TModel> field(
+        std::string name,
+        bool TModel::*member
+    ) {
+        fields_.push_back({
+            .name = std::move(name),
+            .value = getter(member),
+            .setValue = setter(member)
+        });
+        return PortalFieldBuilder<TModel>(*this, fields_.back());
+    }
+
     const std::string& name() const {
         return name_;
     }
@@ -213,6 +225,18 @@ private:
     setter(std::string TModel::*member) {
         return [member](TModel& model, const PortalFieldValue& value) {
             model.*member = std::get<std::string>(value);
+        };
+    }
+
+    static std::function<PortalFieldValue(const TModel&)>
+    getter(bool TModel::*member) {
+        return [member](const TModel& model) { return model.*member; };
+    }
+
+    static std::function<void(TModel&, const PortalFieldValue&)>
+    setter(bool TModel::*member) {
+        return [member](TModel& model, const PortalFieldValue& value) {
+            model.*member = std::get<bool>(value);
         };
     }
 };

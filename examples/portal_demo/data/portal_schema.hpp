@@ -6,6 +6,8 @@
 #include "models/portal_project_type.hpp"
 #include "models/portal_role.hpp"
 #include "features/users/data/portal_user.hpp"
+#include "features/departments/data/portal_department.hpp"
+#include "features/department_members/data/portal_department_member.hpp"
 
 class PortalSchema {
 public:
@@ -118,4 +120,23 @@ public:
 
         return schema;
     }
+
+    static PortalTableSchema<PortalDepartment> departments() {
+        auto schema = PortalTableSchema<PortalDepartment>::forModel("departments");
+        schema.field("id", &PortalDepartment::id).key().labelKey("common.id");
+        schema.field("name", &PortalDepartment::name).required().unique();
+        schema.field("description", &PortalDepartment::description);
+        schema.field("managerId", &PortalDepartment::managerId).required().reference("users", "id", "username");
+        schema.field("isActive", &PortalDepartment::isActive).required();
+        return schema;
+    }
+
+    static PortalTableSchema<PortalDepartmentMember> departmentMembers() {
+        auto schema = PortalTableSchema<PortalDepartmentMember>::forModel("department_members");
+        schema.field("id", &PortalDepartmentMember::id).key().labelKey("common.id");
+        schema.field("departmentId", &PortalDepartmentMember::departmentId).required().reference("departments", "id", "name");
+        schema.field("userId", &PortalDepartmentMember::userId).required().reference("users", "id", "username");
+        return schema;
+    }
+
 };

@@ -85,6 +85,10 @@ add_executable(drogular_tests
     ../examples/portal_demo/features/projects/graphql/documents/project_mutations.cpp
     ../examples/portal_demo/features/users/graphql/documents/user_queries.cpp
     ../examples/portal_demo/features/users/graphql/documents/user_mutations.cpp
+    ../examples/portal_demo/features/departments/graphql/documents/department_queries.cpp
+    ../examples/portal_demo/features/departments/graphql/documents/department_mutations.cpp
+    ../examples/portal_demo/features/department_members/graphql/documents/department_member_queries.cpp
+    ../examples/portal_demo/features/department_members/graphql/documents/department_member_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/project_type_queries.cpp
     ../examples/portal_demo/providers/graphql/documents/project_type_mutations.cpp
     ../examples/portal_demo/providers/graphql/documents/role_queries.cpp
@@ -98,6 +102,8 @@ add_executable(drogular_tests
     portal_demo/portal_user_query_tests.cpp
     portal_demo/portal_department_query_tests.cpp
     portal_demo/portal_department_member_provider_tests.cpp
+    portal_demo/portal_graphql_department_provider_tests.cpp
+    portal_demo/portal_graphql_department_member_provider_tests.cpp
     portal_demo/portal_core_tests.cpp
     portal_demo/portal_dataset_tests.cpp
     portal_demo/portal_schema_tests.cpp

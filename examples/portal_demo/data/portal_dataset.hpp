@@ -4,6 +4,8 @@
 #include "features/users/data/portal_user.hpp"
 #include "models/portal_role.hpp"
 #include "models/portal_project_type.hpp"
+#include "features/departments/data/portal_department.hpp"
+#include "features/department_members/data/portal_department_member.hpp"
 
 #include <set>
 #include <vector>
@@ -77,9 +79,18 @@ public:
         return projectTypes_;
     }
 
+    PortalDataset& addDepartment(PortalDepartment value) { departments_.push_back(std::move(value)); return *this; }
+    std::vector<PortalDepartment>& departments() { return departments_; }
+    const std::vector<PortalDepartment>& departments() const { return departments_; }
+    PortalDataset& addDepartmentMember(PortalDepartmentMember value) { departmentMembers_.push_back(std::move(value)); return *this; }
+    std::vector<PortalDepartmentMember>& departmentMembers() { return departmentMembers_; }
+    const std::vector<PortalDepartmentMember>& departmentMembers() const { return departmentMembers_; }
+
 private:
     std::vector<PortalRole> roles_;
     std::vector<PortalUser> users_;
     std::vector<PortalProject> projects_;
     std::vector<PortalProjectType> projectTypes_;
+    std::vector<PortalDepartment> departments_;
+    std::vector<PortalDepartmentMember> departmentMembers_;
 };
