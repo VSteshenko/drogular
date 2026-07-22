@@ -196,3 +196,142 @@ TEST(CoreComponentRenderContextTests, ReadsCookieFromRequest) {
     ASSERT_TRUE(value.has_value());
     EXPECT_EQ(*value, "abc123");
 }
+
+class CoreConditionalComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreConditional";
+
+    std::string templateHtml() const override {
+        return R"(@if(model.visible)
+<section>
+    @if(model.hasPrevious)<a href="{{ model.previousUrl }}">Previous</a>@endif
+    <span>{{ model.title }}</span>
+    @if(model.hasNext)<a href="{{ model.nextUrl }}">Next</a>@endif
+</section>
+@endif)";
+    }
+};
+
+TEST(CoreComponentRendererTests, ProcessesNestedIfDirectivesInsideComponent) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CoreConditionalComponent>();
+
+    drogular::RenderContext context;
+
+    Json::Value model;
+    model["visible"] = true;
+    model["hasPrevious"] = true;
+    model["previousUrl"] = "/items?page=1";
+    model["title"] = "Page 2";
+    model["hasNext"] = true;
+    model["nextUrl"] = "/items?page=3";
+    context.set("model", model);
+
+    const auto html = drogular::component_renderer::render(
+        "<CoreConditional />",
+        registry,
+        context
+    );
+
+    EXPECT_NE(html.find("Previous"), std::string::npos);
+    EXPECT_NE(html.find("Page 2"), std::string::npos);
+    EXPECT_NE(html.find("Next"), std::string::npos);
+    EXPECT_EQ(html.find("@if"), std::string::npos);
+    EXPECT_EQ(html.find("@endif"), std::string::npos);
+}
+
+class CoreLoopComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreLoop";
+
+    std::string templateHtml() const override {
+        return R"(<ul>
+@foreach(item in items)
+    @if(item.visible)<li>{{ item.label }}</li>@endif
+@endforeach
+</ul>)";
+    }
+};
+
+TEST(CoreComponentRendererTests, ProcessesIfInsideForeachInsideComponent) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CoreLoopComponent>();
+
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    Json::Value first;
+    first["label"] = "Visible";
+    first["visible"] = true;
+    items.append(first);
+
+    Json::Value second;
+    second["label"] = "Hidden";
+    second["visible"] = false;
+    items.append(second);
+
+    context.set("items", items);
+
+    const auto html = drogular::component_renderer::render(
+        "<CoreLoop />",
+        registry,
+        context
+    );
+
+    EXPECT_NE(html.find("Visible"), std::string::npos);
+    EXPECT_EQ(html.find("Hidden"), std::string::npos);
+    EXPECT_EQ(html.find("@foreach"), std::string::npos);
+    EXPECT_EQ(html.find("@if"), std::string::npos);
+}
+
+class CoreParentContextComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreParentContext";
+
+    std::string templateHtml() const override {
+        return "<p>{{ inheritedValue }}</p>";
+    }
+};
+
+TEST(CoreComponentRendererTests, ComponentReadsParentRenderContext) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CoreParentContextComponent>();
+
+    drogular::RenderContext context;
+    context.set("inheritedValue", std::string("from-parent"));
+
+    EXPECT_EQ(
+        drogular::component_renderer::render(
+            "<CoreParentContext />",
+            registry,
+            context
+        ),
+        "<p>from-parent</p>"
+    );
+}
+
+class CoreOverrideContextComponent final : public drogular::TemplateComponent {
+public:
+    static constexpr auto tag = "CoreOverrideContext";
+
+    std::string templateHtml() const override {
+        return "<p>{{ title }}</p>";
+    }
+};
+
+TEST(CoreComponentRendererTests, ComponentInputOverridesParentValue) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CoreOverrideContextComponent>();
+
+    drogular::RenderContext context;
+    context.set("title", std::string("Parent"));
+
+    EXPECT_EQ(
+        drogular::component_renderer::render(
+            R"(<CoreOverrideContext title="Component" />)",
+            registry,
+            context
+        ),
+        "<p>Component</p>"
+    );
+}

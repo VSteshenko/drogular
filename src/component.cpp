@@ -2,7 +2,6 @@
 #include <drogular/component_renderer.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/services.hpp>
-#include <drogular/template_engine.hpp>
 #include <drogular/template_loader.hpp>
 #include <drogular/template_preprocessor.hpp>
 
@@ -72,10 +71,10 @@ std::string TemplateComponent::render(RenderContext& context) {
     templateSource =
         preprocessor.process(templateSource);
 
-    auto html = template_engine::render(
-        templateSource,
-        context
-    );
+    const auto compiled =
+        templateCache_.getOrCompile(templateSource);
+
+    auto html = compiled->render(context);
 
     if (context.services() != nullptr) {
         html = component_renderer::render(
