@@ -93,19 +93,11 @@
             </label>
             <br />
 
-            <select
-                    id="status"
-                    name="active"
-            >
-                @foreach(option in departmentActiveOptions)
-                <option
-                        value="{{ option.value }}"
-                        @if(option.selected)selected@endif
-                >
-                    {{ option.label }}
-                </option>
-                @endforeach
-            </select>
+            <PortalSelect
+    id="status"
+    name="active"
+    options="departmentActiveOptions"
+/>
         </div>
 
         <div>
@@ -114,19 +106,11 @@
             </label>
             <br />
 
-            <select
-                    id="sort"
-                    name="sort"
-            >
-                @foreach(option in departmentSortOptions)
-                <option
-                        value="{{ option.value }}"
-                        @if(option.selected)selected@endif
-                >
-                    {{ option.label }}
-                </option>
-                @endforeach
-            </select>
+            <PortalSelect
+    id="sort"
+    name="sort"
+    options="departmentSortOptions"
+/>
         </div>
 
         <div>
@@ -135,19 +119,11 @@
             </label>
             <br />
 
-            <select
-                    id="direction"
-                    name="direction"
-            >
-                @foreach(option in departmentDirectionOptions)
-                <option
-                        value="{{ option.value }}"
-                        @if(option.selected)selected@endif
-                >
-                    {{ option.label }}
-                </option>
-                @endforeach
-            </select>
+            <PortalSelect
+    id="direction"
+    name="direction"
+    options="departmentDirectionOptions"
+/>
         </div>
 
         <div>
@@ -185,25 +161,10 @@
 </p>
 @endif
 
-@if(hasDepartmentPagination)
-<nav>
-    @if(hasPreviousDepartmentPage)
-    <a href="{{ previousDepartmentPageUrl }}">{{ commonPrevious }}</a>
-    @endif
-
-    @foreach(item in departmentPaginationPages)
-    @if(item.current)
-    <strong>
-        {{ item.number }}
-    </strong>
-    @else
-    <a href="{{ item.url }}">{{ item.number }}</a>
-    @endif
-    @endforeach
-
-    @if(hasNextDepartmentPage)
-    <a href="{{ nextDepartmentPageUrl }}">{{ commonNext }}</a>
-    @endif
-</nav>
-@endif
+<PortalPagination
+    model="pagination"
+    ariaLabel="{{ departmentsPaginationLabel }}"
+    previousLabel="{{ commonPrevious }}"
+    nextLabel="{{ commonNext }}"
+/>
 @endif

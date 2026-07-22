@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ui/models/portal_pagination_view_model.hpp"
+
 #include "features/projects/providers/project_provider.hpp"
 #include "providers/project_type_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
@@ -354,42 +356,18 @@ public:
             projects.append(value);
         }
 
-        Json::Value paginationPages(Json::arrayValue);
-
-        for (int page = 1;
-             page <= pageResult.totalPages;
-             ++page) {
-            Json::Value item(Json::objectValue);
-            item["number"] = page;
-            item["url"] = pageUrl(page);
-            item["current"] =
-                page == pageResult.page;
-
-            paginationPages.append(
-                std::move(item)
-            );
-        }
+        const auto pagination = makePortalPaginationViewModel(
+            pageResult.page,
+            pageResult.totalPages,
+            pageUrl
+        );
 
         context.set("projects", projects);
         context.set("hasProjects", !projects.empty());
-        context.set("hasPagination", pageResult.totalPages > 1);
-        context.set("paginationPages", paginationPages);
+        context.setJson("pagination", pagination);
         context.set("currentPage", pageResult.page);
         context.set("totalPages", pageResult.totalPages);
         context.set("totalItems", pageResult.totalItems);
-        context.set("hasPreviousPage", pageResult.page > 1);
-        context.set(
-            "previousPageUrl",
-            pageUrl(pageResult.page - 1)
-        );
-        context.set(
-            "hasNextPage",
-            pageResult.page < pageResult.totalPages
-        );
-        context.set(
-            "nextPageUrl",
-            pageUrl(pageResult.page + 1)
-        );
     }
 
     std::string templatePath() const override {

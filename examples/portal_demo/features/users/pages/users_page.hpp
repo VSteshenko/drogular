@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ui/models/portal_pagination_view_model.hpp"
+
 #include "auth/portal_auth_support.hpp"
 #include "ui/portal_page_support.hpp"
 #include "features/users/providers/user_provider.hpp"
@@ -235,31 +237,15 @@ public:
             users.append(std::move(value));
         }
 
-        Json::Value paginationPages(Json::arrayValue);
-        for (int page = 1; page <= pageResult.totalPages; ++page) {
-            Json::Value item(Json::objectValue);
-
-            item["number"] = page;
-            item["url"] = pageUrl(page);
-            item["current"] = page == pageResult.page;
-
-            paginationPages.append(std::move(item));
-        }
+        const auto pagination = makePortalPaginationViewModel(
+            pageResult.page,
+            pageResult.totalPages,
+            pageUrl
+        );
 
         context.set("users", users);
         context.set("hasUsers", !users.empty());
-        context.set("hasUserPagination", pageResult.totalPages > 1);
-        context.set("userPaginationPages", paginationPages);
-        context.set("hasPreviousUserPage", pageResult.page > 1);
-        context.set("previousUserPageUrl", pageUrl(pageResult.page - 1));
-        context.set(
-            "hasNextUserPage",
-            pageResult.page < pageResult.totalPages
-        );
-        context.set(
-            "nextUserPageUrl",
-            pageUrl(pageResult.page + 1)
-            );
+        context.setJson("pagination", pagination);
         context.set("userTotalItems", pageResult.totalItems);
     }
 

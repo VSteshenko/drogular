@@ -39,17 +39,12 @@
             @if(projectTypeRequired):@endif
         </label>
 
-        <select
+        <PortalSelect
                 id="projectTypeId"
                 name="projectTypeId"
-                @if(projectTypeRequired)required@endif
-        >
-            @foreach(item in projectTypeOptions)
-            <option value="{{ item.value }}">
-                {{ item.label }}
-            </option>
-            @endforeach
-        </select>
+                options="projectTypeOptions"
+                required="{{ projectTypeRequired }}"
+        />
     </div>
 
     <div>
@@ -97,19 +92,11 @@
             </label>
             <br />
 
-            <select
+            <PortalSelect
                     id="statusFilter"
                     name="status"
-            >
-                @foreach(item in filters.statusOptions)
-                <option
-                        value="{{ item.value }}"
-                        @if(item.selected)selected@endif
-                >
-                    {{ item.label }}
-                </option>
-                @endforeach
-            </select>
+                    options="filters.statusOptions"
+            />
         </div>
 
         <div>
@@ -118,19 +105,11 @@
             </label>
             <br />
 
-            <select
+            <PortalSelect
                     id="projectTypeFilter"
                     name="projectTypeId"
-            >
-                @foreach(item in filters.projectTypeOptions)
-                <option
-                        value="{{ item.value }}"
-                        @if(item.selected)selected@endif
-                >
-                    {{ item.label }}
-                </option>
-                @endforeach
-            </select>
+                    options="filters.projectTypeOptions"
+            />
         </div>
 
         <div>
@@ -139,19 +118,11 @@
             </label>
             <br />
 
-            <select
+            <PortalSelect
                     id="projectOwnerFilter"
                     name="ownerId"
-            >
-                @foreach(item in filters.ownerOptions)
-                <option
-                        value="{{ item.value }}"
-                        @if(item.selected)selected@endif
-                >
-                    {{ item.label }}
-                </option>
-                @endforeach
-            </select>
+                    options="filters.ownerOptions"
+            />
         </div>
 
         <div>
@@ -160,19 +131,11 @@
             </label>
             <br />
 
-            <select
+            <PortalSelect
                     id="projectSort"
                     name="sort"
-            >
-                @foreach(item in filters.sortOptions)
-                <option
-                        value="{{ item.value }}"
-                        @if(item.selected)selected@endif
-                >
-                    {{ item.label }}
-                </option>
-                @endforeach
-            </select>
+                    options="filters.sortOptions"
+            />
         </div>
 
         <div>
@@ -181,19 +144,11 @@
             </label>
             <br />
 
-            <select
+            <PortalSelect
                     id="projectSortDirection"
                     name="direction"
-            >
-                @foreach(item in filters.sortDirectionOptions)
-                <option
-                        value="{{ item.value }}"
-                        @if(item.selected)selected@endif
-                >
-                    {{ item.label }}
-                </option>
-                @endforeach
-            </select>
+                    options="filters.sortDirectionOptions"
+            />
         </div>
 
         <div>
@@ -225,23 +180,10 @@
 <p>{{ projectsEmpty }}</p>
 @endif
 
-@if(hasPagination)
-<nav aria-label="{{ projectsPaginationLabel }}">
-    @if(hasPreviousPage)
-    <a href="{{ previousPageUrl }}">{{ projectsPreviousPage }}</a>
-    @endif
-
-    @foreach(item in paginationPages)
-    @if(item.current)
-    <strong aria-current="page">{{ item.number }}</strong>
-    @else
-    <a href="{{ item.url }}">{{ item.number }}</a>
-    @endif
-    @endforeach
-
-    @if(hasNextPage)
-    <a href="{{ nextPageUrl }}">{{ projectsNextPage }}</a>
-    @endif
-</nav>
-@endif
+<PortalPagination
+        model="pagination"
+        ariaLabel="{{ projectsPaginationLabel }}"
+        previousLabel="{{ projectsPreviousPage }}"
+        nextLabel="{{ projectsNextPage }}"
+/>
 @endif

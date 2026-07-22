@@ -24,13 +24,12 @@
     </div>
     <div>
         <label for="role">{{ usersRole }} @if(usersRoleRequired):@endif</label>
-        <select id="role" name="role" @if(usersRoleRequired)required@endif>
-            @foreach(option in roleOptions)
-            <option value="{{ option.value }}" @if(option.selected)selected@endif>
-                {{ option.label }}
-            </option>
-            @endforeach
-        </select>
+        <PortalSelect
+                id="role"
+                name="role"
+                options="roleOptions"
+                required="{{ usersRoleRequired }}"
+        />
     </div>
     <button type="submit">{{ usersCreate }}</button>
 </form>
@@ -45,33 +44,27 @@
         </div>
         <div>
             <label for="userRoleFilter">{{ usersRoleFilterLabel }}</label><br />
-            <select id="userRoleFilter" name="role">
-                @foreach(option in userRoleFilterOptions)
-                <option value="{{ option.value }}" @if(option.selected)selected@endif>
-                    {{ option.label }}
-                </option>
-                @endforeach
-            </select>
+            <PortalSelect
+                    id="userRoleFilter"
+                    name="role"
+                    options="userRoleFilterOptions"
+            />
         </div>
         <div>
             <label for="userSort">{{ usersSortLabel }}</label><br />
-            <select id="userSort" name="sort">
-                @foreach(option in userSortOptions)
-                <option value="{{ option.value }}" @if(option.selected)selected@endif>
-                    {{ option.label }}
-                </option>
-                @endforeach
-            </select>
+            <PortalSelect
+                    id="userSort"
+                    name="sort"
+                    options="userSortOptions"
+            />
         </div>
         <div>
             <label for="userSortDirection">{{ usersSortDirectionLabel }}</label><br />
-            <select id="userSortDirection" name="direction">
-                @foreach(option in userSortDirectionOptions)
-                <option value="{{ option.value }}" @if(option.selected)selected@endif>
-                    {{ option.label }}
-                </option>
-                @endforeach
-            </select>
+            <PortalSelect
+                    id="userSortDirection"
+                    name="direction"
+                    options="userSortDirectionOptions"
+            />
         </div>
         <button type="submit">{{ usersSearch }}</button>
         @if(hasActiveUserFilters)
@@ -95,21 +88,10 @@
 <p>{{ usersEmpty }}</p>
 @endif
 
-@if(hasUserPagination)
-<nav aria-label="{{ usersPaginationLabel }}">
-    @if(hasPreviousUserPage)
-    <a href="{{ previousUserPageUrl }}">{{ usersPreviousPage }}</a>
-    @endif
-    @foreach(item in userPaginationPages)
-    @if(item.current)
-    <strong aria-current="page">{{ item.number }}</strong>
-    @else
-    <a href="{{ item.url }}">{{ item.number }}</a>
-    @endif
-    @endforeach
-    @if(hasNextUserPage)
-    <a href="{{ nextUserPageUrl }}">{{ usersNextPage }}</a>
-    @endif
-</nav>
-@endif
+<PortalPagination
+    model="pagination"
+    ariaLabel="{{ usersPaginationLabel }}"
+    previousLabel="{{ usersPreviousPage }}"
+    nextLabel="{{ usersNextPage }}"
+/>
 @endif

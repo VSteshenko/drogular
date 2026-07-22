@@ -1,0 +1,14 @@
+<select
+    @if(hasSelectId)id="{{ selectId }}"@endif
+    name="{{ name }}"
+    @if(selectRequired)required@endif
+    @if(selectDisabled)disabled@endif
+>
+    @foreach(item in selectOptions)
+    <option
+        value="{{ item.value }}"
+        @if(item.selected)selected@endif
+        @if(item.disabled)disabled@endif
+    >{{ item.label }}</option>
+    @endforeach
+</select>

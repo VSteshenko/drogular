@@ -43,6 +43,8 @@
 #include "features/department_members/actions/remove_department_member_action.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
+#include "ui/components/portal_select_component.hpp"
+#include "ui/components/portal_pagination_component.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -176,6 +178,9 @@ int main(
             );
         }
     );
+
+    app.component<PortalSelectComponent>();
+    app.component<PortalPaginationComponent>();
 
     app.page<PortalLoginPage>("/");
     app.page<PortalLoginPage>("/login");

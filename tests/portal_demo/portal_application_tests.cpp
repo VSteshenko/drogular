@@ -323,18 +323,23 @@ TEST(PortalApplicationTests, ProjectEditSelectsCurrentProjectType) {
             }
         );
 
-    EXPECT_NE(
-        html.find(
-            R"(option value="1" selected)"
-        ),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::optionSelectedInSelect(
+            html,
+            R"(name="projectTypeId")",
+            "1"
+        )
     );
 
-    EXPECT_NE(
-        html.find(
-            R"(option value="2")"
-        ),
-        std::string::npos
+    EXPECT_TRUE(
+        HtmlTestSupport::containsOption(
+            HtmlTestSupport::elementContent(
+                html,
+                R"(name="projectTypeId")",
+                "</select>"
+            ),
+            "2"
+        )
     );
 }
 
@@ -559,8 +564,9 @@ TEST(PortalApplicationTests, AdminRendersUserEditForm) {
     );
 
     EXPECT_TRUE(
-        HtmlTestSupport::optionSelected(
+        HtmlTestSupport::optionSelectedInSelect(
             html,
+            R"(name="role")",
             user.role
         )
     );

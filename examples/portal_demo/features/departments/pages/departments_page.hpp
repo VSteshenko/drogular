@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ui/models/portal_pagination_view_model.hpp"
+
 #include "ui/portal_page_support.hpp"
 #include "features/departments/providers/department_provider.hpp"
 #include "features/departments/ui/portal_department_query_parser.hpp"
@@ -209,42 +211,13 @@ public:
             result.totalItems
         );
 
-        Json::Value pages(Json::arrayValue);
-        for (int page = 1; page <= result.totalPages; ++page) {
-            Json::Value item(Json::objectValue);
+        const auto pagination = makePortalPaginationViewModel(
+            result.page,
+            result.totalPages,
+            pageUrl
+        );
 
-            item["number"] = page;
-            item["url"] = pageUrl(page);
-            item["current"] =
-                page == result.page;
-
-            pages.append(std::move(item));
-        }
-
-        context.set(
-            "hasDepartmentPagination",
-            result.totalPages > 1
-        );
-        context.set(
-            "departmentPaginationPages",
-            pages
-        );
-        context.set(
-            "hasPreviousDepartmentPage",
-            result.page > 1
-        );
-        context.set(
-            "previousDepartmentPageUrl",
-            pageUrl(result.page - 1)
-        );
-        context.set(
-            "hasNextDepartmentPage",
-            result.page < result.totalPages
-        );
-        context.set(
-            "nextDepartmentPageUrl",
-            pageUrl(result.page + 1)
-        );
+        context.setJson("pagination", pagination);
     }
 
     std::string templatePath() const override {

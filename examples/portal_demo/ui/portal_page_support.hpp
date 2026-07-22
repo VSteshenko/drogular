@@ -109,6 +109,7 @@ public:
             {"departmentsNoMemberCandidates", "departments.members.no_candidates"},
             {"departmentsBack", "departments.back"},
             {"departmentsStatusLabel", "departments.status"},
+            {"departmentsPaginationLabel", "departments.pagination.label"},
             {"commonPrevious", "common.previous"},
             {"commonNext", "common.next"},
 

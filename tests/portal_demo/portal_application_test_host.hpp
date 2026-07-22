@@ -8,6 +8,8 @@
 #include "providers/graphql/portal_graphql_project_type_provider.hpp"
 #include "providers/graphql/portal_graphql_role_provider.hpp"
 #include "features/users/graphql/portal_graphql_user_provider.hpp"
+#include "ui/components/portal_pagination_component.hpp"
+#include "ui/components/portal_select_component.hpp"
 
 #include <drogular/application_options.hpp>
 #include <drogular/page.hpp>
@@ -51,6 +53,9 @@ public:
         options_.setTemplateCacheEnabled(false);
 
         services_.setOptions(&options_);
+        services_.components().registerComponent<PortalSelectComponent>();
+        services_.components().registerComponent<PortalPaginationComponent>();
+
         services_.add<drogular::SessionStore>(
             drogular::ServiceLifetime::Singleton
         );

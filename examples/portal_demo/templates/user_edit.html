@@ -58,20 +58,12 @@
             @if(roleRequired):@endif
         </label>
 
-        <select
+        <PortalSelect
                 id="role"
                 name="role"
-                @if(roleRequired)required@endif
-        >
-            @foreach(option in roleOptions)
-            <option
-                    value="{{ option.value }}"
-                    @if(option.selected)selected@endif
-            >
-                {{ option.label }}
-            </option>
-            @endforeach
-        </select>
+                options="roleOptions"
+                required="{{ roleRequired }}"
+        />
     </div>
 
     <button type="submit">
