@@ -48,6 +48,7 @@ add_executable(drogular_tests
     core/core_template_ast_tests.cpp
     core/core_template_parser_tests.cpp
     core/core_template_runtime_tests.cpp
+    core/core_template_renderable_tests.cpp
     core/core_template_cache_tests.cpp
     core/core_template_source_cache_tests.cpp
     core/core_template_diagnostics_tests.cpp

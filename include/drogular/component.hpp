@@ -1,6 +1,6 @@
 #pragma once
 
-#include <drogular/template_cache.hpp>
+#include <drogular/template_renderable.hpp>
 
 #include <any>
 #include <optional>
@@ -100,33 +100,16 @@ private:
 
 /**
  * Component base class for template-based rendering.
+ *
+ * TemplateComponent applies component inputs and then delegates the
+ * common template pipeline to TemplateRenderable.
  */
-class TemplateComponent : public Component {
+class TemplateComponent : public Component, public TemplateRenderable {
 public:
     /**
-     * Returns inline component template HTML.
-     *
-     * Used when templatePath() is empty.
-     */
-    virtual std::string templateHtml() const {
-        return "";
-    }
-    /**
-     * Returns the external template file path.
-     *
-     * Empty path means templateHtml() will be used.
-     */
-    virtual std::string templatePath() const {
-        return "";
-    }
-
-    /**
-     * Renders the template using RenderContext.
+     * Renders the component through the shared template pipeline.
      */
     std::string render(RenderContext& context) override;
-
-private:
-    mutable template_compiler::TemplateCache templateCache_;
 };
 
 /**

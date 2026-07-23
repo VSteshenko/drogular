@@ -2,7 +2,7 @@
 
 #include <drogular/component.hpp>
 #include <drogular/graphql.hpp>
-#include <drogular/template_cache.hpp>
+#include <drogular/template_renderable.hpp>
 
 #include <optional>
 
@@ -25,39 +25,16 @@ public:
 
 /**
  * Page base class for template-based rendering.
+ *
+ * TemplatePage keeps the page-specific public API while delegating the
+ * common template pipeline to TemplateRenderable.
  */
-class TemplatePage : public Page {
+class TemplatePage : public Page, public TemplateRenderable {
 public:
     /**
-     * Returns template HTML.
-     */
-    virtual std::string templateHtml() const {
-        return "";
-    }
-
-    /**
-     * Returns the external template file path.
-     *
-     * Empty path means templateHtml() will be used.
-     */
-    virtual std::string templatePath() const {
-        return "";
-    }
-
-    /**
-     * Returns the external layout file path.
-     */
-    virtual std::string layoutPath() const {
-        return "";
-    }
-
-    /**
-     * Renders the template using RenderContext.
+     * Renders the page through the shared template pipeline.
      */
     std::string render(RenderContext& context) override;
-
-private:
-    mutable template_compiler::TemplateCache templateCache_;
 };
 
 } // namespace drogular
