@@ -3,7 +3,7 @@
 #include "ui/models/portal_pagination_view_model.hpp"
 
 #include "features/projects/providers/project_provider.hpp"
-#include "providers/project_type_provider.hpp"
+#include "features/project_types/providers/project_type_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 #include "ui/portal_page_support.hpp"
 #include "data/portal_schema.hpp"

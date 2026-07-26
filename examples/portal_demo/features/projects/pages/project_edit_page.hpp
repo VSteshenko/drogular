@@ -1,7 +1,7 @@
 #pragma once
 
 #include "features/projects/providers/project_provider.hpp"
-#include "providers/project_type_provider.hpp"
+#include "features/project_types/providers/project_type_provider.hpp"
 #include "ui/portal_page_support.hpp"
 #include "localization/portal_error_translator.hpp"
 #include "data/portal_schema.hpp"

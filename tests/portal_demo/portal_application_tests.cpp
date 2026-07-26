@@ -17,11 +17,11 @@
 #include "features/roles/actions/create_role_action.hpp"
 #include "features/roles/actions/update_role_action.hpp"
 #include "features/roles/actions/delete_role_action.hpp"
-#include "pages/project_types_page.hpp"
-#include "pages/project_type_edit_page.hpp"
-#include "actions/create_project_type_action.hpp"
-#include "actions/update_project_type_action.hpp"
-#include "actions/delete_project_type_action.hpp"
+#include "features/project_types/pages/project_types_page.hpp"
+#include "features/project_types/pages/project_type_edit_page.hpp"
+#include "features/project_types/actions/create_project_type_action.hpp"
+#include "features/project_types/actions/update_project_type_action.hpp"
+#include "features/project_types/actions/delete_project_type_action.hpp"
 
 #include <algorithm>
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "features/projects/providers/project_provider.hpp"
-#include "providers/project_type_provider.hpp"
+#include "features/project_types/providers/project_type_provider.hpp"
 #include "ui/portal_page_support.hpp"
 #include "localization/portal_error_translator.hpp"
 
@@ -149,14 +149,9 @@ public:
 
             Json::Value item(Json::objectValue);
 
-            item["title"] =
-                type.title;
-
-            item["subtitle"] =
-                type.code;
-
-            item["count"] =
-                projectCount;
+            item["title"] = type.title;
+            item["subtitle"] = type.code;
+            item["count"] = projectCount;
 
             item["countLabel"] =
                 context.translate(
@@ -176,9 +171,7 @@ public:
                 std::to_string(type.id) +
                 "/delete";
 
-            items.append(
-                std::move(item)
-            );
+            items.append(std::move(item));
         }
 
         context.set(

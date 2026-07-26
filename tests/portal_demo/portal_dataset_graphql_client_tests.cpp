@@ -12,7 +12,7 @@
 #include "features/roles/graphql/mappers/role_mapper.hpp"
 #include "features/users/graphql/portal_graphql_user_provider.hpp"
 #include "features/projects/graphql/portal_graphql_project_provider.hpp"
-#include "providers/graphql/portal_graphql_project_type_provider.hpp"
+#include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "core/portal_string_utils.hpp"
 
 #include <gtest/gtest.h>

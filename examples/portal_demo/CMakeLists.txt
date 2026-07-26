@@ -8,8 +8,8 @@ add_executable(portal_demo
     features/departments/graphql/documents/department_mutations.cpp
     features/department_members/graphql/documents/department_member_queries.cpp
     features/department_members/graphql/documents/department_member_mutations.cpp
-    providers/graphql/documents/project_type_queries.cpp
-    providers/graphql/documents/project_type_mutations.cpp
+    features/project_types/graphql/documents/project_type_queries.cpp
+    features/project_types/graphql/documents/project_type_mutations.cpp
     features/roles/graphql/documents/role_queries.cpp
     features/roles/graphql/documents/role_mutations.cpp
     data/portal_dataset.cpp

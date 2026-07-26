@@ -5,7 +5,7 @@
 #include "features/projects/providers/project_provider.hpp"
 #include "localization/portal_translations.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
-#include "providers/graphql/portal_graphql_project_type_provider.hpp"
+#include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
 #include "features/users/graphql/portal_graphql_user_provider.hpp"
 #include "ui/components/portal_pagination_component.hpp"

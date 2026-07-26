@@ -3,7 +3,7 @@
 #include "portal_table_schema.hpp"
 
 #include "features/projects/data/portal_project.hpp"
-#include "models/portal_project_type.hpp"
+#include "features/project_types/data/portal_project_type.hpp"
 #include "features/roles/data/portal_role.hpp"
 #include "features/users/data/portal_user.hpp"
 #include "features/departments/data/portal_department.hpp"
