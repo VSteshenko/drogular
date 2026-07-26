@@ -2,6 +2,10 @@
 
 #include "data/portal_dataset.hpp"
 #include "features/projects/graphql/portal_graphql_project_provider.hpp"
+#include "features/departments/graphql/portal_graphql_department_provider.hpp"
+#include "features/departments/providers/department_provider.hpp"
+#include "features/department_members/graphql/portal_graphql_department_member_provider.hpp"
+#include "features/department_members/providers/department_member_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
 #include "features/localization/support/portal_translations.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
@@ -90,6 +94,24 @@ public:
             }
         );
 
+        services_.addFactory<PortalDepartmentProvider>(
+            drogular::ServiceLifetime::Singleton,
+            [client = graphQLClient_] {
+                return std::make_shared<PortalGraphQLDepartmentProvider>(
+                    client
+                );
+            }
+        );
+
+        services_.addFactory<PortalDepartmentMemberProvider>(
+            drogular::ServiceLifetime::Singleton,
+            [client = graphQLClient_] {
+                return std::make_shared<PortalGraphQLDepartmentMemberProvider>(
+                    client
+                );
+            }
+        );
+
         services_.addFactory<PortalProjectProvider>(
             drogular::ServiceLifetime::Singleton,
             [client = graphQLClient_] {
@@ -168,6 +190,14 @@ public:
 
     std::size_t userCount() const {
         return dataset_->users().size();
+    }
+
+    std::size_t departmentCount() const {
+        return dataset_->departments().size();
+    }
+
+    std::size_t departmentMemberCount() const {
+        return dataset_->departmentMembers().size();
     }
 
     template <typename TAction>

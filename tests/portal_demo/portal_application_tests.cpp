@@ -22,6 +22,13 @@
 #include "features/project_types/actions/create_project_type_action.hpp"
 #include "features/project_types/actions/update_project_type_action.hpp"
 #include "features/project_types/actions/delete_project_type_action.hpp"
+#include "features/departments/pages/departments_page.hpp"
+#include "features/departments/pages/department_details_page.hpp"
+#include "features/departments/pages/department_edit_page.hpp"
+#include "features/departments/actions/create_department_action.hpp"
+#include "features/departments/actions/update_department_action.hpp"
+#include "features/department_members/actions/add_department_member_action.hpp"
+#include "features/department_members/actions/remove_department_member_action.hpp"
 
 #include <algorithm>
 
@@ -1733,4 +1740,285 @@ TEST(PortalApplicationTests, ProjectPaginationPreservesFiltersAndSorting) {
             R"(href="/projects?search=a&amp;sort=id&amp;direction=desc&amp;page=2")"
         )
     );
+}
+
+TEST(PortalApplicationTests, AdminCreatesDepartment) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.post<PortalCreateDepartmentAction>({
+        {"name", "Quality Assurance"},
+        {"description", "Product quality and testing"},
+        {"managerId", "3"},
+        {"isActive", "on"}
+    });
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments?success=created"
+    );
+    ASSERT_EQ(app.departmentCount(), 4);
+
+    const auto& department =
+        app.dataset().departments().back();
+
+    EXPECT_EQ(department.name, "Quality Assurance");
+    EXPECT_EQ(department.description, "Product quality and testing");
+    EXPECT_EQ(department.managerId, 3);
+    EXPECT_TRUE(department.isActive);
+}
+
+TEST(PortalApplicationTests, UserCannotCreateDepartment) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsUser();
+
+    const auto result = app.post<PortalCreateDepartmentAction>({
+        {"name", "Quality Assurance"},
+        {"managerId", "3"}
+    });
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments?error=access_denied"
+    );
+    EXPECT_EQ(app.departmentCount(), 3);
+}
+
+TEST(PortalApplicationTests, AdminUpdatesDepartment) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.execute<PortalUpdateDepartmentAction>(
+        {
+            {"name", "Platform Engineering"},
+            {"description", "Platform ownership"},
+            {"managerId", "4"}
+        },
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments?success=updated"
+    );
+
+    const auto& department =
+        app.dataset().departments().front();
+
+    EXPECT_EQ(department.name, "Platform Engineering");
+    EXPECT_EQ(department.description, "Platform ownership");
+    EXPECT_EQ(department.managerId, 4);
+    EXPECT_FALSE(department.isActive);
+}
+
+TEST(PortalApplicationTests, DepartmentsPageRendersDepartmentData) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentsPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, "Engineering")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, "Product and platform engineering")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, R"(href="/departments/1")")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, R"(href="/departments/1/edit")")
+    );
+}
+
+TEST(PortalApplicationTests, DepartmentDetailsShowsMembersAndCandidates) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {},
+        {{"id", "1"}}
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, "Engineering")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, "admin")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, "user")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(action="/departments/1/members/1/remove")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(action="/departments/1/members/add")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(<option value="3">)"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, DepartmentEditPageSelectsCurrentManager) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentEditPage>(
+        {},
+        {{"id", "2"}}
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(html, "Operations")
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::optionSelected(
+            html,
+            "2"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, AdminAddsDepartmentMember) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.execute<PortalAddDepartmentMemberAction>(
+        {{"userId", "3"}},
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments/1?success=member_added"
+    );
+    EXPECT_EQ(app.departmentMemberCount(), 5);
+
+    const auto& member =
+        app.dataset().departmentMembers().back();
+
+    EXPECT_EQ(member.departmentId, 1);
+    EXPECT_EQ(member.userId, 3);
+}
+
+TEST(PortalApplicationTests, DuplicateDepartmentMemberIsRejected) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.execute<PortalAddDepartmentMemberAction>(
+        {{"userId", "1"}},
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments/1?error=duplicate_member"
+    );
+    EXPECT_EQ(app.departmentMemberCount(), 4);
+}
+
+TEST(PortalApplicationTests, UserCannotAddDepartmentMember) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsUser();
+
+    const auto result = app.execute<PortalAddDepartmentMemberAction>(
+        {{"userId", "3"}},
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments/1?error=access_denied"
+    );
+    EXPECT_EQ(app.departmentMemberCount(), 4);
+}
+
+TEST(PortalApplicationTests, AdminRemovesDepartmentMember) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.execute<PortalRemoveDepartmentMemberAction>(
+        {},
+        {
+            {"id", "1"},
+            {"userId", "2"}
+        }
+    );
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments/1?success=member_removed"
+    );
+    EXPECT_EQ(app.departmentMemberCount(), 3);
+
+    const auto removed = std::none_of(
+        app.dataset().departmentMembers().begin(),
+        app.dataset().departmentMembers().end(),
+        [](const PortalDepartmentMember& member) {
+            return member.departmentId == 1 && member.userId == 2;
+        }
+    );
+    EXPECT_TRUE(removed);
+}
+
+TEST(PortalApplicationTests, MissingDepartmentMemberCannotBeRemoved) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.execute<PortalRemoveDepartmentMemberAction>(
+        {},
+        {
+            {"id", "1"},
+            {"userId", "8"}
+        }
+    );
+
+    EXPECT_EQ(
+        result.location(),
+        "/departments/1?error=member_not_found"
+    );
+    EXPECT_EQ(app.departmentMemberCount(), 4);
 }
