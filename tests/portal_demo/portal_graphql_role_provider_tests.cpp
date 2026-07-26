@@ -1,4 +1,4 @@
-#include "providers/graphql/portal_graphql_role_provider.hpp"
+#include "features/roles/graphql/portal_graphql_role_provider.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 

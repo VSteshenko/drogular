@@ -1,8 +1,8 @@
 #pragma once
 
-#include "data/models/portal_role.hpp"
-#include "data/models/portal_role_create.hpp"
-#include "data/models/portal_role_update.hpp"
+#include "features/roles/data/portal_role.hpp"
+#include "features/roles/data/portal_role_create.hpp"
+#include "features/roles/data/portal_role_update.hpp"
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 

@@ -2,7 +2,7 @@
 
 #include "features/projects/data/portal_project.hpp"
 #include "features/users/data/portal_user.hpp"
-#include "models/portal_role.hpp"
+#include "features/roles/data/portal_role.hpp"
 #include "models/portal_project_type.hpp"
 #include "features/departments/data/portal_department.hpp"
 #include "features/department_members/data/portal_department_member.hpp"
@@ -79,12 +79,35 @@ public:
         return projectTypes_;
     }
 
-    PortalDataset& addDepartment(PortalDepartment value) { departments_.push_back(std::move(value)); return *this; }
-    std::vector<PortalDepartment>& departments() { return departments_; }
-    const std::vector<PortalDepartment>& departments() const { return departments_; }
-    PortalDataset& addDepartmentMember(PortalDepartmentMember value) { departmentMembers_.push_back(std::move(value)); return *this; }
-    std::vector<PortalDepartmentMember>& departmentMembers() { return departmentMembers_; }
-    const std::vector<PortalDepartmentMember>& departmentMembers() const { return departmentMembers_; }
+    PortalDataset& addDepartment(
+        PortalDepartment value
+    ) {
+        departments_.push_back(std::move(value));
+        return *this;
+    }
+
+    std::vector<PortalDepartment>& departments() {
+        return departments_;
+    }
+
+    const std::vector<PortalDepartment>& departments() const {
+        return departments_;
+    }
+
+    PortalDataset& addDepartmentMember(
+        PortalDepartmentMember value
+    ) {
+        departmentMembers_.push_back(std::move(value));
+        return *this;
+    }
+
+    std::vector<PortalDepartmentMember>& departmentMembers() {
+        return departmentMembers_;
+    }
+
+    const std::vector<PortalDepartmentMember>& departmentMembers() const {
+        return departmentMembers_;
+    }
 
 private:
     std::vector<PortalRole> roles_;

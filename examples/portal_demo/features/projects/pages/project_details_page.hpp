@@ -3,7 +3,7 @@
 #include "providers/project_type_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
 #include "ui/portal_page_support.hpp"
-#include "providers/role_provider.hpp"
+#include "features/roles/providers/role_provider.hpp"
 #include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>

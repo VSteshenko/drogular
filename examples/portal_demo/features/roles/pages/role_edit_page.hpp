@@ -2,7 +2,7 @@
 
 #include "data/portal_schema.hpp"
 #include "localization/portal_error_translator.hpp"
-#include "providers/role_provider.hpp"
+#include "features/roles/providers/role_provider.hpp"
 #include "ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>

@@ -1,7 +1,7 @@
 #include "data/demo_dataset.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "providers/graphql/portal_graphql_project_type_provider.hpp"
-#include "providers/graphql/portal_graphql_role_provider.hpp"
+#include "features/roles/graphql/portal_graphql_role_provider.hpp"
 
 #include <gtest/gtest.h>
 
