@@ -3,7 +3,7 @@
 #include "data/portal_dataset.hpp"
 #include "features/projects/graphql/portal_graphql_project_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
-#include "localization/portal_translations.hpp"
+#include "features/localization/support/portal_translations.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"

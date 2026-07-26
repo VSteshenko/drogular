@@ -3,7 +3,7 @@
 #include "features/projects/providers/project_provider.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "ui/portal_page_support.hpp"
-#include "localization/portal_error_translator.hpp"
+#include "features/localization/support/portal_error_translator.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>

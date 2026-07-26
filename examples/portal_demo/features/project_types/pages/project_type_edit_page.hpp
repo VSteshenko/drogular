@@ -1,7 +1,7 @@
 #pragma once
 
 #include "data/portal_schema.hpp"
-#include "localization/portal_error_translator.hpp"
+#include "features/localization/support/portal_error_translator.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "ui/portal_page_support.hpp"
 
