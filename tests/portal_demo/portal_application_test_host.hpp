@@ -137,6 +137,14 @@ public:
         return *dataset_;
     }
 
+    drogular::ApplicationServices& services() {
+        return services_;
+    }
+
+    const drogular::ApplicationServices& services() const {
+        return services_;
+    }
+
     void loginAs(
         const std::string& username,
         const std::string& role

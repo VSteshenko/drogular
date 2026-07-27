@@ -24,7 +24,8 @@ public:
                 .value_or("/dashboard");
 
         const auto safeRedirect =
-            redirect.starts_with("/")
+            redirect.starts_with("/") &&
+            !redirect.starts_with("//")
                 ? redirect
                 : std::string("/dashboard");
 
