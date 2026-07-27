@@ -9,6 +9,7 @@
 #include "features/projects/providers/project_provider.hpp"
 #include "features/localization/support/portal_translations.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
+#include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
 #include "features/users/graphql/portal_graphql_user_provider.hpp"
@@ -42,9 +43,12 @@ public:
                 std::move(dataset)
             )
         ),
+        graphQLServer_(
+            createPortalGraphQLServer(dataset_)
+        ),
         graphQLClient_(
             std::make_shared<PortalDatasetGraphQLClient>(
-                dataset_
+                graphQLServer_
             )
         )
     {
@@ -275,6 +279,7 @@ public:
 
 private:
     std::shared_ptr<PortalDataset> dataset_;
+    std::shared_ptr<PortalGraphQLServer> graphQLServer_;
     std::shared_ptr<PortalDatasetGraphQLClient> graphQLClient_;
     drogular::ApplicationServices services_;
     drogular::ApplicationOptions options_;

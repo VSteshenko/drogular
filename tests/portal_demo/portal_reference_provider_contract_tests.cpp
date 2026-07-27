@@ -1,5 +1,6 @@
 #include "data/demo_dataset.hpp"
 #include "providers/graphql/portal_dataset_graphql_client.hpp"
+#include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
 
@@ -21,7 +22,7 @@ struct ProjectTypeProviderContract {
         auto client =
             std::make_shared<
                 PortalDatasetGraphQLClient
-            >(dataset);
+            >(createPortalGraphQLServer(dataset));
 
         return std::make_unique<Provider>(
             std::move(client)
@@ -100,7 +101,7 @@ struct RoleProviderContract {
         auto client =
             std::make_shared<
                 PortalDatasetGraphQLClient
-            >(dataset);
+            >(createPortalGraphQLServer(dataset));
 
         return std::make_unique<Provider>(
             std::move(client)
