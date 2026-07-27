@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/graphql/server/portal_graphql_operation_registry.hpp"
-#include "data/portal_dataset.hpp"
 
 #include <drogular/graphql_response.hpp>
 #include <drogular/graphql_variables.hpp>
@@ -13,17 +12,13 @@
 
 class PortalGraphQLServer {
 public:
-    explicit PortalGraphQLServer(
-        std::shared_ptr<PortalDataset> dataset
-    )
-        : dataset_(std::move(dataset))
-    {
-    }
+    PortalGraphQLServer() = default;
 
-    template <typename TOperations>
-    PortalGraphQLServer& add() {
-        auto operations =
-            std::make_shared<TOperations>(dataset_);
+    template <typename TOperations, typename... TArguments>
+    PortalGraphQLServer& add(TArguments&&... arguments) {
+        auto operations = std::make_shared<TOperations>(
+            std::forward<TArguments>(arguments)...
+        );
 
         operations->registerWith(registry_);
         operations_.push_back(std::move(operations));
@@ -32,20 +27,21 @@ public:
 
     drogular::GraphQLResponse executeQuery(
         const std::string& name,
-        const drogular::GraphQLVariables& variables = {}
+        const drogular::GraphQLVariables& variables = {},
+        const PortalGraphQLExecutionContext& context = {}
     ) const {
-        return registry_.executeQuery(name, variables);
+        return registry_.executeQuery(name, variables, context);
     }
 
     drogular::GraphQLResponse executeMutation(
         const std::string& name,
-        const drogular::GraphQLVariables& variables = {}
+        const drogular::GraphQLVariables& variables = {},
+        const PortalGraphQLExecutionContext& context = {}
     ) const {
-        return registry_.executeMutation(name, variables);
+        return registry_.executeMutation(name, variables, context);
     }
 
 private:
-    std::shared_ptr<PortalDataset> dataset_;
     PortalGraphQLOperationRegistry registry_;
     std::vector<std::shared_ptr<void>> operations_;
 };

@@ -14,15 +14,15 @@ inline std::shared_ptr<PortalGraphQLServer> createPortalGraphQLServer(
     const std::shared_ptr<PortalDataset>& dataset
 ) {
     auto server =
-        std::make_shared<PortalGraphQLServer>(dataset);
+        std::make_shared<PortalGraphQLServer>();
 
     server
-        ->add<ProjectGraphQLOperations>()
-        .add<UserGraphQLOperations>()
-        .add<DepartmentGraphQLOperations>()
-        .add<DepartmentMemberGraphQLOperations>()
-        .add<RoleGraphQLOperations>()
-        .add<ProjectTypeGraphQLOperations>();
+        ->add<ProjectGraphQLOperations>(dataset)
+        .add<UserGraphQLOperations>(dataset)
+        .add<DepartmentGraphQLOperations>(dataset)
+        .add<DepartmentMemberGraphQLOperations>(dataset)
+        .add<RoleGraphQLOperations>(dataset)
+        .add<ProjectTypeGraphQLOperations>(dataset);
 
     return server;
 }
