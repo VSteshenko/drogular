@@ -10,6 +10,21 @@
 </section>
 @endif
 
+<form method="get" action="/">
+    <input
+        type="search"
+        name="search"
+        value="{{ search }}"
+        placeholder="Search todos"
+    />
+    <button type="submit">Search</button>
+    @if(hasSearch)
+    <a href="/">Clear</a>
+    @endif
+</form>
+
+<p>{{ totalItems }} todo(s) found.</p>
+
 <form method="post" action="/todos/create">
     <input id="todo-title" name="title" placeholder="New todo" />
     <button type="submit">Add</button>
@@ -44,5 +59,10 @@
 @endforeach
 </ul>
 @else
+@if(hasSearch)
+<p>No todos match your search.</p>
+@else
 <p>No todos yet.</p>
 @endif
+@endif
+<TodoPagination model="pagination" />

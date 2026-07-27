@@ -1,6 +1,7 @@
 #include "todo.hpp"
 #include "todo_page.hpp"
 #include "todo_item_component.hpp"
+#include "todo_pagination_component.hpp"
 #include "todo_store.hpp"
 
 #include <drogular/graphql_client.hpp>
@@ -44,6 +45,8 @@ TEST(TodoPwaTodoPageTests, RendersTodoList) {
 
     services.components()
         .registerComponent<TodoItemComponent>();
+    services.components()
+        .registerComponent<TodoPaginationComponent>();
 
     const auto renderResult =
         drogular::test::renderPage<TodoPage>(&services);
@@ -114,6 +117,7 @@ TEST(TodoPwaTodoPageTests, RendersEmptyTodoState) {
     );
 
     services.components().registerComponent<TodoItemComponent>();
+    services.components().registerComponent<TodoPaginationComponent>();
 
     const auto renderResult =
         drogular::test::renderPage<TodoPage>(&services);
@@ -139,4 +143,76 @@ TEST(TodoPweTodoServiceTests, TogglesTodo) {
     store.toggle(1);
 
     EXPECT_FALSE(store.todos.value()[0].done);
+}
+
+TEST(TodoPwaTodoPageTests, FiltersTodosAndPreservesSearchInPagination) {
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+    configureTodoPwaTestServices(services, options);
+    services
+        .registerService<TodoStore>(std::make_shared<TodoStore>());
+    services
+        .components()
+            .registerComponent<TodoItemComponent>();
+    services
+        .components()
+            .registerComponent<TodoPaginationComponent>();
+
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+    request->setParameter("search", "add");
+
+    const auto result =
+        drogular::test::renderPage<TodoPage>(&services, request);
+
+    EXPECT_TRUE(drogular::test::contains(
+        result.html,
+        "Add actions and mutations"
+    ));
+    EXPECT_TRUE(drogular::test::contains(
+        result.html,
+        "Add form validation"
+    ));
+    EXPECT_FALSE(drogular::test::contains(
+        result.html,
+        "Create Drogular project skeleton"
+    ));
+}
+
+TEST(TodoPwaTodoPageTests, RendersSecondPageAndPaginationLinks) {
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+    configureTodoPwaTestServices(services, options);
+    services
+        .registerService<TodoStore>(std::make_shared<TodoStore>());
+    services
+        .components()
+            .registerComponent<TodoItemComponent>();
+    services
+        .components()
+            .registerComponent<TodoPaginationComponent>();
+
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+    request->setParameter("page", "2");
+
+    const auto result =
+        drogular::test::renderPage<TodoPage>(&services, request);
+
+    EXPECT_TRUE(drogular::test::contains(
+        result.html,
+        "Add offline support"
+    ));
+    EXPECT_TRUE(drogular::test::contains(
+        result.html,
+        "Previous"
+    ));
+    EXPECT_TRUE(drogular::test::contains(
+        result.html,
+        "Next"
+    ));
+    EXPECT_TRUE(drogular::test::contains(
+        result.html,
+        "aria-current=\"page\">2"
+    ));
 }

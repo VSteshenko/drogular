@@ -1,0 +1,19 @@
+@if(paginationModel.visible)
+<nav aria-label="Todo pagination">
+    @if(paginationModel.hasPrevious)
+    <a href="{{ paginationModel.previousUrl }}">Previous</a>
+    @endif
+
+    @foreach(item in paginationModel.pages)
+    @if(item.current)
+    <strong aria-current="page">{{ item.number }}</strong>
+    @else
+    <a href="{{ item.url }}">{{ item.number }}</a>
+    @endif
+    @endforeach
+
+    @if(paginationModel.hasNext)
+    <a href="{{ paginationModel.nextUrl }}">Next</a>
+    @endif
+</nav>
+@endif

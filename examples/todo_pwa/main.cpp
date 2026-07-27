@@ -1,5 +1,6 @@
 #include "todo_page.hpp"
 #include "todo_item_component.hpp"
+#include "todo_pagination_component.hpp"
 #include "create_todo_action.hpp"
 #include "todo_store.hpp"
 #include "toggle_todo_action.hpp"
@@ -37,6 +38,7 @@ int main() {
     );
 
     app.component<TodoItemComponent>();
+    app.component<TodoPaginationComponent>();
 
     app.page<TodoPage>("/");
     app.action<CreateTodoAction>("/todos/create");
