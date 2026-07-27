@@ -1,0 +1,31 @@
+# docker build -f Dockerfile.test -t drogular-tests .
+# docker run --rm drogular-tests
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        cmake \
+        git \
+        ninja-build \
+        pkg-config \
+        libdrogon-dev \
+        libjsoncpp-dev \
+        uuid-dev \
+        zlib1g-dev \
+        libssl-dev \
+        libpq-dev \
+        libsqlite3-dev \
+        libmariadb-dev \
+        libbrotli-dev \
+        libhiredis-dev \
+        libyaml-cpp-dev \
+        libc-ares-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+CMD ["bash", "-lc", "cmake -S /workspace -B /tmp/drogular-build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDROGULAR_BUILD_TESTS=ON -DDROGULAR_BUILD_EXAMPLES=ON && cmake --build /tmp/drogular-build --parallel && ctest --test-dir /tmp/drogular-build --output-on-failure"]

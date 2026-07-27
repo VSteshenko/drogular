@@ -7,6 +7,8 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+
 namespace {
 
 void configureRepositorySampleTestServices(
@@ -14,7 +16,8 @@ void configureRepositorySampleTestServices(
     drogular::ApplicationOptions& options
 ) {
     options.setTemplateRoot(
-        "../../examples/repository_sample/templates"
+        std::filesystem::path(DROGULAR_SOURCE_DIR)
+        / "examples/repository_sample/templates"
     );
 
     services.setOptions(&options);

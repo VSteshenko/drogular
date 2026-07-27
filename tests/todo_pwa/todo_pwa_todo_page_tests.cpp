@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <vector>
+#include <filesystem>
 
 namespace {
 
@@ -19,7 +20,8 @@ void configureTodoPwaTestServices(
     drogular::ApplicationOptions& options
 ) {
     options.setTemplateRoot(
-        "../../examples/todo_pwa/templates"
+        std::filesystem::path(DROGULAR_SOURCE_DIR)
+        / "examples/todo_pwa/templates"
     );
 
     services.setOptions(&options);

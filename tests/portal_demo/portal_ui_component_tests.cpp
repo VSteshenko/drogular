@@ -8,6 +8,8 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+
 TEST(PortalPaginationViewModelTests, BuildsLinksAndNavigationState) {
     const auto model = makePortalPaginationViewModel(
         2,
@@ -45,7 +47,10 @@ TEST(PortalPaginationViewModelTests, HidesSinglePageNavigation) {
 
 TEST(PortalUiComponentTests, RendersSelectFromContextOptions) {
     drogular::ApplicationOptions options;
-    options.setTemplateRoot("../../examples/portal_demo/templates");
+    options.setTemplateRoot(
+        std::filesystem::path(DROGULAR_SOURCE_DIR)
+        / "examples/portal_demo/templates"
+    );
     options.setTemplateCacheEnabled(false);
     drogular::ApplicationServices services;
     services.setOptions(&options);
@@ -79,7 +84,10 @@ TEST(PortalUiComponentTests, RendersSelectFromContextOptions) {
 
 TEST(PortalUiComponentTests, RendersPaginationFromViewModel) {
     drogular::ApplicationOptions options;
-    options.setTemplateRoot("../../examples/portal_demo/templates");
+    options.setTemplateRoot(
+        std::filesystem::path(DROGULAR_SOURCE_DIR)
+        / "examples/portal_demo/templates"
+    );
     options.setTemplateCacheEnabled(false);
     drogular::ApplicationServices services;
     services.setOptions(&options);

@@ -46,11 +46,11 @@ TEST(PortalCoreTests, NormalizesAsciiCase) {
 }
 
 TEST(PortalCoreTests, SerializesSortDirection) {
-    EXPECT_EQ(
+    EXPECT_STREQ(
         toString(PortalSortDirection::Ascending),
         "asc"
     );
-    EXPECT_EQ(
+    EXPECT_STREQ(
         toString(PortalSortDirection::Descending),
         "desc"
     );

@@ -9,12 +9,15 @@
 
 #include <drogon/HttpRequest.h>
 
+#include <filesystem>
+
 inline void configureAuthSampleTestServices(
     drogular::ApplicationServices& services,
     drogular::ApplicationOptions& options
 ) {
     options.setTemplateRoot(
-        "../../examples/auth_sample/templates"
+        std::filesystem::path(DROGULAR_SOURCE_DIR)
+        / "examples/auth_sample/templates"
     );
 
     services.setOptions(&options);
