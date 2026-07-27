@@ -4,8 +4,8 @@
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 #include "features/users/data/portal_user_sort.hpp"
-#include "providers/graphql/server/portal_graphql_operation_registry.hpp"
-#include "providers/graphql/server/portal_graphql_operation_support.hpp"
+#include "core/graphql/server/portal_graphql_operation_registry.hpp"
+#include "core/graphql/server/portal_graphql_operation_support.hpp"
 
 #include <algorithm>
 #include <memory>

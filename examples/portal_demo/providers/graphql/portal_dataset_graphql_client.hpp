@@ -5,8 +5,9 @@
 #include "features/users/graphql/server/user_graphql_operations.hpp"
 #include "features/departments/graphql/server/department_graphql_operations.hpp"
 #include "features/department_members/graphql/server/department_member_graphql_operations.hpp"
-#include "providers/graphql/server/reference_data_graphql_operations.hpp"
-#include "providers/graphql/server/portal_graphql_operation_registry.hpp"
+#include "features/roles/graphql/server/role_graphql_operations.hpp"
+#include "features/project_types/graphql/server/project_type_graphql_operations.hpp"
+#include "core/graphql/server/portal_graphql_operation_registry.hpp"
 
 #include <drogular/static_graphql_client.hpp>
 
@@ -20,13 +21,15 @@ public:
           users_(dataset),
           departments_(dataset),
           departmentMembers_(dataset),
-          referenceData_(std::move(dataset))
+          roles_(dataset),
+          projectTypes_(std::move(dataset))
     {
         projects_.registerWith(registry_);
         users_.registerWith(registry_);
         departments_.registerWith(registry_);
         departmentMembers_.registerWith(registry_);
-        referenceData_.registerWith(registry_);
+        roles_.registerWith(registry_);
+        projectTypes_.registerWith(registry_);
     }
 
     drogular::GraphQLResponse execute(
@@ -78,5 +81,6 @@ private:
     UserGraphQLOperations users_;
     DepartmentGraphQLOperations departments_;
     DepartmentMemberGraphQLOperations departmentMembers_;
-    ReferenceDataGraphQLOperations referenceData_;
+    RoleGraphQLOperations roles_;
+    ProjectTypeGraphQLOperations projectTypes_;
 };
