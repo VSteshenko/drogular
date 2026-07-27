@@ -1,7 +1,6 @@
 #pragma once
 
-#include "core/graphql/server/portal_graphql_execution_context.hpp"
-
+#include <drogular/graphql_execution_context.hpp>
 #include <drogular/graphql_response.hpp>
 #include <drogular/graphql_variables.hpp>
 
@@ -10,14 +9,16 @@
 #include <unordered_map>
 #include <utility>
 
-class PortalGraphQLOperationRegistry {
-public:
-    using Handler = std::function<drogular::GraphQLResponse(
-        const drogular::GraphQLVariables&,
-        const PortalGraphQLExecutionContext&)>;
+namespace drogular {
 
-    using LegacyHandler = std::function<drogular::GraphQLResponse(
-        const drogular::GraphQLVariables&)>;
+class GraphQLOperationRegistry {
+public:
+    using Handler = std::function<GraphQLResponse(
+        const GraphQLVariables&,
+        const GraphQLExecutionContext&)>;
+
+    using LegacyHandler = std::function<GraphQLResponse(
+        const GraphQLVariables&)>;
 
     void registerQuery(std::string name, Handler handler) {
         queryHandlers_.insert_or_assign(
@@ -30,8 +31,8 @@ public:
         registerQuery(
             std::move(name),
             [handler = std::move(handler)](
-                const drogular::GraphQLVariables& variables,
-                const PortalGraphQLExecutionContext&
+                const GraphQLVariables& variables,
+                const GraphQLExecutionContext&
             ) {
                 return handler(variables);
             }
@@ -49,42 +50,42 @@ public:
         registerMutation(
             std::move(name),
             [handler = std::move(handler)](
-                const drogular::GraphQLVariables& variables,
-                const PortalGraphQLExecutionContext&
+                const GraphQLVariables& variables,
+                const GraphQLExecutionContext&
             ) {
                 return handler(variables);
             }
         );
     }
 
-    drogular::GraphQLResponse executeQuery(
+    GraphQLResponse executeQuery(
         const std::string& name,
-        const drogular::GraphQLVariables& variables,
-        const PortalGraphQLExecutionContext& context = {}
+        const GraphQLVariables& variables = {},
+        const GraphQLExecutionContext& context = {}
     ) const {
         return execute(queryHandlers_, name, variables, context);
     }
 
-    drogular::GraphQLResponse executeMutation(
+    GraphQLResponse executeMutation(
         const std::string& name,
-        const drogular::GraphQLVariables& variables,
-        const PortalGraphQLExecutionContext& context = {}
+        const GraphQLVariables& variables = {},
+        const GraphQLExecutionContext& context = {}
     ) const {
         return execute(mutationHandlers_, name, variables, context);
     }
 
 private:
-    static drogular::GraphQLResponse emptyResponse() {
+    static GraphQLResponse emptyResponse() {
         Json::Value root(Json::objectValue);
         root["data"] = Json::Value(Json::objectValue);
-        return drogular::GraphQLResponse(root);
+        return GraphQLResponse(root);
     }
 
-    static drogular::GraphQLResponse execute(
+    static GraphQLResponse execute(
         const std::unordered_map<std::string, Handler>& handlers,
         const std::string& name,
-        const drogular::GraphQLVariables& variables,
-        const PortalGraphQLExecutionContext& context
+        const GraphQLVariables& variables,
+        const GraphQLExecutionContext& context
     ) {
         const auto iterator = handlers.find(name);
         if (iterator == handlers.end()) {
@@ -96,3 +97,5 @@ private:
     std::unordered_map<std::string, Handler> queryHandlers_;
     std::unordered_map<std::string, Handler> mutationHandlers_;
 };
+
+} // namespace drogular

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/graphql/server/portal_graphql_server.hpp"
+#include <drogular/graphql_server.hpp>
 
 #include <drogular/static_graphql_client.hpp>
 
@@ -11,7 +11,7 @@
 class PortalDatasetGraphQLClient final : public drogular::GraphQLClient {
 public:
     explicit PortalDatasetGraphQLClient(
-        std::shared_ptr<PortalGraphQLServer> server
+        std::shared_ptr<drogular::GraphQLServer> server
     )
         : server_(std::move(server))
     {
@@ -61,5 +61,5 @@ public:
     }
 
 private:
-    std::shared_ptr<PortalGraphQLServer> server_;
+    std::shared_ptr<drogular::GraphQLServer> server_;
 };

@@ -3,12 +3,12 @@
 #include "data/portal_dataset.hpp"
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
-#include "core/graphql/server/portal_graphql_operation_registry.hpp"
 #include "core/graphql/server/portal_graphql_operation_support.hpp"
+
+#include <drogular/graphql_operation_registry.hpp>
 
 #include <algorithm>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -19,7 +19,7 @@ public:
     {
     }
 
-    void registerWith(PortalGraphQLOperationRegistry& registry) {
+    void registerWith(drogular::GraphQLOperationRegistry& registry) {
         // Queries
         registry.registerQuery(
             "PortalDepartmentMembers",

@@ -279,7 +279,7 @@ public:
 
 private:
     std::shared_ptr<PortalDataset> dataset_;
-    std::shared_ptr<PortalGraphQLServer> graphQLServer_;
+    std::shared_ptr<drogular::GraphQLServer> graphQLServer_;
     std::shared_ptr<PortalDatasetGraphQLClient> graphQLClient_;
     drogular::ApplicationServices services_;
     drogular::ApplicationOptions options_;

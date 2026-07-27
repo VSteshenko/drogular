@@ -5,9 +5,11 @@
 #include <unordered_map>
 #include <utility>
 
-class PortalGraphQLExecutionContext {
+namespace drogular {
+
+class GraphQLExecutionContext {
 public:
-    PortalGraphQLExecutionContext& set(
+    GraphQLExecutionContext& set(
         std::string name,
         std::string value
     ) {
@@ -31,3 +33,5 @@ public:
 private:
     std::unordered_map<std::string, std::string> values_;
 };
+
+} // namespace drogular

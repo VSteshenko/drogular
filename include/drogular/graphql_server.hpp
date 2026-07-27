@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/graphql/server/portal_graphql_operation_registry.hpp"
-
+#include <drogular/graphql_execution_context.hpp>
+#include <drogular/graphql_operation_registry.hpp>
 #include <drogular/graphql_response.hpp>
 #include <drogular/graphql_variables.hpp>
 
@@ -10,12 +10,14 @@
 #include <utility>
 #include <vector>
 
-class PortalGraphQLServer {
+namespace drogular {
+
+class GraphQLServer {
 public:
-    PortalGraphQLServer() = default;
+    GraphQLServer() = default;
 
     template <typename TOperations, typename... TArguments>
-    PortalGraphQLServer& add(TArguments&&... arguments) {
+    GraphQLServer& add(TArguments&&... arguments) {
         auto operations = std::make_shared<TOperations>(
             std::forward<TArguments>(arguments)...
         );
@@ -25,23 +27,25 @@ public:
         return *this;
     }
 
-    drogular::GraphQLResponse executeQuery(
+    GraphQLResponse executeQuery(
         const std::string& name,
-        const drogular::GraphQLVariables& variables = {},
-        const PortalGraphQLExecutionContext& context = {}
+        const GraphQLVariables& variables = {},
+        const GraphQLExecutionContext& context = {}
     ) const {
         return registry_.executeQuery(name, variables, context);
     }
 
-    drogular::GraphQLResponse executeMutation(
+    GraphQLResponse executeMutation(
         const std::string& name,
-        const drogular::GraphQLVariables& variables = {},
-        const PortalGraphQLExecutionContext& context = {}
+        const GraphQLVariables& variables = {},
+        const GraphQLExecutionContext& context = {}
     ) const {
         return registry_.executeMutation(name, variables, context);
     }
 
 private:
-    PortalGraphQLOperationRegistry registry_;
+    GraphQLOperationRegistry registry_;
     std::vector<std::shared_ptr<void>> operations_;
 };
+
+} // namespace drogular
