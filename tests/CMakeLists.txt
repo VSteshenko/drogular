@@ -56,6 +56,8 @@ add_executable(drogular_tests
     core/core_template_loader_tests.cpp
     core/core_template_preprocessor_tests.cpp
     core/core_validation_result_tests.cpp
+    core/core_pagination_tests.cpp
+    core/core_pagination_model_tests.cpp
     core/core_page_support_tests.cpp
     core/core_page_auth_support_tests.cpp
     core/core_auth_support_tests.cpp

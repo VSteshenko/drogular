@@ -40,7 +40,7 @@ public:
         return UserMapper::fromList(*users);
     }
 
-    PortalPage<PortalUser> search(
+    drogular::PagedResult<PortalUser> search(
         const PortalUserQuery& query
     ) const override {
         const auto response =

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "core/portal_paginator.hpp"
 #include "core/portal_string_utils.hpp"
 #include "department_provider.hpp"
+
+#include <drogular/pagination.hpp>
 
 #include <algorithm>
 
@@ -121,7 +122,7 @@ public:
         return {};
     }
 
-    PortalPage<PortalDepartment> search(
+    drogular::PagedResult<PortalDepartment> search(
         const PortalDepartmentQuery& query
     ) const override {
         std::vector<PortalDepartment> result;
@@ -182,7 +183,7 @@ public:
             return a.id < b.id;
         });
 
-        return paginate(result, query.page, query.pageSize);
+        return drogular::paginate(result, query.page, query.pageSize);
     }
 
 private:

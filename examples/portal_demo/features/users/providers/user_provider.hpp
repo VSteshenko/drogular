@@ -4,7 +4,8 @@
 #include "features/users/data/portal_user_create.hpp"
 #include "features/users/data/portal_user_update.hpp"
 #include "features/users/data/portal_user_query.hpp"
-#include "data/models/portal_page.hpp"
+
+#include <drogular/paged_result.hpp>
 
 #include <optional>
 #include <string>
@@ -17,7 +18,7 @@ public:
 
     virtual std::vector<PortalUser> all() const = 0;
 
-    virtual PortalPage<PortalUser> search(
+    virtual drogular::PagedResult<PortalUser> search(
         const PortalUserQuery& query
     ) const = 0;
 

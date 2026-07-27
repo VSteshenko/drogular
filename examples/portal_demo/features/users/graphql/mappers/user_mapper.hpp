@@ -2,11 +2,11 @@
 
 #include "features/users/data/portal_user.hpp"
 #include "features/users/data/portal_user_query.hpp"
-#include "data/models/portal_page.hpp"
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 
 #include <drogular/graphql_variables.hpp>
+#include <drogular/paged_result.hpp>
 
 #include <json/value.h>
 #include <optional>
@@ -105,10 +105,10 @@ public:
         return variables;
     }
 
-    static PortalPage<PortalUser> pageFromValue(
+    static drogular::PagedResult<PortalUser> pageFromValue(
         const Json::Value& value
     ) {
-        PortalPage<PortalUser> page;
+        drogular::PagedResult<PortalUser> page;
         if (value.isNull() || !value.isObject()) {
             return page;
         }

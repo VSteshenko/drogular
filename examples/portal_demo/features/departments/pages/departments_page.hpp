@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ui/models/portal_pagination_view_model.hpp"
 
 #include "ui/portal_page_support.hpp"
 #include "features/departments/providers/department_provider.hpp"
@@ -9,6 +8,7 @@
 #include "features/users/providers/user_provider.hpp"
 
 #include <drogular/page.hpp>
+#include <drogular/pagination_model.hpp>
 #include <drogular/page_auth_support.hpp>
 
 #include <algorithm>
@@ -211,7 +211,7 @@ public:
             result.totalItems
         );
 
-        const auto pagination = makePortalPaginationViewModel(
+        const auto pagination = drogular::makePaginationModel(
             result.page,
             result.totalPages,
             pageUrl

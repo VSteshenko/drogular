@@ -1,14 +1,13 @@
 #pragma once
 
 #include "todo.hpp"
-#include "todo_page_result.hpp"
 #include "todo_query.hpp"
 
+#include <drogular/pagination.hpp>
 #include <drogular/state.hpp>
 
 #include <algorithm>
 #include <cctype>
-#include <cmath>
 #include <string>
 #include <vector>
 
@@ -96,7 +95,7 @@ public:
         todos.set(std::move(updatedTodos));
     }
 
-    TodoPageResult find(const TodoQuery& query) const {
+    drogular::PagedResult<Todo> find(const TodoQuery& query) const {
         std::vector<Todo> filtered;
         filtered.reserve(todos.value().size());
 
@@ -109,25 +108,11 @@ public:
             }
         }
 
-        TodoPageResult result;
-        result.pageSize = std::max(1, query.pageSize);
-        result.totalItems = static_cast<int>(filtered.size());
-        result.totalPages = std::max(
-            1,
-            (result.totalItems + result.pageSize - 1) / result.pageSize
+        return drogular::paginate(
+            filtered,
+            query.page,
+            query.pageSize
         );
-        result.page = std::clamp(query.page, 1, result.totalPages);
-
-        const auto begin = static_cast<std::size_t>(
-            (result.page - 1) * result.pageSize
-        );
-        const auto end = std::min(
-            begin + static_cast<std::size_t>(result.pageSize),
-            filtered.size()
-        );
-
-        result.items.assign(filtered.begin() + begin, filtered.begin() + end);
-        return result;
     }
 
     drogular::State<std::vector<Todo>> todos;

@@ -1,18 +1,17 @@
 #pragma once
 
-#include "ui/models/portal_pagination_view_model.hpp"
 
-#include "features/auth/support/portal_auth_support.hpp"
-#include "ui/portal_page_support.hpp"
 #include "features/users/providers/user_provider.hpp"
 #include "features/users/ui/portal_user_query_parser.hpp"
 #include "features/users/ui/portal_user_query_serializer.hpp"
 #include "features/roles/providers/role_provider.hpp"
 #include "features/localization/support/portal_error_translator.hpp"
 #include "data/portal_schema.hpp"
+#include "ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
+#include <drogular/pagination_model.hpp>
 
 #include <algorithm>
 
@@ -237,7 +236,7 @@ public:
             users.append(std::move(value));
         }
 
-        const auto pagination = makePortalPaginationViewModel(
+        const auto pagination = drogular::makePaginationModel(
             pageResult.page,
             pageResult.totalPages,
             pageUrl

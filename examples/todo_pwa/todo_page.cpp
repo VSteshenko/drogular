@@ -1,5 +1,4 @@
 #include "todo_page.hpp"
-#include "todo_pagination_view_model.hpp"
 #include "todo_query_parser.hpp"
 #include "todo_query_serializer.hpp"
 #include "todo_store.hpp"
@@ -7,6 +6,7 @@
 #include <drogular/page_support.hpp>
 #include <drogular/pwa_scripts.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/pagination_model.hpp>
 
 #include <json/json.h>
 
@@ -49,14 +49,20 @@ void TodoPage::onInit(drogular::RenderContext& context) {
     context.set("totalItems", result.totalItems);
     context.set("page", result.page);
     context.set("totalPages", result.totalPages);
-    context.set(
+    context.setJson(
         "pagination",
-        makeTodoPaginationViewModel(result.page, result.totalPages, pageUrl)
+        drogular::makePaginationModel(
+            result.page,
+            result.totalPages, pageUrl
+        )
     );
 
     context.set(
         "todoDraftPersistence",
-        drogular::PwaScripts::inputPersistence("todo-title", "todo-draft")
+        drogular::PwaScripts::inputPersistence(
+            "todo-title",
+            "todo-draft"
+        )
     );
     context.set(
         "offlineStatusScript",

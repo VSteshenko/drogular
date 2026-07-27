@@ -3,11 +3,11 @@
 #include "features/departments/data/portal_department.hpp"
 #include "features/departments/data/portal_department_update.hpp"
 #include "features/departments/data/portal_department_query.hpp"
-#include "data/models/portal_page.hpp"
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 
 #include <drogular/graphql_variables.hpp>
+#include <drogular/paged_result.hpp>
 
 #include <json/value.h>
 
@@ -114,10 +114,10 @@ public:
         return fromValue(*value);
     }
 
-    static PortalPage<PortalDepartment> pageFromValue(
+    static drogular::PagedResult<PortalDepartment> pageFromValue(
         const Json::Value& value
     ) {
-        PortalPage<PortalDepartment> page;
+        drogular::PagedResult<PortalDepartment> page;
 
         if (value.isNull() || !value.isObject()) {
             return page;

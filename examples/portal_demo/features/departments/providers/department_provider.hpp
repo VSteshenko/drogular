@@ -4,7 +4,8 @@
 #include "features/departments/data/portal_department_create.hpp"
 #include "features/departments/data/portal_department_update.hpp"
 #include "features/departments/data/portal_department_query.hpp"
-#include "data/models/portal_page.hpp"
+
+#include <drogular/paged_result.hpp>
 
 #include <optional>
 #include <string>
@@ -16,7 +17,7 @@ public:
 
     virtual std::vector<PortalDepartment> all() const = 0;
 
-    virtual PortalPage<PortalDepartment> search(
+    virtual drogular::PagedResult<PortalDepartment> search(
         const PortalDepartmentQuery&
     ) const = 0;
 

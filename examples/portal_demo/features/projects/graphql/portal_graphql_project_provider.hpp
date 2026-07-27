@@ -1,7 +1,6 @@
 #pragma once
 
 #include "features/projects/providers/project_provider.hpp"
-#include "features/users/providers/user_provider.hpp"
 #include "features/projects/graphql/documents/project_queries.hpp"
 #include "features/projects/graphql/documents/project_mutations.hpp"
 #include "features/projects/graphql/mappers/project_mapper.hpp"
@@ -56,7 +55,7 @@ public:
         );
     }
 
-    PortalPage<PortalProject> search(
+    drogular::PagedResult<PortalProject> search(
         const PortalProjectQuery& query
     ) const override {
         const auto response =

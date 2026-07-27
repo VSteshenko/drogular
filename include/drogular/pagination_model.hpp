@@ -3,35 +3,38 @@
 #include <json/json.h>
 
 #include <algorithm>
-#include <functional>
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
 
-struct PortalPaginationLink {
+namespace drogular {
+
+struct PaginationLink {
     int number{1};
     std::string url;
     bool current{false};
 };
 
-struct PortalPaginationViewModel {
+struct PaginationModel {
     bool visible{false};
     bool hasPrevious{false};
     bool hasNext{false};
     std::string previousUrl;
     std::string nextUrl;
-    std::vector<PortalPaginationLink> pages;
+    std::vector<PaginationLink> pages;
 };
 
-inline PortalPaginationViewModel makePortalPaginationViewModel(
+template<typename PageUrlBuilder>
+PaginationModel makePaginationModel(
     int currentPage,
     int totalPages,
-    const std::function<std::string(int)>& pageUrl
+    PageUrlBuilder&& pageUrl
 ) {
-    PortalPaginationViewModel model;
+    PaginationModel model;
 
-    currentPage = std::max(1, currentPage);
     totalPages = std::max(1, totalPages);
+    currentPage = std::clamp(currentPage, 1, totalPages);
 
     model.visible = totalPages > 1;
     model.hasPrevious = currentPage > 1;
@@ -58,15 +61,17 @@ inline PortalPaginationViewModel makePortalPaginationViewModel(
     return model;
 }
 
-inline Json::Value toJson(const PortalPaginationLink& link) {
+inline Json::Value toJson(const PaginationLink& link) {
     Json::Value json(Json::objectValue);
+
     json["number"] = link.number;
     json["url"] = link.url;
     json["current"] = link.current;
+
     return json;
 }
 
-inline Json::Value toJson(const PortalPaginationViewModel& model) {
+inline Json::Value toJson(const PaginationModel& model) {
     Json::Value json(Json::objectValue);
     Json::Value pages(Json::arrayValue);
 
@@ -80,5 +85,8 @@ inline Json::Value toJson(const PortalPaginationViewModel& model) {
     json["previousUrl"] = model.previousUrl;
     json["nextUrl"] = model.nextUrl;
     json["pages"] = std::move(pages);
+
     return json;
 }
+
+} // namespace drogular

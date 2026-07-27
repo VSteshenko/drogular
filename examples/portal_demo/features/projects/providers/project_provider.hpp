@@ -4,7 +4,8 @@
 #include "features/projects/data/portal_project_create.hpp"
 #include "features/projects/data/portal_project_update.hpp"
 #include "features/projects/data/portal_project_query.hpp"
-#include "data/models/portal_page.hpp"
+
+#include <drogular/paged_result.hpp>
 
 #include <optional>
 #include <vector>
@@ -32,7 +33,7 @@ public:
         int id
     ) = 0;
 
-    virtual PortalPage<PortalProject> search(
+    virtual drogular::PagedResult<PortalProject> search(
         const PortalProjectQuery& query
     ) const = 0;
 };

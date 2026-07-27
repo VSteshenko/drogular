@@ -1,9 +1,10 @@
 #pragma once
 
-#include "core/portal_paginator.hpp"
 #include "core/portal_string_utils.hpp"
 #include "features/users/data/portal_user.hpp"
 #include "features/users/providers/user_provider.hpp"
+
+#include <drogular/pagination.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -91,7 +92,7 @@ public:
         return users_;
     }
 
-    PortalPage<PortalUser> search(
+    drogular::PagedResult<PortalUser> search(
         const PortalUserQuery& query
     ) const override {
         std::vector<PortalUser> result;
@@ -170,7 +171,11 @@ public:
             }
         );
 
-        return paginate(result, query.page, query.pageSize);
+        return drogular::paginate(
+            result,
+            query.page,
+            query.pageSize
+        );
     }
 
     bool exists(

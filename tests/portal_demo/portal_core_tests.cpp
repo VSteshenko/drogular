@@ -1,7 +1,8 @@
-#include "core/portal_paginator.hpp"
 #include "core/portal_query_string_builder.hpp"
 #include "core/portal_sort_direction.hpp"
 #include "core/portal_string_utils.hpp"
+
+#include <drogular/pagination.hpp>
 
 #include <gtest/gtest.h>
 
@@ -19,7 +20,8 @@ TEST(PortalCoreTests, BuildsEncodedQueryString) {
 
 TEST(PortalCoreTests, PaginatesValues) {
     const std::vector<int> values{1, 2, 3, 4, 5};
-    const auto page = paginate(values, 2, 2);
+    const auto page =
+        drogular::paginate(values, 2, 2);
 
     EXPECT_EQ(page.page, 2);
     EXPECT_EQ(page.pageSize, 2);
@@ -29,7 +31,7 @@ TEST(PortalCoreTests, PaginatesValues) {
 }
 
 TEST(PortalCoreTests, KeepsAtLeastOneTotalPage) {
-    const auto page = paginate(
+    const auto page = drogular::paginate(
         std::vector<int>{},
         1,
         10);

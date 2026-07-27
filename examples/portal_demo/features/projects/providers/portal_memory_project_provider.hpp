@@ -1,12 +1,12 @@
 #pragma once
 
-#include "core/portal_paginator.hpp"
 #include "core/portal_string_utils.hpp"
-
 #include "features/projects/data/portal_project.hpp"
 #include "features/projects/data/portal_project_create.hpp"
 #include "features/projects/data/portal_project_update.hpp"
 #include "features/projects/providers/project_provider.hpp"
+
+#include <drogular/pagination.hpp>
 
 #include <string>
 #include <vector>
@@ -41,7 +41,7 @@ public:
         return std::nullopt;
     }
 
-    PortalPage<PortalProject> search(
+    drogular::PagedResult<PortalProject> search(
         const PortalProjectQuery& query
     ) const override {
         std::vector<PortalProject> result;
@@ -138,7 +138,11 @@ public:
             }
         );
 
-        return paginate(result, query.page, query.pageSize);
+        return drogular::paginate(
+            result,
+            query.page,
+            query.pageSize
+        );
     }
 
     PortalProject create(

@@ -1,19 +1,19 @@
 #pragma once
 
-#include "ui/models/portal_pagination_view_model.hpp"
 
 #include "features/projects/providers/project_provider.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
-#include "ui/portal_page_support.hpp"
-#include "data/portal_schema.hpp"
 #include "features/localization/support/portal_error_translator.hpp"
 #include "features/projects/ui/portal_project_query_view_model.hpp"
 #include "features/projects/ui/portal_project_query_parser.hpp"
 #include "features/projects/ui/portal_project_query_serializer.hpp"
+#include "ui/portal_page_support.hpp"
+#include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
+#include <drogular/pagination_model.hpp>
 
 #include <algorithm>
 
@@ -356,7 +356,7 @@ public:
             projects.append(value);
         }
 
-        const auto pagination = makePortalPaginationViewModel(
+        const auto pagination = drogular::makePaginationModel(
             pageResult.page,
             pageResult.totalPages,
             pageUrl

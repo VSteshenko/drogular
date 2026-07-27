@@ -3,12 +3,12 @@
 #include "features/projects/data/portal_project.hpp"
 #include "features/projects/data/portal_project_update.hpp"
 #include "features/projects/data/portal_project_query.hpp"
-#include "data/models/portal_page.hpp"
 #include "data/portal_schema.hpp"
 #include "data/portal_schema_mapper.hpp"
 
 #include <drogular/graphql_variables.hpp>
 #include <drogular/graphql_response.hpp>
+#include <drogular/paged_result.hpp>
 
 #include <json/value.h>
 #include <vector>
@@ -124,10 +124,10 @@ public:
         return variables;
     }
 
-    static PortalPage<PortalProject> pageFromValue(
+    static drogular::PagedResult<PortalProject> pageFromValue(
         const Json::Value& value
     ) {
-        PortalPage<PortalProject> page;
+        drogular::PagedResult<PortalProject> page;
 
         if (value.isNull() || !value.isObject()) {
             return page;

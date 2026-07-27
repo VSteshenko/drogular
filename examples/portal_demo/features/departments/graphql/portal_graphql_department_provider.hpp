@@ -7,6 +7,7 @@
 #include "core/portal_string_utils.hpp"
 
 #include <drogular/graphql_client.hpp>
+
 #include <memory>
 
 class PortalGraphQLDepartmentProvider final : public PortalDepartmentProvider {
@@ -32,7 +33,7 @@ public:
             : std::vector<PortalDepartment>{};
     }
 
-    PortalPage<PortalDepartment> search(
+    drogular::PagedResult<PortalDepartment> search(
         const PortalDepartmentQuery& query
     ) const override {
         const auto response =
@@ -46,7 +47,7 @@ public:
 
         return value
             ? DepartmentMapper::pageFromValue(*value)
-            : PortalPage<PortalDepartment>{};
+            : drogular::PagedResult<PortalDepartment>{};
     }
 
     std::optional<PortalDepartment> findById(
