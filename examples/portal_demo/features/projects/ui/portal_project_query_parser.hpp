@@ -1,7 +1,8 @@
 #pragma once
 
-#include "core/portal_request_parameters.hpp"
 #include "features/projects/data/portal_project_query.hpp"
+
+#include <drogular/request_parameters.hpp>
 
 #include <algorithm>
 #include <string>
@@ -12,7 +13,7 @@ public:
         const drogon::HttpRequestPtr& request
     ) {
         PortalProjectQuery query;
-        const PortalRequestParameters parameters(request);
+        const drogular::RequestParameters parameters(request);
 
         query.search = parameters.optionalString("search");
         query.status = parameters.optionalString("status");

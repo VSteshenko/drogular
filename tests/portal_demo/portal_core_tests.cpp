@@ -1,13 +1,13 @@
-#include "core/portal_query_string_builder.hpp"
 #include "core/portal_sort_direction.hpp"
 #include "core/portal_string_utils.hpp"
 
 #include <drogular/pagination.hpp>
+#include <drogular/query_string_builder.hpp>
 
 #include <gtest/gtest.h>
 
 TEST(PortalCoreTests, BuildsEncodedQueryString) {
-    PortalQueryStringBuilder builder;
+    drogular::QueryStringBuilder builder;
     builder
         .add("search", "Research & Development")
         .add("page", 2);

@@ -4,30 +4,30 @@
 
 #include <string>
 #include <string_view>
-#include <optional>
 
-class PortalQueryStringBuilder {
+namespace drogular {
+
+class QueryStringBuilder {
 public:
-    PortalQueryStringBuilder& add(
+    QueryStringBuilder& add(
         std::string_view name,
         std::string_view value
     ) {
         result_ += result_.empty() ? '?' : '&';
         result_ += name;
         result_ += '=';
-        result_ += drogular::Url::encode(std::string(value));
-
+        result_ += Url::encode(std::string(value));
         return *this;
     }
 
-    PortalQueryStringBuilder& add(
+    QueryStringBuilder& add(
         std::string_view name,
         int value
     ) {
         return add(name, std::to_string(value));
     }
 
-    PortalQueryStringBuilder& addIf(
+    QueryStringBuilder& addIf(
         bool condition,
         std::string_view name,
         std::string_view value
@@ -35,11 +35,10 @@ public:
         if (condition) {
             add(name, value);
         }
-
         return *this;
     }
 
-    PortalQueryStringBuilder& addIf(
+    QueryStringBuilder& addIf(
         bool condition,
         std::string_view name,
         int value
@@ -47,7 +46,6 @@ public:
         if (condition) {
             add(name, value);
         }
-
         return *this;
     }
 
@@ -55,6 +53,12 @@ public:
         return result_;
     }
 
+    bool empty() const noexcept {
+        return result_.empty();
+    }
+
 private:
     std::string result_;
 };
+
+} // namespace drogular

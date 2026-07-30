@@ -7,14 +7,13 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <system_error>
 #include <utility>
 
-class PortalRequestParameters {
+namespace drogular {
+
+class RequestParameters {
 public:
-    explicit PortalRequestParameters(
-        drogon::HttpRequestPtr request
-    )
+    explicit RequestParameters(drogon::HttpRequestPtr request)
         : request_(std::move(request))
     {
     }
@@ -23,7 +22,6 @@ public:
         if (!request_) {
             return {};
         }
-
         return request_->getParameter(std::string(name));
     }
 
@@ -34,11 +32,10 @@ public:
         if (result.empty()) {
             return std::nullopt;
         }
-
         return result;
     }
 
-    std::optional<int> positiveInteger(
+    std::optional<int> integer(
         std::string_view name
     ) const {
         const auto text = value(name);
@@ -54,12 +51,28 @@ public:
         );
 
         if (parsed.ec != std::errc{} ||
-            parsed.ptr != text.data() + text.size() ||
-            result <= 0) {
+            parsed.ptr != text.data() + text.size()) {
             return std::nullopt;
         }
 
         return result;
+    }
+
+    std::optional<int> positiveInteger(
+        std::string_view name
+    ) const {
+        const auto result = integer(name);
+        if (!result || *result <= 0) {
+            return std::nullopt;
+        }
+        return result;
+    }
+
+    int integerOr(
+        std::string_view name,
+        int fallback
+    ) const {
+        return integer(name).value_or(fallback);
     }
 
     int positiveIntegerOr(
@@ -83,3 +96,5 @@ public:
 private:
     drogon::HttpRequestPtr request_;
 };
+
+} // namespace drogular

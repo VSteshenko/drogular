@@ -63,6 +63,8 @@ add_executable(drogular_tests
     core/core_auth_support_tests.cpp
     core/core_testing_tests.cpp
     core/core_translation_support_tests.cpp
+    core/core_query_string_builder_tests.cpp
+    core/core_request_parameters_tests.cpp
     core/core_url_tests.cpp
     core/core_action_auth_support_tests.cpp
     core/core_route_pattern_tests.cpp

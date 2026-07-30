@@ -1,14 +1,15 @@
 #pragma once
 
-#include "core/portal_query_string_builder.hpp"
 #include "features/departments/data/portal_department_query.hpp"
+
+#include <drogular/query_string_builder.hpp>
 
 #include <string>
 
 class PortalDepartmentQuerySerializer {
 public:
     static std::string toQueryString(const PortalDepartmentQuery& query) {
-        PortalQueryStringBuilder builder;
+        drogular::QueryStringBuilder builder;
 
         if (query.search && !query.search->empty()) {
             builder.add("search", *query.search);
