@@ -10,7 +10,7 @@ class TodoQuerySerializer {
 public:
     static std::string toQueryString(const TodoQuery& query) {
         return drogular::QueryStringBuilder{}
-            .addIf(!query.search.empty(), "search", query.search)
+            .addNonEmpty("search", query.search)
             .addIf(query.pageSize != 5, "pageSize", query.pageSize)
             .addIf(query.page > 1, "page", query.page)
             .build();

@@ -11,13 +11,9 @@ public:
     static std::string toQueryString(const PortalProjectQuery& query) {
         drogular::QueryStringBuilder builder;
 
-        if (query.search && !query.search->empty()) {
-            builder.add("search", *query.search);
-        }
+        builder.add("search", query.search);
 
-        if (query.status && !query.status->empty()) {
-            builder.add("status", *query.status);
-        }
+        builder.add("status", query.status);
 
         if (query.projectTypeId && *query.projectTypeId > 0) {
             builder.add("projectTypeId", *query.projectTypeId);

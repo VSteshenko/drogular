@@ -31,3 +31,43 @@ TEST(QueryStringBuilderTests, IsEmptyBeforeValuesAreAdded) {
     EXPECT_TRUE(builder.empty());
     EXPECT_TRUE(builder.build().empty());
 }
+
+TEST(QueryStringBuilderTests, PreservesExplicitEmptyValues) {
+    const auto query = drogular::QueryStringBuilder{}
+        .add("search", "")
+        .build();
+
+    EXPECT_EQ(
+        query,
+        "?search="
+    );
+}
+
+TEST(QueryStringBuilderTests, SkipsEmptyStringValuesExplicitly) {
+    const auto query = drogular::QueryStringBuilder{}
+        .addNonEmpty("search", "")
+        .addNonEmpty("role", "admin")
+        .build();
+
+    EXPECT_EQ(
+        query,
+        "?role=admin"
+    );
+}
+
+TEST(QueryStringBuilderTests, AddsOnlyNonEmptyOptionalStrings) {
+    const std::optional<std::string> missing;
+    const std::optional<std::string> empty = std::string{};
+    const std::optional<std::string> value = "active";
+
+    const auto query = drogular::QueryStringBuilder{}
+        .add("missing", missing)
+        .add("empty", empty)
+        .add("status", value)
+        .build();
+
+    EXPECT_EQ(
+        query,
+        "?status=active"
+    );
+}

@@ -11,12 +11,8 @@ public:
     static std::string toQueryString(const PortalUserQuery& query) {
         drogular::QueryStringBuilder builder;
 
-        if (query.search && !query.search->empty()) {
-            builder.add("search", *query.search);
-        }
-        if (query.role && !query.role->empty()) {
-            builder.add("role", *query.role);
-        }
+        builder.add("search", query.search);
+        builder.add("role", query.role);
 
         const auto sort = effectiveSort(query);
         if (sort.field != "username" || sort.direction != PortalSortDirection::Ascending) {

@@ -11,9 +11,7 @@ public:
     static std::string toQueryString(const PortalDepartmentQuery& query) {
         drogular::QueryStringBuilder builder;
 
-        if (query.search && !query.search->empty()) {
-            builder.add("search", *query.search);
-        }
+        builder.add("search", query.search);
 
         if (query.isActive) {
             builder.add("active", *query.isActive ? "true" : "false");

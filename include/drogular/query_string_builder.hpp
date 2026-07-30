@@ -2,6 +2,8 @@
 
 #include <drogular/url.hpp>
 
+#include <concepts>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -25,6 +27,30 @@ public:
         int value
     ) {
         return add(name, std::to_string(value));
+    }
+
+    QueryStringBuilder& addNonEmpty(
+        std::string_view name,
+        std::string_view value
+    ) {
+        if (!value.empty()) {
+            add(name, value);
+        }
+
+        return *this;
+    }
+
+    template<typename T>
+        requires std::same_as<T, std::string>
+    QueryStringBuilder& add(
+        std::string_view name,
+        const std::optional<T>& value
+    ) {
+        if (value) {
+            addNonEmpty(name, *value);
+        }
+
+        return *this;
     }
 
     QueryStringBuilder& addIf(
