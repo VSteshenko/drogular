@@ -195,6 +195,11 @@ public:
     explicit Query(std::string name);
 
     /**
+     * Returns the operation name.
+     */
+    const std::string& name() const noexcept;
+
+    /**
      * Adds a variable declaration to the query.
      */
     Query& variable(std::string name, std::string type);
@@ -242,6 +247,11 @@ Query query(std::string name);
 class Mutation {
 public:
     explicit Mutation(std::string name);
+
+    /**
+     * Returns the operation name.
+     */
+    const std::string& name() const noexcept;
 
     /**
      * Adds a variable declaration to the mutation.

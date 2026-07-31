@@ -8,7 +8,6 @@
 #include "features/department_members/providers/department_member_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
 #include "features/localization/support/portal_translations.hpp"
-#include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
@@ -24,6 +23,7 @@
 #include <drogular/action_handler.hpp>
 #include <drogular/services.hpp>
 #include <drogular/session_store.hpp>
+#include <drogular/in_process_graphql_client.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -47,7 +47,7 @@ public:
             createPortalGraphQLServer(dataset_)
         ),
         graphQLClient_(
-            std::make_shared<PortalDatasetGraphQLClient>(
+            std::make_shared<drogular::InProcessGraphQLClient>(
                 graphQLServer_
             )
         )
@@ -280,7 +280,7 @@ public:
 private:
     std::shared_ptr<PortalDataset> dataset_;
     std::shared_ptr<drogular::GraphQLServer> graphQLServer_;
-    std::shared_ptr<PortalDatasetGraphQLClient> graphQLClient_;
+    std::shared_ptr<drogular::InProcessGraphQLClient> graphQLClient_;
     drogular::ApplicationServices services_;
     drogular::ApplicationOptions options_;
 

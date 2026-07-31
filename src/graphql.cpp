@@ -313,6 +313,10 @@ Query::Query(std::string name)
     : name_(std::move(name)) {
 }
 
+const std::string& Query::name() const noexcept {
+    return name_;
+}
+
 Query& Query::variable(std::string name, std::string type) {
     variables_.push_back({
         .name = std::move(name),
@@ -424,6 +428,10 @@ Query query(std::string name) {
 Mutation::Mutation(std::string name)
     : name_(std::move(name))
 {
+}
+
+const std::string& Mutation::name() const noexcept {
+    return name_;
 }
 
 Mutation& Mutation::variable(

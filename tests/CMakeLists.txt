@@ -16,6 +16,7 @@ add_executable(drogular_tests
     core/core_compiled_template_tests.cpp
     core/core_dependency_graph_tests.cpp
     core/core_http_graphql_client_tests.cpp
+    core/core_in_process_graphql_client_tests.cpp
     core/core_graphql_client_tests.cpp
     core/core_graphql_result_tests.cpp
     core/core_graphql_tests.cpp

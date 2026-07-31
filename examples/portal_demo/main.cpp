@@ -29,7 +29,7 @@
 #include "features/projects/actions/update_project_action.hpp"
 #include "features/projects/actions/delete_project_action.hpp"
 #include "features/projects/graphql/portal_graphql_project_provider.hpp"
-#include "providers/graphql/portal_dataset_graphql_client.hpp"
+#include <drogular/in_process_graphql_client.hpp>
 #include "providers/graphql/portal_dataset_graphql_adapter.hpp"
 #include "features/users/graphql/portal_graphql_user_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
@@ -122,7 +122,7 @@ int main(
         createPortalGraphQLServer(dataset);
 
     auto graphQLClient =
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             graphQLServer
         );
 

@@ -1,8 +1,9 @@
 #include "data/demo_dataset.hpp"
-#include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
+
+#include <drogular/in_process_graphql_client.hpp>
 
 #include <gtest/gtest.h>
 
@@ -21,7 +22,7 @@ struct ProjectTypeProviderContract {
     ) {
         auto client =
             std::make_shared<
-                PortalDatasetGraphQLClient
+                drogular::InProcessGraphQLClient
             >(createPortalGraphQLServer(dataset));
 
         return std::make_unique<Provider>(
@@ -100,7 +101,7 @@ struct RoleProviderContract {
     ) {
         auto client =
             std::make_shared<
-                PortalDatasetGraphQLClient
+                drogular::InProcessGraphQLClient
             >(createPortalGraphQLServer(dataset));
 
         return std::make_unique<Provider>(

@@ -393,3 +393,10 @@ TEST(CoreGraphQLTests, DetectsEmptyNames) {
     ASSERT_FALSE(result.valid());
     EXPECT_GE(result.errors().size(), 5);
 }
+
+TEST(CoreGraphQLTests, ExposesQueryName) {
+    const auto query =
+        drogular::gql::query("Dashboard");
+
+    EXPECT_EQ(query.name(), "Dashboard");
+}

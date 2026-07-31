@@ -1,7 +1,6 @@
 #include "portal_application_test_host.hpp"
 #include "data/portal_dataset.hpp"
 #include "data/demo_dataset.hpp"
-#include "providers/graphql/portal_dataset_graphql_client.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/projects/graphql/documents/project_queries.hpp"
 #include "features/projects/graphql/documents/project_mutations.hpp"
@@ -15,6 +14,8 @@
 #include "features/projects/graphql/portal_graphql_project_provider.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "core/portal_string_utils.hpp"
+
+#include <drogular/in_process_graphql_client.hpp>
 
 #include <gtest/gtest.h>
 
@@ -30,7 +31,7 @@ TEST(PortalDatasetGraphQLClientTests, FindsProjectByIdFromDataset) {
         .status = "active"
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -51,7 +52,7 @@ TEST(PortalDatasetGraphQLClientTests, CreatesProjectInDataset) {
     auto dataset =
         std::make_shared<PortalDataset>();
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -89,7 +90,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesProjectInDataset) {
         .ownerId = 1
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -127,7 +128,7 @@ TEST(PortalDatasetGraphQLClientTests, RemovesProjectFromDataset) {
         .ownerId = 1
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -150,7 +151,7 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsNullForMissingProject) {
     auto dataset =
         std::make_shared<PortalDataset>();
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -177,7 +178,7 @@ TEST(PortalDatasetGraphQLClientTests, ReadsUsersFromDataset) {
         .role = "admin"
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -204,7 +205,7 @@ TEST(PortalDatasetGraphQLClientTests, FindsUserByCredentialsFromDataset) {
         .role = "admin"
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -228,7 +229,7 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsNullForInvalidCredentials) {
     auto dataset =
         std::make_shared<PortalDataset>();
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -252,7 +253,7 @@ TEST(PortalDatasetGraphQLClientTests, CreatesUserInDataset) {
     auto dataset =
         std::make_shared<PortalDataset>();
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -289,7 +290,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesUserInDataset) {
         .role = "user"
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -322,7 +323,7 @@ TEST(PortalDatasetGraphQLClientTests, CreatesProjectType) {
         );
 
     auto client =
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             createPortalGraphQLServer(dataset)
         );
 
@@ -348,7 +349,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesOnlyProvidedProjectTypeFields ) {
         );
 
     auto client =
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             createPortalGraphQLServer(dataset)
         );
 
@@ -375,7 +376,7 @@ TEST(PortalDatasetGraphQLClientTests, RejectsRemovingUsedProjectType) {
         );
 
     auto client =
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             createPortalGraphQLServer(dataset)
         );
 
@@ -402,7 +403,7 @@ TEST(PortalDatasetGraphQLClientTests, RemovesUnusedProjectType) {
     });
 
     auto client =
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             createPortalGraphQLServer(dataset)
         );
 
@@ -427,7 +428,7 @@ TEST(PortalDatasetGraphQLClientTests, CreatesRoleInDataset) {
     auto dataset =
         std::make_shared<PortalDataset>();
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -489,7 +490,7 @@ TEST(PortalDatasetGraphQLClientTests, UpdatesOnlyProvidedRoleFields) {
         .title = "Manager"
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -541,7 +542,7 @@ TEST(PortalDatasetGraphQLClientTests, RemovesUnusedRole) {
         .title = "Manager"
     });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -584,7 +585,7 @@ TEST(PortalDatasetGraphQLClientTests, RejectsRemovingUsedRole) {
             .role = "admin"
         });
 
-    PortalDatasetGraphQLClient client(
+    drogular::InProcessGraphQLClient client(
         createPortalGraphQLServer(dataset)
     );
 
@@ -618,7 +619,7 @@ TEST(PortalDatasetGraphQLClientTests, SearchesProjectsByPartialTitle) {
         );
 
     PortalGraphQLProjectProvider provider(
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             createPortalGraphQLServer(dataset)
         )
     );
@@ -661,7 +662,7 @@ TEST(PortalDatasetGraphQLClientTests, ProjectSearchIsCaseInsensitive) {
         );
 
     PortalGraphQLProjectProvider provider(
-        std::make_shared<PortalDatasetGraphQLClient>(
+        std::make_shared<drogular::InProcessGraphQLClient>(
             createPortalGraphQLServer(dataset)
         )
     );
@@ -705,7 +706,7 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByStatus) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -750,7 +751,7 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchAndStatusFilter) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -806,7 +807,7 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByProjectType) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -854,7 +855,7 @@ TEST(PortalDatasetGraphQLClientTests, CombinesProjectSearchStatusAndTypeFilter) 
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -911,7 +912,7 @@ TEST(PortalDatasetGraphQLClientTests, FiltersProjectsByOwner
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -948,7 +949,7 @@ TEST(PortalDatasetGraphQLClientTests, CombinesAllProjectFilters) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -994,7 +995,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscending) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1038,7 +1039,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleDescending) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1082,7 +1083,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusAscending) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1128,7 +1129,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByStatusDescending) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1174,7 +1175,7 @@ TEST(PortalDatasetGraphQLClientTests, SortsProjectsByTitleAscendingByDefault) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1209,7 +1210,7 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsFirstProjectPage) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1239,7 +1240,7 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsSecondProjectPage) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1267,7 +1268,7 @@ TEST(PortalDatasetGraphQLClientTests, ReturnsEmptyOutOfRangeProjectPage) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(
@@ -1295,7 +1296,7 @@ TEST(PortalDatasetGraphQLClientTests, PaginatesFilteredProjects) {
 
     auto client =
         std::make_shared<
-            PortalDatasetGraphQLClient
+            drogular::InProcessGraphQLClient
         >(createPortalGraphQLServer(dataset));
 
     PortalGraphQLProjectProvider provider(

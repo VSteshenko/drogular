@@ -38,3 +38,10 @@ TEST(GraphQLMutationTests, ValidatesEmptyMutation) {
 
     EXPECT_FALSE(validation.valid());
 }
+
+TEST(GraphQLMutationTests, ExposesMutationName) {
+    const auto mutation =
+        drogular::gql::mutation("CreateTodo");
+
+    EXPECT_EQ(mutation.name(), "CreateTodo");
+}
