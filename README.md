@@ -51,17 +51,18 @@ HTML
 
 ## Status
 
-**Version:** 0.19.0
+**Version:** 0.20.0
 
 Current release highlights:
 
-- Progressive Web Application support
-- Portal Demo reference application
-- Localization infrastructure
-- Offline support
-- Static asset pipeline
+- Portal Demo became the primary reference application.
+- Feature-oriented application architecture.
+- Expanded GraphQL infrastructure.
+- Reusable UI components.
+- Significantly improved automated test coverage.
+- Expanded official documentation.
 
-A modern C++ web application framework for Drogon, validated through real-world reference applications.
+Drogular is now validated through complete reference applications that demonstrate recommended architecture and framework usage.
 
 Current architecture:
 
@@ -381,107 +382,55 @@ HTML
 | Documentation                   | In Progress |
 | Production Readiness            | In Progress |
 
-## Reference Applications
+## Documentation
+
+- Getting Started
+- Cookbook
+- Architecture
+- API Reference
+
+The documentation is based on real framework capabilities and complete reference applications rather than isolated code snippets.
+
+## Examples
 
 ### TodoPWA
 
-Demonstrates:
+Demonstrates the core Drogular APIs in a compact application:
 
 - Components
-- Actions
+- Forms & Validation
 - State Management
-- Validation
-- PWA
-- Offline Support
-- Service Worker
+- GraphQL
+- Actions
+- Pagination
+- Search
+- Progressive Web Application support
 
-Template:
-
-```html
-<form method="post" action="/todos/create">
-    <input name="title" />
-    <button>Add</button>
-</form>
-
-@foreach(todo in todos)
-    <TodoItem 
-        id="{{ todo.id }}"
-        title="{{ todo.title }}"
-        done="{{ todo.done }}" />
-@endforeach
-```
-
-Action:
-
-```c++
-class CreateTodoAction
-    : public drogular::ActionHandler
-{
-public:
-    ActionResult handle(
-        ActionContext& context
-    ) override
-    {
-        auto service =
-            context.requireService<TodoService>();
-
-        service->create(
-            context.requireForm<std::string>("title")
-        );
-
-        return ActionResult::redirect("/");
-    } 
-};
-```
-
-Application setup:
-
-```c++
-drogular::App app;
-
-app.services().add<TodoService>(
-    drogular::ServiceLifetime::Singleton
-);
-
-app.component<TodoItemComponent>();
-
-app.page<TodoPage>("/");
-app.action<CreateTodoAction>("/todos/create");
-app.action<ToggleTodoAction>("/todos/toggle");
-app.action<DeleteTodoAction>("/todos/delete");
-
-app.run(8080);
-```
-
-Run the Todo PWA example:
-
-```bash
-./build/examples/todo_pwa/todo_pwa
-```
-
-Open:
-
-```text
-http://localhost:8080
-```
-
-### Portal Demo
+### Authentication Sample
 
 Demonstrates:
 
 - Authentication
 - Authorization
 - Sessions
-- Dependency Injection
-- Repository Pattern
-- Localization
-- Shared Layouts
-- Shared Partials
-- Validation
-- PWA
-- Offline Support
+- Protected pages
 
-Demonstrates the recommended architecture for medium-sized Drogular applications.
+### Portal Demo
+
+The primary Drogular reference application demonstrating recommended architecture for medium and large projects.
+
+Features include:
+
+- Feature-oriented architecture
+- GraphQL integration
+- Localization
+- Authentication
+- Authorization
+- Reusable components
+- Pagination
+- Search
+- CRUD workflows
+- Shared infrastructure
 
 ## Dependency Injection
 
@@ -962,24 +911,18 @@ public:
 
 ## Roadmap
 
-### 0.20 — Developer Experience
+### 0.21
 
-- Reduce boilerplate
-- Simplify page creation
-- Simplify authenticated pages
-- Shared CRUD helpers
-- Improved portal architecture
-- Better developer ergonomics
+- Component metadata
+- Template validation
+- Diagnostics
+- CLI tooling
 
-### 1.0 — Stable Release
+### 1.0
 
-- API stabilization
-- Service diagnostics
-- Better template diagnostics
-- Improved error messages
-- Documentation
-- Examples
-- Production readiness
+- Stable public API
+- Production-ready documentation
+- Long-term API stability
 
 ### Future
 
