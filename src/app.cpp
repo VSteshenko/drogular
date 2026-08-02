@@ -1,4 +1,5 @@
 #include <drogular/app.hpp>
+#include <drogular/diagnostics_resources.hpp>
 
 #include <drogon/drogon.h>
 
@@ -101,6 +102,55 @@ App& App::enableInspection() {
     );
 
     inspectionEnabled_ = true;
+    return *this;
+}
+
+App& App::enableDiagnosticsPage() {
+    if (diagnosticsPageEnabled_) {
+        return *this;
+    }
+
+    enableInspection();
+
+    router_.page(
+        DiagnosticsPage::Path,
+        std::make_shared<DiagnosticsPage>()
+    );
+
+    drogon::app().registerHandler(
+        std::string(DiagnosticsPage::AssetsPath) + "/diagnostics.css",
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response = drogon::HttpResponse::newHttpResponse();
+            response->addHeader("Content-Type", "text/css; charset=utf-8");
+            response->setBody(
+                std::string(diagnostics_resources::stylesheet())
+            );
+            callback(response);
+        },
+        {drogon::Get}
+    );
+
+    drogon::app().registerHandler(
+        std::string(DiagnosticsPage::AssetsPath) + "/diagnostics.js",
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response = drogon::HttpResponse::newHttpResponse();
+            response->addHeader("Content-Type", "text/javascript; charset=utf-8");
+            response->setBody(
+                std::string(diagnostics_resources::script())
+            );
+            callback(response);
+        },
+        {drogon::Get}
+    );
+
+    diagnosticsPageEnabled_ = true;
+
     return *this;
 }
 

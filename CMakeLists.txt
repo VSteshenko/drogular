@@ -34,6 +34,8 @@ add_library(drogular
     src/compiled_template.cpp
     src/dependency_graph.cpp
     src/diagnostics.cpp
+    src/diagnostics_page.cpp
+    src/diagnostics_resources.cpp
     src/form_validator.cpp
     src/graphql.cpp
     src/graphql_client.cpp
@@ -90,6 +92,13 @@ target_link_libraries(drogular
 target_compile_features(drogular
     PUBLIC
         cxx_std_20
+)
+
+include(GNUInstallDirs)
+
+install(
+    DIRECTORY resources/diagnostics/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/drogular/diagnostics
 )
 
 if(DROGULAR_BUILD_EXAMPLES)

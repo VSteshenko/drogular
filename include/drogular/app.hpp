@@ -8,6 +8,7 @@
 #include <drogular/application_options.hpp>
 #include <drogular/application_inspection.hpp>
 #include <drogular/application_inspection_controller.hpp>
+#include <drogular/diagnostics_page.hpp>
 
 #include <memory>
 #include <string>
@@ -274,6 +275,14 @@ public:
 
     App& enableInspection();
 
+    /**
+     * Enables the built-in diagnostics application at /__drogular.
+     *
+     * The page is an independent browser client of the public inspection
+     * JSON endpoint and therefore enables inspection automatically.
+     */
+    App& enableDiagnosticsPage();
+
     void run(unsigned short port);
 
 private:
@@ -283,6 +292,7 @@ private:
     std::optional<std::string> offlinePageRoute_;
     std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;
     bool inspectionEnabled_ = false;
+    bool diagnosticsPageEnabled_ = false;
     std::shared_ptr<ApplicationInspectionController> inspectionController_;
 };
 

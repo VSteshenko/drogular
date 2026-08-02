@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Drogular Diagnostics</title>
+    <link rel="stylesheet" href="/__drogular/assets/diagnostics.css">
+</head>
+<body data-inspection-endpoint="/__drogular/inspection">
+    <main id="diagnostics-app" class="diagnostics-shell" aria-live="polite">
+        <header class="diagnostics-header">
+            <div>
+                <p class="eyebrow">Drogular Developer Tools</p>
+                <h1>Application Diagnostics</h1>
+                <p id="status-text" class="status-text">Loading inspection data…</p>
+            </div>
+            <button id="refresh-button" type="button">Refresh</button>
+        </header>
+        <section id="summary" class="summary-grid" aria-label="Application summary"></section>
+        <section id="error-state" class="state-panel" hidden></section>
+        <section id="routes-section" class="panel" hidden>
+            <h2>Routes</h2><div id="routes"></div>
+        </section>
+        <section id="components-section" class="panel" hidden>
+            <h2>Components</h2><div id="components"></div>
+        </section>
+        <section id="services-section" class="panel" hidden>
+            <h2>Services</h2><div id="services"></div>
+        </section>
+        <section id="diagnostics-section" class="panel" hidden>
+            <h2>Diagnostics</h2><div id="diagnostics"></div>
+        </section>
+    </main>
+    <script type="module" src="/__drogular/assets/diagnostics.js"></script>
+</body>
+</html>
