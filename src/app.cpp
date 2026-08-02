@@ -48,7 +48,60 @@ ApplicationInspection App::inspect() const {
     result.services =
         services_.registrations();
 
+    const auto& componentDiagnostics =
+        services_.components().diagnostics().entries();
+    result.diagnostics.insert(
+        result.diagnostics.end(),
+        componentDiagnostics.begin(),
+        componentDiagnostics.end()
+    );
+
+    if (inspectionEnabled_) {
+        result.routes.push_back({
+            ApplicationInspectionController::Path,
+            RouteKind::Inspection,
+            "GET",
+            "ApplicationInspectionController"
+        });
+    }
+
     return result;
+}
+
+App& App::enableInspection() {
+    if (inspectionEnabled_) {
+        return *this;
+    }
+
+    if (!services_.hasService(
+            std::type_index(typeid(ApplicationInspectionProvider))
+        )) {
+        services_.registerService<ApplicationInspectionProvider>(
+            std::make_shared<ApplicationInspectionProvider>(
+                [this] {
+                    return inspect();
+                }
+            )
+        );
+    }
+
+    inspectionController_ =
+        std::make_shared<ApplicationInspectionController>(&services_);
+
+    auto controller = inspectionController_;
+    drogon::app().registerHandler(
+        ApplicationInspectionController::Path,
+        [controller](
+            const drogon::HttpRequestPtr& request,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            controller->handle(request, std::move(callback));
+        },
+        {drogon::Get}
+    );
+
+    inspectionEnabled_ = true;
+    return *this;
 }
 
 void App::run(unsigned short port) {

@@ -7,6 +7,7 @@
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
 #include <drogular/application_inspection.hpp>
+#include <drogular/application_inspection_controller.hpp>
 
 #include <memory>
 #include <string>
@@ -271,6 +272,8 @@ public:
      */
     ApplicationInspection inspect() const;
 
+    App& enableInspection();
+
     void run(unsigned short port);
 
 private:
@@ -279,6 +282,8 @@ private:
     Router router_{&services_};
     std::optional<std::string> offlinePageRoute_;
     std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;
+    bool inspectionEnabled_ = false;
+    std::shared_ptr<ApplicationInspectionController> inspectionController_;
 };
 
 } // namespace drogular

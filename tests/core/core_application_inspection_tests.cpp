@@ -68,3 +68,50 @@ TEST(ApplicationInspectionTests, ReportsConfiguredApplicationSurface) {
     EXPECT_EQ(inspection.services.front().lifetime, drogular::ServiceLifetime::LazySingleton);
     EXPECT_FALSE(inspection.services.front().instantiated);
 }
+TEST(ApplicationInspectionTests, SerializesStableJsonContract) {
+    drogular::ApplicationInspection inspection;
+    inspection.routes.push_back({
+        "/",
+        drogular::RouteKind::Page,
+        "GET",
+        "HomePage"
+    });
+    inspection.components.push_back({
+        "app-card"
+    });
+    inspection.services.push_back({
+        "ExampleService",
+        drogular::ServiceLifetime::Scoped,
+        false
+    });
+    inspection.diagnostics.push_back({
+        "DGL-CMP-001",
+        drogular::DiagnosticSeverity::Warning,
+        "Duplicate component",
+        {"app.cpp", 10, 2, 3}
+    });
+
+    const auto json = drogular::toJson(inspection);
+
+    EXPECT_EQ(json["schemaVersion"].asInt(), 1);
+    EXPECT_EQ(json["routes"][0]["kind"].asString(), "page");
+    EXPECT_EQ(json["components"][0]["tag"].asString(), "app-card");
+    EXPECT_EQ(json["services"][0]["lifetime"].asString(), "scoped");
+    EXPECT_EQ(json["diagnostics"][0]["severity"].asString(), "warning");
+    EXPECT_EQ(json["diagnostics"][0]["location"]["line"].asUInt64(), 2u);
+}
+
+TEST(ApplicationInspectionTests, RegistersProviderThroughDependencyInjection) {
+    drogular::App app;
+    app.enableInspection();
+
+    const auto provider =
+        app.services().service<drogular::ApplicationInspectionProvider>();
+
+    ASSERT_NE(provider, nullptr);
+    const auto inspection = (*provider)();
+
+    ASSERT_EQ(inspection.routes.size(), 1u);
+    EXPECT_EQ(inspection.routes.front().kind, drogular::RouteKind::Inspection);
+    EXPECT_EQ(inspection.routes.front().path, "/__drogular/inspection");
+}
