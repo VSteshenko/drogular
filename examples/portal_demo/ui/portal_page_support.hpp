@@ -130,6 +130,7 @@ public:
             {"projectsStatusFilterLabel", "projects.filter.status"},
             {"projectsTypeFilterLabel", "projects.filter.type"},
             {"projectTypesManage", "project_types.manage"},
+            {"adminDiagnostics", "admin.diagnostics"},
             {"projectTypesEdit", "project_types.edit"},
             {"projectTypesDelete", "project_types.delete"},
             {"projectTypesBackToAdmin", "project_types.back_to_admin"},

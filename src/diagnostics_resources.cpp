@@ -37,7 +37,7 @@ constexpr std::string_view PageHtml = R"DROGULAR_HTML(<!doctype html>
             <h2>Diagnostics</h2><div id="diagnostics"></div>
         </section>
     </main>
-    <script type="module" src="/__drogular/assets/diagnostics.js"></script>
+<script defer src="/__drogular/assets/diagnostics.js"></script>
 </body>
 </html>)DROGULAR_HTML";
 
@@ -265,11 +265,11 @@ constexpr std::string_view Script = R"DROGULAR_JS(const endpoint = document.body
 
 const byId = (id) => document.getElementById(id);
 const escapeHtml = (value) => String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 
 const table = (columns, rows) => {
     if (!rows.length) return '<p class="empty">No entries.</p>';
@@ -356,7 +356,14 @@ const loadInspection = async () => {
     error.hidden = true;
     byId('status-text').textContent = 'Loading inspection data…';
     try {
-        const response = await fetch(endpoint, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(endpoint, {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store',
+            signal: controller.signal
+        });
+        window.clearTimeout(timeout);
         if (!response.ok) throw new Error(`Inspection request failed with HTTP ${response.status}`);
         const data = await response.json();
         renderInspection({
@@ -376,8 +383,24 @@ const loadInspection = async () => {
     }
 };
 
-byId('refresh-button').addEventListener('click', loadInspection);
-loadInspection();
+const startDiagnostics = () => {
+    const refreshButton = byId('refresh-button');
+    const statusText = byId('status-text');
+    const errorState = byId('error-state');
+
+    if (!refreshButton || !statusText || !errorState) {
+        return;
+    }
+
+    refreshButton.addEventListener('click', loadInspection);
+    loadInspection();
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startDiagnostics, { once: true });
+} else {
+    startDiagnostics();
+}
 )DROGULAR_JS";
 
 } // namespace

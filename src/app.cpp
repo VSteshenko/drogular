@@ -128,6 +128,7 @@ App& App::enableDiagnosticsPage() {
             response->setBody(
                 std::string(diagnostics_resources::stylesheet())
             );
+
             callback(response);
         },
         {drogon::Get}
@@ -144,6 +145,7 @@ App& App::enableDiagnosticsPage() {
             response->setBody(
                 std::string(diagnostics_resources::script())
             );
+
             callback(response);
         },
         {drogon::Get}

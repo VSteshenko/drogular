@@ -100,7 +100,8 @@ int main(
     .serviceWorker(
         "examples/portal_demo/public/service-worker.js"
     )
-    .offlinePage<PortalOfflinePage>();
+    .offlinePage<PortalOfflinePage>()
+    .enableDiagnosticsPage();
 
     app.services().addFactory<drogular::TranslationProvider>(
         drogular::ServiceLifetime::Singleton,
