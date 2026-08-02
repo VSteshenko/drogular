@@ -43,6 +43,9 @@ struct CompileResult {
 /**
  * Compiles template text and returns diagnostics.
  */
-CompileResult compileWithDiagnostics(std::string_view html);
+CompileResult compileWithDiagnostics(
+    std::string_view html,
+    std::string sourceName = {}
+);
 
 } // namespace drogular::template_compiler

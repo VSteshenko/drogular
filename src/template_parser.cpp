@@ -88,8 +88,9 @@ NodePtr parseNode(
                 tokens[position].type == TokenType::EndIf) {
                 ++position;
             } else {
-                diagnostics.addError(
-                    "Unclosed @if",
+                diagnostics.error(
+                    "DGL-TPL-004",
+                    "Missing @endif",
                     ifPosition
                 );
             }
@@ -119,8 +120,9 @@ NodePtr parseNode(
                 tokens[position].type == TokenType::EndForeach) {
                 ++position;
                 } else {
-                    diagnostics.addError(
-                        "Unclosed @foreach",
+                    diagnostics.error(
+                        "DGL-TPL-005",
+                        "Missing @endforeach",
                         foreachPosition
                     );
             }
@@ -188,11 +190,23 @@ std::vector<NodePtr> parse(
         const auto& token = tokens[position];
 
         if (token.type == TokenType::Else) {
-            diagnostics.addError("Unexpected @else", token.position);
+            diagnostics.error(
+                "DGL-TPL-001",
+                "Unexpected @else",
+                token.position
+            );
         } else if (token.type == TokenType::EndIf) {
-            diagnostics.addError("Unexpected @endif", token.position);
+            diagnostics.error(
+                "DGL-TPL-002",
+                "Unexpected @endif",
+                token.position
+            );
         } else if (token.type == TokenType::EndForeach) {
-            diagnostics.addError("Unexpected @endforeach", token.position);
+            diagnostics.error(
+                "DGL-TPL-003",
+                "Unexpected @endforeach",
+                token.position
+            );
         }
 
         ++position;

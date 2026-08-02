@@ -31,6 +31,7 @@ add_library(drogular
     src/component_renderer.cpp
     src/compiled_template.cpp
     src/dependency_graph.cpp
+    src/diagnostics.cpp
     src/form_validator.cpp
     src/graphql.cpp
     src/graphql_client.cpp
@@ -66,7 +67,6 @@ add_library(drogular
     src/template_renderable.cpp
     src/template_cache.cpp
     src/template_source_cache.cpp
-    src/template_diagnostics.cpp
     src/template_loader.cpp
     src/template_preprocessor.cpp
     src/translation_support.cpp

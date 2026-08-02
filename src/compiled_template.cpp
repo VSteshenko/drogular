@@ -282,8 +282,14 @@ CompiledTemplate compile(std::string_view html) {
     );
 }
 
-CompileResult compileWithDiagnostics(std::string_view html) {
-    TemplateDiagnostics diagnostics;
+CompileResult compileWithDiagnostics(
+    std::string_view html,
+    std::string sourceName
+) {
+    TemplateDiagnostics diagnostics(
+        html,
+        std::move(sourceName)
+    );
 
     auto nodes =
         parse(
