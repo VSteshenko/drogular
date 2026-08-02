@@ -20,6 +20,7 @@ find_package(Drogon REQUIRED)
 
 add_library(drogular
     src/app.cpp
+    src/application_inspection.cpp
     src/auth_support.cpp
     src/action_result.cpp
     src/action_context.cpp

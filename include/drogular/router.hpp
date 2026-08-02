@@ -2,9 +2,11 @@
 
 #include <drogular/services.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/application_inspection.hpp>
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace drogular {
 
@@ -51,8 +53,11 @@ public:
         const std::filesystem::path& path
     );
 
+    const std::vector<RouteInspection>& routes() const { return routes_; }
+
 private:
     ApplicationServices* services_ = nullptr;
+    std::vector<RouteInspection> routes_;
 };
 
 } // namespace drogular

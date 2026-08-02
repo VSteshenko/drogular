@@ -46,7 +46,19 @@ Router::Router(ApplicationServices* services)
     : services_(services) {
 }
 
-void Router::page(const std::string& path, std::shared_ptr<Page> page) {
+void Router::page(
+    const std::string& path,
+    std::shared_ptr<Page> page
+) {
+    const auto* pagePtr = page.get();
+
+    routes_.push_back({
+        path,
+        RouteKind::Page,
+        "GET",
+        typeid(*pagePtr).name()
+    });
+
     auto* services = services_;
     const RoutePattern pattern(path);
 
@@ -85,7 +97,19 @@ void Router::page(const std::string& path, std::shared_ptr<Page> page) {
     );
 }
 
-void Router::action(const std::string& path, std::shared_ptr<ActionHandler> action) {
+void Router::action(
+    const std::string& path,
+    std::shared_ptr<ActionHandler> action
+) {
+    const auto* actionPtr = action.get();
+
+    routes_.push_back({
+        path,
+        RouteKind::Action,
+        "POST",
+        typeid(*actionPtr).name()
+    });
+
     auto* services = services_;
     const RoutePattern pattern(path);
 
@@ -129,6 +153,13 @@ void Router::staticFiles(
     const std::string& routePrefix,
     const std::filesystem::path& directory
 ) {
+    routes_.push_back({
+        routePrefix,
+        RouteKind::StaticFiles,
+        "GET",
+        directory.string()
+    });
+
     auto normalizedPrefix = routePrefix;
 
     if (!normalizedPrefix.empty() &&
@@ -268,6 +299,13 @@ void Router::staticFiles(
 void Router::serviceWorker(
     const std::filesystem::path& path
 ) {
+    routes_.push_back({
+        "/service-worker.js",
+        RouteKind::ServiceWorker,
+        "GET",
+        path.string()
+    });
+
     drogon::app().registerHandler(
         "/service-worker.js",
         [path](

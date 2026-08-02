@@ -26,6 +26,12 @@ enum class ServiceLifetime {
     Scoped
 };
 
+struct ServiceRegistration {
+    std::string type;
+    ServiceLifetime lifetime = ServiceLifetime::Singleton;
+    bool instantiated = false;
+};
+
 class DependencyValidationResult {
 public:
     void addError(std::string error) {
@@ -54,7 +60,9 @@ public:
      */
     template <typename T>
     void registerService(std::shared_ptr<T> service) {
-        services_[std::type_index(typeid(T))] = std::move(service);
+        const auto type = std::type_index(typeid(T));
+        services_[type] = std::move(service);
+        serviceLifetimes_[type] = ServiceLifetime::Singleton;
     }
 
     /**
@@ -211,7 +219,9 @@ public:
 
     template <typename T>
     void addLazy(std::function<std::shared_ptr<T>()> factory) {
-        factories_[std::type_index(typeid(T))] =
+        const auto type = std::type_index(typeid(T));
+        serviceLifetimes_[type] = ServiceLifetime::LazySingleton;
+        factories_[type] =
             wrapFactory<T>(
                 std::move(factory),
                 "Lazy service factory returned nullptr"
@@ -220,7 +230,11 @@ public:
 
     template <typename T>
     void addTransient(std::function<std::shared_ptr<T>()> factory) {
-        transientFactories_[std::type_index(typeid(T))] =
+        const auto type = std::type_index(typeid(T));
+
+        serviceLifetimes_[type] =
+            ServiceLifetime::Transient;
+        transientFactories_[type] =
             wrapFactory<T>(
                 std::move(factory),
                 "Transient factory returned nullptr"
@@ -229,7 +243,11 @@ public:
 
     template <typename T>
     void addScoped(std::function<std::shared_ptr<T>()> factory) {
-        scopedFactories_[std::type_index(typeid(T))] =
+        const auto type = std::type_index(typeid(T));
+
+        serviceLifetimes_[type] =
+            ServiceLifetime::Scoped;
+        scopedFactories_[type] =
             wrapFactory<T>(
                 std::move(factory),
                 "Scoped factory returned nullptr"
@@ -296,6 +314,8 @@ public:
      */
     const ComponentRegistry& components() const;
 
+    std::vector<ServiceRegistration> registrations() const;
+
     void setOptions(ApplicationOptions* options) {
         options_ = options;
 
@@ -330,6 +350,7 @@ private:
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> transientFactories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
+    std::unordered_map<std::type_index, ServiceLifetime> serviceLifetimes_;
     DependencyGraph dependencyGraph_;
     ComponentRegistry componentRegistry_;
     ApplicationOptions* options_ = nullptr;

@@ -1,6 +1,7 @@
 #include <drogular/services.hpp>
-
 #include <drogular/graphql_client.hpp>
+
+#include <algorithm>
 
 namespace drogular {
 
@@ -58,6 +59,29 @@ ComponentRegistry& ApplicationServices::components() {
 
 const ComponentRegistry& ApplicationServices::components() const {
     return componentRegistry_;
+}
+
+std::vector<ServiceRegistration> ApplicationServices::registrations() const {
+    std::vector<ServiceRegistration> result;
+    result.reserve(serviceLifetimes_.size());
+
+    for (const auto& [type, lifetime] : serviceLifetimes_) {
+        result.push_back({
+            type.name(),
+            lifetime,
+            services_.contains(type)
+        });
+    }
+
+    std::sort(
+        result.begin(),
+        result.end(),
+        [](const auto& left, const auto& right) {
+            return left.type < right.type;
+        }
+    );
+
+    return result;
 }
 
 } // namespace drogular

@@ -6,6 +6,7 @@
 #include <drogular/router.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
+#include <drogular/application_inspection.hpp>
 
 #include <memory>
 #include <string>
@@ -268,6 +269,8 @@ public:
     /**
      * Starts the HTTP server on the given port.
      */
+    ApplicationInspection inspect() const;
+
     void run(unsigned short port);
 
 private:

@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace drogular {
 
@@ -64,6 +65,8 @@ public:
      * Clears registration diagnostics.
      */
     void clearDiagnostics();
+
+    std::vector<std::string> tags() const;
 
 private:
     std::unordered_map<
