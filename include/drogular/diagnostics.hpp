@@ -74,6 +74,8 @@ public:
         std::size_t position
     );
 
+    void clear();
+
     bool hasErrors() const;
     bool empty() const;
     bool valid() const;

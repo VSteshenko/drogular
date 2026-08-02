@@ -1,8 +1,9 @@
-#include <drogon/HttpRequest.h>
 #include <drogular/component_renderer.hpp>
 #include <drogular/component_registry.hpp>
 #include <drogular/component.hpp>
 #include <drogular/render_context.hpp>
+
+#include <drogon/HttpRequest.h>
 
 #include <gtest/gtest.h>
 
@@ -334,4 +335,72 @@ TEST(CoreComponentRendererTests, ComponentInputOverridesParentValue) {
         ),
         "<p>Component</p>"
     );
+}
+
+TEST(CoreComponentRendererTests, ReportsUnknownSelfClosingComponent) {
+    drogular::ComponentRegistry registry;
+    drogular::RenderContext context;
+
+    const auto result =
+        drogular::component_renderer::renderWithDiagnostics(
+            "<main>\n  <MissingCard />\n</main>",
+            registry,
+            context,
+            "pages/dashboard.html"
+        );
+
+    EXPECT_EQ(
+        result.html,
+        "<main>\n  <MissingCard />\n</main>"
+    );
+    ASSERT_EQ(result.diagnostics.entries().size(), 1U);
+
+    const auto& diagnostic = result.diagnostics.entries().front();
+
+    EXPECT_EQ(diagnostic.code, "DGL-CMP-002");
+    EXPECT_EQ(
+        diagnostic.severity,
+        drogular::DiagnosticSeverity::Warning
+    );
+    EXPECT_EQ(diagnostic.location.source, "pages/dashboard.html");
+    EXPECT_EQ(diagnostic.location.line, 2U);
+    EXPECT_EQ(diagnostic.location.column, 3U);
+}
+
+TEST(CoreComponentRendererTests, ReportsUnknownPairedComponent) {
+    drogular::ComponentRegistry registry;
+    drogular::RenderContext context;
+
+    const auto result =
+        drogular::component_renderer::renderWithDiagnostics(
+            "<MissingPanel>Content</MissingPanel>",
+            registry,
+            context
+        );
+
+    EXPECT_EQ(
+        result.html,
+        "<MissingPanel>Content</MissingPanel>"
+    );
+    ASSERT_EQ(result.diagnostics.entries().size(), 1U);
+    EXPECT_EQ(
+        result.diagnostics.entries().front().code,
+        "DGL-CMP-002"
+    );
+}
+
+TEST(CoreComponentRendererTests, RegisteredComponentHasNoDiagnostics) {
+    drogular::ComponentRegistry registry;
+    registry.registerComponent<CoreCardComponent>();
+
+    drogular::RenderContext context;
+
+    const auto result =
+        drogular::component_renderer::renderWithDiagnostics(
+            "<CoreCard />",
+            registry,
+            context
+        );
+
+    EXPECT_TRUE(result.diagnostics.empty());
 }

@@ -2,8 +2,10 @@
 #include <drogular/template_engine.hpp>
 #include <drogular/testing.hpp>
 
+#include <cctype>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace drogular::component_renderer {
 
@@ -85,10 +87,12 @@ std::unordered_map<std::string, std::string> parseAttributes(std::string_view va
 
 } // namespace
 
-std::string render(
+std::string renderImpl(
     std::string_view html,
     const ComponentRegistry& registry,
-    RenderContext& context
+    RenderContext& context,
+    ComponentDiagnostics* diagnostics,
+    std::size_t sourceOffset
 ) {
     std::string output;
     size_t position = 0;
@@ -166,6 +170,14 @@ std::string render(
             const auto component = registry.create(tagName);
 
             if (component == nullptr) {
+                if (diagnostics != nullptr) {
+                    diagnostics->warning(
+                        "DGL-CMP-002",
+                        "Unknown component tag: " + tagName,
+                        sourceOffset + tagStart
+                    );
+                }
+
                 output.append(html.substr(tagStart, tagEnd - tagStart));
             } else {
                 const auto attributes = parseAttributes(attributesText);
@@ -185,10 +197,12 @@ std::string render(
                         childContext
                     );
 
-                componentHtml = render(
+                componentHtml = renderImpl(
                     componentHtml,
                     registry,
-                    childContext
+                    childContext,
+                    nullptr,
+                    0
                 );
 
                 output += componentHtml;
@@ -212,6 +226,14 @@ std::string render(
         const auto component = registry.create(tagName);
 
         if (component == nullptr) {
+            if (diagnostics != nullptr) {
+                diagnostics->warning(
+                    "DGL-CMP-002",
+                    "Unknown component tag: " + tagName,
+                    sourceOffset + tagStart
+                );
+            }
+
             output.append(html.substr(tagStart, closeTagEnd - tagStart));
         } else {
             const auto attributes = parseAttributes(attributesText);
@@ -227,7 +249,13 @@ std::string render(
                 html.substr(tagEnd, closeTagStart - tagEnd)
             );
 
-            innerHtml = render(innerHtml, registry, context);
+            innerHtml = renderImpl(
+                innerHtml,
+                registry,
+                context,
+                diagnostics,
+                sourceOffset + tagEnd
+            );
 
             component->setInput("__slot", innerHtml);
 
@@ -243,6 +271,36 @@ std::string render(
     }
 
     return output;
+}
+
+std::string render(
+    std::string_view html,
+    const ComponentRegistry& registry,
+    RenderContext& context
+) {
+    return renderImpl(html, registry, context, nullptr, 0);
+}
+
+RenderResult renderWithDiagnostics(
+    std::string_view html,
+    const ComponentRegistry& registry,
+    RenderContext& context,
+    std::string sourceName
+) {
+    ComponentDiagnostics diagnostics(html, std::move(sourceName));
+
+    auto output = renderImpl(
+        html,
+        registry,
+        context,
+        &diagnostics,
+        0
+    );
+
+    return {
+        std::move(output),
+        std::move(diagnostics)
+    };
 }
 
 } // namespace drogular::component_renderer

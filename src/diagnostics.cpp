@@ -99,6 +99,11 @@ void Diagnostics::error(
     );
 }
 
+void Diagnostics::clear() {
+    entries_.clear();
+    errors_.clear();
+}
+
 bool Diagnostics::hasErrors() const {
     return !errors_.empty();
 }

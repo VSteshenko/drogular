@@ -19,4 +19,12 @@ bool ComponentRegistry::contains(const std::string& tag) const {
     return factories_.contains(tag);
 }
 
+const Diagnostics& ComponentRegistry::diagnostics() const {
+    return diagnostics_;
+}
+
+void ComponentRegistry::clearDiagnostics() {
+    diagnostics_.clear();
+}
+
 } // namespace drogular

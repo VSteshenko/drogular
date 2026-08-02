@@ -59,3 +59,35 @@ TEST(CoreComponentRegistryTests, RegistersComponentUsingMetadataTag) {
 
     ASSERT_NE(component, nullptr);
 }
+
+TEST(CoreComponentRegistryTests, ReportsDuplicateComponentTag) {
+    drogular::ComponentRegistry registry;
+
+    registry.registerComponent<CoreRegistryTestComponent>("RegistryTest");
+    registry.registerComponent<CoreRegistryTestComponent>("RegistryTest");
+
+    ASSERT_EQ(registry.diagnostics().entries().size(), 1U);
+
+    const auto& diagnostic = registry.diagnostics().entries().front();
+
+    EXPECT_EQ(diagnostic.code, "DGL-CMP-001");
+    EXPECT_EQ(
+        diagnostic.severity,
+        drogular::DiagnosticSeverity::Warning
+    );
+    EXPECT_EQ(
+        diagnostic.message,
+        "Component tag is already registered: RegistryTest"
+    );
+}
+
+TEST(CoreComponentRegistryTests, ClearsRegistrationDiagnostics) {
+    drogular::ComponentRegistry registry;
+
+    registry.registerComponent<CoreRegistryTestComponent>("RegistryTest");
+    registry.registerComponent<CoreRegistryTestComponent>("RegistryTest");
+
+    registry.clearDiagnostics();
+
+    EXPECT_TRUE(registry.diagnostics().empty());
+}
