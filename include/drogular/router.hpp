@@ -2,7 +2,7 @@
 
 #include <drogular/services.hpp>
 #include <drogular/action_handler.hpp>
-#include <drogular/application_inspection.hpp>
+#include <drogular/developer_tools/application_inspection.hpp>
 
 #include <memory>
 #include <string>

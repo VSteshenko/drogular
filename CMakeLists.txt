@@ -20,8 +20,8 @@ find_package(Drogon REQUIRED)
 
 add_library(drogular
     src/app.cpp
-    src/application_inspection.cpp
-    src/application_inspection_controller.cpp
+    src/developer_tools/application_inspection.cpp
+    src/developer_tools/application_inspection_controller.cpp
     src/auth_support.cpp
     src/action_result.cpp
     src/action_context.cpp
@@ -34,9 +34,9 @@ add_library(drogular
     src/compiled_template.cpp
     src/dependency_graph.cpp
     src/diagnostics.cpp
-    src/diagnostics_page.cpp
-    src/diagnostics_resources.cpp
-    src/developer_tools_component_registry.cpp
+    src/developer_tools/diagnostics_page.cpp
+    src/developer_tools/diagnostics_resources.cpp
+    src/developer_tools/component_registry.cpp
     src/form_validator.cpp
     src/graphql.cpp
     src/graphql_client.cpp
@@ -107,6 +107,7 @@ if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/auth_sample)
     add_subdirectory(examples/repository_sample)
     add_subdirectory(examples/portal_demo)
+    add_subdirectory(examples/developer_tools)
 endif()
 
 if(DROGULAR_BUILD_TESTS)

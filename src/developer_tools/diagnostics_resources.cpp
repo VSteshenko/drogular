@@ -1,4 +1,4 @@
-#include <drogular/diagnostics_resources.hpp>
+#include <drogular/developer_tools/diagnostics_resources.hpp>
 
 namespace drogular::diagnostics_resources {
 

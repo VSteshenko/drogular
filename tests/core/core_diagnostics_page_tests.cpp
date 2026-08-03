@@ -1,7 +1,6 @@
 #include <drogular/app.hpp>
-#include <drogular/diagnostics_page.hpp>
-#include <drogular/diagnostics_resources.hpp>
-#include <drogular/developer_tools_component_registry.hpp>
+#include <drogular/developer_tools/diagnostics_page.hpp>
+#include <drogular/developer_tools/diagnostics_resources.hpp>
 #include <drogular/render_context.hpp>
 
 #include <gtest/gtest.h>

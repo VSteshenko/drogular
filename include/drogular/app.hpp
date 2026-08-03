@@ -6,9 +6,10 @@
 #include <drogular/router.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
-#include <drogular/application_inspection.hpp>
-#include <drogular/application_inspection_controller.hpp>
-#include <drogular/developer_tools_component_registry.hpp>
+#include <drogular/application_profile.hpp>
+#include <drogular/developer_tools/application_inspection.hpp>
+#include <drogular/developer_tools/application_inspection_controller.hpp>
+#include <drogular/developer_tools/component_registry.hpp>
 
 #include <memory>
 #include <string>
@@ -273,6 +274,27 @@ public:
      */
     ApplicationInspection inspect() const;
 
+    /**
+     * Sets the runtime profile.
+     *
+     * Development enables Developer Tools.
+     */
+    App& profile(ApplicationProfile profile);
+
+    ApplicationProfile profile() const {
+        return profile_;
+    }
+
+    /**
+     * Enables the complete Developer Tools subsystem.
+     */
+    App& enableDeveloperTools();
+
+    /**
+     * Disables automatic Developer Tools activation before registration.
+     */
+    App& disableDeveloperTools();
+
     App& enableInspection();
 
     /**
@@ -312,6 +334,9 @@ private:
     Router router_{&services_};
     std::optional<std::string> offlinePageRoute_;
     std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;
+    ApplicationProfile profile_ = ApplicationProfile::Production;
+    std::optional<bool> developerToolsOverride_;
+    bool developerToolsEnabled_ = false;
     bool inspectionEnabled_ = false;
     bool diagnosticsPageEnabled_ = false;
     std::shared_ptr<ApplicationInspectionController> inspectionController_;

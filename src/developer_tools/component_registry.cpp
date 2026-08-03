@@ -1,4 +1,4 @@
-#include <drogular/developer_tools_component_registry.hpp>
+#include <drogular/developer_tools/component_registry.hpp>
 
 #include <stdexcept>
 #include <utility>

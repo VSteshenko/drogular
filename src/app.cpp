@@ -1,13 +1,57 @@
 #include <drogular/app.hpp>
-#include <drogular/diagnostics_page.hpp>
-#include <drogular/diagnostics_resources.hpp>
+#include <drogular/developer_tools/diagnostics_page.hpp>
+#include <drogular/developer_tools/diagnostics_resources.hpp>
 
 #include <drogon/drogon.h>
+
+#include <stdexcept>
 
 namespace drogular {
 
 App::App() {
     services_.setOptions(&options_);
+}
+
+App& App::profile(ApplicationProfile profile) {
+    if (developerToolsEnabled_ && profile != ApplicationProfile::Development) {
+        throw std::logic_error(
+            "Developer Tools are already registered and cannot be disabled by changing the application profile"
+        );
+    }
+
+    profile_ = profile;
+
+    if (profile_ == ApplicationProfile::Development &&
+        developerToolsOverride_.value_or(true)) {
+        enableDeveloperTools();
+    }
+
+    return *this;
+}
+
+App& App::enableDeveloperTools() {
+    developerToolsOverride_ = true;
+
+    if (developerToolsEnabled_) {
+        return *this;
+    }
+
+    enableDiagnosticsPage();
+    developerToolsEnabled_ = true;
+
+    return *this;
+}
+
+App& App::disableDeveloperTools() {
+    if (developerToolsEnabled_ || inspectionEnabled_ || diagnosticsPageEnabled_) {
+        throw std::logic_error(
+            "Developer Tools are already registered and cannot be disabled"
+        );
+    }
+
+    developerToolsOverride_ = false;
+
+    return *this;
 }
 
 ApplicationInspection App::inspect() const {
@@ -201,6 +245,7 @@ App& App::enableDiagnosticsPage() {
     );
 
     diagnosticsPageEnabled_ = true;
+    developerToolsEnabled_ = true;
 
     return *this;
 }

@@ -1,5 +1,5 @@
-#include <drogular/diagnostics_page.hpp>
-#include <drogular/diagnostics_resources.hpp>
+#include <drogular/developer_tools/diagnostics_page.hpp>
+#include <drogular/developer_tools/diagnostics_resources.hpp>
 
 namespace drogular {
 

@@ -1,4 +1,4 @@
-#include <drogular/application_inspection.hpp>
+#include <drogular/developer_tools/application_inspection.hpp>
 
 #include <stdexcept>
 #include <utility>

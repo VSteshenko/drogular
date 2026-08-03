@@ -1,7 +1,7 @@
 #include "features/diagnostics/portal_inspection_contributor.hpp"
 #include "data/demo_dataset.hpp"
 
-#include <drogular/application_inspection.hpp>
+#include <drogular/developer_tools/application_inspection.hpp>
 
 #include <gtest/gtest.h>
 

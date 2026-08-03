@@ -1,5 +1,5 @@
-#include <drogular/application_inspection_controller.hpp>
-#include <drogular/application_inspection.hpp>
+#include <drogular/developer_tools/application_inspection_controller.hpp>
+#include <drogular/developer_tools/application_inspection.hpp>
 
 namespace drogular {
 
