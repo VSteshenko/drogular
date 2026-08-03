@@ -1,6 +1,7 @@
 #include "startup/portal_demo_startup.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/localization/actions/language_action.hpp"
+#include "features/diagnostics/portal_inspection_contributor.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
 #include "features/auth/pages/login_page.hpp"
 #include "features/auth/actions/login_action.hpp"
@@ -118,6 +119,15 @@ int main(
         std::make_shared<PortalDataset>(
             DemoDataset::create()
         );
+
+    const auto inspectionContributors =
+        app.services().service<drogular::InspectionContributors>();
+
+    if (inspectionContributors != nullptr) {
+        inspectionContributors->add(
+            std::make_shared<PortalInspectionContributor>(dataset)
+        );
+    }
 
     auto graphQLServer =
         createPortalGraphQLServer(dataset);

@@ -123,6 +123,7 @@ add_executable(drogular_tests
     portal_demo/portal_graphql_selection_builder_tests.cpp
     portal_demo/portal_graphql_document_builder_tests.cpp
     portal_demo/portal_startup_tests.cpp
+    portal_demo/portal_inspection_contributor_tests.cpp
     portal_demo/portal_graphql_role_provider_tests.cpp
     portal_demo/portal_reference_provider_contract_tests.cpp
     portal_demo/portal_ui_component_tests.cpp
