@@ -93,7 +93,7 @@ TEST(ApplicationInspectionTests, SerializesStableJsonContract) {
 
     const auto json = drogular::toJson(inspection);
 
-    EXPECT_EQ(json["schemaVersion"].asInt(), 1);
+    EXPECT_EQ(json["schemaVersion"].asInt(), 2);
     EXPECT_EQ(json["routes"][0]["kind"].asString(), "page");
     EXPECT_EQ(json["components"][0]["tag"].asString(), "app-card");
     EXPECT_EQ(json["services"][0]["lifetime"].asString(), "scoped");
@@ -114,4 +114,58 @@ TEST(ApplicationInspectionTests, RegistersProviderThroughDependencyInjection) {
     ASSERT_EQ(inspection.routes.size(), 1u);
     EXPECT_EQ(inspection.routes.front().kind, drogular::RouteKind::Inspection);
     EXPECT_EQ(inspection.routes.front().path, "/__drogular/inspection");
+}
+
+namespace {
+
+class CustomInspectionContributor final
+    : public drogular::InspectionContributor
+{
+public:
+    void contribute(
+        drogular::ApplicationInspection& inspection
+    ) const override {
+        Json::Value data(Json::objectValue);
+        data["enabled"] = true;
+        data["provider"] = "example";
+        inspection.addSection({
+            "authentication",
+            "Authentication",
+            std::move(data)
+        });
+    }
+};
+
+}
+
+TEST(ApplicationInspectionTests, CollectsExtensionSectionsFromDiContributors) {
+    drogular::App app;
+    app.enableInspection();
+
+    const auto contributors =
+        app.services().service<drogular::InspectionContributors>();
+    ASSERT_NE(contributors, nullptr);
+    contributors->add(
+        std::make_shared<CustomInspectionContributor>()
+    );
+
+    const auto inspection = app.inspect();
+    ASSERT_EQ(inspection.sections.size(), 1u);
+    EXPECT_EQ(inspection.sections.front().id, "authentication");
+
+    const auto json = drogular::toJson(inspection);
+    EXPECT_EQ(json["schemaVersion"].asInt(), 2);
+    ASSERT_EQ(json["sections"].size(), 5u);
+    EXPECT_EQ(json["sections"][4]["id"].asString(), "authentication");
+    EXPECT_TRUE(json["sections"][4]["data"]["enabled"].asBool());
+}
+
+TEST(ApplicationInspectionTests, ReplacesSectionWithSameId) {
+    drogular::ApplicationInspection inspection;
+    inspection.addSection({"custom", "First", Json::Value(1)});
+    inspection.addSection({"custom", "Second", Json::Value(2)});
+
+    ASSERT_EQ(inspection.sections.size(), 1u);
+    EXPECT_EQ(inspection.sections.front().title, "Second");
+    EXPECT_EQ(inspection.sections.front().data.asInt(), 2);
 }

@@ -36,6 +36,7 @@ constexpr std::string_view PageHtml = R"DROGULAR_HTML(<!doctype html>
         <section id="diagnostics-section" class="panel" hidden>
             <h2>Diagnostics</h2><div id="diagnostics"></div>
         </section>
+        <div id="extension-sections"></div>
     </main>
 <script defer src="/__drogular/assets/diagnostics.js"></script>
 </body>
@@ -259,6 +260,15 @@ code, .badge {
         padding-top: 28px;
     }
 }
+
+.json-tree {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: .84rem;
+    line-height: 1.55;
+    color: #c8d2ea;
+}
 )DROGULAR_CSS";
 
 constexpr std::string_view Script = R"DROGULAR_JS(const endpoint = document.body.dataset.inspectionEndpoint || '/__drogular/inspection';
@@ -294,7 +304,8 @@ const renderSummary = (data) => {
         ['Routes', data.routes.length],
         ['Components', data.components.length],
         ['Services', data.services.length],
-        ['Diagnostics', data.diagnostics.length]
+        ['Diagnostics', data.diagnostics.length],
+        ['Extensions', data.extensionSections.length]
     ];
     byId('summary').innerHTML = items.map(([label, value]) => `
 <article class="summary-card">
@@ -347,6 +358,19 @@ const renderInspection = (data) => {
 </article>`).join('')
         : '<p class="empty">No diagnostics reported.</p>';
     showSection('diagnostics', diagnostics);
+
+    const extensions = byId('extension-sections');
+    extensions.innerHTML = data.extensionSections.map(section => `
+<section class="panel">
+    <h2>
+        ${escapeHtml(section.title || section.id)}
+    </h2>
+    <pre class="json-tree">
+        <code>
+            ${escapeHtml(JSON.stringify(section.data, null, 2))}
+        </code>
+    </pre>
+</section>`).join('');
 };
 
 const loadInspection = async () => {
@@ -371,7 +395,10 @@ const loadInspection = async () => {
             routes: Array.isArray(data.routes) ? data.routes : [],
             components: Array.isArray(data.components) ? data.components : [],
             services: Array.isArray(data.services) ? data.services : [],
-            diagnostics: Array.isArray(data.diagnostics) ? data.diagnostics : []
+            diagnostics: Array.isArray(data.diagnostics) ? data.diagnostics : [],
+            extensionSections: Array.isArray(data.sections)
+                ? data.sections.filter(section => !['routes', 'components', 'services', 'diagnostics'].includes(section.id))
+                : []
         });
         byId('status-text').textContent = `Inspection loaded at ${new Date().toLocaleTimeString()}`;
     } catch (cause) {

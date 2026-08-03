@@ -216,3 +216,12 @@ code, .badge {
         padding-top: 28px;
     }
 }
+
+.json-tree {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: .84rem;
+    line-height: 1.55;
+    color: #c8d2ea;
+}

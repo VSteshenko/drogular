@@ -6,6 +6,7 @@
 #include <json/json.h>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -33,13 +34,38 @@ struct ComponentInspection {
 
 using ServiceInspection = ServiceRegistration;
 
+struct InspectionSection {
+    std::string id;
+    std::string title;
+    Json::Value data{Json::objectValue};
+};
+
 struct ApplicationInspection {
-    static constexpr int SchemaVersion = 1;
+    static constexpr int SchemaVersion = 2;
 
     std::vector<RouteInspection> routes;
     std::vector<ComponentInspection> components;
     std::vector<ServiceInspection> services;
     std::vector<Diagnostic> diagnostics;
+    std::vector<InspectionSection> sections;
+
+    void addSection(InspectionSection section);
+};
+
+class InspectionContributor {
+public:
+    virtual ~InspectionContributor() = default;
+    virtual void contribute(ApplicationInspection& inspection) const = 0;
+};
+
+class InspectionContributors {
+public:
+    void add(std::shared_ptr<InspectionContributor> contributor);
+    const std::vector<std::shared_ptr<InspectionContributor>>& entries() const;
+    void contribute(ApplicationInspection& inspection) const;
+
+private:
+    std::vector<std::shared_ptr<InspectionContributor>> contributors_;
 };
 
 using ApplicationInspectionProvider =

@@ -66,12 +66,26 @@ ApplicationInspection App::inspect() const {
         });
     }
 
+    const auto contributors =
+        services_.service<InspectionContributors>();
+    if (contributors != nullptr) {
+        contributors->contribute(result);
+    }
+
     return result;
 }
 
 App& App::enableInspection() {
     if (inspectionEnabled_) {
         return *this;
+    }
+
+    if (!services_.hasService(
+            std::type_index(typeid(InspectionContributors))
+    )) {
+        services_.registerService<InspectionContributors>(
+            std::make_shared<InspectionContributors>()
+        );
     }
 
     if (!services_.hasService(
@@ -152,6 +166,21 @@ App& App::enableDiagnosticsPage() {
     );
 
     diagnosticsPageEnabled_ = true;
+
+    return *this;
+}
+
+App& App::inspectionContributor(
+    std::shared_ptr<InspectionContributor> contributor
+) {
+    auto contributors =
+        services_.service<InspectionContributors>();
+    if (contributors == nullptr) {
+        contributors = std::make_shared<InspectionContributors>();
+        services_.registerService<InspectionContributors>(contributors);
+    }
+
+    contributors->add(std::move(contributor));
 
     return *this;
 }

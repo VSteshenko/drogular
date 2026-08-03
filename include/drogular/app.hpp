@@ -283,6 +283,13 @@ public:
      */
     App& enableDiagnosticsPage();
 
+    /**
+     * Registers a Developer Tools inspection contributor through DI.
+     */
+    App& inspectionContributor(
+        std::shared_ptr<InspectionContributor> contributor
+    );
+
     void run(unsigned short port);
 
 private:
