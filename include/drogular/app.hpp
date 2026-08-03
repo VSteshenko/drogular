@@ -8,7 +8,7 @@
 #include <drogular/application_options.hpp>
 #include <drogular/application_inspection.hpp>
 #include <drogular/application_inspection_controller.hpp>
-#include <drogular/diagnostics_page.hpp>
+#include <drogular/developer_tools_component_registry.hpp>
 
 #include <memory>
 #include <string>
@@ -286,8 +286,22 @@ public:
     /**
      * Registers a Developer Tools inspection contributor through DI.
      */
+    App& developerToolsContributor(
+        std::shared_ptr<DeveloperToolsContributor> contributor
+    );
+
     App& inspectionContributor(
-        std::shared_ptr<InspectionContributor> contributor
+        std::shared_ptr<DeveloperToolsContributor> contributor
+    ) {
+        return developerToolsContributor(std::move(contributor));
+    }
+
+    /**
+     * Registers a trusted browser-side renderer for DiagnosticsPage.
+     */
+    App& developerToolsComponent(
+        std::string name,
+        std::string module
     );
 
     void run(unsigned short port);

@@ -11,7 +11,7 @@
 #include <utility>
 
 class PortalInspectionContributor final
-    : public drogular::InspectionContributor
+    : public drogular::DeveloperToolsContributor
 {
 public:
     explicit PortalInspectionContributor(
@@ -32,12 +32,14 @@ public:
         inspection.addSection({
             "portal-dataset",
             "Portal Dataset",
+            "portal.summary",
             datasetSection()
         });
 
         inspection.addSection({
             "portal-graphql",
             "Portal GraphQL",
+            "portal.summary",
             graphQLSection()
         });
     }

@@ -102,7 +102,11 @@ int main(
         "examples/portal_demo/public/service-worker.js"
     )
     .offlinePage<PortalOfflinePage>()
-    .enableDiagnosticsPage();
+    .enableDiagnosticsPage()
+    .developerToolsComponent(
+        "portal.summary",
+        "/assets/portal-inspection.js"
+    );
 
     app.services().addFactory<drogular::TranslationProvider>(
         drogular::ServiceLifetime::Singleton,
@@ -121,7 +125,7 @@ int main(
         );
 
     const auto inspectionContributors =
-        app.services().service<drogular::InspectionContributors>();
+        app.services().service<drogular::DeveloperToolsContributors>();
 
     if (inspectionContributors != nullptr) {
         inspectionContributors->add(

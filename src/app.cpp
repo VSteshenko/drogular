@@ -1,4 +1,5 @@
 #include <drogular/app.hpp>
+#include <drogular/diagnostics_page.hpp>
 #include <drogular/diagnostics_resources.hpp>
 
 #include <drogon/drogon.h>
@@ -66,8 +67,17 @@ ApplicationInspection App::inspect() const {
         });
     }
 
+    if (diagnosticsPageEnabled_) {
+        result.routes.push_back({
+            DeveloperToolsComponentRegistry::Path,
+            RouteKind::Inspection,
+            "GET",
+            "DeveloperToolsComponentRegistry"
+        });
+    }
+
     const auto contributors =
-        services_.service<InspectionContributors>();
+        services_.service<DeveloperToolsContributors>();
     if (contributors != nullptr) {
         contributors->contribute(result);
     }
@@ -81,10 +91,10 @@ App& App::enableInspection() {
     }
 
     if (!services_.hasService(
-            std::type_index(typeid(InspectionContributors))
+            std::type_index(typeid(DeveloperToolsContributors))
     )) {
-        services_.registerService<InspectionContributors>(
-            std::make_shared<InspectionContributors>()
+        services_.registerService<DeveloperToolsContributors>(
+            std::make_shared<DeveloperToolsContributors>()
         );
     }
 
@@ -126,9 +136,34 @@ App& App::enableDiagnosticsPage() {
 
     enableInspection();
 
+    auto componentRegistry =
+        services_.service<DeveloperToolsComponentRegistry>();
+    if (componentRegistry == nullptr) {
+        componentRegistry =
+            std::make_shared<DeveloperToolsComponentRegistry>();
+        services_.registerService<DeveloperToolsComponentRegistry>(
+            componentRegistry
+        );
+    }
+
     router_.page(
         DiagnosticsPage::Path,
         std::make_shared<DiagnosticsPage>()
+    );
+
+    drogon::app().registerHandler(
+        DeveloperToolsComponentRegistry::Path,
+        [componentRegistry](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            callback(
+                drogon::HttpResponse::newHttpJsonResponse(
+                    componentRegistry->toJson()
+                )
+            );
+        },
+        {drogon::Get}
     );
 
     drogon::app().registerHandler(
@@ -170,17 +205,33 @@ App& App::enableDiagnosticsPage() {
     return *this;
 }
 
-App& App::inspectionContributor(
-    std::shared_ptr<InspectionContributor> contributor
+App& App::developerToolsContributor(
+    std::shared_ptr<DeveloperToolsContributor> contributor
 ) {
     auto contributors =
-        services_.service<InspectionContributors>();
+        services_.service<DeveloperToolsContributors>();
     if (contributors == nullptr) {
-        contributors = std::make_shared<InspectionContributors>();
-        services_.registerService<InspectionContributors>(contributors);
+        contributors = std::make_shared<DeveloperToolsContributors>();
+        services_.registerService<DeveloperToolsContributors>(contributors);
     }
 
     contributors->add(std::move(contributor));
+
+    return *this;
+}
+
+App& App::developerToolsComponent(
+    std::string name,
+    std::string module
+) {
+    auto registry =
+        services_.service<DeveloperToolsComponentRegistry>();
+    if (registry == nullptr) {
+        registry = std::make_shared<DeveloperToolsComponentRegistry>();
+        services_.registerService<DeveloperToolsComponentRegistry>(registry);
+    }
+
+    registry->add(std::move(name), std::move(module));
 
     return *this;
 }

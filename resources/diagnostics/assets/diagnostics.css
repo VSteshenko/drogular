@@ -225,3 +225,8 @@ code, .badge {
     line-height: 1.55;
     color: #c8d2ea;
 }
+
+.component-note {
+    margin: 0 0 12px;
+    color: #f7c873;
+}

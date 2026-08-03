@@ -23,6 +23,7 @@ TEST(PortalInspectionContributorTests, AddsPortalSpecificSections) {
     const auto& datasetSection = inspection.sections[0];
     EXPECT_EQ(datasetSection.id, "portal-dataset");
     EXPECT_EQ(datasetSection.title, "Portal Dataset");
+    EXPECT_EQ(datasetSection.component, "portal.summary");
     EXPECT_EQ(datasetSection.data["storage"].asString(), "in-memory");
     EXPECT_EQ(
         datasetSection.data["entities"]["projects"].asUInt64(),
@@ -35,6 +36,7 @@ TEST(PortalInspectionContributorTests, AddsPortalSpecificSections) {
 
     const auto& graphQLSection = inspection.sections[1];
     EXPECT_EQ(graphQLSection.id, "portal-graphql");
+    EXPECT_EQ(graphQLSection.component, "portal.summary");
     EXPECT_EQ(
         graphQLSection.data["client"].asString(),
         "InProcessGraphQLClient"

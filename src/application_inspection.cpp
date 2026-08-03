@@ -20,21 +20,21 @@ void ApplicationInspection::addSection(InspectionSection section) {
     sections.push_back(std::move(section));
 }
 
-void InspectionContributors::add(
-    std::shared_ptr<InspectionContributor> contributor
+void DeveloperToolsContributors::add(
+    std::shared_ptr<DeveloperToolsContributor> contributor
 ) {
     if (contributor == nullptr) {
-        throw std::invalid_argument("Inspection contributor must not be null");
+        throw std::invalid_argument("Developer Tools contributor must not be null");
     }
 
     contributors_.push_back(std::move(contributor));
 }
 
-const std::vector<std::shared_ptr<InspectionContributor>>& InspectionContributors::entries() const {
+const std::vector<std::shared_ptr<DeveloperToolsContributor>>& DeveloperToolsContributors::entries() const {
     return contributors_;
 }
 
-void InspectionContributors::contribute(
+void DeveloperToolsContributors::contribute(
     ApplicationInspection& inspection
 ) const {
     for (const auto& contributor : contributors_) {
@@ -180,27 +180,50 @@ Json::Value toJson(const ApplicationInspection& inspection) {
     auto appendSection = [&sections](
         const char* id,
         const char* title,
+        const char* component,
         Json::Value data
     ) {
         Json::Value section(Json::objectValue);
 
         section["id"] = id;
         section["title"] = title;
+        section["component"] = component;
         section["data"] = std::move(data);
 
         sections.append(std::move(section));
     };
 
-    appendSection("routes", "Routes", routesJson(inspection.routes));
-    appendSection("components", "Components", componentsJson(inspection.components));
-    appendSection("services", "Services", servicesJson(inspection.services));
-    appendSection("diagnostics", "Diagnostics", diagnosticsJson(inspection.diagnostics));
+    appendSection(
+        "routes",
+        "Routes",
+        "drogular.routes",
+        routesJson(inspection.routes)
+    );
+    appendSection(
+        "components",
+        "Components",
+        "drogular.components",
+        componentsJson(inspection.components)
+    );
+    appendSection(
+        "services",
+        "Services",
+        "drogular.services",
+        servicesJson(inspection.services)
+    );
+    appendSection(
+        "diagnostics",
+        "Diagnostics",
+        "drogular.diagnostics",
+        diagnosticsJson(inspection.diagnostics)
+    );
 
     for (const auto& custom : inspection.sections) {
         Json::Value section(Json::objectValue);
 
         section["id"] = custom.id;
         section["title"] = custom.title.empty() ? custom.id : custom.title;
+        section["component"] = custom.component;
         section["data"] = custom.data;
 
         sections.append(std::move(section));

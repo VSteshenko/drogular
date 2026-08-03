@@ -37,11 +37,12 @@ using ServiceInspection = ServiceRegistration;
 struct InspectionSection {
     std::string id;
     std::string title;
+    std::string component;
     Json::Value data{Json::objectValue};
 };
 
 struct ApplicationInspection {
-    static constexpr int SchemaVersion = 2;
+    static constexpr int SchemaVersion = 3;
 
     std::vector<RouteInspection> routes;
     std::vector<ComponentInspection> components;
@@ -52,21 +53,25 @@ struct ApplicationInspection {
     void addSection(InspectionSection section);
 };
 
-class InspectionContributor {
+class DeveloperToolsContributor {
 public:
-    virtual ~InspectionContributor() = default;
+    virtual ~DeveloperToolsContributor() = default;
     virtual void contribute(ApplicationInspection& inspection) const = 0;
 };
 
-class InspectionContributors {
+class DeveloperToolsContributors {
 public:
-    void add(std::shared_ptr<InspectionContributor> contributor);
-    const std::vector<std::shared_ptr<InspectionContributor>>& entries() const;
+    void add(std::shared_ptr<DeveloperToolsContributor> contributor);
+    const std::vector<std::shared_ptr<DeveloperToolsContributor>>& entries() const;
     void contribute(ApplicationInspection& inspection) const;
 
 private:
-    std::vector<std::shared_ptr<InspectionContributor>> contributors_;
+    std::vector<std::shared_ptr<DeveloperToolsContributor>> contributors_;
 };
+
+// Compatibility aliases for the initial inspection API names.
+using InspectionContributor = DeveloperToolsContributor;
+using InspectionContributors = DeveloperToolsContributors;
 
 using ApplicationInspectionProvider =
     std::function<ApplicationInspection()>;

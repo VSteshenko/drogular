@@ -1,6 +1,7 @@
 #include <drogular/app.hpp>
 #include <drogular/diagnostics_page.hpp>
 #include <drogular/diagnostics_resources.hpp>
+#include <drogular/developer_tools_component_registry.hpp>
 #include <drogular/render_context.hpp>
 
 #include <gtest/gtest.h>
@@ -28,8 +29,10 @@ TEST(DiagnosticsPageTests, ShipsBrowserAssets) {
         drogular::diagnostics_resources::script();
 
     EXPECT_FALSE(css.empty());
-    EXPECT_NE(script.find("fetch(endpoint"), std::string_view::npos);
+    EXPECT_NE(script.find("fetch(inspectionEndpoint"), std::string_view::npos);
     EXPECT_NE(script.find("/__drogular/inspection"), std::string_view::npos);
+    EXPECT_NE(script.find("componentsEndpoint"), std::string_view::npos);
+    EXPECT_NE(script.find("import(moduleUrl)"), std::string_view::npos);
 }
 
 TEST(DiagnosticsPageTests, EnablingPageAlsoEnablesInspectionContract) {
