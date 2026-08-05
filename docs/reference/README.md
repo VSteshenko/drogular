@@ -10,6 +10,13 @@ Use the [Getting Started](../getting-started/README.md) guide to learn the frame
 
 # Available Sections
 
+
+## Application
+
+Configure the application, register high-level framework features, select a runtime profile, and start the server.
+
+- [Application](application/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -34,7 +41,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 
 The following sections will be added as the reference is expanded:
 
-- Application
 - Pages and Components
 - Actions
 - Rendering
