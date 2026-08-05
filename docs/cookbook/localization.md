@@ -1,14 +1,28 @@
 # Localization
 
-Applications should not embed user-facing text inside components.
+## Problem
 
-Instead, user-visible text is provided through the `TranslationProvider` interface. This keeps pages and components independent of any particular language while allowing each application to choose how translations are stored.
+**Need to support multiple languages?**
+
+This guide shows how to separate user-visible text from application logic using Drogular's localization infrastructure.
 
 ---
 
-# Translation Provider
+## Recommended Solution
 
-`TranslationProvider` defines a small interface for resolving localized text.
+Implement a `TranslationProvider` and resolve translated values through `RenderContext`.
+
+This keeps pages and components independent from any particular language while allowing the application to choose how translations are stored.
+
+---
+
+## How It Works
+
+### Translation Provider
+
+`TranslationProvider` defines a simple interface for resolving localized text.
+
+Applications are free to implement the interface using any storage mechanism. PortalDemo provides a concrete implementation named `PortalTranslations`.
 
 ```cpp
 class TranslationProvider
@@ -23,34 +37,11 @@ public:
 };
 ```
 
-Drogular does not prescribe where translations come from.
-
-An application may use in-memory data, resource files, a database or another source behind the same interface.
-
-PortalDemo includes a concrete implementation named `PortalTranslations`.
-
-```cpp
-class PortalTranslations
-    : public drogular::TranslationProvider
-{
-public:
-    std::string translate(
-        const std::string& locale,
-        const std::string& key
-    ) const override
-    {
-        return get(locale, key);
-    }
-};
-```
-
 ---
 
-# Registering the Provider
+### Registering the Provider
 
-The translation provider is registered through dependency injection.
-
-PortalDemo registers `PortalTranslations` as a singleton:
+Register the translation provider through dependency injection.
 
 ```cpp
 app.services().addFactory<drogular::TranslationProvider>(
@@ -61,13 +52,13 @@ app.services().addFactory<drogular::TranslationProvider>(
 );
 ```
 
-The application therefore uses one translation source for every request.
+Using a singleton ensures that the application shares a single translation provider.
 
 ---
 
-# Translation Keys
+### Translation Keys
 
-Translation keys should reflect the structure of the application rather than the organization of translation files.
+Translation keys should reflect the application domain rather than the organization of translation files.
 
 For example:
 
@@ -79,179 +70,35 @@ departments.edit.title
 common.previous
 ```
 
-PortalDemo stores localized values by locale and key:
-
-```cpp
-std::unordered_map<
-    std::string,
-    std::unordered_map<std::string, std::string>
-> values_{
-    {
-        "en",
-        {
-            {"nav.dashboard", "Dashboard"},
-            {"users.title", "Users"},
-            {"departments.edit.title", "Edit Department"},
-            {"common.previous", "Previous"}
-        }
-    },
-    {
-        "de",
-        {
-            {"nav.dashboard", "Übersicht"},
-            {"users.title", "Benutzer"},
-            {"departments.edit.title", "Abteilung bearbeiten"},
-            {"common.previous", "Zurück"}
-        }
-    }
-};
-```
-
-A consistent naming scheme makes translations easier to understand and extend.
+A consistent naming scheme keeps translations stable as the application evolves.
 
 ---
 
-# Translating Values
+## Example
 
-Pages translate text through `RenderContext`.
+Translate user-visible text through `RenderContext`.
 
 ```cpp
-const auto pageTitle =
-    context.translate("departments.details.title");
+const auto title =
+    context.translate("users.title");
 ```
 
-The context resolves the current locale and delegates the lookup to the registered `TranslationProvider`.
+`RenderContext` resolves the current locale and delegates the lookup to the registered translation provider.
 
 ```text
 RenderContext
       │
       ▼
-Current locale
+Current Locale
       │
       ▼
 TranslationProvider
       │
       ▼
-Localized text
+Localized Text
 ```
 
-Translated values can then be added to the template context.
-
-```cpp
-context.set(
-    "departmentStatus",
-    context.translate(
-        department->isActive
-            ? "departments.active"
-            : "departments.inactive"
-    )
-);
-```
-
-The page decides which translation key is required.
-
-The provider decides which text that key represents.
-
----
-
-# Setting Multiple Values
-
-When several template values must be translated, `RenderContext` can resolve them together.
-
-```cpp
-context.setTranslations({
-    {"appTitle", "app.title"},
-    {"navDashboard", "nav.dashboard"},
-    {"navUsers", "nav.users"},
-    {"navDepartments", "nav.departments"},
-    {"commonPrevious", "common.previous"},
-    {"commonNext", "common.next"}
-});
-```
-
-Each pair maps a template value name to a translation key.
-
-This keeps repeated translation setup concise without moving translation responsibility into the template.
-
----
-
-# Current Locale
-
-Locale selection and translation lookup are separate responsibilities.
-
-`LocaleSupport` resolves the current locale from the request:
-
-```cpp
-const auto locale =
-    drogular::LocaleSupport::current(context);
-```
-
-PortalDemo stores the selected language in the `lang` cookie.
-
-```cpp
-return drogular::ActionResult::redirect(
-    safeRedirect
-).cookie(
-    "lang",
-    normalized
-);
-```
-
-`TranslationProvider` does not decide which locale is active.
-
-It only resolves a key for the locale it receives.
-
----
-
-# Fallback Behavior
-
-Fallback behavior belongs to the translation provider implementation rather than the framework itself.
-
-`PortalTranslations` first searches the requested locale:
-
-```cpp
-const auto localeFound =
-    values_.find(locale);
-
-if (localeFound == values_.end()) {
-    return fallback(key);
-}
-```
-
-If the locale or key is unavailable, it falls back to English.
-
-```cpp
-std::string fallback(
-    const std::string& key
-) const
-{
-    const auto english =
-        values_.find("en");
-
-    if (english == values_.end()) {
-        return key;
-    }
-
-    const auto found =
-        english->second.find(key);
-
-    if (found == english->second.end()) {
-        return key;
-    }
-
-    return found->second;
-}
-```
-
-Other applications may use a different fallback strategy while implementing the same `TranslationProvider` interface.
-
-If no provider is registered, Drogular returns the translation key itself.
-
----
-
-# Component Responsibilities
-
-Pages and components should request translated values instead of embedding user-visible strings directly.
+Translated values are then passed to the template.
 
 ```cpp
 context.set(
@@ -260,24 +107,52 @@ context.set(
 );
 ```
 
-Avoid:
+When several values must be translated, register them together.
 
 ```cpp
-context.set(
-    "pageTitle",
-    "Users"
-);
+context.setTranslations({
+    {"pageTitle", "users.title"},
+    {"navUsers", "nav.users"},
+    {"navDepartments", "nav.departments"},
+    {"commonPrevious", "common.previous"},
+    {"commonNext", "common.next"}
+});
 ```
 
-Keeping translated content outside pages and components separates presentation logic from language-specific text.
+This keeps page initialization concise while making every translated value explicit.
 
 ---
 
-# Best Practices
+### Fallback Behavior
+
+Fallback behavior is defined by the translation provider implementation.
+
+`PortalTranslations` first searches the requested locale.
+
+If the locale or translation key cannot be found, it falls back to the default language.
+
+Applications may implement a different fallback strategy while using the same `TranslationProvider` interface.
+
+---
+
+## Best Practices
 
 - Keep translation keys stable.
-- Organize keys by application domain.
+- Organize translation keys by application domain.
 - Keep user-visible text outside pages and components.
-- Register translation implementations through `TranslationProvider`.
+- Register translations through `TranslationProvider`.
 - Keep locale selection separate from translation lookup.
-- Let the provider implementation define its storage and fallback policy.
+- Let the translation provider define storage and fallback behavior.
+
+---
+
+## See Also
+
+### Getting Started *(coming soon)*
+
+- Localization
+
+### API Reference *(coming soon)*
+
+- TranslationProvider
+- RenderContext

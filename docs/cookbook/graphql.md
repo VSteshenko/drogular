@@ -1,402 +1,288 @@
 # GraphQL
 
-GraphQL is the recommended way to communicate with backend services in Drogular.
+## Problem
 
-Rather than exposing GraphQL throughout the application, Drogular treats GraphQL as an implementation detail of an action.
+**Need to communicate with a GraphQL server?**
 
-A component expresses a user intention.
-
-An action performs the GraphQL operation.
-
-The application state is updated through a store.
+This guide shows how to organize GraphQL operations without spreading request construction and JSON mapping throughout the application.
 
 ---
 
-# GraphQL Belongs to Actions
+## Recommended Solution
 
-Components, pages, and stores should not execute GraphQL requests directly.
+Define reusable GraphQL documents, execute them through `GraphQLClient`, and isolate response mapping behind application providers.
 
-Instead, they delegate the operation to an action.
-
-```text
-Component
-    │
-    ▼
-Action
-    │
-    ▼
-GraphQL
-    │
-    ▼
-Store
-    │
-    ▼
-UI Update
-```
-
-This keeps the communication layer isolated from the user interface.
+This keeps pages and actions independent from GraphQL transport details while allowing the same application code to work with different client implementations.
 
 ---
 
-# Why?
+## How It Works
 
-A user does not intend to execute a GraphQL mutation.
+### GraphQL Client
 
-A user intends to:
-
-- create a todo
-- delete a project
-- update a profile
-- sign in
-- upload a file
-
-GraphQL is only one possible implementation of those operations.
-
-If the backend changes from GraphQL to REST, only the action changes.
-
-The rest of the application remains unchanged.
-
----
-
-# HttpGraphQLClient
-
-Drogular provides `HttpGraphQLClient` for executing GraphQL operations.
-
-The client is an infrastructure component.
-
-It should be injected into actions.
+`GraphQLClient` defines the common interface for executing queries, mutations, and complete requests.
 
 ```cpp
-class CreateTodoAction
+class GraphQLClient {
+public:
+    virtual ~GraphQLClient() = default;
+
+    virtual GraphQLResponse execute(
+        const gql::Query& query,
+        const GraphQLVariables& variables = {}
+    ) = 0;
+
+    virtual GraphQLResponse execute(
+        const gql::Mutation& mutation,
+        const GraphQLVariables& variables = {}
+    ) = 0;
+
+    virtual GraphQLResponse executeRequest(
+        const GraphQLRequest& request
+    ) = 0;
+};
+```
+
+Application code depends on this interface rather than a concrete transport.
+
+Drogular provides `HttpGraphQLClient` for HTTP communication and `InProcessGraphQLClient` for executing operations inside the same process.
+
+---
+
+### GraphQL Documents
+
+Keep queries and mutations in dedicated document classes.
+
+PortalDemo defines user queries through `UserQueries`:
+
+```cpp
+class UserQueries {
+public:
+    static drogular::gql::Query all();
+
+    static drogular::gql::Query search(
+        const PortalUserQuery& query
+    );
+
+    static drogular::gql::Query findByCredentials();
+};
+```
+
+The document builder keeps operation names, variables, arguments, and selected fields together.
+
+```cpp
+return drogular::gql::query("PortalUserByCredentials")
+    .variable("username", "String!")
+    .variable("password", "String!")
+    .select(
+        drogular::gql::field("userByCredentials")
+            .arg(
+                "username",
+                drogular::gql::variable("username")
+            )
+            .arg(
+                "password",
+                drogular::gql::variable("password")
+            )
+            .children(
+                PortalGraphQLSelectionBuilder::from(
+                    PortalSchema::users()
+                )
+            )
+    );
+```
+
+Queries and mutations remain reusable and can be tested independently from the page or action that needs them.
+
+---
+
+### Variables
+
+Pass operation values through `GraphQLVariables` instead of embedding them into the document text.
+
+```cpp
+const auto response =
+    client_->execute(
+        UserQueries::findByCredentials(),
+        UserMapper::credentialsVariables(
+            username,
+            password
+        )
+    );
+```
+
+PortalDemo keeps variable construction inside mappers so that GraphQL-specific names and JSON values do not leak into the rest of the application.
+
+---
+
+### Response Mapping
+
+`GraphQLResponse` exposes the GraphQL data, errors, and individual fields.
+
+```cpp
+const auto users =
+    response.field("users");
+
+if (!users.has_value()) {
+    return {};
+}
+
+return UserMapper::fromList(*users);
+```
+
+Map response values into application models before returning them to pages or actions.
+
+```text
+GraphQLResponse
+       │
+       ▼
+Mapper
+       │
+       ▼
+Application Model
+```
+
+This keeps the rest of the application independent from the JSON structure returned by GraphQL.
+
+---
+
+## Example
+
+PortalDemo implements `PortalGraphQLUserProvider` as a GraphQL-backed version of `PortalUserProvider`.
+
+```cpp
+class PortalGraphQLUserProvider final
+    : public PortalUserProvider
 {
 public:
-    explicit CreateTodoAction(
-        std::shared_ptr<HttpGraphQLClient> graphqlClient)
-        : graphqlClient_(std::move(graphqlClient))
+    explicit PortalGraphQLUserProvider(
+        std::shared_ptr<drogular::GraphQLClient> client
+    )
+        : client_(std::move(client))
     {
     }
 
 private:
-    std::shared_ptr<HttpGraphQLClient> graphqlClient_;
+    std::shared_ptr<drogular::GraphQLClient> client_;
 };
 ```
 
-Pages and components should not own a GraphQL client.
-
----
-
-# Queries
-
-Queries retrieve data.
-
-A typical workflow looks like this:
-
-```text
-Action
-    │
-    ▼
-GraphQL Query
-    │
-    ▼
-Response
-    │
-    ▼
-Store
-```
-
-The action converts the response into application state.
-
----
-
-# Mutations
-
-Mutations modify data.
-
-For example:
-
-```text
-User Click
-      │
-      ▼
-CreateTodoAction
-      │
-      ▼
-CreateTodoMutation
-      │
-      ▼
-TodoStore.add(todo)
-```
-
-The component does not manipulate the returned data directly.
-
-It reacts to changes in the store.
-
----
-
-# Example Query
+The provider executes a reusable query, supplies variables, and maps the response into a paged application result.
 
 ```cpp
-class LoadTodosAction
-{
-public:
-    ActionResult execute()
-    {
-        const auto response =
-            graphqlClient_->execute(
-                GetTodosQuery);
+drogular::PagedResult<PortalUser> search(
+    const PortalUserQuery& query
+) const override {
+    const auto response =
+        client_->execute(
+            UserQueries::search(query),
+            UserMapper::toVariables(query)
+        );
 
-        if (!response)
-        {
-            return ActionResult::failure(
-                "Unable to load todos.");
-        }
+    const auto page =
+        response.field("userPage");
 
-        todoStore_->setTodos(response.todos);
-
-        return ActionResult::success();
+    if (!page.has_value()) {
+        return {};
     }
 
-private:
-    std::shared_ptr<HttpGraphQLClient> graphqlClient_;
-    std::shared_ptr<TodoStore> todoStore_;
-};
-```
-
-The action performs three responsibilities:
-
-- executes the query
-- handles failures
-- updates the store
-
----
-
-# Example Mutation
-
-```cpp
-class CreateTodoAction
-{
-public:
-    ActionResult execute(
-        const CreateTodoForm& form)
-    {
-        CreateTodoVariables variables{
-            .title = form.title
-        };
-
-        const auto response =
-            graphqlClient_->execute(
-                CreateTodoMutation,
-                variables);
-
-        if (!response)
-        {
-            return ActionResult::failure(
-                "Unable to create todo.");
-        }
-
-        todoStore_->add(response.todo);
-
-        return ActionResult::success();
-    }
-
-private:
-    std::shared_ptr<HttpGraphQLClient> graphqlClient_;
-    std::shared_ptr<TodoStore> todoStore_;
-};
-```
-
-The action owns both the GraphQL operation and the resulting state update.
-
----
-
-# Variables
-
-GraphQL variables should be represented by dedicated C++ types.
-
-```cpp
-struct CreateTodoVariables
-{
-    std::string title;
-};
-```
-
-Using strongly typed variables improves readability and compile-time safety.
-
----
-
-# Results
-
-GraphQL responses should be converted into domain models before entering the store.
-
-```text
-GraphQL Response
-        │
-        ▼
-Domain Model
-        │
-        ▼
-Store
-```
-
-The rest of the application should not depend on GraphQL-specific response structures.
-
----
-
-# Error Handling
-
-GraphQL requests may fail for many reasons:
-
-- network failures
-- authentication errors
-- validation errors
-- server errors
-- unexpected responses
-
-Actions should translate these failures into meaningful application results.
-
-```cpp
-if (!response)
-{
-    return ActionResult::failure(
-        "Unable to connect to the server.");
+    return UserMapper::pageFromValue(*page);
 }
 ```
 
-Components display the error.
-
-They do not interpret GraphQL responses.
-
----
-
-# Authentication
-
-Authenticated requests should be configured inside the GraphQL client.
-
-Actions should not manually attach authorization headers.
-
-Authentication is infrastructure.
-
-Business operations remain focused on application behavior.
-
----
-
-# Stores
-
-GraphQL responses should update stores.
-
-For example:
+The complete request flow remains explicit:
 
 ```text
-GraphQL Response
-        │
-        ▼
-TodoStore
-        │
-        ▼
-TodoList
-Sidebar
-Dashboard
+Page or Action
+      │
+      ▼
+Application Provider
+      │
+      ├── GraphQL Document
+      ├── GraphQL Variables
+      │
+      ▼
+GraphQLClient
+      │
+      ▼
+GraphQLResponse
+      │
+      ▼
+Mapper
+      │
+      ▼
+Application Model
 ```
 
-Every observing component automatically receives the updated state.
+Pages and actions depend on the application provider. They do not construct GraphQL documents or inspect raw response JSON.
 
 ---
 
-# Keep Components Clean
+### Mutations
 
-Components should never execute GraphQL requests.
-
-Avoid:
+Use the same structure for operations that modify data.
 
 ```cpp
-auto response =
-    graphqlClient->execute(...);
+PortalUser create(
+    const PortalUserCreate& input
+) override {
+    PortalUser user;
+
+    user.username = input.username;
+    user.password = input.password;
+    user.role = input.role;
+
+    const auto response =
+        client_->execute(
+            UserMutations::create(user),
+            UserMapper::toVariables(user)
+        );
+
+    return UserMapper::fromValue(
+        response.data()["createUser"]
+    );
+}
 ```
 
-Instead:
-
-```cpp
-createTodoAction_->execute(form);
-```
-
-Components express user intent.
-
-Actions perform the work.
+The mutation document, variables, execution, and result mapping stay inside the GraphQL-backed provider.
 
 ---
 
-# Dependency Injection
+### Error Handling
 
-GraphQL clients should be injected.
+`HttpGraphQLClient` throws `GraphQLClientError` when a response contains GraphQL errors.
 
-```cpp
-class LoadTodosAction
-{
-public:
-    LoadTodosAction(
-        std::shared_ptr<HttpGraphQLClient> client,
-        std::shared_ptr<TodoStore> store)
-        : client_(std::move(client)),
-          store_(std::move(store))
-    {
-    }
+Transport failures and invalid responses should be handled at the application boundary that invokes the provider.
 
-private:
-    std::shared_ptr<HttpGraphQLClient> client_;
-    std::shared_ptr<TodoStore> store_;
-};
-```
-
-Actions declare every dependency explicitly.
+Keep GraphQL error details out of templates and components. Convert them into application-specific results or validation messages before rendering a response.
 
 ---
 
-# Testing
+## Best Practices
 
-Actions should be tested without requiring a running GraphQL server.
-
-Replace the client with a fake or mock implementation.
-
-Typical tests include:
-
-- successful query
-- successful mutation
-- network failure
-- authentication failure
-- GraphQL errors
-- store updates after success
-
-Stores and components can then be tested independently.
+- Depend on `GraphQLClient`, not a concrete client implementation.
+- Keep queries and mutations in dedicated document classes.
+- Pass dynamic values through `GraphQLVariables`.
+- Keep GraphQL field names and JSON conversion inside mappers.
+- Return application models from GraphQL-backed providers.
+- Keep pages and actions independent from raw GraphQL responses.
+- Test documents, mappers, and providers separately.
 
 ---
 
-# Responsibilities
+## See Also
 
-| Layer | Responsibility |
-|---|---|
-| Component | Express user intent |
-| Page | Coordinate requests |
-| Action | Execute GraphQL operations |
-| HttpGraphQLClient | Communicate with the backend |
-| Store | Own shared application state |
+### Getting Started
 
----
+- [Project Structure](../getting-started/project-structure.md)
 
-# Best Practices
+### API Reference *(coming soon)*
 
-- Execute GraphQL only from actions.
-- Inject `HttpGraphQLClient`.
-- Keep GraphQL out of components.
-- Keep GraphQL out of pages.
-- Update stores after successful operations.
-- Convert responses into domain models.
-- Handle failures inside actions.
-- Test actions independently from the backend.
-
----
-
-# What's Next?
-
-GraphQL performs application operations.
-
-The next guide explains how **Authentication & Authorization** protects those operations and controls access to application resources.
+- GraphQLClient
+- HttpGraphQLClient
+- InProcessGraphQLClient
+- GraphQLRequest
+- GraphQLResponse
+- GraphQLVariables
+- gql::Query
+- gql::Mutation

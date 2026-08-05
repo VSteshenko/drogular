@@ -1,396 +1,245 @@
 # State Management
 
-State Management keeps application data synchronized across pages and components.
+## Problem
 
-Instead of each component storing its own copy of shared data, Drogular uses stores as the single source of truth.
+**Need to share application state between pages, actions, and components?**
 
-A store owns application state and notifies interested components whenever that state changes.
-
----
-
-# Why State Management?
-
-Without shared state, components quickly become difficult to keep synchronized.
-
-For example:
-
-```text
-TodoList
-    │
-    ├── stores 10 todos
-    │
-Sidebar
-    │
-    ├── stores 10 todos
-    │
-Dashboard
-    │
-    └── stores 10 todos
-```
-
-If one component updates the data, every other component must also be updated.
-
-This approach does not scale.
-
-Instead, all components observe the same store.
-
-```text
-                TodoStore
-                    │
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
-    TodoList     Sidebar    Dashboard
-```
-
-The store owns the data.
-
-Components only render it.
+This guide shows how to keep shared data in an application store instead of copying it across multiple parts of the application.
 
 ---
 
-# Single Source of Truth
+## Recommended Solution
 
-Every piece of shared application state should have one owner.
+Create an application-specific store, keep its mutable data in `State<T>`, and register the store as a singleton service.
 
-For example:
-
-- `TodoStore`
-- `UserStore`
-- `NotificationStore`
-- `ShoppingCartStore`
-
-Other classes should read state from the store instead of maintaining their own copies.
+Pages read from the store through `RenderContext`. Actions resolve the same store through `ActionContext` and apply explicit state changes.
 
 ---
 
-# What Belongs in a Store?
+## How It Works
 
-A store should contain state that is shared across multiple parts of the application.
+### State Values
 
-Examples include:
-
-- authenticated user
-- todo list
-- shopping cart
-- selected language
-- notifications
-- application settings
-
-Local UI state should remain inside the component.
-
-Examples include:
-
-- dialog visibility
-- expanded panels
-- selected tab
-- input focus
-- temporary form values
-
----
-
-# Store Responsibilities
-
-A store is responsible for:
-
-- owning shared state
-- exposing read access
-- notifying subscribers
-- applying state changes
-
-A store should not:
-
-- perform GraphQL requests
-- access databases
-- contain business logic
-- validate business rules
-
-Those responsibilities belong to actions and services.
-
----
-
-# Example Store
+`State<T>` stores a mutable value and exposes it through `value()`.
 
 ```cpp
-class TodoStore
-{
+class TodoStore {
 public:
-    const std::vector<Todo>& todos() const
-    {
-        return todos_;
-    }
-
-    void add(Todo todo);
-
-    void remove(TodoId id);
-
-    void toggle(TodoId id);
-
-private:
-    std::vector<Todo> todos_;
+    drogular::State<std::vector<Todo>> todos;
 };
 ```
 
-The store owns the todo collection.
-
-Components cannot modify the state directly.
-
----
-
-# Reading State
-
-Components read data from the store.
+Read the current value without copying ownership into the page or component.
 
 ```cpp
-const auto& todos = todoStore_->todos();
+const auto& currentTodos = todos.value();
 ```
 
-The component renders the state but does not own it.
-
----
-
-# Updating State
-
-State changes should happen through explicit store operations.
+Replace the value through `set()` when the state changes.
 
 ```cpp
-todoStore_->add(todo);
-
-todoStore_->toggle(id);
-
-todoStore_->remove(id);
+todos.set(std::move(updatedTodos));
 ```
 
-Avoid exposing mutable containers directly.
-
-This keeps state changes predictable.
-
----
-
-# Store Notifications
-
-Whenever state changes, the store notifies its subscribers.
-
-```text
-Store Updated
-      │
-      ▼
-Subscribers Notified
-      │
-      ▼
-Components Re-render
-```
-
-Components react to state changes automatically instead of manually refreshing themselves.
-
----
-
-# Actions Update Stores
-
-Actions coordinate business operations.
-
-When an operation succeeds, the action updates the appropriate store.
-
-```text
-User Click
-      │
-      ▼
-Action
-      │
-      ▼
-Service / GraphQL
-      │
-      ▼
-Store Update
-      │
-      ▼
-UI Refresh
-```
-
-The component never updates shared state directly after a business operation.
-
----
-
-# Example Workflow
-
-Creating a todo item typically follows this sequence:
-
-```text
-CreateTodoForm
-        │
-        ▼
-CreateTodoAction
-        │
-        ▼
-GraphQL Mutation
-        │
-        ▼
-TodoStore.add(todo)
-        │
-        ▼
-TodoList Re-renders
-```
-
-Every component observing `TodoStore` immediately receives the updated state.
-
----
-
-# Keep Stores Simple
-
-A store should represent state rather than behavior.
-
-Good examples:
-
-- add item
-- remove item
-- replace collection
-- clear state
-
-Poor examples:
-
-- login user
-- execute GraphQL mutation
-- send email
-- create database connection
-
-Business operations belong elsewhere.
-
----
-
-# Replacing State
-
-Sometimes an entire collection is replaced.
-
-For example, after loading data from GraphQL.
+`State<T>` also supports subscribers that are notified after `set()` replaces the stored value.
 
 ```cpp
-todoStore_->setTodos(response.todos);
+state.subscribe(
+    [](const auto& value) {
+        // React to the new value.
+    }
+);
 ```
 
-Replacing the complete state is often simpler than synchronizing many individual changes.
+The store decides when a change is complete and publishes the new value once.
 
 ---
 
-# Immutable Thinking
+### Application Store
 
-Although Drogular is written in C++, stores should behave as if state changes are intentional events.
+The store owns shared application data and exposes operations that describe valid state changes.
 
-Rather than modifying state from many places:
-
-```text
-Component A
-      │
-Component B
-      │
-Component C
-      │
-      ▼
-Shared Vector
-```
-
-Prefer:
-
-```text
-Component
-    │
-    ▼
-Store Method
-    │
-    ▼
-State Updated
-```
-
-This makes changes easier to understand and debug.
-
----
-
-# Dependency Injection
-
-Stores should be provided through dependency injection.
+TodoPWA keeps its todo collection in `TodoStore`:
 
 ```cpp
-class TodoPage
-{
+class TodoStore {
 public:
-    TodoPage(
-        std::shared_ptr<TodoStore> store)
-        : store_(std::move(store))
-    {
+    explicit TodoStore(std::vector<Todo> initialTodos)
+        : todos(std::move(initialTodos)) {
+        updateNextId();
     }
 
+    void create(std::string title);
+    void toggle(int id);
+    void remove(int id);
+
+    drogular::PagedResult<Todo> find(
+        const TodoQuery& query
+    ) const;
+
+    drogular::State<std::vector<Todo>> todos;
+
 private:
-    std::shared_ptr<TodoStore> store_;
+    int nextId_ = 1;
 };
 ```
 
-Every component using the same injected store observes the same shared state.
+Callers do not need to know how todo identifiers are assigned, how items are updated, or how query results are paginated.
 
 ---
 
-# Testing Stores
+### Registering the Store
 
-Stores should be easy to test independently.
-
-Typical tests include:
-
-- adding items
-- removing items
-- replacing state
-- notification delivery
-- subscriber ordering
-
-Example:
+Register the store as a singleton so pages and actions resolve the same instance.
 
 ```cpp
-TEST(TodoStore, AddsTodo)
-{
-    TodoStore store;
+app.services().add<TodoStore>(
+    drogular::ServiceLifetime::Singleton
+);
+```
 
-    store.add(Todo{"Write documentation"});
+A transient store would create a separate state container for each resolution and would not preserve shared application data.
 
-    EXPECT_EQ(store.todos().size(), 1);
+---
+
+### Reading State from a Page
+
+Pages resolve the store through `RenderContext`.
+
+```cpp
+const auto store =
+    context.service<TodoStore>();
+
+const auto result =
+    store->find(query);
+```
+
+The page converts the result into template data but does not keep another authoritative copy of the todo collection.
+
+```text
+TodoStore
+    │
+    ▼
+TodoPage::onInit
+    │
+    ▼
+Template Context
+    │
+    ▼
+Rendered HTML
+```
+
+---
+
+### Updating State from an Action
+
+Actions resolve the same singleton store through `ActionContext`.
+
+```cpp
+auto store =
+    context.requireService<TodoStore>();
+
+store->toggle(
+    context.requireForm<int>("id")
+);
+
+return drogular::ActionResult::redirect("/");
+```
+
+The redirect starts a new request. The page then renders from the updated store state.
+
+```text
+Form Submission
+      │
+      ▼
+Action Handler
+      │
+      ▼
+TodoStore Update
+      │
+      ▼
+Redirect
+      │
+      ▼
+Page Reads Updated State
+```
+
+This is a server-rendered request cycle. `State<T>::set()` notifies C++ subscribers, but it does not by itself trigger a browser-side re-render.
+
+---
+
+## Example
+
+TodoPWA creates a new item by copying the current collection, applying the change, and publishing the replacement value.
+
+```cpp
+void create(std::string title) {
+    if (title.empty()) {
+        return;
+    }
+
+    auto updatedTodos = todos.value();
+
+    updatedTodos.push_back({
+        nextId_++,
+        std::move(title),
+        false
+    });
+
+    todos.set(std::move(updatedTodos));
 }
 ```
 
-A store test should not require GraphQL or a running application.
+`CreateTodoAction` validates the request and delegates the state change to the store.
+
+```cpp
+const auto validation =
+    drogular::FormValidator(context)
+        .required("title")
+        .minLength("title", 2)
+        .maxLength("title", 100)
+        .validate();
+
+if (!validation.valid()) {
+    return drogular::ActionResult::redirect("/");
+}
+
+auto store =
+    context.requireService<TodoStore>();
+
+store->create(
+    context.requireForm<std::string>("title")
+);
+
+return drogular::ActionResult::redirect("/");
+```
+
+The page receives the updated collection on the redirected request.
 
 ---
 
-# Store Lifetime
+## Best Practices
 
-Stores are typically registered as singletons.
-
-This allows multiple pages and components to share the same application state.
-
-A different lifetime may be appropriate for specialized scenarios, but singleton stores are the recommended default.
-
----
-
-# Best Practices
-
-- One store owns one shared state.
-- Keep stores focused on data.
-- Read state from stores.
-- Modify state through store methods.
-- Let actions update stores.
-- Keep business logic out of stores.
-- Keep GraphQL requests out of stores.
-- Use dependency injection.
-- Test stores independently.
+- Keep one authoritative owner for each piece of shared state.
+- Register shared stores with singleton lifetime.
+- Expose explicit store operations instead of mutable containers.
+- Publish completed changes through `State<T>::set()`.
+- Read shared state through services rather than copying it into pages or components.
+- Keep request validation in actions and state transitions in stores.
+- Do not assume that `State<T>` automatically updates browser-rendered HTML.
 
 ---
 
-# Responsibilities
+## See Also
 
-| Layer | Responsibility |
-|---|---|
-| Component | Render shared state |
-| Store | Own shared state |
-| Action | Execute business operations |
-| Service | Business logic |
-| GraphQL | External communication |
+### Getting Started
 
----
+- [Dependency Injection](../getting-started/dependency-injection.md)
+- [Components](../getting-started/components.md)
 
-# What's Next?
+### API Reference *(coming soon)*
 
-Now that you understand shared state, the next guide explains how Actions encapsulate user intentions and coordinate business operations across services, GraphQL, and stores.
+- State
+- ApplicationServices
+- RenderContext
+- ActionContext

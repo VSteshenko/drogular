@@ -4,933 +4,184 @@
 
 # Drogular
 
-Drogular is an Angular-inspired C++ web framework built on top of [Drogon](https://github.com/drogonframework/drogon).
+> **Modern C++ application framework for Drogon with server-driven UI, GraphQL, PWA and extensible Developer Tools.**
 
-Drogular is validated through complete reference applications rather than isolated examples.
+Build modern web applications in C++ using a unified architecture for components, dependency injection, state management, GraphQL and Developer Tools.
 
-The goal is to provide a component-oriented way to build SSR, SPA, and PWA-style applications in modern C++ with first-class GraphQL support.
+**A cohesive application framework — not a collection of unrelated libraries.**
 
-## Architecture Philosophy
-
-Drogular evolves through real applications.
-
-New APIs are introduced only after they have been validated by practical usage in the included examples.
-
-This keeps the framework compact, consistent and focused on solving real development problems.
+---
 
 ## Why Drogular?
 
-Drogular combines:
+Building modern web applications in C++ often requires combining independent libraries for routing, templates, dependency injection, state management, GraphQL clients and development tooling.
 
-- Drogon performance
-- Angular-inspired components
-- Server-side rendering
-- Scoped component contexts
-- Template engine
-- Service container
-- Modern C++20
-- Strong testing support
+Drogular takes a different approach.
 
-Example architecture:
+It provides these capabilities as parts of a single application framework with a consistent programming model. Pages, components, services, actions, state management, GraphQL integration and Developer Tools are designed to work together instead of being assembled from unrelated libraries.
 
-```text
-Application
-    ↓
-ApplicationServices
-    ↓
-Router
-    ↓
-Page / Action
-    ↓
-Services
-    ↓
-Template Rendering
-    ↓
-HTML
-```
+---
 
-## Status
+## Core Principles
 
-**Version:** 0.20.0
+- 🧩 Component-based architecture
+- ⚡ Server-driven UI
+- 💉 Dependency Injection everywhere
+- 🔄 Reactive State Management
+- 🌐 Native GraphQL integration
+- 🌍 Built-in Localization
+- 📱 Progressive Web Apps
+- 🛠 Developer Tools built on public APIs
+- 🔌 Extensible architecture
 
-Current release highlights:
+---
 
-- Portal Demo became the primary reference application.
-- Feature-oriented application architecture.
-- Expanded GraphQL infrastructure.
-- Reusable UI components.
-- Significantly improved automated test coverage.
-- Expanded official documentation.
-
-Drogular is now validated through complete reference applications that demonstrate recommended architecture and framework usage.
-
-Current architecture:
+## Architecture
 
 ```text
 Application
-    ↓
-ApplicationServices
-    ↓
-Dependency Injection
-    ↓
-Router
-    ↓
-RenderContext
-    ↓
-Component Registry
-    ↓
-TemplatePage / TemplateComponent
-    ↓
-Template Cache
-    ↓
-Compiled Template
-    ↓
-Template Runtime
-    ↓
-Component Renderer
-    ↓
-HTML
+    ├── Pages
+    ├── Components
+    ├── Services
+    ├── Actions
+    ├── State
+    ├── GraphQL
+    ├── Localization
+    └── Developer Tools
 ```
 
-Action pipeline:
+Every subsystem follows the same architectural principles, creating a consistent programming model throughout the application.
+
+---
+
+## Developer Tools
+
+Developer Tools are a first-class part of Drogular rather than an external utility.
 
 ```text
-HTML Form
-    ↓
-ActionHandler
-    ↓
-ActionContext
-    ↓
-Services
-    ↓
-ActionResult
-    ↓
-HTTP Response
+             Application
+
+                   │
+                   ▼
+       Application Inspection
+
+                   │
+                   ▼
+          Inspection JSON API
+
+        ┌──────────┴──────────┐
+        ▼                     ▼
+ Diagnostics Page      External Tools
 ```
 
-Data pipeline:
+Developer Tools include:
 
-```text
-GraphQL Query
-    ↓
-GraphQL Client
-    ↓
-GraphQL Result
-    ↓
-RenderContext
-    ↓
-Template Rendering
-    ↓
-HTML
-```
+- Development Profile
+- Built-in Diagnostics
+- Application Inspection
+- Extensible Inspection Contributors
+- Custom Developer Components
+- Public JSON contract for external tools
+- IDE-ready architecture
 
-### Features
+Applications and libraries can contribute their own inspection sections and custom visualizations without modifying Drogular itself.
 
-#### Application
+---
 
-- Application bootstrap
-- Routing
-- Pages
-- Render contexts
+## Reference Application
 
-#### Components
+**PortalDemo** is the reference application for Drogular.
 
-- Component registry
-- Dynamic component creation
-- Recursive component rendering
-- Component lifecycle hooks
-- Component initialization
-- Component destruction
-- Self-closing component tags
-- Component children
-- Default slots
-- Named slots
-- Component inputs
-- Attribute bindings
+It demonstrates the recommended architecture, including:
 
-#### Dependency Injection
+- Authentication
+- Dependency Injection
+- Components
+- Reactive State Management
+- GraphQL
+- Localization
+- Developer Tools
 
-- Singleton services
-- Lazy singleton services
-- Transient services
-- Scoped services
-- Constructor injection factories
-- Dependency graph
-- Dependency validation
-- Circular dependency detection
+Rather than being a collection of isolated examples, PortalDemo shows how these features work together in a complete application.
 
-#### Template Compiler
-
-- Template tokenizer
-- Template AST
-- Template parser
-- Compiled templates
-- Template runtime
-- Template cache
-- Template diagnostics
-- Variables (`{{ value }}`)
-- Raw HTML (`{{{ value }}}`)
-- Conditions (`@if`)
-- Loops (`@foreach`)
-- Json path access
-- Template Layouts
-- Template Partials
-- Nested Includes
-- Include Cycle Protection
-
-#### GraphQL
-
-- Query builder
-- Variables
-- Aliases
-- Fragments
-- Validation
-- GraphQLRequest
-- GraphQLResponse
-- GraphQLResult
-- StaticGraphQLClient
-- HttpGraphQLClient
-- Error handling
-- Integration tests
-
-#### Actions
-
-- ActionHandler
-- ActionContext
-- ActionResult
-- ActionValidationError
-- Form value access
-- Typed form values
-- Required form values
-- Redirect responses
-- HTML responses
-- JSON responses
-- Action integration tests
-
-#### State Management
-
-- State<T>
-- Observable state
-- State subscriptions
-- Component state
-- Shared state through DI
-- Store pattern
-
-#### Forms & Validation
-
-- ValidationResult
-- ValidationError
-- FormValidator
-- Required validation
-- Minimum length validation
-- Maximum length validation
-- Email validation
-- Field error helpers
-- Form validation in actions
-
-#### Authentication & Authorization
-
-- AuthUser
-- AuthService
-- SessionStore
-- LoginAction
-- LogoutAction
-- Protected pages
-- Role-based authorization
-- Authentication reference application
-- Cookie Support
-- Session Support
-
-#### External Templates
-
-- TemplateLoader
-- External HTML templates
-- templatePath()
-- Template root directory
-- Template source cache
-- Development reload support
-- ApplicationOptions
-
-#### Repositories
-
-- Repository Pattern
-- Repository services
-- Dependency Injection integration
-
-#### Static Files & Asset Support
-
-- Static file registration
-- Asset directories
-- Favicon support
-- Safe file serving
-- Path traversal protection
-- Content type detection
-- Static file responses
-- File downloads
-- Cache-Control support
-- ETag support
-- If-None-Match support
-- Last-Modified support
-- If-Modified-Since support
-- 304 Not Modified responses
-- Static file cache profiles
-
-#### Progressive Web Applications
-
-- Web App Manifest
-- Service Worker registration
-- Offline pages
-- App shell support
-- Dynamic offline page generation
-- PWA helper APIs
-
-#### Localization
-
-- Translation services
-- Runtime language switching
-- Localized validation messages
-- Shared localization helpers
-
-#### Testing
-
-- Component testing
-- Page testing
-- Integration testing
-- GitHub Actions CI
-
-## Project Maturity
-
-| Area                            | Status      |
-|---------------------------------|-------------|
-| Application Bootstrap           | Stable      |
-| Routing                         | Stable      |
-| Components                      | Stable      |
-| Component Registry              | Stable      |
-| Component Tags                  | Stable      |
-| Component Inputs                | Stable      |
-| Attribute Bindings              | Stable      |
-| Slots                           | Stable      |
-| Recursive Component Rendering   | Stable      |
-| Component Lifecycle             | Stable      |
-| Lifecycle Hooks                 | Stable      |
-| Scoped RenderContext            | Stable      |
-| Template Compiler               | Stable      |
-| Template AST                    | Stable      |
-| Template Parser                 | Stable      |
-| Template Runtime                | Stable      |
-| Template Cache                  | Stable      |
-| Template Diagnostics            | Stable      |
-| Variables ({{ }})               | Stable      |
-| Raw Output ({{{ }}})            | Stable      |
-| Conditions (@if)                | Stable      |
-| Loops (@foreach)                | Stable      |
-| Json Object Access              | Stable      |
-| GraphQL Query Builder           | Stable      |
-| GraphQL Validation              | Stable      |
-| GraphQLResult                   | Stable      |
-| StaticGraphQLClient             | Stable      |
-| HttpGraphQLClient               | Stable      |
-| Dependency Injection            | Stable      |
-| Service Lifetimes               | Stable      |
-| Constructor Injection Factories | Stable      |
-| Dependency Graph                | Stable      |
-| Dependency Validation           | Stable      |
-| Circular Dependency Detection   | Stable      |
-| Testing Helpers                 | Stable      |
-| Actions                         | Stable      |
-| ActionContext                   | Stable      |
-| ActionResult                    | Stable      |
-| Action Validation               | Stable      |
-| Forms                           | Stable      |
-| State<T>                        | Stable      |
-| Observable State                | Stable      |
-| Shared State                    | Stable      |
-| Store Pattern                   | Stable      |
-| Forms & Validation              | Stable      |
-| ValidationResult                | Stable      |
-| FormValidator                   | Stable      |
-| Field Validation                | Stable      |
-| Authentication Sample           | Stable      |
-| Authorization Sample            | Stable      |
-| Login / Logout Flow             | Stable      |
-| External Templates              | Stable      |
-| TemplateLoader                  | Stable      |
-| Template Root                   | Stable      |
-| Template Source Cache           | Stable      |
-| Development Template Reload     | Stable      |
-| ApplicationOptions              | Stable      |
-| Sessions                        | Stable      |
-| Template Layouts                | Stable      |
-| Template Partials               | Stable      |
-| Repository Pattern              | Stable      |
-| Static Files                    | Stable      |
-| Static File Resolver            | Stable      |
-| Static File Responses           | Stable      |
-| File Downloads                  | Stable      |
-| Static File Caching             | Stable      |
-| ETag Support                    | Stable      |
-| Last-Modified Support           | Stable      |
-| Static File Cache Profiles      | Stable      |
-| Portal Demo                     | Stable      |
-| Localization                    | Stable      |
-| PWA                             | Stable      |
-| Service Worker                  | Stable      |
-| Web App Manifest                | Stable      |
-| Offline Support                 | Stable      |
-| Static Asset Pipeline           | Stable      |
-| Static Asset Cache Profiles     | Stable      |
-| Documentation                   | In Progress |
-| Production Readiness            | In Progress |
-
-## Documentation
-
-- Getting Started
-- Cookbook
-- Architecture
-- API Reference
-
-The documentation is based on real framework capabilities and complete reference applications rather than isolated code snippets.
+---
 
 ## Examples
 
-### TodoPWA
+| Example | Demonstrates |
+|----------|--------------|
+| TodoPWA | Components, State Management, Forms & Validation |
+| Developer Tools | Extending the Developer Tools platform |
+| PortalDemo | Complete reference application architecture |
 
-Demonstrates the core Drogular APIs in a compact application:
+---
 
-- Components
-- Forms & Validation
-- State Management
-- GraphQL
-- Actions
-- Pagination
-- Search
-- Progressive Web Application support
-
-### Authentication Sample
-
-Demonstrates:
-
-- Authentication
-- Authorization
-- Sessions
-- Protected pages
-
-### Portal Demo
-
-The primary Drogular reference application demonstrating recommended architecture for medium and large projects.
-
-Features include:
-
-- Feature-oriented architecture
-- GraphQL integration
-- Localization
-- Authentication
-- Authorization
-- Reusable components
-- Pagination
-- Search
-- CRUD workflows
-- Shared infrastructure
-
-## Dependency Injection
-
-Drogular includes a small dependency injection container through `ApplicationServices`.
-
-### Register a singleton
-
-```c++
-services.add<Logger>(
-    drogular::ServiceLifetime::Singleton
-);
-```
-
-### Register a scoped service
-
-```c++
-services.add<RequestContext>(
-    drogular::ServiceLifetime::Scoped
-);
-```
-
-### Register a transient service
-
-```c++
-services.add<CommandHandler>(
-    drogular::ServiceLifetime::Transient
-);
-```
-
-### Register with a factory
-
-```c++
-services.addFactory<TodoService>(
-    drogular::ServiceLifetime::Scoped,
-    [&services]() {
-        return std::make_shared<TodoService>(
-            services.requireService<TodoRepository>()
-        );
-    }
-);
-```
-
-### Resolve from RenderContext
-
-```c++
-auto logger =
-    context.requireService<Logger>();
-```
-
-| Lifetime      | Behavior                             |
-|---------------|--------------------------------------|
-| Singleton     | Created once and reused              |
-| LazySingleton | Created on first request and reused  |
-| Transient     | New instance on every request        |
-| Scoped        | One instance per RenderContext scope |
-
-## Actions
-
-### Register an action
-
-```c++
-app.action<CreateTodoAction>(
-    "/todos/create"
-);
-```
-
-### Read typed form values
-
-```c++
-auto title =
-    context.form<std::string>("title");
-
-auto id =
-    context.form<int>("id");
-```
-
-### Required values
-
-```c++
-auto title =
-    context.requireForm<std::string>("title");
-```
-
-### Resolve services
-
-```c++
-auto service =
-    context.requireService<TodoService>();
-```
-
-### Redirect
-
-```c++
-return ActionResult::redirect("/");
-```
-
-### JSON response
-
-```c++
-Json::Value json;
-json["ok"] = true;
-
-return ActionResult::json(json);
-```
-
-## State Management
-
-Drogular provides lightweight state management built around
-plain C++ objects.
-
-### State
+## Quick Start
 
 ```cpp
-drogular::State<int> counter(0);
-
-counter.set(42);
-
-EXPECT_EQ(
-    counter.value(),
-    42
-);
-```
-
-### Observable State
-
-```c++
-counter.subscribe(
-    [](const int& value) {
-        std::cout << value;
-    }
-);
-
-counter.set(5);
-```
-
-### Shared State
-
-```c++
-using CounterState =
-    drogular::State<int>;
-
-services.addFactory<CounterState>(
-    drogular::ServiceLifetime::Singleton,
-    []() {
-        return std::make_shared<CounterState>(0);
-    }
-);
-```
-
-### Store Pattern
-
-```c++
-class TodoStore {
-public:
-    drogular::State<
-        std::vector<Todo>
-    > todos;
-};
-```
-
-Stores are regular services and integrate naturally with
-dependency injection.
-
-## GraphQL builder
-
-Drogular includes a small GraphQL query builder.
-
-```c++
-const auto userFields = drogular::gql::fragment("UserFields", "User", {
-    drogular::gql::field("id"),
-    drogular::gql::field("name")
-});
-
-const auto query = drogular::gql::query("UserPage")
-    .variable("userId", "ID!")
-    .select(
-        drogular::gql::field("user")
-            .alias("profile")
-            .arg("id", drogular::gql::variable("userId"))
-            .children({
-                drogular::gql::spread("UserFields")
-            })
-    )
-    .fragment(userFields);
-
-const auto validation = query.validate();
-
-if (validation.valid()) {
-    const auto text = query.toString();
-}
-
-```
-
-## GraphQL Client
-
-Drogular provides a small GraphQL client abstraction.
-
-```c++
-drogular::GraphQLResult result;
-result.set("todos", todos);
-
-auto client = std::make_shared<drogular::StaticGraphQLClient>(
-    std::move(result)
-);
-
-drogular::App app;
-
-app.graphQLClient(client);
-app.page<TodoPage>("/");
-app.run(8080);
-```
-
-### GraphQLRequest
-
-```c++
-GraphQLRequest request(
-    query.toString()
-);
-
-request
-    .variable("id", "42")
-    .variable("limit", 10);
-```
-
-### Execute Request
-
-```c++
-auto response =
-    client.executeRequest(request);
-
-if (response.hasErrors()) {
-    for (const auto& message :
-         response.errorMessages()) {
-        std::cout << message << '\n';
-    }
-}
-```
-
-### GraphQLResponse
-
-```c++
-if (response.hasData()) {
-    auto viewer =
-        response.field("viewer");
-}
-```
-
-## Template Compiler
-
-Templates are compiled into an AST and cached for reuse.
-
-### Variables
-
-```html
-<h1>{{ title }}</h1>
-```
-
-### Raw HTML
-
-```html
-{{{ html }}}
-```
-
-### Conditions
-
-```html
-@if(showTodos)
-    <p>Visible</p>
-@else
-    <p>Hidden</p>
-@endif
-```
-
-### Loops
-
-```html
-@foreach(todo in todos)
-    <li>{{ todo.title }}</li>
-@endforeach
-```
-### Json Paths
-
-```html
-{{ user.profile.name }}
-```
-
-## External Templates
-
-Drogular pages can load templates from external HTML files.
-
-```c++
-class LoginPage final
-    : public drogular::TemplatePage
+int main()
 {
-public:
-    std::string templatePath() const override {
-        return "login.html";
-    }
-};
+    drogular::Application app;
+
+    app.profile(drogular::ApplicationProfile::Development);
+
+    app.run();
+}
 ```
 
-### Configure a template root
+See the **Getting Started** guide for a complete walkthrough.
 
-```c++
-drogular::App app;
+---
 
-app.templateRoot(
-    "examples/auth_sample/templates"
-);
-```
+## Feature Overview
 
-### Disable template cache during development
+| Feature | Status |
+|----------|:------:|
+| Components | ✅ |
+| Routing | ✅ |
+| Dependency Injection | ✅ |
+| State Management | ✅ |
+| Forms & Validation | ✅ |
+| GraphQL Integration | ✅ |
+| Localization | ✅ |
+| Progressive Web Apps | ✅ |
+| Developer Tools | ✅ |
 
-```c++
-app.templateCache(false);
-```
+---
 
-## Static Files
+## Documentation
 
-Drogular can serve static files through application-level mappings.
+- 📖 Getting Started
+- 🍳 Cookbook
+- 📚 API Reference
+- 🧩 Examples
+- 🚀 PortalDemo Reference Application
 
-```c++
-app.staticFiles("/assets", "./public")
-   .staticFileCacheProfile(
-       StaticFileCacheProfile::Production
-   );
-```
-
-### Example
-
-```text
-/assets/logo.png -> public/logo.png
-```
-
-### Static File Cache Profiles
-
-```c++
-app.staticFileCacheProfile(
-    drogular::StaticFileCacheProfile::Development
-);
-```
-
-### Available profiles:
-
-- Disabled
-- Development
-- Production
-
-### File Responses
-
-```c++
-return drogular::ActionResult::file(
-    "public/report.pdf"
-);
-```
-
-```c++
-return drogular::ActionResult::download(
-    "exports/report.pdf",
-    "report.pdf"
-);
-```
-
-## Authentication
-
-```c++
-auto session =
-    context.session();
-
-session->set("username", username);
-```
-
-## Progressive Web Applications
-
-Drogular provides first-class Progressive Web Application support through manifests, service workers and offline pages.
-
-```c++
-app.manifest(...)
-   .serviceWorker(...)
-   .offlinePage<OfflinePage>();
-```
-
-```c++
-app.staticFileCacheProfile(
-    StaticFileCacheProfile::Production
-);
-```
-
-## Component Lifecycle
-
-Components can participate in the rendering lifecycle.
-
-```c++
-class UserCardComponent
-    : public drogular::TemplateComponent
-{
-public:
-    void onInit(
-        drogular::RenderContext& context
-    ) override
-    {
-        // initialization
-    }
-
-    void onDestroy(
-        drogular::RenderContext& context
-    ) override
-    {
-        // cleanup
-    }
-};
-```
-
-### Lifecycle order
-
-```text
-Component Creation
-    ↓
-onInit()
-    ↓
-render()
-    ↓
-onDestroy()
-```
-
-### Lifecycle hooks are invoked for
-
-* Direct component rendering
-* Component tags
-* Nested components
-* Sibling components
-
-## Component Slots
-
-```html
-<header>
-    <slot name="header"/>
-</header>
-
-<main>
-    <slot name="content"/>
-</main>
-```
-```c++
-class HeaderComponent : public drogular::TemplateComponent {
-public:
-    std::string slot() const override {
-        return "header";
-    }
-};
-```
-
-## Layouts
-
-```html
-<!doctype html>
-<html>
-<body>
-
-@include("partials/header.html")
-
-@content
-
-@include("partials/footer.html")
-
-</body>
-</html>
-```
-
-## Reference Applications
-
-- TodoPWA
-- Portal Demo
-- Authentication sample
-- Repository sample
-- Localization sample
-- PWA sample
+---
 
 ## Roadmap
 
 ### 0.21
 
-- Component metadata
-- Template validation
-- Diagnostics
-- CLI tooling
+- Developer Tools Platform
+- Application Inspection
+- Extensible Diagnostics
+- Reference Application improvements
 
 ### 1.0
 
-- Stable public API
-- Production-ready documentation
-- Long-term API stability
+- Stable Public API
+- Production Ready
+- Long-term API Compatibility
 
-### Future
+---
 
-- GraphQL code generation
-- GraphQL subscriptions
-- WebSocket support
-- Server-side hydration
-- PWA tooling
-- CLI
-- Hot reload
-- Static site generation
+## Design Philosophy
+
+Drogular is designed around one simple idea:
+
+> **Every subsystem should feel like a natural part of the framework.**
+
+Components, dependency injection, state management, GraphQL integration, localization and Developer Tools all follow the same architectural principles, creating a consistent programming model across the entire application.
+
+The goal of Drogular is not simply to provide more features, but to provide a cohesive framework where those features naturally work together.

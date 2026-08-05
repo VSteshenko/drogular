@@ -2,9 +2,9 @@
 
 Welcome to the official Drogular documentation.
 
-Drogular is a modern C++ web framework built on top of Drogon, focused on building server-driven web applications with reusable components, dependency injection, GraphQL integration, and progressive web application support.
+Drogular is a component-driven C++ web framework built on Drogon for server-rendered applications, GraphQL integration, progressive web applications, and extensible Developer Tools.
 
-This documentation is organized into several sections, each serving a different purpose.
+The documentation is organized by purpose. Start with the fundamentals, then continue with practical patterns, architectural decisions, or the public API.
 
 ---
 
@@ -19,88 +19,95 @@ Recommended for new users.
 Topics include:
 
 - Installation
+- Your First Drogular Application
 - Project Structure
-- First Application
-- Routing
 - Components
 - Dependency Injection
+- Routing
+
+[Open Getting Started](getting-started/README.md)
 
 ---
 
 ## 📖 Cookbook
 
-Practical guides for solving common development tasks.
+Learn the architectural patterns and recommended practices used throughout Drogular applications.
 
-Each article focuses on one problem and demonstrates the recommended Drogular approach using production code from the official Demo applications.
+Every article is based on the current framework implementation and working examples. The Cookbook documents existing solutions rather than future APIs.
 
-Examples include:
+Available guides:
 
-- Authentication
-- Authorization
-- Forms
-- GraphQL
+- Forms & Validation
 - State Management
-- Pagination
+- GraphQL
 - Localization
+
+[Open the Cookbook](cookbook/README.md)
 
 ---
 
 ## 🏗 Architecture
 
-Learn how Drogular works internally.
+Understand why Drogular is designed the way it is.
 
-This section explains the design decisions behind the framework rather than simply describing the public API.
+This section focuses on design decisions and internal architecture rather than API usage.
 
 Topics include:
 
-- Rendering Pipeline
-- Component Model
-- Dependency Injection
-- Lifecycle
-- State Management
-- Server-First Architecture
+- Framework Philosophy
+- Feature Architecture
+- Data Providers
+- Template Rendering Pipeline
+- Portal Feature Validation
+
+[Open Architecture](architecture/README.md)
 
 ---
 
 ## 📚 API Reference
 
-Reference documentation for the public API.
+Find reference documentation for Drogular's supported public API.
 
-Contains descriptions of public classes, methods, interfaces, and components.
+This section describes public classes, methods, interfaces, and components.
+
+[Open API Reference](reference/README.md)
 
 ---
 
-## 💡 Demo Applications
+## 🧩 Examples
 
-Production-oriented applications demonstrating recommended Drogular architecture.
+The repository includes focused examples for individual framework capabilities and a complete reference application.
 
-Current demos:
+| Example | Demonstrates |
+|---------|--------------|
+| `todo_pwa` | Components, state management, forms, validation, and PWA support |
+| `auth_sample` | Authentication and protected pages |
+| `repository_sample` | Repository abstraction and dependency injection |
+| `developer_tools` | Extending application inspection and Developer Tools |
+| `portal_demo` | Complete reference application architecture |
 
-- Portal Demo
-- Store Demo *(planned)*
-- Chat Demo *(planned)*
-
-Demo applications are the primary source of examples used throughout the documentation.
+`PortalDemo` is the primary application used to validate and evolve Drogular's public API before features are documented as established patterns.
 
 ---
 
 # Learning Path
 
-If you are new to Drogular, we recommend reading the documentation in the following order:
+If you are new to Drogular, follow this order:
 
-1. Getting Started
-2. Portal Demo
-3. Cookbook
-4. Architecture
-5. API Reference
+1. [Getting Started](getting-started/README.md)
+2. Explore the focused examples
+3. Study `PortalDemo`
+4. Read the [Cookbook](cookbook/README.md)
+5. Review the [Architecture](architecture/README.md)
+6. Use the [API Reference](reference/README.md) when you need exact interface details
 
 ---
 
 # Engineering Principles
 
-Drogular is developed according to the engineering principles described in `ENGINEERING.md`.
+Drogular is developed according to the principles in [`ENGINEERING.md`](../ENGINEERING.md).
 
-These principles define how architectural decisions are made and help keep the framework consistent, maintainable, and production-ready.
+Code and working examples are the source of truth. Features are validated in real applications before they are documented as established framework behavior.
 
 ---
 
@@ -108,9 +115,9 @@ These principles define how architectural decisions are made and help keep the f
 
 Contributions are welcome.
 
-Before contributing, please read:
+Before contributing, read:
 
-- ENGINEERING.md
-- CONTRIBUTING.md
+- [`ENGINEERING.md`](../ENGINEERING.md)
+- [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 
-to understand the project's engineering philosophy and development workflow.
+These documents describe the project's engineering philosophy and development workflow.
