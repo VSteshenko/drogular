@@ -42,7 +42,7 @@ The current validator supports:
 - `maxLength()`
 - `email()`
 
-Optional format rules do not make a field required by themselves. Combine them with `required()` when the value must be present.
+`maxLength()` and `email()` skip missing values. `minLength()` treats a missing value as an error. Combine format rules with `required()` when presence should be explicit and produce a dedicated required-field error.
 
 ```cpp
 const auto validation =
