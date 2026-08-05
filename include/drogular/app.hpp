@@ -161,7 +161,10 @@ public:
      *
      * Enabled by default.
      */
-    App& staticFileCache(bool enabled);
+    App& staticFileCache(bool enabled) {
+        options_.setStaticFileCacheEnabled(enabled);
+        return *this;
+    }
 
     /**
      * Sets Cache-Control max-age for static file responses.
@@ -174,7 +177,10 @@ public:
      */
     App& staticFileCacheMaxAge(
         std::chrono::seconds maxAge
-    );
+    ) {
+        options_.setStaticFileCacheMaxAge(maxAge);
+        return *this;
+    }
 
     /**
      * Returns the application's service container.
