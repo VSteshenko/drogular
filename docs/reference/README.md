@@ -22,6 +22,12 @@ Resolve request locales and translate application keys through an application-de
 
 - [Localization](localization/README.md)
 
+## State Management
+
+Store mutable values and notify C++ subscribers when replacement values are published.
+
+- [State Management](state-management/README.md)
+
 ---
 
 # Planned Sections
@@ -34,7 +40,6 @@ The following sections will be added as the reference is expanded:
 - Rendering
 - Dependency Injection
 - Routing
-- State Management
 - GraphQL
 - Authentication and Sessions
 - Pagination and Request Parameters
