@@ -17,6 +17,12 @@ Configure the application, register high-level framework features, select a runt
 
 - [Application](application/README.md)
 
+## Pages
+
+Define route-mounted HTML pages, use template-backed rendering, and add common page or PWA context values.
+
+- [Pages](pages/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -41,7 +47,7 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 
 The following sections will be added as the reference is expanded:
 
-- Pages and Components
+- Components
 - Actions
 - Rendering
 - Dependency Injection

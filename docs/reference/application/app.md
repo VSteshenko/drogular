@@ -104,7 +104,7 @@ template <typename PageType>
 App& page(const std::string& path);
 ```
 
-Registers a page instance for a GET route.
+Registers a page instance for a GET route. See [`Page`](../pages/page.md) and [`TemplatePage`](../pages/template-page.md).
 
 `PageType` must inherit from `drogular::Page` and must be default-constructible because registration creates it with `std::make_shared<PageType>()`.
 
