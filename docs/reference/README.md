@@ -16,6 +16,12 @@ Validate submitted form values, inspect field errors, and read required typed in
 
 - [Forms and Validation](forms-and-validation/README.md)
 
+## Localization
+
+Resolve request locales and translate application keys through an application-defined provider.
+
+- [Localization](localization/README.md)
+
 ---
 
 # Planned Sections
@@ -31,7 +37,6 @@ The following sections will be added as the reference is expanded:
 - State Management
 - GraphQL
 - Authentication and Sessions
-- Localization
 - Pagination and Request Parameters
 - PWA
 - Static Files
