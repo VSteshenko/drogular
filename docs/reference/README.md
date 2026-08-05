@@ -23,6 +23,12 @@ Define route-mounted HTML pages, use template-backed rendering, and add common p
 
 - [Pages](pages/README.md)
 
+## Components
+
+Render reusable UI fragments, accept typed inputs, compose slots, and register component tags.
+
+- [Components](components/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -47,7 +53,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 
 The following sections will be added as the reference is expanded:
 
-- Components
 - Actions
 - Rendering
 - Dependency Injection

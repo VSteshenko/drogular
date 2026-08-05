@@ -187,6 +187,6 @@ app.page<DeveloperToolsExamplePage>("/");
 
 - [`TemplatePage`](template-page.md)
 - [`PageSupport`](page-support.md)
-- `Component` *(coming soon)*
+- [`Component`](../components/component.md)
 - `RenderContext` *(coming soon)*
 - [`App`](../application/app.md)

@@ -59,5 +59,5 @@ The page type must inherit from `drogular::Page` and be default-constructible.
 
 - [App](../application/app.md)
 - Rendering *(coming soon)*
-- Components *(coming soon)*
+- [Components](../components/README.md)
 - Authentication and Sessions *(coming soon)*

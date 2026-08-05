@@ -138,7 +138,7 @@ template <typename ComponentType>
 App& component();
 ```
 
-Registers a component with the application's component registry.
+Registers a [`Component`](../components/component.md) type with the application's [`ComponentRegistry`](../components/component-registry.md).
 
 The overload without a tag uses `ComponentType::tag`.
 
