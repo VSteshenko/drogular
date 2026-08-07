@@ -12,6 +12,34 @@ A component renders HTML from a `RenderContext`, may expose lifecycle hooks, acc
 
 ---
 
+## Role in Drogular
+
+`Component` is the reusable unit of Drogular's server-side UI composition model.
+
+Templates and component trees create component instances, supply inputs, render child components and slots, and combine the resulting HTML into the final page output.
+
+```text
+Template / Component Tree
+          │
+          ▼
+ ComponentRegistry
+          │
+          ▼
+      Component
+          │
+          ├── Inputs / Params
+          ├── Lifecycle
+          ├── Children
+          └── Slots
+          │
+          ▼
+     Rendered HTML
+```
+
+Components operate within a `RenderContext`, which provides request-scoped values and access to framework services used during rendering.
+
+---
+
 ## Synopsis
 
 ```cpp
@@ -266,6 +294,6 @@ app.component<TodoItemComponent>();
 - [`TemplateComponent`](template-component.md)
 - [`HtmlComponent`](html-component.md)
 - [`ComponentRegistry`](component-registry.md)
-- [`RenderContext`](../rendering/render-context.md)
+- `RenderContext` *(coming soon)*
 - `TemplateRenderable` *(coming soon)*
 - Testing *(coming soon)*

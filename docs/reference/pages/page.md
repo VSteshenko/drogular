@@ -12,6 +12,37 @@ It inherits the component lifecycle and rendering contract from `Component` and 
 
 ---
 
+## Role in Drogular
+
+`Page` is the bridge between an HTTP GET route and Drogular's rendering pipeline.
+
+The router selects a registered page, creates a request-scoped `RenderContext`, invokes the page lifecycle, and sends the rendered HTML as the response.
+
+```text
+HTTP Request
+      │
+      ▼
+    Router
+      │
+      ▼
+     Page
+      │
+      ├── onInit()
+      │
+      ▼
+RenderContext
+      │
+      ▼
+   render()
+      │
+      ▼
+HTTP Response
+```
+
+A page object is application-scoped, while request-specific data belongs in the `RenderContext` created for each request.
+
+---
+
 ## Synopsis
 
 ```cpp
@@ -188,5 +219,5 @@ app.page<DeveloperToolsExamplePage>("/");
 - [`TemplatePage`](template-page.md)
 - [`PageSupport`](page-support.md)
 - [`Component`](../components/component.md)
-- [`RenderContext`](../rendering/render-context.md)
+- `RenderContext` *(coming soon)*
 - [`App`](../application/app.md)

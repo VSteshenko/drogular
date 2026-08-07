@@ -14,6 +14,32 @@ Configuration methods return `App&` unless otherwise noted, so calls can be chai
 
 ---
 
+## Role in Drogular
+
+`App` is the composition root of a Drogular application.
+
+It connects application configuration with the major framework subsystems and exposes the registration surface used during startup.
+
+```text
+Application startup
+        │
+        ▼
+       App
+        │
+        ├── ApplicationOptions
+        ├── ApplicationServices
+        ├── Router
+        ├── Pages and Actions
+        ├── Components
+        ├── GraphQL
+        ├── Static Files and PWA
+        └── Developer Tools
+```
+
+Most application-wide framework configuration begins here. After registration is complete, `App::run()` hands execution to Drogon.
+
+---
+
 ## Construction
 
 ```cpp
