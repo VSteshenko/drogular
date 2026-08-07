@@ -97,7 +97,7 @@ const auto locale =
 
 - [`TranslationSupport`](translation-support.md)
 - [`TranslationProvider`](translation-provider.md)
-- `RenderContext`
+- [`RenderContext`](../rendering/render-context.md)
 
 ## See Also
 

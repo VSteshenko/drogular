@@ -230,7 +230,7 @@ counter.set(2);
 ## Related Types
 
 - `ApplicationServices`
-- `RenderContext`
+- [`RenderContext`](../rendering/render-context.md)
 - `ActionContext`
 
 ## See Also

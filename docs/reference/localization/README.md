@@ -42,4 +42,4 @@ Localized text
 
 ## Related API
 
-- `RenderContext` *(Rendering reference coming soon)*
+- [`RenderContext`](../rendering/render-context.md)

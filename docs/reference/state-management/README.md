@@ -38,5 +38,5 @@ C++ Subscribers
 ## Related API
 
 - `ApplicationServices` *(Dependency Injection reference coming soon)*
-- `RenderContext` *(Rendering reference coming soon)*
+- [`RenderContext`](../rendering/render-context.md)
 - `ActionContext` *(Actions reference coming soon)*

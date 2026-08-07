@@ -115,7 +115,7 @@ PortalDemo uses this pattern in `PortalTranslations`.
 
 - [`TranslationSupport`](translation-support.md)
 - [`LocaleSupport`](locale-support.md)
-- `RenderContext`
+- [`RenderContext`](../rendering/render-context.md)
 
 ## See Also
 

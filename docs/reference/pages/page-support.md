@@ -82,5 +82,5 @@ The helper does not localize `pageTitle`. Applications that use translation keys
 - [`PwaPageSupport`](pwa-page-support.md)
 - [`Page`](page.md)
 - [`TemplatePage`](template-page.md)
-- `RenderContext` *(coming soon)*
+- [`RenderContext`](../rendering/render-context.md)
 - `PwaOptions` *(coming soon)*

@@ -29,6 +29,12 @@ Render reusable UI fragments, accept typed inputs, compose slots, and register c
 
 - [Components](components/README.md)
 
+## Rendering
+
+Store request-scoped render data, resolve services, access request metadata, translate text, and coordinate GraphQL result data.
+
+- [Rendering](rendering/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -54,7 +60,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 The following sections will be added as the reference is expanded:
 
 - Actions
-- Rendering
 - Dependency Injection
 - Routing
 - GraphQL

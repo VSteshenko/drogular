@@ -112,7 +112,7 @@ Pages normally use `RenderContext::translate()` instead of calling `TranslationS
 
 - [`TranslationProvider`](translation-provider.md)
 - [`LocaleSupport`](locale-support.md)
-- `RenderContext`
+- [`RenderContext`](../rendering/render-context.md)
 
 ## See Also
 

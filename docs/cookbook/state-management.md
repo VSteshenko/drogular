@@ -241,5 +241,5 @@ The page receives the updated collection on the redirected request.
 
 - [`State<T>`](../reference/state-management/state.md)
 - `ApplicationServices` *(coming soon)*
-- `RenderContext` *(coming soon)*
+- [`RenderContext`](../reference/rendering/render-context.md)
 - `ActionContext` *(coming soon)*

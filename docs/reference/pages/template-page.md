@@ -162,5 +162,5 @@ Template rendering and cache behavior must also be considered when the same page
 - [`Page`](page.md)
 - [`PageSupport`](page-support.md)
 - `TemplateRenderable` *(coming soon)*
-- `RenderContext` *(coming soon)*
+- [`RenderContext`](../rendering/render-context.md)
 - `TemplateComponent` *(coming soon)*
