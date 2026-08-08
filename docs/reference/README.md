@@ -41,6 +41,12 @@ Handle POST commands, read request input and services, manage sessions, and retu
 
 - [Actions](actions/README.md)
 
+## Dependency Injection
+
+Register application services, select lifetimes, perform constructor injection, and validate dependency metadata.
+
+- [Dependency Injection](dependency-injection/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -65,7 +71,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 
 The following sections will be added as the reference is expanded:
 
-- Dependency Injection
 - Routing
 - GraphQL
 - Authentication and Sessions

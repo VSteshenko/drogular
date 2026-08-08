@@ -658,7 +658,7 @@ auto users =
 - [`TemplatePage`](../pages/template-page.md)
 - [`Component`](../components/component.md)
 - [`TranslationProvider`](../localization/translation-provider.md)
-- `ApplicationServices` *(Dependency Injection reference coming soon)*
+- [`ApplicationServices`](../dependency-injection/application-services.md)
 - `GraphQLResult` *(coming soon)*
 - `GraphQLClient` *(GraphQL reference coming soon)*
 

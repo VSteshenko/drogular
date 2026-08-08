@@ -75,7 +75,7 @@ Returns the application-wide options object.
 ApplicationServices& services();
 ```
 
-Returns the dependency injection container used by pages, actions, components, and framework services.
+Returns the [`ApplicationServices`](../dependency-injection/application-services.md) dependency injection container used by pages, actions, components, and framework services.
 
 ```cpp
 app.services().add<UserRepository>(

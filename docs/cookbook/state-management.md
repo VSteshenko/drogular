@@ -240,6 +240,6 @@ The page receives the updated collection on the redirected request.
 ### API Reference
 
 - [`State<T>`](../reference/state-management/state.md)
-- `ApplicationServices` *(coming soon)*
+- [`ApplicationServices`](../reference/dependency-injection/application-services.md)
 - [`RenderContext`](../reference/rendering/render-context.md)
 - `ActionContext` *(coming soon)*
