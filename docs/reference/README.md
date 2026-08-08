@@ -83,6 +83,12 @@ Parse list-related request parameters, build stable navigation query strings, re
 
 - [Pagination and Request Parameters](pagination-and-request-parameters/README.md)
 
+## PWA
+
+Generate PWA metadata and browser scripts, publish a root service worker, and integrate optional offline pages.
+
+- [PWA](pwa/README.md)
+
 ---
 
 # Planned Sections
@@ -90,7 +96,6 @@ Parse list-related request parameters, build stable navigation query strings, re
 The following sections will be added as the reference is expanded:
 
 - GraphQL
-- PWA
 - Static Files
 - Developer Tools
 - Testing

@@ -432,6 +432,7 @@ int main() {
 
 ## Related Types
 
+- [`PWA`](../pwa/README.md)
 - [`Router`](../routing/router.md)
 - [`ApplicationOptions`](application-options.md)
 - [`ApplicationProfile`](application-profile.md)

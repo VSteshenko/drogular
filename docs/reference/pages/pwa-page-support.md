@@ -78,6 +78,10 @@ app.staticFiles("/assets", "public/assets");
 app.serviceWorker("public/service-worker.js");
 ```
 
+`App::serviceWorker()` always exposes the configured file at `/service-worker.js`. Changing `PwaOptions::serviceWorkerPath` changes only the generated browser registration URL; it does not create a new route.
+
+An offline page is also separate from this helper. `App::offlinePage()` registers a normal page route, while the service worker itself must decide when to use that route as a fallback.
+
 Calling `apply()` overwrites existing values with the same keys.
 
 ---
@@ -86,7 +90,7 @@ Calling `apply()` overwrites existing values with the same keys.
 
 - [`PageSupport`](page-support.md)
 - [`TemplatePage`](template-page.md)
-- `PwaOptions` *(coming soon)*
-- `PwaHtml` *(coming soon)*
-- `PwaScripts` *(coming soon)*
+- [`PwaOptions`](../pwa/pwa-options.md)
+- [`PwaHtml`](../pwa/pwa-html.md)
+- [`PwaScripts`](../pwa/pwa-scripts.md)
 - [`App`](../application/app.md)
