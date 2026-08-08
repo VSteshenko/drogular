@@ -61,3 +61,9 @@ Actions are registered through `App::action<ActionType>()` and currently accept 
 
 - [Forms & Validation](../../cookbook/forms-and-validation.md)
 - [State Management](../../cookbook/state-management.md)
+
+---
+
+## Related Reference
+
+- [Router](../routing/router.md)

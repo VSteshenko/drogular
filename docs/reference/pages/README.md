@@ -57,7 +57,8 @@ The page type must inherit from `drogular::Page` and be default-constructible.
 
 ## Related Reference
 
+- [Router](../routing/router.md)
 - [App](../application/app.md)
-- Rendering *(coming soon)*
+- [Rendering](../rendering/README.md)
 - [Components](../components/README.md)
 - Authentication and Sessions *(coming soon)*

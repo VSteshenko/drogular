@@ -178,4 +178,4 @@ Complete registrations during application setup, before concurrent request proce
 - [`App`](../application/app.md)
 - [`ApplicationServices`](../dependency-injection/application-services.md)
 - `Diagnostics` *(coming soon)*
-- Rendering *(coming soon)*
+- [`Rendering`](../rendering/README.md)

@@ -62,6 +62,6 @@ A registered component type must inherit from `drogular::Component` and be defau
 
 - [App](../application/app.md)
 - [Pages](../pages/README.md)
-- Rendering *(coming soon)*
+- [Rendering](../rendering/README.md)
 - [State Management](../state-management/README.md)
 - Testing *(coming soon)*

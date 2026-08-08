@@ -432,12 +432,13 @@ int main() {
 
 ## Related Types
 
+- [`Router`](../routing/router.md)
 - [`ApplicationOptions`](application-options.md)
 - [`ApplicationProfile`](application-profile.md)
-- `ApplicationServices`
+- [`ApplicationServices`](../dependency-injection/application-services.md)
 - `ApplicationInspection`
-- `Page`
-- `ActionHandler`
+- [`Page`](../pages/page.md)
+- [`ActionHandler`](../actions/action-handler.md)
 - `GraphQLClient`
 
 ## See Also

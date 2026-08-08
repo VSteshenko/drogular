@@ -47,6 +47,12 @@ Register application services, select lifetimes, perform constructor injection, 
 
 - [Dependency Injection](dependency-injection/README.md)
 
+## Routing
+
+Connect HTTP paths to pages and actions, extract named route parameters, serve static-file routes, and encode URL values.
+
+- [Routing](routing/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -71,7 +77,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 
 The following sections will be added as the reference is expanded:
 
-- Routing
 - GraphQL
 - Authentication and Sessions
 - Pagination and Request Parameters
