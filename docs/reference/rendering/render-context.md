@@ -654,6 +654,8 @@ auto users =
 
 ## Related Types
 
+- [`AuthSupport`](../authentication-and-sessions/auth-support.md)
+- [`SessionStore`](../authentication-and-sessions/session-store.md)
 - [`Page`](../pages/page.md)
 - [`TemplatePage`](../pages/template-page.md)
 - [`Component`](../components/component.md)

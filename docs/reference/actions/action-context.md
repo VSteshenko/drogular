@@ -289,6 +289,9 @@ drogular::ActionResult handle(
 
 ## Related Types
 
+- [`Session`](../authentication-and-sessions/session.md)
+- [`SessionStore`](../authentication-and-sessions/session-store.md)
+- [`ActionAuthSupport`](../authentication-and-sessions/action-auth-support.md)
 - [`ActionHandler`](action-handler.md)
 - [`ActionResult`](action-result.md)
 - [`ActionValidationError`](../forms-and-validation/action-validation-error.md)

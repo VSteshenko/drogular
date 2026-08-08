@@ -170,6 +170,7 @@ public:
 
 ## Related Types
 
+- [`ActionAuthSupport`](../authentication-and-sessions/action-auth-support.md)
 - [`ActionContext`](action-context.md)
 - [`ActionResult`](action-result.md)
 - [`App`](../application/app.md)

@@ -454,6 +454,7 @@ auto service =
 
 ## Related Types
 
+- [`SessionStore`](../authentication-and-sessions/session-store.md)
 - [`ServiceLifetime`](service-lifetime.md)
 - [`ServiceRegistration`](service-registration.md)
 - [`DependencyGraph`](dependency-graph.md)

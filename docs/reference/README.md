@@ -53,6 +53,12 @@ Connect HTTP paths to pages and actions, extract named route parameters, serve s
 
 - [Routing](routing/README.md)
 
+## Authentication and Sessions
+
+Resolve session-based identity, protect pages and actions, and manage in-memory sessions.
+
+- [Authentication and Sessions](authentication-and-sessions/README.md)
+
 ## Forms and Validation
 
 Validate submitted form values, inspect field errors, and read required typed input.
@@ -78,7 +84,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 The following sections will be added as the reference is expanded:
 
 - GraphQL
-- Authentication and Sessions
 - Pagination and Request Parameters
 - PWA
 - Static Files
