@@ -2,7 +2,7 @@
 
 The forms and validation API validates submitted form values before an action modifies application state or persistent data.
 
-`FormValidator` reads values from `ActionContext`, evaluates registered rules, and returns a `ValidationResult`. Required typed values can then be read through `ActionContext::requireForm<T>()`.
+`FormValidator` reads values from [`ActionContext`](../actions/action-context.md), evaluates registered rules, and returns a `ValidationResult`. Required typed values can then be read through `ActionContext::requireForm<T>()`.
 
 ---
 

@@ -146,9 +146,9 @@ template <typename ActionType>
 App& action(const std::string& path);
 ```
 
-Registers an action instance for a POST route.
+Registers an [`ActionHandler`](../actions/action-handler.md) instance for a POST route.
 
-`ActionType` must inherit from `drogular::ActionHandler` and must be default-constructible.
+`ActionType` must inherit from [`drogular::ActionHandler`](../actions/action-handler.md) and must be default-constructible.
 
 ```cpp
 app.action<LoginAction>("/login");
