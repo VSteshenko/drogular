@@ -89,6 +89,12 @@ Generate PWA metadata and browser scripts, publish a root service worker, and in
 
 - [PWA](pwa/README.md)
 
+## Static Files
+
+Map public URL prefixes to filesystem directories, protect mapped roots, configure browser caching, and serve conditional file responses.
+
+- [Static Files](static-files/README.md)
+
 ---
 
 # Planned Sections
@@ -96,7 +102,6 @@ Generate PWA metadata and browser scripts, publish a root service worker, and in
 The following sections will be added as the reference is expanded:
 
 - GraphQL
-- Static Files
 - Developer Tools
 - Testing
 

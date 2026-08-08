@@ -134,7 +134,7 @@ Mappings are registered with the router when `App::run()` starts the application
 const std::vector<StaticFileMapping>& staticFiles() const;
 ```
 
-Returns all configured static file mappings in registration order.
+Returns all configured [`StaticFileMapping`](../static-files/static-file-mapping.md) values in registration order.
 
 ### Static file cache behavior
 
@@ -162,7 +162,7 @@ void setStaticFileCacheProfile(
 );
 ```
 
-Applies a predefined group of static file cache settings.
+Applies a predefined [`StaticFileCacheProfile`](../static-files/static-file-cache-profile.md).
 
 | Profile | Cache-Control | Max-age | ETag | Last-Modified |
 |---|---:|---:|---:|---:|
@@ -220,6 +220,8 @@ Equivalent convenience methods are available for most settings directly on `App`
 - `StaticFileCacheProfile`
 
 ## See Also
+
+- [Static Files](../static-files/README.md)
 
 - [Static Files API Reference *(coming soon)*](../README.md#planned-sections)
 - [PWA API Reference *(coming soon)*](../README.md#planned-sections)

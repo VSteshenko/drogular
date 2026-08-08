@@ -109,3 +109,4 @@ void onInit(
 - [`PwaPageSupport`](../pages/pwa-page-support.md)
 - [`RenderContext`](../rendering/render-context.md)
 - [`Router`](../routing/router.md)
+- [Static Files](../static-files/README.md)

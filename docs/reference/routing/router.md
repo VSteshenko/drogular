@@ -234,7 +234,7 @@ The implementation:
 - applies current static-file cache, ETag, and Last-Modified options when an `ApplicationOptions` instance is available;
 - supports conditional 304 responses for matching ETag or Last-Modified request headers.
 
-Static-file behavior is documented in detail in the Static Files reference *(coming soon)*.
+Static-file behavior is documented in detail in the [Static Files](../static-files/README.md) reference.
 
 ---
 

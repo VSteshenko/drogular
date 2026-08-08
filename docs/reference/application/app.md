@@ -186,9 +186,9 @@ App& staticFiles(
 );
 ```
 
-Adds a static file mapping to `ApplicationOptions`.
+Adds a [`StaticFileMapping`](../static-files/static-file-mapping.md) to `ApplicationOptions`.
 
-The mapping is registered with the router when `run()` is called.
+The mapping is registered with the router when `run()` is called. See [Static Files](../static-files/README.md) for path resolution, MIME detection, and cache behavior.
 
 ### `staticFileEtag()`
 
@@ -214,7 +214,7 @@ App& staticFileCacheProfile(
 );
 ```
 
-Applies a predefined static file cache profile through `ApplicationOptions`.
+Applies a predefined [`StaticFileCacheProfile`](../static-files/static-file-cache-profile.md) through `ApplicationOptions`.
 
 ### `staticFileCache()` and `staticFileCacheMaxAge()`
 
@@ -226,16 +226,14 @@ App& staticFileCacheMaxAge(
 );
 ```
 
-These methods are declared in the public header in the current release archive, but no definitions are present in the implementation.
-
-Calling either method currently results in a linker error. Configure the same settings through `ApplicationOptions` until the implementation is added:
+Configure whether static-file responses use browser cache storage and the `Cache-Control` max-age value.
 
 ```cpp
-app.options().setStaticFileCacheEnabled(false);
-app.options().setStaticFileCacheMaxAge(
-    std::chrono::hours(1)
-);
+app.staticFileCache(true)
+   .staticFileCacheMaxAge(std::chrono::hours(1));
 ```
+
+See the [Static Files](../static-files/README.md) reference for the complete caching and conditional-request pipeline.
 
 ### `serviceWorker()`
 
