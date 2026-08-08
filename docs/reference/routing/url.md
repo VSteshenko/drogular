@@ -60,7 +60,7 @@ For UTF-8 input, encoding operates on the individual bytes of the string. For ex
 - does not convert spaces to `+`;
 - does not normalize or validate a complete URL.
 
-Use `QueryStringBuilder` once the Pagination and Request Parameters API Reference section is available for higher-level query-string construction.
+Use [`QueryStringBuilder`](../pagination-and-request-parameters/query-string-builder.md) for higher-level query-string construction.
 
 ---
 
@@ -81,7 +81,7 @@ This prevents characters inside `returnUrl` from being interpreted as separators
 ## Related Types
 
 - [`Router`](router.md)
-- `QueryStringBuilder` *(Pagination and Request Parameters reference coming soon)*
+- [`QueryStringBuilder`](../pagination-and-request-parameters/query-string-builder.md)
 
 ## See Also
 

@@ -162,7 +162,7 @@ context.setJson(
 );
 ```
 
-`TodoPWA` uses this pattern when exposing its pagination model to the template.
+`TodoPWA` uses this pattern when exposing its pagination model to the template. See [`PaginationModel`](../pagination-and-request-parameters/pagination-model.md) for the navigation model and URL-builder behavior.
 
 ### `get()`
 

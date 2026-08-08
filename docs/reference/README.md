@@ -77,6 +77,12 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 
 - [State Management](state-management/README.md)
 
+## Pagination and Request Parameters
+
+Parse list-related request parameters, build stable navigation query strings, represent paged results, and create template-friendly pagination models.
+
+- [Pagination and Request Parameters](pagination-and-request-parameters/README.md)
+
 ---
 
 # Planned Sections
@@ -84,7 +90,6 @@ Store mutable values and notify C++ subscribers when replacement values are publ
 The following sections will be added as the reference is expanded:
 
 - GraphQL
-- Pagination and Request Parameters
 - PWA
 - Static Files
 - Developer Tools
