@@ -26,6 +26,31 @@ TEST(CoreActionAuthSupportTests, RedirectsGuestToLogin) {
     EXPECT_EQ(result.value().location(), "/login");
 }
 
+TEST(CoreActionAuthSupportTests, RedirectsSessionWithoutUsername) {
+    drogular::ApplicationServices services;
+
+    services.add<drogular::SessionStore>(
+        drogular::ServiceLifetime::Singleton
+    );
+
+    auto store = services.service<drogular::SessionStore>();
+    auto session = store->create();
+    const auto sessionId = session->get("_id");
+    ASSERT_TRUE(sessionId.has_value());
+
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->addCookie("session_id", *sessionId);
+
+    drogular::ActionContext context(request, &services);
+
+    const auto result =
+        drogular::ActionAuthSupport::requireAuthentication(context);
+
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->type(), drogular::ActionResultType::Redirect);
+    EXPECT_EQ(result->location(), "/login");
+}
+
 TEST(CoreActionAuthSupportTests, RedirectsGuestWhenSessionValueRequired) {
     drogular::ApplicationServices services;
 

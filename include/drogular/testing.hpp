@@ -2,6 +2,7 @@
 
 #include <drogular/page.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/component_renderer.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -39,56 +40,7 @@ inline std::string renderComponentTree(
     Component& component,
     RenderContext& context
 ) {
-    component.onInit(context);
-
-    auto html = component.render(context);
-
-    std::string defaultChildrenHtml;
-
-    if (const auto slotHtml =
-    component.param<std::string>("__slot")) {
-        defaultChildrenHtml += *slotHtml;
-    }
-
-    std::unordered_map<std::string, std::string> namedChildrenHtml;
-
-    for (const auto& child : component.children()) {
-        auto childContext = context.createChild();
-
-        const auto childHtml =
-            renderComponentTree(*child, childContext);
-
-        if (child->slot().empty()) {
-            defaultChildrenHtml += childHtml;
-        } else {
-            namedChildrenHtml[child->slot()] += childHtml;
-        }
-    }
-
-    constexpr auto defaultSlot = "<slot/>";
-
-    if (const auto pos = html.find(defaultSlot);
-        pos != std::string::npos) {
-        html.replace(pos, std::strlen(defaultSlot), defaultChildrenHtml);
-        } else {
-            html += defaultChildrenHtml;
-        }
-
-    for (const auto& [name, childHtml] : namedChildrenHtml) {
-        const auto slot =
-            "<slot name=\"" + name + "\"/>";
-
-        size_t position = 0;
-
-        while ((position = html.find(slot, position)) != std::string::npos) {
-            html.replace(position, slot.size(), childHtml);
-            position += childHtml.size();
-        }
-    }
-
-    component.onDestroy(context);
-
-    return html;
+    return component_renderer::renderComponentTree(component, context);
 }
 
 /**
@@ -111,10 +63,8 @@ RenderResult renderPage(
         context.setRequest(request);
     }
 
-    page.onInit(context);
-
     return {
-        .html = renderComponentTree(page, context),
+        .html = component_renderer::renderComponentTree(page, context),
         .context = std::move(context)
     };
 }

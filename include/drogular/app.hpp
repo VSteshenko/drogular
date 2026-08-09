@@ -71,7 +71,13 @@ public:
             "PageType must inherit from drogular::Page"
         );
 
-        router_.page(path, std::make_shared<PageType>());
+        router_.page(
+            path,
+            [] {
+                return std::make_shared<PageType>();
+            },
+            typeid(PageType).name()
+        );
         return *this;
     }
 
@@ -105,7 +111,10 @@ public:
 
         router_.action(
             path,
-            std::make_shared<ActionType>()
+            [] {
+                return std::make_shared<ActionType>();
+            },
+            typeid(ActionType).name()
         );
 
         return *this;

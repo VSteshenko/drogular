@@ -24,6 +24,40 @@ TEST(CoreTestingTests, RendersPageWithLifecycle) {
     EXPECT_TRUE(result.context.contains("title"));
 }
 
+class CoreLifecycleCountingPage final : public drogular::Page {
+public:
+    static inline int initCount = 0;
+    static inline int renderCount = 0;
+    static inline int destroyCount = 0;
+
+    void onInit(drogular::RenderContext&) override {
+        ++initCount;
+    }
+
+    std::string render(drogular::RenderContext&) override {
+        ++renderCount;
+        return "<p>Lifecycle</p>";
+    }
+
+    void onDestroy(drogular::RenderContext&) override {
+        ++destroyCount;
+    }
+};
+
+TEST(CoreTestingTests, RunsPageLifecycleExactlyOnce) {
+    CoreLifecycleCountingPage::initCount = 0;
+    CoreLifecycleCountingPage::renderCount = 0;
+    CoreLifecycleCountingPage::destroyCount = 0;
+
+    const auto result =
+        drogular::test::renderPage<CoreLifecycleCountingPage>();
+
+    EXPECT_EQ(result.html, "<p>Lifecycle</p>");
+    EXPECT_EQ(CoreLifecycleCountingPage::initCount, 1);
+    EXPECT_EQ(CoreLifecycleCountingPage::renderCount, 1);
+    EXPECT_EQ(CoreLifecycleCountingPage::destroyCount, 1);
+}
+
 class CoreParentComponent final : public drogular::Component {
 public:
     std::string render(drogular::RenderContext&) override {

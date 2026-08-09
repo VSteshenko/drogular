@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,30 @@ TEST(CoreComponentLifecycleTests, CallsLifecycleHooksAroundRender) {
     EXPECT_EQ(events[0], "init");
     EXPECT_EQ(events[1], "render");
     EXPECT_EQ(events[2], "destroy");
+}
+
+class CoreThrowingLifecycleComponent final : public drogular::Component {
+public:
+    bool destroyed = false;
+
+    std::string render(drogular::RenderContext&) override {
+        throw std::runtime_error("render failed");
+    }
+
+    void onDestroy(drogular::RenderContext&) override {
+        destroyed = true;
+    }
+};
+
+TEST(CoreComponentLifecycleTests, CallsDestroyWhenRenderThrows) {
+    CoreThrowingLifecycleComponent component;
+    drogular::RenderContext context;
+
+    EXPECT_THROW(
+        drogular::component_renderer::renderComponentTree(component, context),
+        std::runtime_error
+    );
+    EXPECT_TRUE(component.destroyed);
 }
 
 class CoreLifecycleTagComponent final : public drogular::Component {

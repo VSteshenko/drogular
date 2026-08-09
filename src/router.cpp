@@ -7,6 +7,7 @@
 #include <drogular/static_file_etag.hpp>
 #include <drogular/static_file_last_modified.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/component_renderer.hpp>
 #include <drogular/route_pattern.hpp>
 
 #include <drogon/drogon.h>
@@ -48,15 +49,14 @@ Router::Router(ApplicationServices* services)
 
 void Router::page(
     const std::string& path,
-    std::shared_ptr<Page> page
+    PageFactory factory,
+    std::string target
 ) {
-    const auto* pagePtr = page.get();
-
     routes_.push_back({
         path,
         RouteKind::Page,
         "GET",
-        typeid(*pagePtr).name()
+        std::move(target)
     });
 
     auto* services = services_;
@@ -64,7 +64,7 @@ void Router::page(
 
     drogon::app().registerHandler(
         path,
-        [page, services, pattern](
+        [factory = std::move(factory), services, pattern](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
@@ -86,11 +86,13 @@ void Router::page(
                 );
             }
 
-            page->onInit(context);
+            auto page = factory();
 
             auto response = drogon::HttpResponse::newHttpResponse();
             response->setContentTypeCode(drogon::CT_TEXT_HTML);
-            response->setBody(page->render(context));
+            response->setBody(
+                component_renderer::renderComponentTree(*page, context)
+            );
 
             callback(response);
         }
@@ -99,15 +101,14 @@ void Router::page(
 
 void Router::action(
     const std::string& path,
-    std::shared_ptr<ActionHandler> action
+    ActionFactory factory,
+    std::string target
 ) {
-    const auto* actionPtr = action.get();
-
     routes_.push_back({
         path,
         RouteKind::Action,
         "POST",
-        typeid(*actionPtr).name()
+        std::move(target)
     });
 
     auto* services = services_;
@@ -115,7 +116,7 @@ void Router::action(
 
     drogon::app().registerHandler(
         path,
-        [action, services, pattern](
+        [factory = std::move(factory), services, pattern](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
@@ -137,6 +138,8 @@ void Router::action(
                     value
                 );
             }
+
+            auto action = factory();
 
             const auto result =
                 action->handle(context);

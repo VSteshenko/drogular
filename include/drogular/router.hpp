@@ -4,6 +4,7 @@
 #include <drogular/action_handler.hpp>
 #include <drogular/developer_tools/application_inspection.hpp>
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -17,18 +18,31 @@ class Page;
  */
 class Router {
 public:
+    using PageFactory = std::function<std::shared_ptr<Page>()>;
+    using ActionFactory = std::function<std::shared_ptr<ActionHandler>()>;
+
     Router() = default;
     explicit Router(ApplicationServices* services = nullptr);
 
     /**
-     * Registers a page instance for the given path.
+     * Registers a page factory for the given path.
+     * A fresh page instance is created for every request.
      */
-    void page(const std::string& path, std::shared_ptr<Page> page);
+    void page(
+        const std::string& path,
+        PageFactory factory,
+        std::string target
+    );
 
     /**
-     * Registers an action instance for the given path.
+     * Registers an action factory for the given path.
+     * A fresh action instance is created for every request.
      */
-    void action(const std::string& path, std::shared_ptr<ActionHandler> action);
+    void action(
+        const std::string& path,
+        ActionFactory factory,
+        std::string target
+    );
 
     /**
      * Registers a static file handler.

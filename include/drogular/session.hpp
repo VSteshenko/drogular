@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -28,6 +29,7 @@ public:
     void clear();
 
 private:
+    mutable std::mutex mutex_;
     std::unordered_map<
         std::string,
         std::string

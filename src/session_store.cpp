@@ -6,6 +6,7 @@
 namespace drogular {
 
 std::shared_ptr<Session> SessionStore::create() {
+    const std::lock_guard lock(mutex_);
     auto id = generateId();
 
     while (sessions_.find(id) != sessions_.end()) {
@@ -25,6 +26,7 @@ std::shared_ptr<Session> SessionStore::create() {
 std::shared_ptr<Session> SessionStore::get(
     const std::string& id
 ) {
+    const std::lock_guard lock(mutex_);
     const auto found =
         sessions_.find(id);
 
@@ -38,16 +40,19 @@ std::shared_ptr<Session> SessionStore::get(
 bool SessionStore::contains(
     const std::string& id
 ) const {
+    const std::lock_guard lock(mutex_);
     return sessions_.find(id) != sessions_.end();
 }
 
 void SessionStore::remove(
     const std::string& id
 ) {
+    const std::lock_guard lock(mutex_);
     sessions_.erase(id);
 }
 
 void SessionStore::clear() {
+    const std::lock_guard lock(mutex_);
     sessions_.clear();
 }
 

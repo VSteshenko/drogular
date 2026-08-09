@@ -19,6 +19,17 @@ struct RenderResult {
 };
 
 /**
+ * Runs the complete lifecycle for a component tree.
+ *
+ * Calls onInit(), render(), renders child slots recursively, and
+ * guarantees onDestroy() after rendering.
+ */
+std::string renderComponentTree(
+    Component& component,
+    RenderContext& context
+);
+
+/**
  * Renders self-closing component tags using the component registry.
  *
  * MVP supports:

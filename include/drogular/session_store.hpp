@@ -3,6 +3,7 @@
 #include <drogular/session.hpp>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -29,6 +30,7 @@ public:
 private:
     std::string generateId() const;
 
+    mutable std::mutex mutex_;
     std::unordered_map<
         std::string,
         std::shared_ptr<Session>

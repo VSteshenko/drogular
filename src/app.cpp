@@ -192,7 +192,10 @@ App& App::enableDiagnosticsPage() {
 
     router_.page(
         DiagnosticsPage::Path,
-        std::make_shared<DiagnosticsPage>()
+        [] {
+            return std::make_shared<DiagnosticsPage>();
+        },
+        typeid(DiagnosticsPage).name()
     );
 
     drogon::app().registerHandler(
@@ -299,7 +302,8 @@ void App::run(unsigned short port) {
         offlinePageFactory_) {
         router_.page(
             *offlinePageRoute_,
-            offlinePageFactory_()
+            offlinePageFactory_,
+            "offline-page"
         );
     }
 

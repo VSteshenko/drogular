@@ -1,8 +1,9 @@
 #include <drogular/component_renderer.hpp>
 #include <drogular/template_engine.hpp>
-#include <drogular/testing.hpp>
+#include <drogular/render_context.hpp>
 
 #include <cctype>
+#include <cstring>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -86,6 +87,57 @@ std::unordered_map<std::string, std::string> parseAttributes(std::string_view va
 }
 
 } // namespace
+
+std::string renderComponentTree(
+    Component& component,
+    RenderContext& context
+) {
+    component.onInit(context);
+
+    try {
+        auto html = component.render(context);
+        std::string defaultChildrenHtml;
+
+        if (const auto slotHtml = component.param<std::string>("__slot")) {
+            defaultChildrenHtml += *slotHtml;
+        }
+
+        std::unordered_map<std::string, std::string> namedChildrenHtml;
+
+        for (const auto& child : component.children()) {
+            auto childContext = context.createChild();
+            const auto childHtml = renderComponentTree(*child, childContext);
+
+            if (child->slot().empty()) {
+                defaultChildrenHtml += childHtml;
+            } else {
+                namedChildrenHtml[child->slot()] += childHtml;
+            }
+        }
+
+        constexpr auto defaultSlot = "<slot/>";
+        if (const auto pos = html.find(defaultSlot); pos != std::string::npos) {
+            html.replace(pos, std::strlen(defaultSlot), defaultChildrenHtml);
+        } else {
+            html += defaultChildrenHtml;
+        }
+
+        for (const auto& [name, childHtml] : namedChildrenHtml) {
+            const auto slot = "<slot name=\"" + name + "\"/>";
+            size_t position = 0;
+            while ((position = html.find(slot, position)) != std::string::npos) {
+                html.replace(position, slot.size(), childHtml);
+                position += childHtml.size();
+            }
+        }
+
+        component.onDestroy(context);
+        return html;
+    } catch (...) {
+        component.onDestroy(context);
+        throw;
+    }
+}
 
 std::string renderImpl(
     std::string_view html,
@@ -192,7 +244,7 @@ std::string renderImpl(
                 auto childContext = context.createChild();
 
                 auto componentHtml =
-                    drogular::test::renderComponentTree(
+                    renderComponentTree(
                         *component,
                         childContext
                     );
@@ -261,7 +313,7 @@ std::string renderImpl(
 
             auto childContext = context.createChild();
 
-            output += drogular::test::renderComponentTree(
+            output += renderComponentTree(
                 *component,
                 childContext
             );

@@ -1,4 +1,5 @@
 #include <drogular/action_auth_support.hpp>
+#include <drogular/auth_support.hpp>
 
 namespace drogular {
 
@@ -6,10 +7,7 @@ std::optional<ActionResult> ActionAuthSupport::requireAuthentication(
     ActionContext& context,
     const std::string& redirectPath
 ) {
-    const auto session =
-        context.existingSession();
-
-    if (session == nullptr) {
+    if (!AuthSupport::isAuthenticated(context)) {
         return ActionResult::redirect(
             redirectPath
         );
