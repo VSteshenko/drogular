@@ -289,7 +289,7 @@ Changing from Development to another profile throws `std::logic_error` when Deve
 ApplicationInspection inspect() const;
 ```
 
-Builds and returns a snapshot of registered routes, static file mappings, service worker route, offline page route, components, services, diagnostics entries, and custom inspection contributions.
+Builds and returns an [`ApplicationInspection`](../developer-tools/application-inspection.md) snapshot of registered routes, static file mappings, service worker route, offline page route, components, services, diagnostics entries, and custom inspection contributions.
 
 Calling `inspect()` does not start the server.
 
@@ -299,7 +299,7 @@ Calling `inspect()` does not start the server.
 App& enableDeveloperTools();
 ```
 
-Enables the complete Developer Tools subsystem.
+Enables the complete [Developer Tools](../developer-tools/README.md) subsystem.
 
 The current implementation enables the diagnostics page, which also enables the public inspection endpoint.
 
@@ -343,7 +343,7 @@ App& developerToolsContributor(
 );
 ```
 
-Adds a contributor that can append application-specific data to inspection snapshots.
+Adds a [`DeveloperToolsContributor`](../developer-tools/developer-tools-contributor.md) that can append application-specific data to inspection snapshots.
 
 ### `inspectionContributor()`
 
@@ -364,7 +364,7 @@ App& developerToolsComponent(
 );
 ```
 
-Registers a trusted browser-side renderer module for the diagnostics application.
+Registers a trusted browser-side renderer module through [`DeveloperToolsComponentRegistry`](../developer-tools/developer-tools-component-registry.md) for the diagnostics application.
 
 ---
 
@@ -395,7 +395,6 @@ The call blocks while the server is running.
 - `offlinePage<PageType>()` requires a default-constructible page type.
 - `disableDeveloperTools()` throws after Developer Tools registration has begun.
 - `profile()` can throw when attempting to move away from Development after Developer Tools are registered.
-- `staticFileCache()` and `staticFileCacheMaxAge()` currently have no implementation definitions.
 
 ---
 
@@ -435,7 +434,7 @@ int main() {
 - [`ApplicationOptions`](application-options.md)
 - [`ApplicationProfile`](application-profile.md)
 - [`ApplicationServices`](../dependency-injection/application-services.md)
-- `ApplicationInspection`
+- [`ApplicationInspection`](../developer-tools/application-inspection.md)
 - [`Page`](../pages/page.md)
 - [`ActionHandler`](../actions/action-handler.md)
 - `GraphQLClient`
@@ -445,4 +444,5 @@ int main() {
 - [Your First Drogular Application](../../getting-started/your-first-drogular-application.md)
 - [Routing](../../getting-started/routing.md)
 - [Dependency Injection](../../getting-started/dependency-injection.md)
+- [Developer Tools API Reference](../developer-tools/README.md)
 - [Developer Tools example](../../../examples/developer_tools/README.md)

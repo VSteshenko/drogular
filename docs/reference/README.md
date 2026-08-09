@@ -95,6 +95,12 @@ Map public URL prefixes to filesystem directories, protect mapped roots, configu
 
 - [Static Files](static-files/README.md)
 
+## Developer Tools
+
+Inspect the configured application surface, expose a stable JSON contract, use the built-in diagnostics UI, and add application-specific inspection sections and renderers.
+
+- [Developer Tools](developer-tools/README.md)
+
 ---
 
 # Planned Sections
@@ -102,7 +108,6 @@ Map public URL prefixes to filesystem directories, protect mapped roots, configu
 The following sections will be added as the reference is expanded:
 
 - GraphQL
-- Developer Tools
 - Testing
 
 Only APIs confirmed as supported public contracts will be included.
