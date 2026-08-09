@@ -9,6 +9,7 @@
 #include <drogular/render_context.hpp>
 #include <drogular/component_renderer.hpp>
 #include <drogular/route_pattern.hpp>
+#include <drogular/error.hpp>
 
 #include <drogon/drogon.h>
 
@@ -139,14 +140,28 @@ void Router::action(
                 );
             }
 
-            auto action = factory();
+            try {
+                auto action = factory();
 
-            const auto result =
-                action->handle(context);
+                if (action == nullptr) {
+                    throw DrogularError(
+                        "Action factory returned nullptr"
+                    );
+                }
 
-            callback(
-                toHttpResponse(result)
-            );
+                const auto result =
+                    action->handle(context);
+
+                callback(
+                    toHttpResponse(result)
+                );
+            } catch (const std::exception& error) {
+                LOG_ERROR << "Drogular action failed: " << error.what();
+                callback(toHttpErrorResponse(error));
+            } catch (...) {
+                LOG_ERROR << "Drogular action failed with an unknown exception";
+                callback(toHttpErrorResponse());
+            }
         },
         {drogon::Post}
     );

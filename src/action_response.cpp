@@ -1,5 +1,6 @@
 #include <drogular/action_response.hpp>
 #include <drogular/static_file_response.hpp>
+#include <drogular/action_validation_error.hpp>
 
 namespace drogular {
 
@@ -16,9 +17,28 @@ void applyCookies(
         );
 
         drogonCookie.setPath(cookie.path);
+        drogonCookie.setHttpOnly(cookie.httpOnly);
+        drogonCookie.setSecure(cookie.secure);
 
-        if (cookie.httpOnly) {
-            drogonCookie.setHttpOnly(true);
+        if (cookie.maxAge.has_value()) {
+            drogonCookie.setMaxAge(*cookie.maxAge);
+        }
+
+        switch (cookie.sameSite) {
+            case CookieSameSite::Unspecified:
+                break;
+
+            case CookieSameSite::Lax:
+                drogonCookie.setSameSite(drogon::Cookie::SameSite::kLax);
+                break;
+
+            case CookieSameSite::Strict:
+                drogonCookie.setSameSite(drogon::Cookie::SameSite::kStrict);
+                break;
+
+            case CookieSameSite::None:
+                drogonCookie.setSameSite(drogon::Cookie::SameSite::kNone);
+                break;
         }
 
         response->addCookie(drogonCookie);
@@ -32,7 +52,12 @@ drogon::HttpResponsePtr toHttpResponse(
 ) {
     switch (result.type()) {
         case ActionResultType::Empty: {
-            return drogon::HttpResponse::newHttpResponse();
+            auto response =
+                drogon::HttpResponse::newHttpResponse();
+
+            applyCookies(result, response);
+
+            return response;
         }
 
         case ActionResultType::Redirect: {
@@ -89,6 +114,38 @@ drogon::HttpResponsePtr toHttpResponse(
     }
 
     return drogon::HttpResponse::newHttpResponse();
+}
+
+drogon::HttpResponsePtr toHttpErrorResponse(
+    const std::exception& error
+) {
+    if (const auto* validationError = dynamic_cast<const ActionValidationError*>(&error)) {
+        auto response = drogon::HttpResponse::newHttpResponse();
+
+        response->setStatusCode(drogon::k400BadRequest);
+        response->setContentTypeCode(drogon::CT_TEXT_PLAIN);
+        response->setBody(validationError->what());
+
+        return response;
+    }
+
+    auto response = drogon::HttpResponse::newHttpResponse();
+
+    response->setStatusCode(drogon::k500InternalServerError);
+    response->setContentTypeCode(drogon::CT_TEXT_PLAIN);
+    response->setBody("Internal Server Error");
+
+    return response;
+}
+
+drogon::HttpResponsePtr toHttpErrorResponse() {
+    auto response = drogon::HttpResponse::newHttpResponse();
+
+    response->setStatusCode(drogon::k500InternalServerError);
+    response->setContentTypeCode(drogon::CT_TEXT_PLAIN);
+    response->setBody("Internal Server Error");
+
+    return response;
 }
 
 } // namespace drogular

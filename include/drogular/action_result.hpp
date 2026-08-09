@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <optional>
 
 namespace drogular {
 
@@ -16,11 +17,29 @@ enum class ActionResultType {
     File
 };
 
+enum class CookieSameSite {
+    Unspecified,
+    Lax,
+    Strict,
+    None
+};
+
+struct CookieOptions {
+    std::string path = "/";
+    bool httpOnly = true;
+    bool secure = false;
+    CookieSameSite sameSite = CookieSameSite::Unspecified;
+    std::optional<int> maxAge;
+};
+
 struct Cookie {
     std::string name;
     std::string value;
     std::string path = "/";
     bool httpOnly = true;
+    bool secure = false;
+    CookieSameSite sameSite = CookieSameSite::Unspecified;
+    std::optional<int> maxAge;
 };
 
 struct FileResponseInfo {
@@ -55,6 +74,12 @@ public:
         std::string value,
         std::string path = "/",
         bool httpOnly = true
+    );
+
+    ActionResult& cookie(
+        std::string name,
+        std::string value,
+        CookieOptions options
     );
 
     const std::vector<Cookie>& cookies() const;

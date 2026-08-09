@@ -3,14 +3,16 @@
 #include <drogular/services.hpp>
 #include <drogular/session.hpp>
 #include <drogular/action_validation_error.hpp>
+#include <drogular/action_context_error.hpp>
 
 #include <drogon/HttpRequest.h>
 
 #include <memory>
 #include <optional>
 #include <string>
-#include <stdexcept>
 #include <type_traits>
+#include <charconv>
+#include <exception>
 #include <unordered_map>
 
 namespace drogular {
@@ -43,11 +45,16 @@ public:
 
     template <typename T>
     std::shared_ptr<T> requireService() {
-        if (services_ == nullptr) {
-            throw std::runtime_error("ApplicationServices not set");
+        auto resolved = service<T>();
+
+        if (resolved == nullptr) {
+            throw ActionContextError(
+                std::string("Service not registered: ") +
+                typeid(T).name()
+            );
         }
 
-        return services_->requireService<T>();
+        return resolved;
     }
 
     /**
@@ -80,21 +87,43 @@ public:
         if constexpr (std::is_same_v<T, std::string>) {
             return *value;
         } else if constexpr (std::is_same_v<T, int>) {
-            try {
-                return std::stoi(*value);
-            } catch (...) {
+            int result = 0;
+            const auto parsed = std::from_chars(
+                value->data(),
+                value->data() + value->size(),
+                result
+            );
+
+            if (parsed.ec != std::errc{} ||
+                parsed.ptr != value->data() + value->size()) {
                 return std::nullopt;
             }
+
+            return result;
         } else if constexpr (std::is_same_v<T, double>) {
+            std::size_t parsed = 0;
+
             try {
-                return std::stod(*value);
-            } catch (...) {
+                const auto result = std::stod(*value, &parsed);
+
+                if (parsed != value->size()) {
+                    return std::nullopt;
+                }
+
+                return result;
+            } catch (const std::exception&) {
                 return std::nullopt;
             }
         } else if constexpr (std::is_same_v<T, bool>) {
-            return *value == "true" ||
-                   *value == "1" ||
-                   *value == "on";
+            if (*value == "true" || *value == "1" || *value == "on") {
+                return true;
+            }
+
+            if (*value == "false" || *value == "0" || *value == "off") {
+                return false;
+            }
+
+            return std::nullopt;
         } else {
             static_assert(
                 std::is_same_v<T, std::string> ||
@@ -156,7 +185,7 @@ public:
     /**
      * Returns the value of the specified route parameter.
      *
-     * Throws std::runtime_error when the parameter is missing.
+     * Throws ActionContextError when the parameter is missing.
      */
     std::string requireRouteParam(
         const std::string& name

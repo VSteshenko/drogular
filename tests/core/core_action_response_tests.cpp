@@ -1,4 +1,5 @@
 #include <drogular/action_response.hpp>
+#include <drogular/action_validation_error.hpp>
 
 #include <gtest/gtest.h>
 
@@ -135,4 +136,68 @@ TEST(CoreActionResponseTests, ConvertsDownloadResultToAttachmentResponse) {
     );
 
     std::filesystem::remove(path);
+}
+
+TEST(CoreActionResponseTests, AppliesCookiesToEmptyResult) {
+    auto result = drogular::ActionResult::empty();
+    result.cookie("session_id", "abc123");
+
+    const auto response =
+        drogular::toHttpResponse(result);
+
+    ASSERT_NE(response, nullptr);
+
+    const auto cookies = response->cookies();
+    ASSERT_TRUE(cookies.contains("session_id"));
+    EXPECT_EQ(cookies.at("session_id").value(), "abc123");
+}
+
+TEST(CoreActionResponseTests, AppliesExtendedCookieOptions) {
+    auto result = drogular::ActionResult::empty();
+    result.cookie(
+        "session_id",
+        "abc123",
+        drogular::CookieOptions{
+            .path = "/account",
+            .httpOnly = true,
+            .secure = true,
+            .sameSite = drogular::CookieSameSite::Strict,
+            .maxAge = 3600
+        }
+    );
+
+    const auto response = drogular::toHttpResponse(result);
+
+    ASSERT_NE(response, nullptr);
+    const auto cookies = response->cookies();
+    ASSERT_TRUE(cookies.contains("session_id"));
+
+    const auto& cookie = cookies.at("session_id");
+    EXPECT_EQ(cookie.path(), "/account");
+    EXPECT_TRUE(cookie.isHttpOnly());
+    EXPECT_TRUE(cookie.isSecure());
+    EXPECT_EQ(cookie.sameSite(), drogon::Cookie::SameSite::kStrict);
+    ASSERT_TRUE(cookie.maxAge().has_value());
+    EXPECT_EQ(*cookie.maxAge(), 3600);
+}
+
+TEST(CoreActionResponseTests, ConvertsValidationErrorToBadRequest) {
+    const drogular::ActionValidationError error("Invalid form value");
+
+    const auto response = drogular::toHttpErrorResponse(error);
+
+    ASSERT_NE(response, nullptr);
+    EXPECT_EQ(response->statusCode(), drogon::k400BadRequest);
+    EXPECT_EQ(response->body(), "Invalid form value");
+}
+
+TEST(CoreActionResponseTests, ConvertsUnexpectedErrorToSafeInternalServerError) {
+    const std::runtime_error error("database password leaked here");
+
+    const auto response = drogular::toHttpErrorResponse(error);
+
+    ASSERT_NE(response, nullptr);
+    EXPECT_EQ(response->statusCode(), drogon::k500InternalServerError);
+    EXPECT_EQ(response->body(), "Internal Server Error");
+    EXPECT_EQ(response->body().find("password"), std::string::npos);
 }

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <future>
 #include <thread>
+#include <stdexcept>
 
 namespace {
 
@@ -36,6 +37,27 @@ public:
     }
 };
 
+class CoreValidationFailureAction final : public drogular::ActionHandler {
+public:
+    drogular::ActionResult handle(
+        drogular::ActionContext& context
+    ) override {
+        const auto id = context.requireForm<int>("id");
+        Json::Value json;
+        json["id"] = id;
+        return drogular::ActionResult::json(json);
+    }
+};
+
+class CoreUnexpectedFailureAction final : public drogular::ActionHandler {
+public:
+    drogular::ActionResult handle(
+        drogular::ActionContext&
+    ) override {
+        throw std::runtime_error("sensitive internal failure");
+    }
+};
+
 class CoreActionIntegrationTestFixture : public ::testing::Test {
 protected:
     static void SetUpTestSuite() {
@@ -43,6 +65,8 @@ protected:
 
         app_->action<CoreEchoFormAction>("/test-actions/echo");
         app_->action<CoreRedirectAction>("/test-actions/redirect");
+        app_->action<CoreValidationFailureAction>("/test-actions/validation-failure");
+        app_->action<CoreUnexpectedFailureAction>("/test-actions/unexpected-failure");
 
         serverThread_ = std::thread([]() {
             app_->run(TestPort);
@@ -145,5 +169,33 @@ TEST_F(CoreActionIntegrationTestFixture, ConvertsRedirectResultToHttpResponse) {
     EXPECT_EQ(
         response->statusCode(),
         drogon::k302Found
+    );
+}
+
+TEST_F(CoreActionIntegrationTestFixture, ConvertsActionValidationErrorToBadRequest) {
+    const auto response =
+        postForm(
+            "/test-actions/validation-failure",
+            "id=not-an-integer"
+        );
+
+    ASSERT_NE(response, nullptr);
+    EXPECT_EQ(response->statusCode(), drogon::k400BadRequest);
+    EXPECT_NE(response->body().find("id"), std::string::npos);
+}
+
+TEST_F(CoreActionIntegrationTestFixture, HidesUnexpectedActionExceptionDetails) {
+    const auto response =
+        postForm(
+            "/test-actions/unexpected-failure",
+            ""
+        );
+
+    ASSERT_NE(response, nullptr);
+    EXPECT_EQ(response->statusCode(), drogon::k500InternalServerError);
+    EXPECT_EQ(response->body(), "Internal Server Error");
+    EXPECT_EQ(
+        response->body().find("sensitive"),
+        std::string::npos
     );
 }

@@ -13,7 +13,7 @@ namespace drogular {
 GraphQLClientError::GraphQLClientError(
     const std::string& message
 )
-    : std::runtime_error(message) {
+    : DrogularError(message) {
 }
 
 GraphQLResponse GraphQLClient::execute(

@@ -111,7 +111,7 @@ std::string ActionContext::requireRouteParam(
         routeParam(name);
 
     if (!value.has_value()) {
-        throw std::runtime_error(
+        throw ActionContextError(
             "Missing route parameter: " + name
         );
     }

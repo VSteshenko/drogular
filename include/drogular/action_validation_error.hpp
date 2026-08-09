@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdexcept>
+#include <drogular/error.hpp>
 #include <string>
 
 namespace drogular {
@@ -8,7 +8,7 @@ namespace drogular {
 /**
  * Thrown when action input validation fails.
  */
-class ActionValidationError : public std::runtime_error {
+class ActionValidationError : public DrogularError {
 public:
     explicit ActionValidationError(std::string message);
 };

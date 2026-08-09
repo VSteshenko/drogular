@@ -3,6 +3,7 @@
 #include <drogular/services.hpp>
 #include <drogular/graphql_variables.hpp>
 #include <drogular/json_conversion.hpp>
+#include <drogular/error.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -29,7 +30,7 @@ class Mutation;
 /**
  * Thrown when a required render context value is missing or has a wrong type.
  */
-class RenderContextError : public std::runtime_error {
+class RenderContextError : public DrogularError {
 public:
     explicit RenderContextError(const std::string& message);
 };
@@ -138,7 +139,7 @@ public:
         auto resolved = service<T>();
 
         if (resolved == nullptr) {
-            throw std::runtime_error(
+            throw RenderContextError(
                 std::string("Service not registered: ") +
                 typeid(T).name()
             );
@@ -150,12 +151,21 @@ public:
     template <typename T>
     std::shared_ptr<T> requireService() const {
         if (services_ == nullptr) {
-            throw std::runtime_error(
+            throw RenderContextError(
                 "ApplicationServices not set"
             );
         }
 
-        return services_->requireService<T>();
+        auto resolved = services_->service<T>();
+
+        if (resolved == nullptr) {
+            throw RenderContextError(
+                std::string("Service not registered: ") +
+                typeid(T).name()
+            );
+        }
+
+        return resolved;
     }
 
     /**
@@ -366,7 +376,7 @@ public:
     /**
      * Returns the value of the specified route parameter.
      *
-     * Throws std::runtime_error when the parameter is missing.
+     * Throws RenderContextError when the parameter is missing.
      */
     std::string requireRouteParam(
         const std::string& name

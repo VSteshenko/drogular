@@ -51,7 +51,7 @@ Json::Value GraphQLResult::toJson() const
 }
 
 RenderContextError::RenderContextError(const std::string& message)
-    : std::runtime_error(message) {
+    : DrogularError(message) {
 }
 
 RenderContext::RenderContext(const RenderContext* parent)
@@ -247,7 +247,7 @@ std::string RenderContext::requireRouteParam(
         routeParam(name);
 
     if (!value.has_value()) {
-        throw std::runtime_error(
+        throw RenderContextError(
             "Missing route parameter: " + name
         );
     }

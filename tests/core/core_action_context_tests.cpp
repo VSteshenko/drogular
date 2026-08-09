@@ -250,3 +250,61 @@ TEST(CoreActionContextTests, ThrowsForMissingRequiredRouteParam) {
         std::runtime_error
     );
 }
+
+TEST(CoreActionContextTests, RejectsIntegerWithTrailingCharacters) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->setParameter("count", "42items");
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_FALSE(context.form<int>("count").has_value());
+    EXPECT_THROW(
+        context.requireForm<int>("count"),
+        drogular::ActionValidationError
+    );
+}
+
+TEST(CoreActionContextTests, RejectsDoubleWithTrailingCharacters) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->setParameter("price", "3.14usd");
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_FALSE(context.form<double>("price").has_value());
+}
+
+TEST(CoreActionContextTests, ParsesExplicitBooleanValues) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->setParameter("enabled", "false");
+    request->setParameter("checked", "on");
+
+    drogular::ActionContext context(request, nullptr);
+
+    ASSERT_TRUE(context.form<bool>("enabled").has_value());
+    EXPECT_FALSE(*context.form<bool>("enabled"));
+    ASSERT_TRUE(context.form<bool>("checked").has_value());
+    EXPECT_TRUE(*context.form<bool>("checked"));
+}
+
+TEST(CoreActionContextTests, RejectsUnknownBooleanValue) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->setParameter("enabled", "banana");
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_FALSE(context.form<bool>("enabled").has_value());
+    EXPECT_THROW(
+        context.requireForm<bool>("enabled"),
+        drogular::ActionValidationError
+    );
+}
+
+TEST(CoreActionContextTests, ThrowsActionContextErrorWhenServicesAreUnavailable) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_THROW(
+        context.requireService<CoreActionContextTestService>(),
+        drogular::ActionContextError
+    );
+}

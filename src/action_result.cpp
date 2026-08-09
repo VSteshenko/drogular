@@ -51,11 +51,29 @@ ActionResult& ActionResult::cookie(
     std::string path,
     bool httpOnly
 ) {
+    return cookie(
+        std::move(name),
+        std::move(value),
+        CookieOptions{
+            .path = std::move(path),
+            .httpOnly = httpOnly
+        }
+    );
+}
+
+ActionResult& ActionResult::cookie(
+    std::string name,
+    std::string value,
+    CookieOptions options
+) {
     cookies_.push_back({
         .name = std::move(name),
         .value = std::move(value),
-        .path = std::move(path),
-        .httpOnly = httpOnly
+        .path = std::move(options.path),
+        .httpOnly = options.httpOnly,
+        .secure = options.secure,
+        .sameSite = options.sameSite,
+        .maxAge = options.maxAge
     });
 
     return *this;
