@@ -21,11 +21,11 @@ static std::optional<ActionResult> requireAuthentication(
 );
 ```
 
-Returns a redirect result when `ActionContext::existingSession()` returns `nullptr`.
+Returns a redirect result when `AuthSupport::isAuthenticated(context)` is `false`.
 
-Returns `std::nullopt` when any existing session is present.
+The action helper therefore uses the same authentication rule as pages: the resolved session must contain a `username` value. An empty session is not sufficient.
 
-> **Important:** this differs from `AuthSupport::isAuthenticated()`. `ActionAuthSupport::requireAuthentication()` does not require the session to contain `username`.
+Returns `std::nullopt` when the authentication requirement succeeds.
 
 ### `requireSessionValue()`
 

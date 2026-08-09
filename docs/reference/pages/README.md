@@ -25,16 +25,16 @@ Router
     │
     ├── creates RenderContext
     ├── attaches request and route parameters
-    ├── calls Page::onInit()
-    └── calls Page::render()
+    ├── creates a fresh Page instance
+    └── runs onInit() -> render() -> onDestroy()
             │
             ▼
         HTML response
 ```
 
-`App::page<PageType>()` creates one page instance during route registration. The router reuses that instance for later requests.
+`App::page<PageType>()` registers a factory. The router invokes that factory for every matching request, so page instances are request-scoped rather than shared across requests.
 
-Pages should therefore keep request-specific data in `RenderContext`, not in page data members.
+`RenderContext` remains the normal place for request values that must flow into templates, child components, and scoped services.
 
 ---
 

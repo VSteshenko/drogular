@@ -87,7 +87,9 @@ The lifetime of a session object is controlled by `std::shared_ptr` ownership an
 
 ## Thread Safety
 
-`Session` uses `std::unordered_map` without internal synchronization. Concurrent reads and writes to the same session require external synchronization.
+`Session` synchronizes access to its internal key/value map. Individual `set()`, `get()`, `has()`, `remove()`, and `clear()` calls may be used concurrently from request-processing threads.
+
+Sequences of multiple calls are not automatically atomic. Application logic that performs a read-modify-write operation across several calls still needs its own coordination when atomicity matters.
 
 ## Related Types
 

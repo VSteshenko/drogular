@@ -45,14 +45,19 @@ public:
     Router();
     explicit Router(ApplicationServices* services);
 
+    using PageFactory = std::function<std::shared_ptr<Page>()>;
+    using ActionFactory = std::function<std::shared_ptr<ActionHandler>()>;
+
     void page(
         const std::string& path,
-        std::shared_ptr<Page> page
+        PageFactory factory,
+        std::string target
     );
 
     void action(
         const std::string& path,
-        std::shared_ptr<ActionHandler> action
+        ActionFactory factory,
+        std::string target
     );
 
     void staticFiles(
@@ -103,13 +108,14 @@ Stores the supplied application service container and attaches it to page and ac
 ```cpp
 void page(
     const std::string& path,
-    std::shared_ptr<Page> page
+    PageFactory factory,
+    std::string target
 );
 ```
 
-Registers a page handler for `path`.
+Registers a page factory for `path`. `target` is recorded as route-inspection metadata.
 
-The router retains the supplied `shared_ptr`, so the same page instance is reused for matching requests.
+A **fresh page instance is created for every matching request**.
 
 For each request, the route callback:
 
@@ -117,22 +123,31 @@ For each request, the route callback:
 2. attaches `ApplicationServices` and the current Drogon request;
 3. extracts named route parameters through [`RoutePattern`](route-pattern.md);
 4. stores those parameters in the context;
-5. calls `Page::onInit()`;
-6. calls `Page::render()`;
+5. creates a page by invoking the registered factory;
+6. renders it through the shared component lifecycle pipeline;
 7. returns the resulting string as `text/html`.
 
 ```cpp
 router.page(
     "/users/{id}",
-    std::make_shared<UserPage>()
+    [] {
+        return std::make_shared<UserPage>();
+    },
+    "UserPage"
 );
 ```
 
 ### Page lifecycle behavior
 
-The current page route implementation calls `onInit()` and `render()`, but does not call `Page::onDestroy()`.
+Pages use the same lifecycle runner as component trees and rendering tests:
 
-The page object itself is reused across requests; request-specific state belongs in the `RenderContext` or local variables.
+```text
+onInit() -> render() -> onDestroy()
+```
+
+`onDestroy()` is guaranteed after `onInit()` succeeds, including when rendering or child rendering throws. The original exception is then propagated.
+
+Because each request receives a new page object, page members are request-local to that page instance. `RenderContext` remains the preferred place for values that need to flow through the rendering tree.
 
 ### HTTP method metadata
 
@@ -149,28 +164,33 @@ The current implementation calls Drogon's `registerHandler(path, callback)` with
 ```cpp
 void action(
     const std::string& path,
-    std::shared_ptr<ActionHandler> action
+    ActionFactory factory,
+    std::string target
 );
 ```
 
-Registers an [`ActionHandler`](../actions/action-handler.md) for POST requests.
+Registers an [`ActionHandler`](../actions/action-handler.md) factory for POST requests. `target` is recorded as route-inspection metadata.
 
 For each matching request, the router:
 
 1. creates an [`ActionContext`](../actions/action-context.md);
 2. extracts route parameters through `RoutePattern`;
 3. stores those parameters in the context;
-4. calls `ActionHandler::handle()`;
-5. converts the returned [`ActionResult`](../actions/action-result.md) through [`toHttpResponse()`](../actions/action-response.md).
+4. creates a fresh action by invoking the registered factory;
+5. calls `ActionHandler::handle()`;
+6. converts the returned [`ActionResult`](../actions/action-result.md) through [`toHttpResponse()`](../actions/action-response.md).
 
 ```cpp
 router.action(
     "/users/{id}/delete",
-    std::make_shared<DeleteUserAction>()
+    [] {
+        return std::make_shared<DeleteUserAction>();
+    },
+    "DeleteUserAction"
 );
 ```
 
-The same action object is retained and reused across requests.
+Each request receives a new action object, so action members are not shared between concurrent requests.
 
 ---
 

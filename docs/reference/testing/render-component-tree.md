@@ -8,7 +8,7 @@
 
 `renderComponentTree()` runs a component lifecycle and renders its C++ child hierarchy into default or named slots.
 
-It is used directly in component tests and is also used internally by Drogular's component rendering pipeline.
+The testing helper is a thin wrapper around `component_renderer::renderComponentTree()`, which is the production lifecycle runner used by page routing and component rendering.
 
 ## Synopsis
 
@@ -51,7 +51,7 @@ resolve slots
 onDestroy(context)
 ```
 
-Unlike current production page routing, this helper explicitly invokes `onDestroy()`.
+The same lifecycle is used by production page routing. If rendering or child rendering throws after `onInit()`, `onDestroy()` is still called before the exception is propagated.
 
 ## Default Children
 

@@ -36,10 +36,13 @@ RenderContext
    render()
       │
       ▼
+ onDestroy()
+      │
+      ▼
 HTTP Response
 ```
 
-A page object is application-scoped, while request-specific data belongs in the `RenderContext` created for each request.
+A fresh page object and a fresh `RenderContext` are created for each matching request.
 
 ---
 
@@ -66,12 +69,12 @@ Pages are normally registered through `App`:
 app.page<HomePage>("/");
 ```
 
-`App::page<PageType>()` constructs the page with `std::make_shared<PageType>()`. The page type must therefore:
+`App::page<PageType>()` registers a factory that constructs the page with `std::make_shared<PageType>()` for each matching request. The page type must therefore:
 
 - inherit from `drogular::Page`;
 - be default-constructible.
 
-The created page object is retained by the router and reused for every matching request.
+The router retains the factory, not a page instance.
 
 ---
 
@@ -116,9 +119,9 @@ The router sends the returned string with content type `text/html`.
 virtual void onDestroy(RenderContext& context);
 ```
 
-`Page` inherits this hook from `Component`, but the current HTTP page route implementation does **not** call it.
+`Page` inherits this hook from `Component`. The HTTP page route invokes it through the shared component lifecycle runner after rendering and child-slot processing.
 
-Do not rely on `onDestroy()` for request cleanup. Prefer automatic local lifetimes or explicit cleanup inside the request flow.
+If rendering throws after `onInit()` succeeds, `onDestroy()` is still invoked and the original exception is propagated. Automatic RAII lifetimes remain preferable for resource ownership.
 
 ---
 
@@ -161,11 +164,9 @@ Request data should remain in the context or in local variables.
 
 ## Lifetime and Thread Safety
 
-A page is instantiated once when its route is registered, not once per request.
+A new page instance is created for each matching HTTP request and destroyed when that request handler finishes. Page instance members are therefore not shared between concurrent requests.
 
-The same object may serve multiple requests and may be entered concurrently by Drogon's request-processing threads. Avoid storing request-specific or mutable render state in page members.
-
-Prefer:
+Request-local state may safely live in the page instance, but `RenderContext` is still preferred for values that must be visible to templates, child components, scoped services, or other parts of the rendering pipeline:
 
 ```cpp
 void onInit(drogular::RenderContext& context) override {
@@ -173,13 +174,7 @@ void onInit(drogular::RenderContext& context) override {
 }
 ```
 
-Avoid:
-
-```cpp
-std::string currentUser_; // Shared across requests.
-```
-
-Any mutable page-level state requires external synchronization.
+This request-scoped page lifetime does not make referenced global, singleton, static, or externally shared objects thread-safe; those objects retain their own concurrency requirements.
 
 ---
 

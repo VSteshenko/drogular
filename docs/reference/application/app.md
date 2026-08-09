@@ -130,9 +130,9 @@ template <typename PageType>
 App& page(const std::string& path);
 ```
 
-Registers a page instance for a GET route. See [`Page`](../pages/page.md) and [`TemplatePage`](../pages/template-page.md).
+Registers a page factory for a GET route. See [`Page`](../pages/page.md) and [`TemplatePage`](../pages/template-page.md).
 
-`PageType` must inherit from `drogular::Page` and must be default-constructible because registration creates it with `std::make_shared<PageType>()`.
+`PageType` must inherit from `drogular::Page` and must be default-constructible because the factory creates a fresh `std::make_shared<PageType>()` for every matching request.
 
 ```cpp
 app.page<HomePage>("/");
@@ -146,9 +146,9 @@ template <typename ActionType>
 App& action(const std::string& path);
 ```
 
-Registers an [`ActionHandler`](../actions/action-handler.md) instance for a POST route.
+Registers an [`ActionHandler`](../actions/action-handler.md) factory for a POST route.
 
-`ActionType` must inherit from [`drogular::ActionHandler`](../actions/action-handler.md) and must be default-constructible.
+`ActionType` must inherit from [`drogular::ActionHandler`](../actions/action-handler.md) and must be default-constructible. A fresh action instance is created for every matching request.
 
 ```cpp
 app.action<LoginAction>("/login");

@@ -46,13 +46,19 @@ renderComponentTree()
 
 These helpers exercise Drogular rendering code directly. They do **not** register routes, start Drogon, perform an HTTP request through `Router`, or execute actions.
 
-## Current Lifecycle Difference
+## Lifecycle Parity
 
-The current implementation of `renderPage()` calls `PageType::onInit()` once directly and then passes the page to `renderComponentTree()`, which calls `onInit()` again.
+`renderPage()` and `renderComponentTree()` delegate to the same production lifecycle runner used by page routing.
 
-As a result, `renderPage()` currently invokes page initialization **twice** and `onDestroy()` once. This differs from production page routing, where `Router` calls `onInit()` once and does not currently call `onDestroy()`.
+A page or component therefore follows the same sequence in tests and at runtime:
 
-Tests whose `onInit()` has side effects should account for this current behavior.
+```text
+onInit() -> render() -> onDestroy()
+```
+
+`onInit()` runs exactly once. `onDestroy()` also runs when rendering throws after initialization, and the original exception is propagated.
+
+The testing helpers still bypass HTTP route registration and response construction, but they no longer maintain a separate lifecycle implementation.
 
 ## Related Documentation
 

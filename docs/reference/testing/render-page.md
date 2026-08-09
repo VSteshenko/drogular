@@ -61,7 +61,7 @@ Returns a [`RenderResult`](render-result.md) containing:
 
 ## Behavior
 
-The current implementation performs these steps:
+The helper performs these steps:
 
 ```text
 Default-construct PageType
@@ -73,12 +73,9 @@ Create RenderContext
         └── attach request  (optional)
         │
         ▼
-page.onInit(context)
+production component lifecycle runner
         │
-        ▼
-renderComponentTree(page, context)
-        │
-        ├── page.onInit(context) again
+        ├── page.onInit(context)
         ├── page.render(context)
         ├── render children / slots
         └── page.onDestroy(context)
@@ -87,13 +84,11 @@ renderComponentTree(page, context)
 RenderResult
 ```
 
-### Current double `onInit()` behavior
+### Lifecycle parity with production
 
-`renderPage()` calls `page.onInit(context)` directly and then calls [`renderComponentTree()`](render-component-tree.md), which invokes `onInit()` again.
+`renderPage()` delegates to `component_renderer::renderComponentTree()`, the same lifecycle runner used by production page routing.
 
-Therefore page initialization currently runs **twice** in this helper.
-
-This differs from production routing, where `Router` currently invokes page `onInit()` once and renders the page directly.
+`onInit()` is called exactly once and `onDestroy()` is guaranteed after successful initialization, including when rendering throws. Exceptions continue to propagate to the test.
 
 ### Not a router integration test
 

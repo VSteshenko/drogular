@@ -117,9 +117,9 @@ return drogular::ActionResult::redirect("/dashboard")
 
 ## Thread Safety
 
-`SessionStore` uses `std::unordered_map` without internal synchronization. Concurrent create/get/remove/clear operations require external synchronization.
+`SessionStore` synchronizes access to its internal session map. `create()`, `get()`, `contains()`, `remove()`, and `clear()` may be called concurrently from request-processing threads.
 
-Registering the default store as a singleton means this consideration applies to concurrent HTTP requests.
+The store protects its own container operations. Code that combines several store calls into a larger logical transaction must provide additional coordination if that sequence needs to be atomic.
 
 ## Related Types
 

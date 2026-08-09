@@ -38,7 +38,7 @@ Pages render GET requests. Actions process POST requests and normally modify app
                          HTTP Response
 ```
 
-The handler itself should contain behavior, not request-specific mutable state.
+Each request receives a fresh handler instance. The handler should still keep shared application state in services rather than treating action members as a persistence mechanism.
 
 ---
 
@@ -65,7 +65,7 @@ Actions are normally registered through `App`:
 app.action<CreateTodoAction>("/todos/create");
 ```
 
-`App::action<ActionType>()` creates the handler with `std::make_shared<ActionType>()` and registers it with the router.
+`App::action<ActionType>()` registers a factory that creates the handler with `std::make_shared<ActionType>()` for each matching request.
 
 `ActionType` must therefore:
 
@@ -96,11 +96,7 @@ Return an [`ActionResult`](action-result.md) to describe the response.
 
 ## Lifetime and Thread Safety
 
-An action is instantiated once when its route is registered.
-
-The router captures the same `std::shared_ptr<ActionHandler>` and reuses that object for every request to the route. Drogon may invoke the handler concurrently.
-
-Do not store request-specific mutable state in action members:
+A new action instance is created for each matching POST request. Action instance members are therefore request-local and are not shared between concurrent requests.
 
 ```cpp
 class CreateTodoAction final : public drogular::ActionHandler {
@@ -111,7 +107,7 @@ public:
         const auto title =
             context.requireForm<std::string>("title");
 
-        // Request-specific state stays local.
+        // Local variables and this action instance belong to this request.
         // ...
 
         return drogular::ActionResult::redirect("/");
@@ -119,7 +115,7 @@ public:
 };
 ```
 
-Any mutable state stored on the handler requires external synchronization.
+Singleton services, static data, repositories, and other objects referenced by the action may still be shared across requests and must provide their own thread-safety guarantees.
 
 ---
 

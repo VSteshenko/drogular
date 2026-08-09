@@ -143,17 +143,15 @@ Template loading, preprocessing, compilation, or rendering failures may propagat
 
 External template caching follows `ApplicationOptions::templateCacheEnabled()` and the configured template root.
 
-Each `TemplateRenderable` instance owns its template cache object. Because registered pages are reused between requests, cached template state persists with the page instance.
+Each `TemplateRenderable` instance owns its template cache object. Because route-mounted pages are created per request, page-instance compiler cache state is scoped to that page instance. Template source caching controlled by `ApplicationOptions` remains part of the shared application rendering infrastructure.
 
 ---
 
 ## Lifetime and Thread Safety
 
-`TemplatePage` has the same shared-instance lifetime as `Page`.
+`TemplatePage` has the same request-scoped lifetime as `Page`: a fresh instance is created for each matching request.
 
-Do not place request-specific values in page members. Use `RenderContext` instead.
-
-Template rendering and cache behavior must also be considered when the same page is entered concurrently.
+Page members are therefore not shared between concurrent requests. Use `RenderContext` for values that must participate in template rendering, child contexts, or scoped dependency resolution.
 
 ---
 

@@ -48,14 +48,13 @@ return drogular::ActionResult::redirect("/dashboard")
 
 Subsequent requests use the `session_id` cookie to resolve the session from `SessionStore`.
 
-## Important Semantics
+## Authentication Semantics
 
-`AuthSupport` and `ActionAuthSupport` currently use different authentication checks:
+Page and action authentication use one shared rule.
 
-- `AuthSupport::isAuthenticated()` returns `true` only when the resolved session contains a `username` value.
-- `ActionAuthSupport::requireAuthentication()` only requires an existing session and does not require `username`.
+`AuthSupport::isAuthenticated()` returns `true` only when the resolved session contains a `username` value, and `ActionAuthSupport::requireAuthentication()` delegates to that same check.
 
-Applications should choose a consistent identity convention and use the appropriate helper deliberately.
+An existing but otherwise empty session is therefore **not** considered authenticated.
 
 ## Storage and Lifetime
 
@@ -68,8 +67,9 @@ The current implementation does not provide:
 - automatic cookie creation;
 - automatic cookie invalidation;
 - CSRF protection;
-- role or permission models;
-- internal synchronization for concurrent mutation.
+- role or permission models.
+
+The built-in `Session` and `SessionStore` synchronize access to their in-memory maps and may be used concurrently by request-processing threads. This protects container access; it does not turn multi-step application logic into an atomic transaction.
 
 ## Cookbook
 
