@@ -663,6 +663,7 @@ auto users =
 - [`ApplicationServices`](../dependency-injection/application-services.md)
 - `GraphQLResult` *(coming soon)*
 - `GraphQLClient` *(GraphQL reference coming soon)*
+- [`RenderResult`](../testing/render-result.md)
 
 ---
 

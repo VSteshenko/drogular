@@ -101,6 +101,12 @@ Inspect the configured application surface, expose a stable JSON contract, use t
 
 - [Developer Tools](developer-tools/README.md)
 
+## Testing
+
+Render pages and component trees directly in unit-style tests and inspect the resulting HTML and render context.
+
+- [Testing](testing/README.md)
+
 ---
 
 # Planned Sections
@@ -108,6 +114,5 @@ Inspect the configured application surface, expose a stable JSON contract, use t
 The following sections will be added as the reference is expanded:
 
 - GraphQL
-- Testing
 
 Only APIs confirmed as supported public contracts will be included.

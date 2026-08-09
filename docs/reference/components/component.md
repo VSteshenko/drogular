@@ -296,4 +296,4 @@ app.component<TodoItemComponent>();
 - [`ComponentRegistry`](component-registry.md)
 - [`RenderContext`](../rendering/render-context.md)
 - `TemplateRenderable` *(coming soon)*
-- Testing *(coming soon)*
+- [`Testing`](../testing/README.md)

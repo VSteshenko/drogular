@@ -222,3 +222,4 @@ app.page<DeveloperToolsExamplePage>("/");
 - [`Component`](../components/component.md)
 - [`RenderContext`](../rendering/render-context.md)
 - [`App`](../application/app.md)
+- [`renderPage()`](../testing/render-page.md)
