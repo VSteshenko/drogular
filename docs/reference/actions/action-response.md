@@ -42,16 +42,27 @@ Content-Disposition: attachment; filename="<downloadName>"
 
 ## Cookies
 
-Cookies are translated to `drogon::Cookie` values for:
+Cookies are translated to `drogon::Cookie` values for every result type, including `Empty`.
 
-- redirects;
-- HTML;
-- JSON;
-- files/downloads.
+The converter maps path, HttpOnly, Secure, SameSite, and Max-Age when those options are set.
 
-The converter sets the cookie path and enables HttpOnly when requested.
+---
 
-The current `Empty` branch returns before cookie application, so cookies attached to `ActionResult::empty()` are not emitted.
+## Error Conversion
+
+The action pipeline also uses `toHttpErrorResponse()` when an action throws:
+
+```cpp
+drogon::HttpResponsePtr toHttpErrorResponse(
+    const std::exception& error
+);
+
+drogon::HttpResponsePtr toHttpErrorResponse();
+```
+
+[`ActionValidationError`](../forms-and-validation/action-validation-error.md) becomes `400 Bad Request` with the validation message in a plain-text body. Other `std::exception` values and unknown exceptions become `500 Internal Server Error` with the fixed body `Internal Server Error`; their internal exception messages are not exposed to the client.
+
+See [Action Error Handling](error-handling.md) for the framework contract.
 
 ---
 

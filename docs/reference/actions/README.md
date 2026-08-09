@@ -12,10 +12,12 @@ An action receives an `ActionContext`, reads request data or application service
 - [`ActionContext`](action-context.md) — request and service context passed to an action.
 - [`ActionResult`](action-result.md) — describes the response produced by an action.
 - [`ActionResultType`](action-result-type.md) — identifies the response variant stored in an `ActionResult`.
-- [`Cookie`](cookie.md) — cookie metadata attached to an action result.
+- [`Cookie`](cookie.md) — cookie metadata and security attributes attached to an action result.
+- [`CookieOptions`](cookie.md) — options for Path, HttpOnly, Secure, SameSite, and Max-Age.
 - [`FileResponseInfo`](file-response-info.md) — file response metadata.
 - [`toHttpResponse()`](action-response.md) — converts an `ActionResult` into a Drogon response.
 - [`ActionValidationError`](../forms-and-validation/action-validation-error.md) — reports missing or invalid required action input.
+- [`Action Error Handling`](error-handling.md) — defines exception hierarchy and action exception-to-HTTP mapping.
 
 ---
 

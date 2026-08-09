@@ -120,19 +120,16 @@ Supported types are currently:
 - `double`
 - `bool`
 
-For `int` and `double`, conversion is performed with `std::stoi` and `std::stod`. A thrown conversion error returns `std::nullopt`.
+Numeric conversion is strict: the complete input string must represent the requested value. A numeric prefix followed by additional characters, such as `42abc`, returns `std::nullopt`.
 
-The conversion does not currently verify that the conversion consumed the complete string. Values such as a numeric prefix followed by additional characters may therefore be accepted by the standard conversion function.
+For `bool`, the accepted values are:
 
-For `bool`, these values produce `true`:
+| Input | Result |
+| --- | --- |
+| `true`, `1`, `on` | `true` |
+| `false`, `0`, `off` | `false` |
 
-```text
-true
-1
-on
-```
-
-Any other present, non-empty value produces `false`.
+Any other present, non-empty value returns `std::nullopt`.
 
 ### `requireForm<T>()`
 

@@ -573,7 +573,7 @@ Child contexts start with an empty [`GraphQLResult`](graphql-result.md); GraphQL
 
 GraphQL execution also throws `RenderContextError` when no client is available.
 
-`requireRouteParam()` and `requireService<T>()` currently throw `std::runtime_error` rather than `RenderContextError`.
+`requireRouteParam()` and `requireService<T>()` also throw `RenderContextError` when the required route parameter or service cannot be resolved.
 
 ---
 

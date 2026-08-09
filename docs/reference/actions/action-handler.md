@@ -121,11 +121,15 @@ Singleton services, static data, repositories, and other objects referenced by t
 
 ## Error Behavior
 
-The router currently calls `handle()` directly and does not translate action-specific exceptions into `ActionResult` values.
+The action router catches exceptions raised by `handle()` and translates them to safe HTTP responses.
 
-For example, [`ActionValidationError`](../forms-and-validation/action-validation-error.md) thrown by `ActionContext::requireForm<T>()` is not caught by the action router itself.
+- [`ActionValidationError`](../forms-and-validation/action-validation-error.md) becomes `400 Bad Request` and exposes its validation message.
+- Other `std::exception` values become `500 Internal Server Error` without exposing the exception message.
+- Unknown exceptions also become `500 Internal Server Error`.
 
-Expected input failures should normally be validated before required accessors are called.
+Expected input failures may still be handled explicitly through `ValidationResult` when the application wants to render field-level feedback or choose a custom response. Required accessors are appropriate when an invalid value should abort the action with the framework's standard `400` response.
+
+See [Action Error Handling](error-handling.md).
 
 ---
 

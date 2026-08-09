@@ -146,27 +146,27 @@ ActionResult& cookie(
     std::string path = "/",
     bool httpOnly = true
 );
-```
 
-Appends a response cookie and returns `*this` for chaining.
-
-```cpp
-return drogular::ActionResult::redirect(
-    "/dashboard"
-).cookie(
-    "session_id",
-    sessionId
+ActionResult& cookie(
+    std::string name,
+    std::string value,
+    CookieOptions options
 );
 ```
 
-The current cookie model exposes only:
+Both overloads append a response cookie and return `*this` for chaining. The first overload preserves the compact path/HttpOnly API. The `CookieOptions` overload additionally supports `Secure`, `SameSite`, and `Max-Age`.
 
-- name;
-- value;
-- path;
-- HttpOnly.
+```cpp
+drogular::CookieOptions options;
+options.secure = true;
+options.sameSite = drogular::CookieSameSite::Lax;
+options.maxAge = 3600;
 
-Secure, SameSite, expiry, and Max-Age attributes are not represented by `ActionResult::cookie()`.
+return drogular::ActionResult::redirect("/dashboard")
+    .cookie("session_id", sessionId, options);
+```
+
+See [`Cookie`](cookie.md) for the complete option set.
 
 ### `cookies()`
 
@@ -180,9 +180,7 @@ Returns all cookies attached to the result.
 
 ## HTTP Conversion Behavior
 
-[`toHttpResponse()`](action-response.md) applies cookies to redirect, HTML, JSON, and file results.
-
-For `ActionResultType::Empty`, the current converter returns a plain Drogon response before applying cookies. Cookies attached to an empty result are therefore currently ignored.
+[`toHttpResponse()`](action-response.md) applies cookies to every result variant, including `ActionResultType::Empty`.
 
 ---
 

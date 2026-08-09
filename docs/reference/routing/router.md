@@ -178,7 +178,10 @@ For each matching request, the router:
 3. stores those parameters in the context;
 4. creates a fresh action by invoking the registered factory;
 5. calls `ActionHandler::handle()`;
-6. converts the returned [`ActionResult`](../actions/action-result.md) through [`toHttpResponse()`](../actions/action-response.md).
+6. converts the returned [`ActionResult`](../actions/action-result.md) through [`toHttpResponse()`](../actions/action-response.md);
+7. translates thrown exceptions through the action error-response contract.
+
+[`ActionValidationError`](../forms-and-validation/action-validation-error.md) becomes `400 Bad Request`; other exceptions become a safe `500 Internal Server Error`.
 
 ```cpp
 router.action(
@@ -308,7 +311,7 @@ The returned reference aliases the router's internal vector.
 
 It contains no internal synchronization around the `routes_` vector. Do not modify route registrations concurrently with inspection reads or other route registration operations.
 
-Registered page and action handlers are stored in captured `shared_ptr`s and may later be invoked concurrently by Drogon. Their own thread-safety rules still apply.
+Registered page and action factories are captured by Drogon handlers. Each matching request creates a fresh page or action instance, so mutable members of those instances are request-local. Objects resolved from shared services may still be shared and must follow their own thread-safety contracts.
 
 ---
 

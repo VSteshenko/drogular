@@ -3,7 +3,7 @@
 **Namespace:** `drogular`  
 **Header:** `<drogular/action_validation_error.hpp>`  
 **Kind:** Exception class  
-**Base class:** `std::runtime_error`
+**Base class:** `DrogularError`
 
 ## Purpose
 
@@ -17,7 +17,7 @@
 
 ```cpp
 class ActionValidationError
-    : public std::runtime_error
+    : public DrogularError
 {
 public:
     explicit ActionValidationError(
@@ -55,7 +55,9 @@ Supported form conversion types currently include:
 - `double`
 - `bool`
 
-For `int` and `double`, conversion failure causes `requireForm<T>()` to throw. For `bool`, the values `true`, `1`, and `on` map to `true`; other present strings map to `false`.
+For `int` and `double`, the complete input string must be a valid value; partial numeric strings are rejected. For `bool`, `true`, `1`, and `on` map to `true`, while `false`, `0`, and `off` map to `false`. Any other present string is invalid.
+
+When this exception escapes an action handler, the router converts it to `400 Bad Request` and uses the exception message as the plain-text response body. Other exceptions use the framework's safe `500` response contract.
 
 Ordinary validation-rule failures should normally be handled through `ValidationResult` before required values are read.
 
@@ -86,3 +88,4 @@ The validation check prevents the expected missing-value case from reaching the 
 - [`FormValidator`](form-validator.md)
 - [`ValidationResult`](validation-result.md)
 - [`ActionContext`](../actions/action-context.md)
+- [`Action Error Handling`](../actions/error-handling.md)

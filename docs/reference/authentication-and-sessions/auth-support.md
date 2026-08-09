@@ -93,7 +93,7 @@ Authentication is specifically tied to the `username` session key. Storing only 
 
 ## Thread Safety
 
-`AuthSupport` itself has no mutable state. Thread-safety depends on [`SessionStore`](session-store.md) and [`Session`](session.md), which currently have no internal synchronization.
+`AuthSupport` itself has no mutable state. The built-in [`SessionStore`](session-store.md) and [`Session`](session.md) synchronize access to their internal maps and may be used concurrently by request-processing threads. Multi-step application logic is not automatically atomic.
 
 ## Related Types
 

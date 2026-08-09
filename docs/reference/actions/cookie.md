@@ -6,18 +6,36 @@
 
 ## Purpose
 
-`Cookie` stores the cookie metadata attached to an `ActionResult`.
+`Cookie` stores the response-cookie metadata attached to an `ActionResult`.
 
 ---
 
 ## Synopsis
 
 ```cpp
+enum class CookieSameSite {
+    Unspecified,
+    Lax,
+    Strict,
+    None
+};
+
+struct CookieOptions {
+    std::string path = "/";
+    bool httpOnly = true;
+    bool secure = false;
+    CookieSameSite sameSite = CookieSameSite::Unspecified;
+    std::optional<int> maxAge;
+};
+
 struct Cookie {
     std::string name;
     std::string value;
     std::string path = "/";
     bool httpOnly = true;
+    bool secure = false;
+    CookieSameSite sameSite = CookieSameSite::Unspecified;
+    std::optional<int> maxAge;
 };
 ```
 
@@ -25,44 +43,35 @@ struct Cookie {
 
 ## Members
 
-### `name`
+`name` and `value` contain the cookie pair. `path` defaults to `/`. `httpOnly` defaults to `true`, `secure` defaults to `false`, `sameSite` defaults to `Unspecified`, and `maxAge` is omitted by default.
 
-Cookie name.
-
-### `value`
-
-Cookie value.
-
-### `path`
-
-Cookie path. Defaults to `/`.
-
-### `httpOnly`
-
-Controls the HttpOnly attribute. Defaults to `true`.
+`CookieSameSite` maps to the corresponding Drogon SameSite value when a result is converted to an HTTP response. `Unspecified` leaves the attribute unset.
 
 ---
 
-## Behavior
+## Recommended Construction
 
-Cookies are normally appended through `ActionResult::cookie()` rather than constructed directly.
-
-When an action result is converted to a Drogon response, the converter currently maps `name`, `value`, `path`, and `httpOnly` only.
-
-The struct does not currently represent Secure, SameSite, expiry, or Max-Age attributes.
-
----
-
-## Example
+Cookies are normally appended through `ActionResult::cookie()` rather than constructed directly. The compatibility overload covers the common path/HttpOnly case:
 
 ```cpp
-return drogular::ActionResult::redirect(
-    "/dashboard"
-).cookie(
-    "session_id",
-    sessionId
-);
+return drogular::ActionResult::redirect("/dashboard")
+    .cookie("session_id", sessionId);
 ```
+
+Use `CookieOptions` when security attributes are required:
+
+```cpp
+drogular::CookieOptions options;
+options.httpOnly = true;
+options.secure = true;
+options.sameSite = drogular::CookieSameSite::Lax;
+options.maxAge = 3600;
+
+return drogular::ActionResult::redirect("/dashboard")
+    .cookie("session_id", sessionId, options);
+```
+
+`Max-Age` is expressed in seconds.
 
 ---
 
