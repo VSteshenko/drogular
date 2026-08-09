@@ -437,7 +437,7 @@ int main() {
 - [`ApplicationInspection`](../developer-tools/application-inspection.md)
 - [`Page`](../pages/page.md)
 - [`ActionHandler`](../actions/action-handler.md)
-- `GraphQLClient`
+- [`GraphQLClient`](../graphql/client/graphql-client.md)
 
 ## See Also
 

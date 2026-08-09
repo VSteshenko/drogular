@@ -9,10 +9,10 @@ Rendering connects pages, components, templates, request data, application servi
 ## Types
 
 - [`RenderContext`](render-context.md) — request-scoped rendering data, services, request access, route parameters, localization, and GraphQL result storage.
+- [`GraphQLResult`](graphql-result.md) — stores typed GraphQL-derived values associated with a render context.
 
 Additional rendering types will be documented as the reference expands:
 
-- `GraphQLResult`
 - `RenderContextError`
 - `TemplateRenderable`
 - `CompiledTemplate`

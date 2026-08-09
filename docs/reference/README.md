@@ -101,18 +101,15 @@ Inspect the configured application surface, expose a stable JSON contract, use t
 
 - [Developer Tools](developer-tools/README.md)
 
+## GraphQL
+
+Build GraphQL documents, execute requests through interchangeable clients, inspect responses, and dispatch named operations in process.
+
+- [GraphQL](graphql/README.md)
+
 ## Testing
 
 Render pages and component trees directly in unit-style tests and inspect the resulting HTML and render context.
 
 - [Testing](testing/README.md)
 
----
-
-# Planned Sections
-
-The following sections will be added as the reference is expanded:
-
-- GraphQL
-
-Only APIs confirmed as supported public contracts will be included.

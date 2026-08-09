@@ -92,7 +92,7 @@ The child:
 - receives the same directly assigned `GraphQLClient*` pointer;
 - starts with its own local value map;
 - starts with its own scoped-service cache;
-- starts with an empty `GraphQLResult`;
+- starts with an empty [`GraphQLResult`](graphql-result.md);
 - does **not** copy the current `HttpRequestPtr`;
 - does **not** copy route parameters.
 
@@ -486,7 +486,7 @@ context.setTranslations({
 
 ## GraphQL
 
-`RenderContext` can execute a GraphQL query or mutation and merge the returned fields into its internal `GraphQLResult`.
+`RenderContext` can execute a GraphQL query or mutation and merge the returned fields into its internal [`GraphQLResult`](graphql-result.md).
 
 ### `setGraphQLClient()`
 
@@ -532,7 +532,7 @@ Execution chooses a client in this order:
 2. the pointer assigned by `setGraphQLClient()`;
 3. otherwise `RenderContextError("GraphQL client is not set")` is thrown.
 
-The response is converted to `GraphQLResult` and merged into existing GraphQL result data. Existing fields with matching names are replaced; unrelated fields remain.
+The response is converted to [`GraphQLResult`](graphql-result.md) and merged into existing GraphQL result data. Existing fields with matching names are replaced; unrelated fields remain.
 
 ```cpp
 context.executeGraphQL(query);
@@ -561,7 +561,7 @@ void mergeGraphQL(
 
 Merges fields into the current GraphQL result. Incoming values replace existing values with the same key.
 
-Child contexts start with an empty `GraphQLResult`; GraphQL data is not inherited from the parent.
+Child contexts start with an empty [`GraphQLResult`](graphql-result.md); GraphQL data is not inherited from the parent.
 
 ---
 
@@ -661,8 +661,8 @@ auto users =
 - [`Component`](../components/component.md)
 - [`TranslationProvider`](../localization/translation-provider.md)
 - [`ApplicationServices`](../dependency-injection/application-services.md)
-- `GraphQLResult` *(coming soon)*
-- `GraphQLClient` *(GraphQL reference coming soon)*
+- [`GraphQLResult`](graphql-result.md)
+- [`GraphQLClient`](../graphql/client/graphql-client.md)
 - [`RenderResult`](../testing/render-result.md)
 
 ---

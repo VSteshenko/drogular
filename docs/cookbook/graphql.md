@@ -276,13 +276,14 @@ Keep GraphQL error details out of templates and components. Convert them into ap
 
 - [Project Structure](../getting-started/project-structure.md)
 
-### API Reference *(coming soon)*
+### API Reference
 
-- GraphQLClient
-- HttpGraphQLClient
-- InProcessGraphQLClient
-- GraphQLRequest
-- GraphQLResponse
-- GraphQLVariables
-- gql::Query
-- gql::Mutation
+- [GraphQL](../reference/graphql/README.md)
+- [GraphQLClient](../reference/graphql/client/graphql-client.md)
+- [HttpGraphQLClient](../reference/graphql/client/http-graphql-client.md)
+- [InProcessGraphQLClient](../reference/graphql/client/in-process-graphql-client.md)
+- [GraphQLRequest](../reference/graphql/requests/graphql-request.md)
+- [GraphQLResponse](../reference/graphql/requests/graphql-response.md)
+- [GraphQLVariables](../reference/graphql/requests/graphql-variables.md)
+- [gql::Query](../reference/graphql/documents/query.md)
+- [gql::Mutation](../reference/graphql/documents/mutation.md)
