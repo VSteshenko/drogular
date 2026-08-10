@@ -245,7 +245,7 @@ std::string requireRouteParam(
 
 Returns a required route parameter.
 
-Throws `std::runtime_error` when the parameter is missing.
+Throws `ActionContextError` when the parameter is missing.
 
 ---
 
@@ -293,5 +293,5 @@ drogular::ActionResult handle(
 - [`ActionResult`](action-result.md)
 - [`ActionValidationError`](../forms-and-validation/action-validation-error.md)
 - [`ApplicationServices`](../dependency-injection/application-services.md)
-- `Session` *(coming soon)*
-- `SessionStore` *(coming soon)*
+- [`Session`](../authentication-and-sessions/session.md)
+- [`SessionStore`](../authentication-and-sessions/session-store.md)

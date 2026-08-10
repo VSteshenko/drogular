@@ -222,6 +222,5 @@ Equivalent convenience methods are available for most settings directly on `App`
 ## See Also
 
 - [Static Files](../static-files/README.md)
-
-- [Static Files API Reference *(coming soon)*](../README.md#planned-sections)
-- [PWA API Reference *(coming soon)*](../README.md#planned-sections)
+- [Static Files API Reference](../static-files/README.md)
+- [PWA API Reference](../pwa/README.md)

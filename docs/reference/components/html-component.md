@@ -98,4 +98,4 @@ Concurrent use of the same instance is safe only when inherited mutable APIs suc
 
 - [`Component`](component.md)
 - [`TemplateComponent`](template-component.md)
-- Testing *(coming soon)*
+- [`Testing`](../testing/README.md)

@@ -1,0 +1,70 @@
+# `template_compiler::CompiledTemplate`
+
+**Namespace:** `drogular::template_compiler`  
+**Header:** `<drogular/compiled_template.hpp>`  
+**Kind:** Class and compilation functions
+
+## Purpose
+
+`CompiledTemplate` represents template source compiled into Drogular's template AST and ready to render against a `RenderContext`.
+
+Most applications do not need to compile templates directly because `TemplateRenderable` performs compilation and caching automatically. The low-level API is useful when integrating directly with the template compiler.
+
+## `CompiledTemplate`
+
+```cpp
+class CompiledTemplate {
+public:
+    explicit CompiledTemplate(std::vector<NodePtr> nodes);
+
+    std::string render(RenderContext& context) const;
+};
+```
+
+### `render()`
+
+Evaluates the compiled template against the supplied `RenderContext` and returns the resulting text.
+
+## `compile()`
+
+```cpp
+CompiledTemplate compile(std::string_view html);
+```
+
+Compiles template text into a reusable `CompiledTemplate`.
+
+## `CompileResult`
+
+```cpp
+struct CompileResult {
+    CompiledTemplate compiledTemplate;
+    TemplateDiagnostics diagnostics;
+
+    bool valid() const;
+};
+```
+
+`valid()` returns the validity state reported by the associated diagnostics collection.
+
+## `compileWithDiagnostics()`
+
+```cpp
+CompileResult compileWithDiagnostics(
+    std::string_view html,
+    std::string sourceName = {}
+);
+```
+
+Compiles template text and returns the compiled result together with template diagnostics.
+
+## Lifetime and Thread Safety
+
+A `CompiledTemplate` owns its compiled AST. Rendering reads that AST and uses the supplied `RenderContext` for request-specific values.
+
+The API itself does not promise synchronization for concurrent access to a shared `RenderContext`; normal rendering uses request-local contexts.
+
+## Related Types
+
+- [`TemplateRenderable`](template-renderable.md)
+- [`RenderContext`](render-context.md)
+- `TemplateDiagnostics`

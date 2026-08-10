@@ -344,7 +344,7 @@ Conceptually, those calls delegate page and action registration to the applicati
 - [`ActionHandler`](../actions/action-handler.md)
 - [`RenderContext`](../rendering/render-context.md)
 - [`ActionContext`](../actions/action-context.md)
-- `RouteInspection` *(Developer Tools reference coming soon)*
+- [`RouteInspection`](../developer-tools/application-inspection.md#routeinspection)
 
 ## See Also
 

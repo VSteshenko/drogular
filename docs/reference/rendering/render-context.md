@@ -315,7 +315,7 @@ std::shared_ptr<T> requireService();
 
 The non-const overload uses `service<T>()` and therefore participates in `RenderContext` scoped-service caching.
 
-It throws `std::runtime_error` when the service cannot be resolved.
+It throws `RenderContextError` when the service cannot be resolved.
 
 ```cpp
 auto users =
@@ -422,7 +422,7 @@ std::string requireRouteParam(
 ) const;
 ```
 
-Returns the route parameter or throws `std::runtime_error` with a `Missing route parameter` message.
+Returns the route parameter or throws `RenderContextError` with a `Missing route parameter` message.
 
 Route parameters are local to a context. `createChild()` does not copy them and route-parameter lookup does not consult the parent context.
 

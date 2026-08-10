@@ -159,6 +159,6 @@ Page members are therefore not shared between concurrent requests. Use `RenderCo
 
 - [`Page`](page.md)
 - [`PageSupport`](page-support.md)
-- `TemplateRenderable` *(coming soon)*
+- [`TemplateRenderable`](../rendering/template-renderable.md)
 - [`RenderContext`](../rendering/render-context.md)
-- `TemplateComponent` *(coming soon)*
+- [`TemplateComponent`](../components/template-component.md)

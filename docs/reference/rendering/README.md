@@ -10,12 +10,10 @@ Rendering connects pages, components, templates, request data, application servi
 
 - [`RenderContext`](render-context.md) — request-scoped rendering data, services, request access, route parameters, localization, and GraphQL result storage.
 - [`GraphQLResult`](graphql-result.md) — stores typed GraphQL-derived values associated with a render context.
+- [`TemplateRenderable`](template-renderable.md) — shared template pipeline used by template-backed pages and components.
+- [`template_compiler::CompiledTemplate`](compiled-template.md) — low-level compiled-template representation and compilation entry points.
 
-Additional rendering types will be documented as the reference expands:
-
-- `RenderContextError`
-- `TemplateRenderable`
-- `CompiledTemplate`
+`RenderContextError` is documented as part of [`RenderContext`](render-context.md) and the framework error contract.
 
 ---
 

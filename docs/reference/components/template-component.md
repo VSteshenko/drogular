@@ -176,6 +176,6 @@ Template loading, preprocessing, compilation, and evaluation errors follow the s
 
 - [`Component`](component.md)
 - [`ComponentRegistry`](component-registry.md)
-- `TemplateRenderable` *(coming soon)*
+- [`TemplateRenderable`](../rendering/template-renderable.md)
 - [`RenderContext`](../rendering/render-context.md)
 - [`TemplatePage`](../pages/template-page.md)

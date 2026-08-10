@@ -47,7 +47,7 @@ virtual GraphQLResponse executeRequest(
 
 ## `GraphQLClientError`
 
-`GraphQLClientError` derives from `std::runtime_error` and is used by concrete clients for transport or execution failures.
+`GraphQLClientError` derives from `DrogularError` and is used by concrete clients for transport or execution failures.
 
 Concrete implementations do not all apply identical error policies. In particular, `HttpGraphQLClient::execute(query/mutation)` throws when a GraphQL response contains errors, while `executeRequest()` returns such a response unchanged.
 

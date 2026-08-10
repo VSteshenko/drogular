@@ -177,5 +177,5 @@ Complete registrations during application setup, before concurrent request proce
 - [`TemplateComponent`](template-component.md)
 - [`App`](../application/app.md)
 - [`ApplicationServices`](../dependency-injection/application-services.md)
-- `Diagnostics` *(coming soon)*
+- [`Diagnostics`](../developer-tools/diagnostics.md)
 - [`Rendering`](../rendering/README.md)
