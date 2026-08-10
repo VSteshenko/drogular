@@ -15,22 +15,14 @@ public:
         drogular::RenderContext& context
     ) override {
         const auto currentUser =
-            AuthSession::currentUser(context);
+            AuthSession::requireCurrentUser(context);
+
+        if (!currentUser.has_value()) {
+            return;
+        }
 
         context.set("pageTitle", std::string("Dashboard"));
-
-        context.set(
-            "authenticated",
-            currentUser.has_value()
-        );
-
-        context.set(
-            "username",
-            currentUser.has_value()
-                ? currentUser->username
-                : std::string("")
-        );
-
+        context.set("username", currentUser->username);
         context.set(
             "isAdmin",
             currentUser->role == "admin"

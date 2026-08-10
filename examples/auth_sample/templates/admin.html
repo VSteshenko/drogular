@@ -1,4 +1,17 @@
-@if(isAdmin)
+@if(loginRequired)
+<h2>Login required</h2>
+
+<p>
+    <a href="/login">Go to login</a>
+</p>
+@else
+@if(accessDenied)
+<h2>Access Denied</h2>
+
+<p>
+    Administrator role required.
+</p>
+@else
 <h2>Admin Panel</h2>
 
 <p>
@@ -8,10 +21,5 @@
 <p>
     This page is visible only for users with the admin role.
 </p>
-@else
-<h2>Access Denied</h2>
-
-<p>
-    Administrator role required.
-</p>
+@endif
 @endif

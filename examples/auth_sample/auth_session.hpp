@@ -3,7 +3,7 @@
 #include "auth_user.hpp"
 
 #include <drogular/auth_support.hpp>
-#include <drogular/page.hpp>
+#include <drogular/page_auth_support.hpp>
 
 #include <optional>
 #include <string>
@@ -36,13 +36,29 @@ public:
         };
     }
 
+    static std::optional<AuthUser> requireCurrentUser(
+        drogular::RenderContext& context
+    ) {
+        if (!drogular::PageAuthSupport::requireAuthentication(
+                context
+            )) {
+            return std::nullopt;
+        }
+
+        const auto user = currentUser(context);
+
+        if (!user.has_value()) {
+            context.set("loginRequired", true);
+        }
+
+        return user;
+    }
+
     static bool isAuthenticated(
         drogular::RenderContext& context
     )
     {
-        return drogular::AuthSupport::isAuthenticated(
-            context
-        );
+        return currentUser(context).has_value();
     }
 
     static bool isAdmin(

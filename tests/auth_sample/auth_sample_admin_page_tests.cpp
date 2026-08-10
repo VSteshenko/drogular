@@ -25,7 +25,14 @@ TEST(AuthSampleAdminPageTests, DeniesGuestAccess) {
     EXPECT_TRUE(
         drogular::test::contains(
             result.html,
-            "Access Denied"
+            "Login required"
+        )
+    );
+
+    EXPECT_FALSE(
+        drogular::test::contains(
+            result.html,
+            "Admin Panel"
         )
     );
 }

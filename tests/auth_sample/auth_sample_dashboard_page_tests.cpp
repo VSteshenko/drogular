@@ -79,3 +79,44 @@ TEST(AuthSampleDashboardPageTests, ShowsDashboardForAuthenticatedUser) {
         )
     );
 }
+
+TEST(AuthSampleDashboardPageTests, RejectsIncompleteAuthenticatedSession) {
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+
+    configureAuthSampleTestServices(services, options);
+
+    auto sessionStore =
+        services.requireService<drogular::SessionStore>();
+
+    auto session = sessionStore->create();
+    session->set("username", "admin");
+
+    const auto sessionId =
+        session->get("_id").value();
+
+    auto request =
+        drogon::HttpRequest::newHttpRequest();
+
+    request->addCookie("session_id", sessionId);
+
+    const auto result =
+        drogular::test::renderPage<DashboardPage>(
+            &services,
+            request
+        );
+
+    EXPECT_TRUE(
+        drogular::test::contains(
+            result.html,
+            "Login required"
+        )
+    );
+
+    EXPECT_FALSE(
+        drogular::test::contains(
+            result.html,
+            "Welcome, admin."
+        )
+    );
+}

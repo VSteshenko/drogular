@@ -17,10 +17,11 @@ int main()
     app.staticFiles(
         "/assets",
         "examples/auth_sample/public"
-        )
-        .staticFileCacheProfile(
-           drogular::StaticFileCacheProfile::Development
-        );
+    )
+    .staticFileCacheProfile(
+        drogular::StaticFileCacheProfile::Development
+    )
+    .profile(drogular::ApplicationProfile::Development);
 
     app.services().add<AuthService>(
         drogular::ServiceLifetime::Singleton
