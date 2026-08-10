@@ -148,13 +148,9 @@ Applications may implement a different fallback strategy while using the same `T
 
 ## See Also
 
-### Getting Started *(coming soon)*
-
-- Localization
-
 ### API Reference
 
-- [TranslationProvider](../reference/localization/translation-provider.md)
-- [TranslationSupport](../reference/localization/translation-support.md)
-- [LocaleSupport](../reference/localization/locale-support.md)
+- [`TranslationProvider`](../reference/localization/translation-provider.md)
+- [`TranslationSupport`](../reference/localization/translation-support.md)
+- [`LocaleSupport`](../reference/localization/locale-support.md)
 - [`RenderContext`](../reference/rendering/render-context.md)

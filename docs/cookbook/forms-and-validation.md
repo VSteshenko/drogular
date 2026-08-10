@@ -98,9 +98,29 @@ const auto title =
     context.requireForm<std::string>("title");
 ```
 
-`requireForm<T>()` throws `ActionValidationError` when a required value is missing or cannot be converted.
+`requireForm<T>()` throws `ActionValidationError` when a required value is missing or cannot be converted. The action router translates that expected exception into `400 Bad Request`.
 
-Validate first, then use required accessors for the values needed by the operation.
+Validate first, then use required accessors for the values needed by the operation. Use `ValidationResult` when the UI needs field-specific feedback; use `ActionValidationError` for required typed values that make the request invalid as a whole.
+
+### Typed Parsing Rules
+
+Typed form access is strict. The whole submitted value must match the requested type.
+
+```text
+"42"       -> int 42
+"42abc"    -> invalid
+"3.14"     -> double 3.14
+"3.14x"    -> invalid
+"true"     -> bool true
+"1"        -> bool true
+"on"       -> bool true
+"false"    -> bool false
+"0"        -> bool false
+"off"      -> bool false
+"yes"      -> invalid
+```
+
+Use `form<T>()` when invalid or missing input should be represented as `std::nullopt`. Use `requireForm<T>()` when the action cannot continue without a valid value.
 
 ---
 
@@ -198,8 +218,8 @@ Validation happens before the repository is called, so invalid input cannot modi
 - Keep validation rules close to the action that owns the operation.
 - Chain `required()` with format or length rules when a value must be present.
 - Read required typed values only after validation succeeds.
-- Use `ValidationResult` field errors when the response needs field-specific feedback.
-- Treat expected validation failures as normal control flow rather than application exceptions.
+- Use `ValidationResult` for recoverable, field-specific form feedback.
+- Use `ActionValidationError` for invalid required typed input that should become `400 Bad Request`.
 
 ---
 
@@ -210,10 +230,11 @@ Validation happens before the repository is called, so invalid input cannot modi
 - [Actions & Routing](../getting-started/routing.md)
 - [Dependency Injection](../getting-started/dependency-injection.md)
 
-### API Reference *(coming soon)*
+### API Reference
 
-- FormValidator
-- ValidationResult
-- ValidationError
-- ActionContext
-- ActionValidationError
+- [`FormValidator`](../reference/forms-and-validation/form-validator.md)
+- [`ValidationResult`](../reference/forms-and-validation/validation-result.md)
+- [`ValidationError`](../reference/forms-and-validation/validation-error.md)
+- [`ActionContext`](../reference/actions/action-context.md)
+- [`ActionValidationError`](../reference/forms-and-validation/action-validation-error.md)
+- [`Action Error Handling`](../reference/actions/error-handling.md)

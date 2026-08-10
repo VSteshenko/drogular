@@ -10,7 +10,9 @@ This guide shows how to keep shared data in an application store instead of copy
 
 ## Recommended Solution
 
-Create an application-specific store, keep its mutable data in `State<T>`, and register the store as a singleton service.
+Create an application-specific store, keep its mutable data behind explicit store operations, and register the store with the lifetime required by the application.
+
+For simple in-memory examples, a singleton store lets pages and actions share the same data. In a multi-threaded server, the store must synchronize its own mutable state or delegate persistence to a thread-safe repository/database. `State<T>` itself does not provide synchronization.
 
 Pages read from the store through `RenderContext`. Actions resolve the same store through `ActionContext` and apply explicit state changes.
 
@@ -90,7 +92,7 @@ Callers do not need to know how todo identifiers are assigned, how items are upd
 
 ### Registering the Store
 
-Register the store as a singleton so pages and actions resolve the same instance.
+TodoPWA registers the store as a singleton so pages and actions resolve the same demonstration instance.
 
 ```cpp
 app.services().add<TodoStore>(
@@ -100,6 +102,8 @@ app.services().add<TodoStore>(
 
 A transient store would create a separate state container for each resolution and would not preserve shared application data.
 
+> **Concurrency:** singleton lifetime does not make a service thread-safe. Drogular may execute requests concurrently. Protect mutable in-memory state with appropriate synchronization, or use a persistence layer that already provides the required concurrency guarantees.
+
 ---
 
 ### Reading State from a Page
@@ -108,7 +112,7 @@ Pages resolve the store through `RenderContext`.
 
 ```cpp
 const auto store =
-    context.service<TodoStore>();
+    context.requireService<TodoStore>();
 
 const auto result =
     store->find(query);
@@ -170,7 +174,7 @@ This is a server-rendered request cycle. `State<T>::set()` notifies C++ subscrib
 
 ## Example
 
-TodoPWA creates a new item by copying the current collection, applying the change, and publishing the replacement value.
+TodoPWA creates a new item by copying the current collection, applying the change, and publishing the replacement value. The sample below demonstrates the state-update pattern; a production singleton store must additionally synchronize concurrent readers and writers.
 
 ```cpp
 void create(std::string title) {
@@ -221,7 +225,8 @@ The page receives the updated collection on the redirected request.
 ## Best Practices
 
 - Keep one authoritative owner for each piece of shared state.
-- Register shared stores with singleton lifetime.
+- Choose service lifetime deliberately; use singleton only when shared ownership is required.
+- Make singleton stores thread-safe when they contain mutable in-memory state.
 - Expose explicit store operations instead of mutable containers.
 - Publish completed changes through `State<T>::set()`.
 - Read shared state through services rather than copying it into pages or components.
@@ -242,4 +247,4 @@ The page receives the updated collection on the redirected request.
 - [`State<T>`](../reference/state-management/state.md)
 - [`ApplicationServices`](../reference/dependency-injection/application-services.md)
 - [`RenderContext`](../reference/rendering/render-context.md)
-- `ActionContext` *(coming soon)*
+- [`ActionContext`](../reference/actions/action-context.md)

@@ -42,6 +42,14 @@ Separate user-visible text from application logic through `TranslationProvider` 
 
 ---
 
+## [Pagination](pagination.md)
+
+**Need to display large collections of data?**
+
+Parse stable request parameters, paginate application results, and preserve active filters while navigating between pages.
+
+---
+
 # Planned Guides
 
 These tasks are already supported by Drogular's public API. Their Cookbook guides will be added after the existing implementations and examples have been reviewed and documented.
@@ -51,14 +59,6 @@ These tasks are already supported by Drogular's public API. Their Cookbook guide
 **Need to authenticate users and protect application resources?**
 
 Use Drogular's authentication and authorization infrastructure to establish identity and enforce access rules.
-
-## Pagination
-
-**Need to display large collections of data?**
-
-Use Drogular's pagination API to build navigable data views with stable request parameters.
-
----
 
 # Reading Order
 

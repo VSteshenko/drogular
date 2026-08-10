@@ -43,7 +43,7 @@ public:
 };
 ```
 
-Application code depends on this interface rather than a concrete transport.
+Application code depends on this interface rather than a concrete transport. Register application providers through dependency injection and inject the chosen `GraphQLClient` implementation into those providers. Pages and actions should normally depend on the application provider, not resolve the GraphQL client directly.
 
 Drogular provides `HttpGraphQLClient` for HTTP communication and `InProcessGraphQLClient` for executing operations inside the same process.
 
@@ -238,9 +238,15 @@ PortalUser create(
             UserMapper::toVariables(user)
         );
 
-    return UserMapper::fromValue(
-        response.data()["createUser"]
-    );
+    const auto created = response.field("createUser");
+
+    if (!created.has_value()) {
+        throw drogular::GraphQLClientError(
+            "GraphQL response is missing createUser"
+        );
+    }
+
+    return UserMapper::fromValue(*created);
 }
 ```
 
@@ -252,9 +258,9 @@ The mutation document, variables, execution, and result mapping stay inside the 
 
 `HttpGraphQLClient` throws `GraphQLClientError` when a response contains GraphQL errors.
 
-Transport failures and invalid responses should be handled at the application boundary that invokes the provider.
+Transport failures and invalid responses should be handled at the application boundary that invokes the provider. Do not let transport-specific exceptions become part of page/component presentation logic.
 
-Keep GraphQL error details out of templates and components. Convert them into application-specific results or validation messages before rendering a response.
+Keep GraphQL error details out of templates and components. Convert them into application-specific results or expected action validation failures before rendering a response. Unexpected failures can continue through Drogular's action error boundary and become `500 Internal Server Error`.
 
 ---
 
@@ -267,6 +273,7 @@ Keep GraphQL error details out of templates and components. Convert them into ap
 - Return application models from GraphQL-backed providers.
 - Keep pages and actions independent from raw GraphQL responses.
 - Test documents, mappers, and providers separately.
+- Resolve GraphQL-backed application providers through dependency injection instead of constructing them inside pages or actions.
 
 ---
 
