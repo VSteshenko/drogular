@@ -137,12 +137,12 @@ TEST(TodoPweTodoServiceTests, TogglesTodo) {
 
     store.toggle(1);
 
-    ASSERT_EQ(store.todos.value().size(), 1);
-    EXPECT_TRUE(store.todos.value()[0].done);
+    ASSERT_EQ(store.snapshot().size(), 1);
+    EXPECT_TRUE(store.snapshot()[0].done);
 
     store.toggle(1);
 
-    EXPECT_FALSE(store.todos.value()[0].done);
+    EXPECT_FALSE(store.snapshot()[0].done);
 }
 
 TEST(TodoPwaTodoPageTests, FiltersTodosAndPreservesSearchInPagination) {

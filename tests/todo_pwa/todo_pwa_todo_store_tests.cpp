@@ -2,14 +2,18 @@
 
 #include <gtest/gtest.h>
 
+#include <set>
+#include <thread>
+#include <vector>
+
 TEST(TodoPweTodoStoreTests, CreatesTodo) {
     TodoStore store(std::vector<Todo>{});
 
     store.create("Learn State");
 
-    ASSERT_EQ(store.todos.value().size(), 1);
-    EXPECT_EQ(store.todos.value()[0].title, "Learn State");
-    EXPECT_FALSE(store.todos.value()[0].done);
+    ASSERT_EQ(store.snapshot().size(), 1);
+    EXPECT_EQ(store.snapshot()[0].title, "Learn State");
+    EXPECT_FALSE(store.snapshot()[0].done);
 }
 
 TEST(TodoPweTodoStoreTests, TogglesTodo) {
@@ -21,8 +25,8 @@ TEST(TodoPweTodoStoreTests, TogglesTodo) {
 
     store.toggle(1);
 
-    ASSERT_EQ(store.todos.value().size(), 1);
-    EXPECT_TRUE(store.todos.value()[0].done);
+    ASSERT_EQ(store.snapshot().size(), 1);
+    EXPECT_TRUE(store.snapshot()[0].done);
 }
 
 TEST(TodoPweTodoStoreTests, RemovesTodo) {
@@ -33,8 +37,8 @@ TEST(TodoPweTodoStoreTests, RemovesTodo) {
 
     store.remove(1);
 
-    ASSERT_EQ(store.todos.value().size(), 1);
-    EXPECT_EQ(store.todos.value()[0].id, 2);
+    ASSERT_EQ(store.snapshot().size(), 1);
+    EXPECT_EQ(store.snapshot()[0].id, 2);
 }
 
 TEST(TodoPweTodoStoreTests, NotifiesSubscribersWhenTodoIsCreated) {
@@ -42,7 +46,7 @@ TEST(TodoPweTodoStoreTests, NotifiesSubscribersWhenTodoIsCreated) {
 
     bool notified = false;
 
-    store.todos.subscribe(
+    store.subscribe(
         [&](const std::vector<Todo>& todos) {
             notified = true;
             EXPECT_EQ(todos.size(), 1);
@@ -59,7 +63,7 @@ TEST(TodoPweTodoStoreTests, DoesNotCreateEmptyTodo) {
 
     store.create("");
 
-    EXPECT_TRUE(store.todos.value().empty());
+    EXPECT_TRUE(store.snapshot().empty());
 }
 TEST(TodoPweTodoStoreTests, FiltersTodosCaseInsensitively) {
     TodoStore store(std::vector<Todo>{
@@ -97,4 +101,39 @@ TEST(TodoPweTodoStoreTests, PaginatesAndClampsRequestedPage) {
     EXPECT_EQ(result.totalPages, 2);
     ASSERT_EQ(result.items.size(), 1);
     EXPECT_EQ(result.items.front().title, "Six");
+}
+
+TEST(TodoPweTodoStoreTests, SerializesConcurrentCreates) {
+    TodoStore store(std::vector<Todo>{});
+
+    constexpr int threadCount = 8;
+    constexpr int todosPerThread = 100;
+
+    std::vector<std::thread> threads;
+    threads.reserve(threadCount);
+
+    for (int thread = 0; thread < threadCount; ++thread) {
+        threads.emplace_back([&store, thread] {
+            for (int index = 0; index < todosPerThread; ++index) {
+                store.create(
+                    "Todo " + std::to_string(thread) + "-" +
+                    std::to_string(index)
+                );
+            }
+        });
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    const auto todos = store.snapshot();
+    ASSERT_EQ(todos.size(), threadCount * todosPerThread);
+
+    std::set<int> ids;
+    for (const auto& todo : todos) {
+        ids.insert(todo.id);
+    }
+
+    EXPECT_EQ(ids.size(), todos.size());
 }

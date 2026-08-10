@@ -61,13 +61,13 @@ The store decides when a change is complete and publishes the new value once.
 
 The store owns shared application data and exposes operations that describe valid state changes.
 
-TodoPWA keeps its todo collection in `TodoStore`:
+TodoPWA keeps its todo collection in `TodoStore`. Because the store is registered as a singleton, it owns the synchronization boundary around its mutable state:
 
 ```cpp
 class TodoStore {
 public:
     explicit TodoStore(std::vector<Todo> initialTodos)
-        : todos(std::move(initialTodos)) {
+        : todos_(std::move(initialTodos)) {
         updateNextId();
     }
 
@@ -75,18 +75,20 @@ public:
     void toggle(int id);
     void remove(int id);
 
+    std::vector<Todo> snapshot() const;
+
     drogular::PagedResult<Todo> find(
         const TodoQuery& query
     ) const;
 
-    drogular::State<std::vector<Todo>> todos;
-
 private:
+    mutable std::mutex mutex_;
+    drogular::State<std::vector<Todo>> todos_;
     int nextId_ = 1;
 };
 ```
 
-Callers do not need to know how todo identifiers are assigned, how items are updated, or how query results are paginated.
+Callers do not receive a mutable reference to the underlying collection. Reads return a snapshot or a paged result, while mutations are serialized by the store. Callers therefore do not need to know how todo identifiers are assigned, how items are updated, or how query results are paginated.
 
 ---
 
@@ -174,7 +176,7 @@ This is a server-rendered request cycle. `State<T>::set()` notifies C++ subscrib
 
 ## Example
 
-TodoPWA creates a new item by copying the current collection, applying the change, and publishing the replacement value. The sample below demonstrates the state-update pattern; a production singleton store must additionally synchronize concurrent readers and writers.
+TodoPWA creates a new item by copying the current collection, applying the change, and publishing the replacement value while holding the store lock. Subscriber callbacks are invoked only after the lock is released.
 
 ```cpp
 void create(std::string title) {
@@ -182,17 +184,29 @@ void create(std::string title) {
         return;
     }
 
-    auto updatedTodos = todos.value();
+    std::vector<Todo> publishedTodos;
+    std::vector<Callback> subscribers;
 
-    updatedTodos.push_back({
-        nextId_++,
-        std::move(title),
-        false
-    });
+    {
+        std::lock_guard lock(mutex_);
+        auto updatedTodos = todos_.value();
 
-    todos.set(std::move(updatedTodos));
+        updatedTodos.push_back({
+            nextId_++,
+            std::move(title),
+            false
+        });
+
+        todos_.set(std::move(updatedTodos));
+        publishedTodos = todos_.value();
+        subscribers = subscribers_;
+    }
+
+    notify(subscribers, publishedTodos);
 }
 ```
+
+`State<T>` remains intentionally unsynchronized. The application store supplies the concurrency policy and prevents direct access to the underlying mutable value.
 
 `CreateTodoAction` validates the request and delegates the state change to the store.
 

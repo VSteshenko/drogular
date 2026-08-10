@@ -8,11 +8,15 @@
 
 #include <algorithm>
 #include <cctype>
+#include <functional>
+#include <mutex>
 #include <string>
 #include <vector>
 
 class TodoStore {
 public:
+    using Callback = std::function<void(const std::vector<Todo>&)>;
+
     TodoStore()
         : TodoStore(
               std::vector<Todo>{
@@ -39,69 +43,111 @@ public:
     }
 
     explicit TodoStore(std::vector<Todo> initialTodos)
-        : todos(std::move(initialTodos)) {
+        : todos_(std::move(initialTodos)) {
         updateNextId();
     }
 
     TodoStore(const TodoStore&) = delete;
     TodoStore& operator=(const TodoStore&) = delete;
 
-    TodoStore(TodoStore&&) = default;
-    TodoStore& operator=(TodoStore&&) = default;
+    TodoStore(TodoStore&&) = delete;
+    TodoStore& operator=(TodoStore&&) = delete;
 
     void create(std::string title) {
         if (title.empty()) {
             return;
         }
 
-        auto updatedTodos = todos.value();
+        std::vector<Todo> publishedTodos;
+        std::vector<Callback> subscribers;
 
-        updatedTodos.push_back({
-            nextId_++,
-            std::move(title),
-            false
-        });
+        {
+            std::lock_guard lock(mutex_);
+            auto updatedTodos = todos_.value();
 
-        todos.set(std::move(updatedTodos));
+            updatedTodos.push_back({
+                nextId_++,
+                std::move(title),
+                false
+            });
+
+            todos_.set(std::move(updatedTodos));
+            publishedTodos = todos_.value();
+            subscribers = subscribers_;
+        }
+
+        notify(subscribers, publishedTodos);
     }
 
     void toggle(int id) {
-        auto updatedTodos = todos.value();
+        std::vector<Todo> publishedTodos;
+        std::vector<Callback> subscribers;
 
-        for (auto& todo : updatedTodos) {
-            if (todo.id == id) {
-                todo.done = !todo.done;
-                break;
+        {
+            std::lock_guard lock(mutex_);
+            auto updatedTodos = todos_.value();
+
+            for (auto& todo : updatedTodos) {
+                if (todo.id == id) {
+                    todo.done = !todo.done;
+                    break;
+                }
             }
+
+            todos_.set(std::move(updatedTodos));
+            publishedTodos = todos_.value();
+            subscribers = subscribers_;
         }
 
-        todos.set(std::move(updatedTodos));
+        notify(subscribers, publishedTodos);
     }
 
     void remove(int id) {
-        auto updatedTodos = todos.value();
+        std::vector<Todo> publishedTodos;
+        std::vector<Callback> subscribers;
 
-        updatedTodos.erase(
-            std::remove_if(
-                updatedTodos.begin(),
-                updatedTodos.end(),
-                [id](const Todo& todo) {
-                    return todo.id == id;
-                }
-            ),
-            updatedTodos.end()
-        );
+        {
+            std::lock_guard lock(mutex_);
+            auto updatedTodos = todos_.value();
 
-        todos.set(std::move(updatedTodos));
+            updatedTodos.erase(
+                std::remove_if(
+                    updatedTodos.begin(),
+                    updatedTodos.end(),
+                    [id](const Todo& todo) {
+                        return todo.id == id;
+                    }
+                ),
+                updatedTodos.end()
+            );
+
+            todos_.set(std::move(updatedTodos));
+            publishedTodos = todos_.value();
+            subscribers = subscribers_;
+        }
+
+        notify(subscribers, publishedTodos);
+    }
+
+    std::vector<Todo> snapshot() const {
+        std::lock_guard lock(mutex_);
+        return todos_.value();
+    }
+
+    void subscribe(Callback callback) {
+        std::lock_guard lock(mutex_);
+        subscribers_.push_back(std::move(callback));
     }
 
     drogular::PagedResult<Todo> find(const TodoQuery& query) const {
+        std::lock_guard lock(mutex_);
+
         std::vector<Todo> filtered;
-        filtered.reserve(todos.value().size());
+        filtered.reserve(todos_.value().size());
 
         const auto search = lowercase(query.search);
 
-        for (const auto& todo : todos.value()) {
+        for (const auto& todo : todos_.value()) {
             if (search.empty() ||
                 lowercase(todo.title).find(search) != std::string::npos) {
                 filtered.push_back(todo);
@@ -114,8 +160,6 @@ public:
             query.pageSize
         );
     }
-
-    drogular::State<std::vector<Todo>> todos;
 
 private:
     static std::string lowercase(std::string value) {
@@ -130,15 +174,28 @@ private:
         return value;
     }
 
+
+    static void notify(
+        const std::vector<Callback>& subscribers,
+        const std::vector<Todo>& todos
+    ) {
+        for (const auto& subscriber : subscribers) {
+            subscriber(todos);
+        }
+    }
+
     void updateNextId() {
         nextId_ = 1;
 
-        for (const auto& todo : todos.value()) {
+        for (const auto& todo : todos_.value()) {
             if (todo.id >= nextId_) {
                 nextId_ = todo.id + 1;
             }
         }
     }
 
+    mutable std::mutex mutex_;
+    drogular::State<std::vector<Todo>> todos_;
+    std::vector<Callback> subscribers_;
     int nextId_ = 1;
 };

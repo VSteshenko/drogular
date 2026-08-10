@@ -31,7 +31,8 @@ int main() {
     )
     .serviceWorker(
         "examples/todo_pwa/public/service-worker.js"
-    );
+    )
+    .profile(drogular::ApplicationProfile::Development);
 
     app.services().add<TodoStore>(
         drogular::ServiceLifetime::Singleton
