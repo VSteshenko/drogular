@@ -22,6 +22,15 @@ public:
         }
 
         return drogular::ActionResult::redirect("/login")
-            .cookie("session_id", "");
+            .cookie(
+                "session_id",
+                "",
+                drogular::CookieOptions{
+                    .httpOnly = true,
+                    .secure = false,
+                    .sameSite = drogular::CookieSameSite::Lax,
+                    .maxAge = 0
+                }
+            );
     }
 };

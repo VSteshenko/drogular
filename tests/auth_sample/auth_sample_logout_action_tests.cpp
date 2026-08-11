@@ -102,4 +102,12 @@ TEST(AuthSampleLogoutActionTests, RedirectsToLogin) {
         result.cookies()[0].value,
         ""
     );
+
+    EXPECT_TRUE(result.cookies()[0].httpOnly);
+    EXPECT_EQ(
+        result.cookies()[0].sameSite,
+        drogular::CookieSameSite::Lax
+    );
+    ASSERT_TRUE(result.cookies()[0].maxAge.has_value());
+    EXPECT_EQ(*result.cookies()[0].maxAge, 0);
 }

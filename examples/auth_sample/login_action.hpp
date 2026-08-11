@@ -34,8 +34,15 @@ public:
             return drogular::ActionResult::redirect("/login");
         }
 
-        auto session =
-            context.session();
+        auto sessionStore =
+            context.requireService<drogular::SessionStore>();
+
+        if (const auto existingSessionId =
+                context.cookie("session_id")) {
+            sessionStore->remove(*existingSessionId);
+        }
+
+        auto session = sessionStore->create();
 
         session->set(
             "user_id",
@@ -56,6 +63,14 @@ public:
             session->get("_id").value();
 
         return drogular::ActionResult::redirect("/dashboard")
-            .cookie("session_id", sessionId);
+            .cookie(
+                "session_id",
+                sessionId,
+                drogular::CookieOptions{
+                    .httpOnly = true,
+                    .secure = false,
+                    .sameSite = drogular::CookieSameSite::Lax
+                }
+            );
     }
 };
