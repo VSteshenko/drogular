@@ -263,3 +263,8 @@ No changes should be required in:
 - Reference data should use the same architecture as normal models.
 - Test infrastructure should reuse the same application building blocks as runtime code.
 - New abstractions should be promoted only after they prove useful in Portal Demo.
+## Boundary Lifetime
+
+Provider interfaces describe application behavior, not object lifetime. Their concrete lifetime is chosen through DI. A singleton provider that owns mutable state must provide its own synchronization; request-scoped Pages and Actions do not make referenced singleton providers thread-safe.
+
+Pages and Actions should resolve providers through their current context rather than constructing concrete providers directly. This keeps transport selection in application startup and keeps feature logic testable.

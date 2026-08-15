@@ -55,6 +55,7 @@ This section focuses on design decisions and internal architecture rather than A
 Topics include:
 
 - Framework Philosophy
+- Request Lifecycle
 - Feature Architecture
 - Data Providers
 - Template Rendering Pipeline
