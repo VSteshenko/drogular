@@ -6,6 +6,8 @@
 #include <drogular/template_source_cache.hpp>
 
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <typeinfo>
 #include <typeindex>
 #include <unordered_map>
@@ -61,6 +63,7 @@ public:
     template <typename T>
     void registerService(std::shared_ptr<T> service) {
         const auto type = std::type_index(typeid(T));
+        std::unique_lock lock(servicesMutex_);
         services_[type] = std::move(service);
         serviceLifetimes_[type] = ServiceLifetime::Singleton;
     }
@@ -71,6 +74,7 @@ public:
     template <typename T>
     std::shared_ptr<T> service() const {
         const auto type = std::type_index(typeid(T));
+        std::shared_lock lock(servicesMutex_);
 
         const auto serviceIt = services_.find(type);
 
@@ -84,28 +88,57 @@ public:
     template <typename T>
     std::shared_ptr<T> service() {
         const auto type = std::type_index(typeid(T));
+        std::function<std::shared_ptr<void>()> lazyFactory;
+        std::shared_ptr<std::mutex> lazyMutex;
+        std::function<std::shared_ptr<void>()> transientFactory;
 
-        const auto serviceIt = services_.find(type);
+        {
+            std::shared_lock lock(servicesMutex_);
 
-        if (serviceIt != services_.end()) {
-            return std::static_pointer_cast<T>(serviceIt->second);
+            const auto serviceIt = services_.find(type);
+
+            if (serviceIt != services_.end()) {
+                return std::static_pointer_cast<T>(serviceIt->second);
+            }
+
+            const auto factoryIt = factories_.find(type);
+
+            if (factoryIt != factories_.end()) {
+                lazyFactory = factoryIt->second;
+                lazyMutex = lazyMutexes_.at(type);
+            } else {
+                const auto transientIt = transientFactories_.find(type);
+
+                if (transientIt != transientFactories_.end()) {
+                    transientFactory = transientIt->second;
+                }
+            }
         }
 
-        const auto factoryIt = factories_.find(type);
+        if (lazyFactory) {
+            std::lock_guard lazyLock(*lazyMutex);
 
-        if (factoryIt != factories_.end()) {
-            auto service = factoryIt->second();
-            services_[type] = service;
+            {
+                std::shared_lock lock(servicesMutex_);
+                const auto serviceIt = services_.find(type);
 
-            return std::static_pointer_cast<T>(service);
+                if (serviceIt != services_.end()) {
+                    return std::static_pointer_cast<T>(serviceIt->second);
+                }
+            }
+
+            auto resolved = lazyFactory();
+
+            {
+                std::unique_lock lock(servicesMutex_);
+                services_[type] = resolved;
+            }
+
+            return std::static_pointer_cast<T>(resolved);
         }
 
-        const auto transientIt = transientFactories_.find(type);
-
-        if (transientIt != transientFactories_.end()) {
-            auto service = transientIt->second();
-
-            return std::static_pointer_cast<T>(service);
+        if (transientFactory) {
+            return std::static_pointer_cast<T>(transientFactory());
         }
 
         return nullptr;
@@ -220,7 +253,9 @@ public:
     template <typename T>
     void addLazy(std::function<std::shared_ptr<T>()> factory) {
         const auto type = std::type_index(typeid(T));
+        std::unique_lock lock(servicesMutex_);
         serviceLifetimes_[type] = ServiceLifetime::LazySingleton;
+        lazyMutexes_[type] = std::make_shared<std::mutex>();
         factories_[type] =
             wrapFactory<T>(
                 std::move(factory),
@@ -231,6 +266,7 @@ public:
     template <typename T>
     void addTransient(std::function<std::shared_ptr<T>()> factory) {
         const auto type = std::type_index(typeid(T));
+        std::unique_lock lock(servicesMutex_);
 
         serviceLifetimes_[type] =
             ServiceLifetime::Transient;
@@ -244,6 +280,7 @@ public:
     template <typename T>
     void addScoped(std::function<std::shared_ptr<T>()> factory) {
         const auto type = std::type_index(typeid(T));
+        std::unique_lock lock(servicesMutex_);
 
         serviceLifetimes_[type] =
             ServiceLifetime::Scoped;
@@ -257,14 +294,20 @@ public:
     template <typename T>
     std::shared_ptr<T> createScoped() {
         const auto type = std::type_index(typeid(T));
+        std::function<std::shared_ptr<void>()> factory;
 
-        const auto it = scopedFactories_.find(type);
+        {
+            std::shared_lock lock(servicesMutex_);
+            const auto it = scopedFactories_.find(type);
 
-        if (it == scopedFactories_.end()) {
-            return nullptr;
+            if (it == scopedFactories_.end()) {
+                return nullptr;
+            }
+
+            factory = it->second;
         }
 
-        return std::static_pointer_cast<T>(it->second());
+        return std::static_pointer_cast<T>(factory());
     }
 
     template <typename T, typename... Args>
@@ -348,6 +391,7 @@ private:
     std::shared_ptr<GraphQLClient> graphQLClient_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> factories_;
+    std::unordered_map<std::type_index, std::shared_ptr<std::mutex>> lazyMutexes_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> transientFactories_;
     std::unordered_map<std::type_index, std::function<std::shared_ptr<void>()>> scopedFactories_;
     std::unordered_map<std::type_index, ServiceLifetime> serviceLifetimes_;
@@ -355,6 +399,7 @@ private:
     ComponentRegistry componentRegistry_;
     ApplicationOptions* options_ = nullptr;
     TemplateSourceCache templateSourceCache_;
+    mutable std::shared_mutex servicesMutex_;
 
     template <typename T>
     std::function<std::shared_ptr<void>()> wrapFactory(

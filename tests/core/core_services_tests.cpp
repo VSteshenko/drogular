@@ -2,7 +2,10 @@
 #include <drogular/services.hpp>
 #include <drogular/inject.hpp>
 
+#include <atomic>
 #include <memory>
+#include <thread>
+#include <vector>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -264,6 +267,42 @@ TEST(CoreServicesTests, LazySingletonStillReturnsSameInstance) {
         services.service<CoreDefaultService>();
 
     EXPECT_EQ(first.get(), second.get());
+}
+
+TEST(CoreServicesTests, LazySingletonFirstResolutionIsThreadSafe) {
+    drogular::ApplicationServices services;
+    std::atomic<int> factoryCalls = 0;
+
+    services.addLazy<CoreDefaultService>(
+        [&factoryCalls]() {
+            ++factoryCalls;
+            std::this_thread::yield();
+            return std::make_shared<CoreDefaultService>();
+        }
+    );
+
+    constexpr std::size_t threadCount = 16;
+    std::vector<std::shared_ptr<CoreDefaultService>> resolved(threadCount);
+    std::vector<std::thread> threads;
+    threads.reserve(threadCount);
+
+    for (std::size_t i = 0; i < threadCount; ++i) {
+        threads.emplace_back([&services, &resolved, i]() {
+            resolved[i] = services.service<CoreDefaultService>();
+        });
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    ASSERT_NE(resolved.front(), nullptr);
+
+    for (const auto& service : resolved) {
+        EXPECT_EQ(service.get(), resolved.front().get());
+    }
+
+    EXPECT_EQ(factoryCalls.load(), 1);
 }
 
 TEST(CoreServicesTests, AddsServiceWithConstructorArguments) {

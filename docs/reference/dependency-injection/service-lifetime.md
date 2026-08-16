@@ -31,7 +31,7 @@ Every later resolution returns the same shared instance.
 
 The factory is stored during registration.
 
-The first mutable `ApplicationServices::service<T>()` call creates and stores the instance. Later mutable resolutions return the stored object.
+The first mutable `ApplicationServices::service<T>()` call creates and stores the instance. Concurrent first resolutions of the same service type are serialized, so one instance is created and published. Later mutable resolutions return the stored object.
 
 The const `service<T>()` overload does not instantiate lazy services.
 

@@ -113,12 +113,10 @@ Thread-safe session storage does not make values stored outside those objects th
 
 ## Current concurrency constraints
 
-The lifetime model above does not by itself make application-wide infrastructure thread-safe.
+The lifetime model above does not by itself make every application-wide object thread-safe.
 
-One current implementation detail deserves special attention before 1.0:
-
-- first-time `LazySingleton` resolution mutates the service container and is not currently synchronized against simultaneous first resolution.
+`ApplicationServices` synchronizes its service registration/resolution stores. Concurrent first resolution of the same `LazySingleton` is serialized per service type, so only one shared instance is created and published. Factories for unrelated lazy singleton types do not share that initialization lock.
 
 `TemplateSourceCache`, although application-wide, synchronizes access to its internal source map and loader. Cached reads use shared locking, while cache misses, `clear()` and `setLoader()` use exclusive locking. `load()` returns the source by value so a later cache clear cannot invalidate data already handed to a renderer.
 
-The remaining item is a framework hardening concern rather than a recommended application pattern. Singleton application services with their own mutable state likewise remain responsible for their own synchronization.
+Application startup remains the intended phase for registration and framework configuration. Application singleton services with their own mutable state remain responsible for their own synchronization.

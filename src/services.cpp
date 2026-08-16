@@ -24,6 +24,7 @@ const DependencyGraph& ApplicationServices::dependencyGraph() const {
 }
 
 bool ApplicationServices::hasService(std::type_index type) const {
+    std::shared_lock lock(servicesMutex_);
     return services_.contains(type) ||
            factories_.contains(type) ||
            transientFactories_.contains(type) ||
@@ -62,6 +63,7 @@ const ComponentRegistry& ApplicationServices::components() const {
 }
 
 std::vector<ServiceRegistration> ApplicationServices::registrations() const {
+    std::shared_lock lock(servicesMutex_);
     std::vector<ServiceRegistration> result;
     result.reserve(serviceLifetimes_.size());
 

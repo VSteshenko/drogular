@@ -409,11 +409,11 @@ The cache itself will be documented in the Rendering/Template reference when tha
 
 `ApplicationServices` is application-wide mutable state.
 
-The implementation uses standard containers without internal locking. Register services during application startup, before concurrent request processing begins.
+Service registration and resolution stores are internally synchronized. Concurrent resolution of an already registered service is safe, and first-time `LazySingleton` resolution is serialized per service type. The lazy factory executes exactly once for a successfully resolved lazy singleton, while unrelated lazy singleton types can initialize independently.
 
-Runtime mutation or first-time lazy-singleton resolution from multiple threads requires external synchronization if concurrent access is possible.
+Service registration is still intended to happen during application startup. Runtime reconfiguration of application infrastructure such as options, component registration, the dependency graph, or the GraphQL client is not a general concurrent-mutation API.
 
-Transient and scoped factories may also be invoked concurrently by different requests and should be safe for that usage.
+Transient and scoped factories may be invoked concurrently by different requests and should be safe for that usage.
 
 ---
 
