@@ -105,7 +105,7 @@ The constructor receives the dependencies in the same order as the template argu
 
 That resolver does not create scoped services. Therefore, a service factory built with `inject()` cannot currently resolve a dependency registered only as `ServiceLifetime::Scoped` through this path.
 
-Scoped resolution is performed by mutable `RenderContext::service<T>()` / `requireService<T>()`.
+Scoped resolution is performed by request contexts (`RenderContext` and `ActionContext`) through their `ServiceScope`. `inject()` itself still resolves directly from `ApplicationServices`, so constructor-injected dependencies of a factory cannot currently be scoped unless a scope-aware factory is provided explicitly.
 
 ---
 

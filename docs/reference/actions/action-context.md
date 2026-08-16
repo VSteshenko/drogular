@@ -57,7 +57,7 @@ template <typename T>
 std::shared_ptr<T> service();
 ```
 
-Returns the registered service, or `nullptr` when no service container is attached or resolution does not produce a service.
+Returns the registered service, or `nullptr` when no service container is attached or resolution does not produce a service. Scoped registrations are created once in the context's request service scope and reused for later resolutions during the same action request.
 
 ### `requireService<T>()`
 

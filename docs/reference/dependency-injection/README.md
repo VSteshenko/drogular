@@ -39,7 +39,7 @@ ApplicationServices
 
 Application-wide registrations live in `ApplicationServices`.
 
-Scoped instances are different: `ApplicationServices` stores only the scoped factory, while `RenderContext` creates and caches one instance per rendering scope.
+Scoped instances are different: `ApplicationServices` stores only the scoped factory, while each HTTP request owns a `ServiceScope`. `RenderContext` and `ActionContext` resolve through that scope, and child render contexts share it.
 
 ---
 

@@ -43,9 +43,9 @@ Instances are not cached by the container.
 
 ### `Scoped`
 
-`ApplicationServices` stores the factory but does not cache or resolve the instance through `service<T>()`.
+`ApplicationServices` stores the factory, while request contexts own the instance cache.
 
-A scope owner calls `createScoped<T>()` and decides how long to reuse the result. In the current rendering pipeline, mutable `RenderContext::service<T>()` creates and caches one scoped instance per context.
+`RenderContext` and `ActionContext` resolve scoped services through a request-owned `ServiceScope`. Child render contexts share their parent's scope. Repeated scoped resolution anywhere in the same request therefore returns the same instance, while a new HTTP request receives a new instance.
 
 ---
 

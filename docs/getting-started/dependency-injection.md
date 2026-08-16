@@ -71,11 +71,9 @@ Useful when object construction is expensive or the service may never be used.
 
 ## Scoped
 
-A single instance is shared within the current scope owner.
+A single instance is shared within one HTTP request.
 
-In the current rendering pipeline, mutable `RenderContext::service<T>()` creates and caches scoped registrations. Child render contexts have their own scoped caches. `ActionContext` does not currently create scoped registrations.
-
-Use Scoped only when this render-context lifetime matches the resource you need; it is not yet a universal HTTP-request lifetime across all Drogular contexts.
+`RenderContext` and `ActionContext` each resolve scoped registrations through a request-owned service scope. Child render contexts inherit the same service scope, so a scoped service resolved by a page and any nested component rendering is the same instance for that request. A later HTTP request receives a new scope and therefore a new scoped instance.
 
 ---
 
@@ -95,7 +93,7 @@ Choose the lifetime that matches the responsibility of the service.
 |----------|-------------|
 | Singleton | Shared application services |
 | LazySingleton | Expensive shared services |
-| Scoped | Render-context-scoped services |
+| Scoped | Per-request services |
 | Transient | Lightweight stateless services |
 
 Most services naturally fit into one of these four categories.

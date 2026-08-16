@@ -41,7 +41,7 @@ It stores service registrations, resolves application services, owns dependency 
 
 Pages, actions, and components normally resolve services through their request/render contexts rather than keeping their own container reference.
 
-Scoped lifetime is split across two layers: `ApplicationServices` owns the factory, while a mutable `RenderContext` creates and caches the scoped instance.
+Scoped lifetime is split across two layers: `ApplicationServices` owns the factory, while a request-owned `ServiceScope` caches the instance. `RenderContext` and `ActionContext` resolve through that request scope, and child render contexts share the same scope.
 
 ---
 
@@ -227,20 +227,18 @@ void addScoped(
 
 Stores a scoped factory.
 
-`ApplicationServices::service<T>()` does not resolve scoped registrations. A scope owner must call `createScoped<T>()` and cache the result. Drogular's mutable `RenderContext::service<T>()` performs this automatically.
+The plain `ApplicationServices::service<T>()` overload does not resolve scoped registrations. Request contexts use the scope-aware `service<T>(ServiceScope&)` overload, which creates a scoped registration once and reuses it for the lifetime of that request scope.
 
-### `createScoped<T>()`
+### Scope-aware `service<T>()`
 
 ```cpp
 template <typename T>
-std::shared_ptr<T> createScoped();
+std::shared_ptr<T> service(ServiceScope& scope);
 ```
 
-Executes the registered scoped factory for `T` and returns a new instance.
+Resolves a service using the supplied request scope. For a scoped registration, the factory executes only on the first resolution in that scope and the resulting instance is reused for the remainder of the request. For other lifetimes, normal application-service resolution is used.
 
-Returns `nullptr` when no scoped factory exists.
-
-`ApplicationServices` itself does not cache the returned instance.
+`createScoped<T>()` remains the low-level factory operation and always creates a new instance; request-facing code should normally resolve through `RenderContext` or `ActionContext` instead.
 
 ---
 
@@ -293,9 +291,9 @@ Drogular supports four lifetimes through [`ServiceLifetime`](service-lifetime.md
 | `Singleton` | during registration | application-wide |
 | `LazySingleton` | first mutable resolution | application-wide |
 | `Transient` | every mutable resolution | never cached |
-| `Scoped` | when a scope requests it | cached by the scope, not by `ApplicationServices` |
+| `Scoped` | first resolution in an HTTP request | reused throughout that request |
 
-For request rendering, [`RenderContext`](../rendering/render-context.md) is the scope owner used by the current implementation.
+[`RenderContext`](../rendering/render-context.md) and [`ActionContext`](../actions/action-context.md) own request service scopes. Child render contexts inherit the same scope.
 
 ---
 

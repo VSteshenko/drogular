@@ -49,9 +49,9 @@ Service lifetimes describe container behavior:
 
 - `Singleton` and `LazySingleton` are application-shared;
 - `Transient` creates a new service for each container resolution;
-- `Scoped` stores a factory in `ApplicationServices` and is instantiated/cached by a scope owner. In the current rendering pipeline, mutable `RenderContext::service<T>()` owns that cache.
+- `Scoped` stores a factory in `ApplicationServices` and is instantiated/cached by a request-owned `ServiceScope`. Both `RenderContext` and `ActionContext` resolve through that scope, and child render contexts share their parent's scope.
 
-`Scoped` should therefore be understood as a render-context scope today, not as a universal HTTP-request scope across Pages, Actions, and every child context.
+`Scoped` therefore represents one service instance per HTTP request in the framework request pipeline.
 
 ## Application Boundaries Before Transport Details
 

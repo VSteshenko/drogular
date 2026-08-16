@@ -52,6 +52,30 @@ private:
     std::vector<std::string> errors_;
 };
 
+class ServiceScope {
+public:
+    std::shared_ptr<void> resolve(
+        std::type_index type,
+        const std::function<std::shared_ptr<void>()>& factory
+    ) {
+        std::lock_guard lock(mutex_);
+
+        const auto it = services_.find(type);
+
+        if (it != services_.end()) {
+            return it->second;
+        }
+
+        auto service = factory();
+        services_[type] = service;
+        return service;
+    }
+
+private:
+    std::mutex mutex_;
+    std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
+};
+
 class ApplicationServices {
 public:
     void setGraphQLClient(std::shared_ptr<GraphQLClient> client);
@@ -142,6 +166,35 @@ public:
         }
 
         return nullptr;
+    }
+
+    /**
+     * Resolves a service within the provided request scope.
+     *
+     * Scoped registrations are created once per ServiceScope.
+     * Other lifetimes use normal application-service resolution.
+     */
+    template <typename T>
+    std::shared_ptr<T> service(ServiceScope& scope) {
+        const auto type = std::type_index(typeid(T));
+        std::function<std::shared_ptr<void>()> scopedFactory;
+
+        {
+            std::shared_lock lock(servicesMutex_);
+            const auto it = scopedFactories_.find(type);
+
+            if (it != scopedFactories_.end()) {
+                scopedFactory = it->second;
+            }
+        }
+
+        if (scopedFactory) {
+            return std::static_pointer_cast<T>(
+                scope.resolve(type, scopedFactory)
+            );
+        }
+
+        return service<T>();
     }
 
     /**

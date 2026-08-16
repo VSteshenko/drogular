@@ -91,7 +91,7 @@ The child:
 - receives the same `ApplicationServices*` pointer;
 - receives the same directly assigned `GraphQLClient*` pointer;
 - starts with its own local value map;
-- starts with its own scoped-service cache;
+- shares the parent request service scope;
 - starts with an empty [`GraphQLResult`](graphql-result.md);
 - does **not** copy the current `HttpRequestPtr`;
 - does **not** copy route parameters.
@@ -246,7 +246,7 @@ It does not clear:
 
 - parent values;
 - services;
-- the scoped-service cache;
+- the request service scope;
 - GraphQL result data;
 - the request;
 - route parameters.
@@ -293,16 +293,16 @@ std::shared_ptr<T> service();
 
 Resolves an application service.
 
-Resolution first checks the context-local scoped-service cache. If no cached scoped service exists, the context asks `ApplicationServices` to create a scoped instance. When no scoped registration exists, normal application service resolution is used.
+Resolution uses the request service scope owned by the context. For a scoped registration, the first resolution creates the instance and later resolutions in the same request reuse it. When no scoped registration exists, normal application service resolution is used.
 
 ```cpp
 const auto store =
     context.service<TodoStore>();
 ```
 
-For a scoped registration, repeated calls for the same type on the **same context** return the same instance.
+For a scoped registration, repeated calls for the same type anywhere in the **same request scope** return the same instance.
 
-Each child context has its own scoped-service cache, so a scoped service resolved from a child may be a different instance from the one resolved by its parent.
+Child contexts share the parent's request service scope, so parent and child resolution return the same scoped instance.
 
 Returns `nullptr` when no matching service can be resolved.
 
@@ -313,7 +313,7 @@ template <typename T>
 std::shared_ptr<T> requireService();
 ```
 
-The non-const overload uses `service<T>()` and therefore participates in `RenderContext` scoped-service caching.
+The non-const overload uses `service<T>()` and therefore participates in request-scoped service caching.
 
 It throws `RenderContextError` when the service cannot be resolved.
 
@@ -329,7 +329,7 @@ template <typename T>
 std::shared_ptr<T> requireService() const;
 ```
 
-The const overload delegates directly to `ApplicationServices::requireService<T>()`. It does not use the context-local scoped-service cache and does not create scoped services through `RenderContext::service<T>()`.
+The const overload resolves through the same request service scope, so scoped lifetime semantics do not change when the context is accessed as const.
 
 ---
 

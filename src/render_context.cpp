@@ -55,7 +55,12 @@ RenderContextError::RenderContextError(const std::string& message)
 }
 
 RenderContext::RenderContext(const RenderContext* parent)
-    : parent_(parent) {
+    : parent_(parent),
+      serviceScope_(
+          parent != nullptr
+              ? parent->serviceScope_
+              : std::make_shared<ServiceScope>()
+      ) {
 }
 
 ApplicationServices* RenderContext::services() {

@@ -40,7 +40,7 @@ public:
             return nullptr;
         }
 
-        return services_->service<T>();
+        return services_->service<T>(*serviceScope_);
     }
 
     template <typename T>
@@ -194,6 +194,7 @@ public:
 private:
     drogon::HttpRequestPtr request_;
     ApplicationServices* services_ = nullptr;
+    std::shared_ptr<ServiceScope> serviceScope_ = std::make_shared<ServiceScope>();
     std::unordered_map<std::string, std::string> routeParams_;
 };
 

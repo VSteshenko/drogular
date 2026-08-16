@@ -79,12 +79,12 @@ Expected validation failures use `ActionValidationError` and become `400 Bad Req
 - route parameters;
 - request access;
 - GraphQL render results;
-- the scoped-service cache used by mutable `service<T>()`;
+- the request service scope used by `service<T>()`;
 - a parent link for value lookup in child rendering contexts.
 
-Child contexts inherit access to application services and GraphQL client configuration, but they maintain their own local values and scoped-service cache.
+Child contexts inherit access to application services, GraphQL client configuration, and the same request service scope while maintaining their own local render values.
 
-`ActionContext` is the command/request context. It owns request access, route parameters, form conversion helpers, session access, and service-container access. It does not currently implement the same scoped-service cache as `RenderContext`.
+`ActionContext` is the command/request context. It owns request access, route parameters, form conversion helpers, session access, service-container access, and its own request service scope.
 
 ## Shared application services
 
@@ -97,9 +97,9 @@ This means thread-safety must be evaluated according to the registered service l
 | `Singleton` | one application-shared instance |
 | `LazySingleton` | one lazily-created application-shared instance |
 | `Transient` | new instance for each `ApplicationServices::service<T>()` resolution |
-| `Scoped` | factory in `ApplicationServices`; instance cached by the resolving mutable `RenderContext` |
+| `Scoped` | factory in `ApplicationServices`; one instance per request-owned `ServiceScope` |
 
-The current `Scoped` lifetime is therefore not a universal request scope. In particular, `ActionContext::service<T>()` resolves through `ApplicationServices` and does not create scoped registrations, and child render contexts have independent scoped caches.
+`RenderContext` and `ActionContext` both resolve scoped registrations through a request-owned scope. Child render contexts share their parent's scope. A scoped service can therefore be treated as one instance per HTTP request in the framework request pipeline.
 
 ## Sessions
 

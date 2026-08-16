@@ -116,22 +116,7 @@ public:
             return nullptr;
         }
 
-        const auto type = std::type_index(typeid(T));
-
-        const auto scopedIt = scopedServices_.find(type);
-
-        if (scopedIt != scopedServices_.end()) {
-            return std::static_pointer_cast<T>(scopedIt->second);
-        }
-
-        auto scoped = services_->createScoped<T>();
-
-        if (scoped != nullptr) {
-            scopedServices_[type] = scoped;
-            return scoped;
-        }
-
-        return services_->service<T>();
+        return services_->service<T>(*serviceScope_);
     }
 
     template <typename T>
@@ -156,7 +141,7 @@ public:
             );
         }
 
-        auto resolved = services_->service<T>();
+        auto resolved = services_->service<T>(*serviceScope_);
 
         if (resolved == nullptr) {
             throw RenderContextError(
@@ -387,7 +372,8 @@ private:
     std::unordered_map<std::string, std::any> values_;
     GraphQLClient* graphqlClient_ = nullptr;
     ApplicationServices* services_ = nullptr;
-    std::unordered_map<std::type_index, std::shared_ptr<void>> scopedServices_;
+    std::shared_ptr<ServiceScope> serviceScope_ =
+        std::make_shared<ServiceScope>();
     GraphQLResult graphql_;
     drogon::HttpRequestPtr request_;
     std::unordered_map<std::string, std::string> routeParams_;

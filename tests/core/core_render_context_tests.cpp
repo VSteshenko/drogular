@@ -261,7 +261,7 @@ TEST(CoreRenderContextTests, ScopedServiceReturnsSameInstanceInsideScope) {
     EXPECT_EQ(ScopedCounterService::createdCount, 1);
 }
 
-TEST(CoreRenderContextTests, ScopedServiceCreatesNewInstanceForChildScope) {
+TEST(CoreRenderContextTests, ScopedServiceSharesInstanceWithChildContext) {
     ScopedCounterService::createdCount = 0;
 
     drogular::ApplicationServices services;
@@ -283,8 +283,62 @@ TEST(CoreRenderContextTests, ScopedServiceCreatesNewInstanceForChildScope) {
     ASSERT_NE(parentService, nullptr);
     ASSERT_NE(childService, nullptr);
 
-    EXPECT_NE(parentService.get(), childService.get());
+    EXPECT_EQ(parentService.get(), childService.get());
+    EXPECT_EQ(ScopedCounterService::createdCount, 1);
+}
+
+TEST(CoreRenderContextTests, ScopedServiceCreatesNewInstanceForNewRootContext) {
+    ScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+
+    services.addScoped<ScopedCounterService>(
+        []() {
+            return std::make_shared<ScopedCounterService>();
+        }
+    );
+
+    drogular::RenderContext firstContext;
+    firstContext.setServices(&services);
+
+    drogular::RenderContext secondContext;
+    secondContext.setServices(&services);
+
+    const auto first =
+        firstContext.service<ScopedCounterService>();
+    const auto second =
+        secondContext.service<ScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+
+    EXPECT_NE(first.get(), second.get());
     EXPECT_EQ(ScopedCounterService::createdCount, 2);
+}
+
+TEST(CoreRenderContextTests, ConstRequireServiceUsesRequestScope) {
+    ScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+    services.addScoped<ScopedCounterService>(
+        []() {
+            return std::make_shared<ScopedCounterService>();
+        }
+    );
+
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    const auto first =
+        context.service<ScopedCounterService>();
+    const auto& constContext = context;
+    const auto second =
+        constContext.requireService<ScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+    EXPECT_EQ(first.get(), second.get());
+    EXPECT_EQ(ScopedCounterService::createdCount, 1);
 }
 
 TEST(CoreRenderContextTests, RequireServiceSupportsScopedService) {

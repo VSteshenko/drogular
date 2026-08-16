@@ -92,7 +92,7 @@ Each child is rendered through:
 auto childContext = context.createChild();
 ```
 
-This preserves parent-value lookup while isolating child-local values and scoped-service caches according to `RenderContext` child-context semantics.
+This preserves parent-value lookup while isolating child-local values and sharing the same request service scope according to `RenderContext` child-context semantics.
 
 ## Behavior and Limitations
 

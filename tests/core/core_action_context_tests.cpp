@@ -4,6 +4,7 @@
 #include <drogon/HttpRequest.h>
 #include <gtest/gtest.h>
 
+#include <memory>
 #include <stdexcept>
 
 class CoreActionContextTestService {
@@ -307,4 +308,63 @@ TEST(CoreActionContextTests, ThrowsActionContextErrorWhenServicesAreUnavailable)
         context.requireService<CoreActionContextTestService>(),
         drogular::ActionContextError
     );
+}
+
+namespace {
+
+class ActionScopedCounterService {
+public:
+    ActionScopedCounterService() {
+        ++createdCount;
+    }
+
+    static inline int createdCount = 0;
+};
+
+} // namespace
+
+TEST(CoreActionContextTests, ScopedServiceReturnsSameInstanceForRequest) {
+    ActionScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+    services.addScoped<ActionScopedCounterService>([]() {
+        return std::make_shared<ActionScopedCounterService>();
+    });
+
+    auto request = drogon::HttpRequest::newHttpRequest();
+    drogular::ActionContext context(request, &services);
+
+    const auto first =
+        context.service<ActionScopedCounterService>();
+    const auto second =
+        context.service<ActionScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+    EXPECT_EQ(first.get(), second.get());
+    EXPECT_EQ(ActionScopedCounterService::createdCount, 1);
+}
+
+TEST(CoreActionContextTests, ScopedServiceCreatesNewInstanceForNewRequestContext) {
+    ActionScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+    services.addScoped<ActionScopedCounterService>([]() {
+        return std::make_shared<ActionScopedCounterService>();
+    });
+
+    auto firstRequest = drogon::HttpRequest::newHttpRequest();
+    auto secondRequest = drogon::HttpRequest::newHttpRequest();
+    drogular::ActionContext firstContext(firstRequest, &services);
+    drogular::ActionContext secondContext(secondRequest, &services);
+
+    const auto first =
+        firstContext.service<ActionScopedCounterService>();
+    const auto second =
+        secondContext.service<ActionScopedCounterService>();
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+    EXPECT_NE(first.get(), second.get());
+    EXPECT_EQ(ActionScopedCounterService::createdCount, 2);
 }
