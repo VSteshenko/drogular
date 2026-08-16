@@ -15,6 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(DROGULAR_BUILD_EXAMPLES "Build Drogular examples" ON)
 option(DROGULAR_BUILD_TESTS "Build Drogular tests" ON)
+option(DROGULAR_BUILD_TOOLS "Build Drogular command-line tools" ON)
 
 find_package(Drogon REQUIRED)
 
@@ -110,8 +111,11 @@ if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/developer_tools)
 endif()
 
-if(DROGULAR_BUILD_TESTS)
+if(DROGULAR_BUILD_TOOLS)
+    add_subdirectory(tools/drogular)
+endif()
 
+if(DROGULAR_BUILD_TESTS)
     include(FetchContent)
 
     FetchContent_Declare(
@@ -126,5 +130,4 @@ if(DROGULAR_BUILD_TESTS)
     enable_testing()
 
     add_subdirectory(tests)
-
 endif()
