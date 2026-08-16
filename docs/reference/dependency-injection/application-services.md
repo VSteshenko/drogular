@@ -399,6 +399,8 @@ const TemplateSourceCache& templateSourceCache() const;
 
 Returns the container-owned template source cache.
 
+`TemplateSourceCache` synchronizes its internal source map and loader. Concurrent cached reads use shared locking; cache misses, `clear()` and `setLoader()` use exclusive locking. Loaded sources are returned by value, so cache invalidation does not invalidate data already returned to a renderer.
+
 The cache itself will be documented in the Rendering/Template reference when that API is added.
 
 ---

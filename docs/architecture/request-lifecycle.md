@@ -115,9 +115,10 @@ Thread-safe session storage does not make values stored outside those objects th
 
 The lifetime model above does not by itself make application-wide infrastructure thread-safe.
 
-Two current implementation details deserve special attention before 1.0:
+One current implementation detail deserves special attention before 1.0:
 
-- `TemplateSourceCache` is stored in application-wide `ApplicationServices`, but its internal cache is not currently synchronized for concurrent `load()` / mutation;
 - first-time `LazySingleton` resolution mutates the service container and is not currently synchronized against simultaneous first resolution.
 
-These are framework hardening items rather than recommended application patterns. Singleton application services with their own mutable state likewise remain responsible for their own synchronization.
+`TemplateSourceCache`, although application-wide, synchronizes access to its internal source map and loader. Cached reads use shared locking, while cache misses, `clear()` and `setLoader()` use exclusive locking. `load()` returns the source by value so a later cache clear cannot invalidate data already handed to a renderer.
+
+The remaining item is a framework hardening concern rather than a recommended application pattern. Singleton application services with their own mutable state likewise remain responsible for their own synchronization.

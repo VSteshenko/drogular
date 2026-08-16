@@ -58,7 +58,7 @@ would increase the stable API surface before 1.0.
 
 ## Lifetime and caching
 
-`TemplatePage` instances are created per request. Its instance-owned compiled-template cache therefore has the same lifetime as that Page instance. Reusable template **source** caching is application-level and is provided through `ApplicationServices::templateSourceCache()` when template caching is enabled.
+`TemplatePage` instances are created per request. Its instance-owned compiled-template cache therefore has the same lifetime as that Page instance. Reusable template **source** caching is application-level and is provided through `ApplicationServices::templateSourceCache()` when template caching is enabled. The source cache is safe for concurrent request reads: cached hits use shared locking, while cache population and invalidation use exclusive locking.
 
 `TemplateComponent` instances created from the component registry are created for each component expansion. They use the same rendering pipeline but remain distinct component objects with their own lifecycle.
 

@@ -1,5 +1,8 @@
 #include <drogular/template_source_cache.hpp>
 
+#include <mutex>
+#include <shared_mutex>
+
 namespace drogular {
 
 TemplateSourceCache::TemplateSourceCache(
@@ -8,9 +11,22 @@ TemplateSourceCache::TemplateSourceCache(
     : loader_(std::move(loader)) {
 }
 
-const std::string& TemplateSourceCache::load(
+std::string TemplateSourceCache::load(
     const std::string& path
 ) {
+    {
+        std::shared_lock lock(mutex_);
+
+        const auto found =
+            cache_.find(path);
+
+        if (found != cache_.end()) {
+            return found->second;
+        }
+    }
+
+    std::unique_lock lock(mutex_);
+
     const auto found =
         cache_.find(path);
 
@@ -31,20 +47,23 @@ const std::string& TemplateSourceCache::load(
 }
 
 void TemplateSourceCache::clear() {
+    std::unique_lock lock(mutex_);
     cache_.clear();
 }
 
 bool TemplateSourceCache::contains(
     const std::string& path
 ) const {
+    std::shared_lock lock(mutex_);
     return cache_.contains(path);
 }
 
 void TemplateSourceCache::setLoader(
     TemplateLoader loader
 ) {
+    std::unique_lock lock(mutex_);
     loader_ = std::move(loader);
-    clear();
+    cache_.clear();
 }
 
 } // namespace drogular

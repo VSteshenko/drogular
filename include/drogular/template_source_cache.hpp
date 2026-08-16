@@ -2,6 +2,7 @@
 
 #include <drogular/template_loader.hpp>
 
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 
@@ -13,7 +14,7 @@ public:
         TemplateLoader loader = TemplateLoader()
     );
 
-    const std::string& load(
+    std::string load(
         const std::string& path
     );
 
@@ -26,6 +27,7 @@ public:
     void setLoader(TemplateLoader loader);
 
 private:
+    mutable std::shared_mutex mutex_;
     TemplateLoader loader_;
 
     std::unordered_map<

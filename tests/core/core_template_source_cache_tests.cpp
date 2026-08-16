@@ -4,6 +4,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <thread>
+#include <vector>
 
 namespace {
 
@@ -114,6 +116,41 @@ TEST(CoreTemplateSourceCacheTests, ReportsCachedTemplate) {
     EXPECT_TRUE(
         cache.contains(path.string())
     );
+
+    std::filesystem::remove(path);
+}
+
+TEST(CoreTemplateSourceCacheTests, SupportsConcurrentReads) {
+    const auto path =
+        writeTemplateFile(
+            "drogular_template_source_cache_concurrent.html",
+            "<h1>Concurrent</h1>"
+        );
+
+    drogular::TemplateSourceCache cache;
+
+    constexpr std::size_t threadCount = 8;
+    constexpr std::size_t readsPerThread = 100;
+
+    std::vector<std::thread> threads;
+    threads.reserve(threadCount);
+
+    for (std::size_t index = 0; index < threadCount; ++index) {
+        threads.emplace_back([&] {
+            for (std::size_t read = 0; read < readsPerThread; ++read) {
+                EXPECT_EQ(
+                    cache.load(path.string()),
+                    "<h1>Concurrent</h1>"
+                );
+            }
+        });
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    EXPECT_TRUE(cache.contains(path.string()));
 
     std::filesystem::remove(path);
 }
