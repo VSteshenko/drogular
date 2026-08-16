@@ -95,12 +95,14 @@ The repository includes focused examples for individual framework capabilities a
 
 If you are new to Drogular, follow this order:
 
-1. [Getting Started](getting-started/README.md)
-2. Explore the focused examples
-3. Study `PortalDemo`
-4. Read the [Cookbook](cookbook/README.md)
-5. Review the [Architecture](architecture/README.md)
-6. Use the [API Reference](reference/README.md) when you need exact interface details
+1. [Getting Started](getting-started/README.md) — build a real project and learn the startup/request model.
+2. Explore the focused examples when you need a complete implementation of one capability.
+3. Read the [Cookbook](cookbook/README.md) for recommended application patterns.
+4. Study `PortalDemo` when you are ready for feature-oriented application organization.
+5. Review the [Architecture](architecture/README.md) to understand the runtime and design boundaries behind those patterns.
+6. Use the [API Reference](reference/README.md) whenever you need exact signatures and contracts.
+
+For onboarding, do not start with `PortalDemo`: it is intentionally broad. The Getting Started application and focused examples introduce the same concepts with less surrounding infrastructure.
 
 ---
 

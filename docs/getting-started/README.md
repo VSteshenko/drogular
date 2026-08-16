@@ -2,116 +2,113 @@
 
 Welcome to Drogular.
 
-This guide introduces the core concepts you'll need to build your first application.
+This guide is designed to be read in order. It starts with a buildable CMake project and gradually introduces the core runtime model without assuming hidden project setup.
 
-The guides are designed to be read in order. Each one builds upon the previous and introduces a small number of new concepts.
+Complete examples show the `#include` directives and files they require so you can distinguish Drogular API requirements from application-specific code.
 
 ---
 
 # Learning Path
 
-## 1. Installation
+## 1. [Installation](installation.md)
 
-Install Drogular and configure your project.
+Create and verify a minimal CMake application.
 
 You'll learn:
 
-- system requirements
-- CMake integration
-- project configuration
-- verifying the installation
+- toolchain requirements
+- FetchContent integration
+- the `Drogular::drogular` target
+- the minimum `main.cpp`
+- how to diagnose a missing Drogon package
 
 ---
 
-## 2. Your First Drogular Application
+## 2. [Your First Drogular Application](your-first-drogular-application.md)
 
-Build your first application.
+Build a complete page from real framework APIs.
 
 You'll create:
 
-- your first page
-- your first component
-- your first service
-- your first route
+- a Service
+- a template Component
+- a TemplatePage
+- template files
+- service/component/route registrations
 
-You'll also use dependency injection from the very beginning.
-
----
-
-## 3. Project Structure
-
-Learn the recommended layout for Drogular applications.
-
-You'll understand the purpose of directories such as:
-
-- pages
-- components
-- services
-- stores
-- actions
-- graphql
+The guide also explains the startup order inside `main.cpp` and shows every required include for the first complete example.
 
 ---
 
-## 4. Components
+## 3. [Project Structure](project-structure.md)
 
-Learn how Drogular applications build user interfaces.
+Grow the first project without turning `main.cpp` into the entire application.
+
+You'll see:
+
+- what belongs in `main.cpp`
+- when to introduce startup helpers
+- flat technical vs feature-oriented layouts
+- where Pages, Actions, Components, Services, templates, and static files belong
+
+---
+
+## 4. [Components](components.md)
+
+Learn the server-side UI model.
 
 Topics include:
 
-- component responsibilities
-- composition
-- local UI state
-- dependency injection
-- separation from business logic
+- `TemplateComponent`
+- component registration and tags
+- lifecycle
+- inputs
+- service resolution through `RenderContext`
+- local vs shared mutable state
 
 ---
 
-## 5. Dependency Injection
+## 5. [Dependency Injection](dependency-injection.md)
 
-Learn how Drogular creates and manages services.
+Learn how Drogular creates and scopes application services.
 
 Topics include:
 
-- constructor injection
 - service registration
-- service lifetimes
-- best practices
+- context-based resolution
+- service factory constructor injection
+- Singleton, LazySingleton, Scoped, and Transient lifetimes
+- dependency graph validation
 
 ---
 
-## 6. Routing
+## 6. [Routing](routing.md)
 
-Learn how HTTP requests reach your application.
+Learn how HTTP requests reach Pages and Actions.
 
 Topics include:
 
-- route registration
-- pages
+- `app.page<T>()`
+- `app.action<T>()`
 - route parameters
-- request flow
-- application organization
+- request-scoped handler instances
+- route organization
+- validation/error boundaries for Actions
 
 ---
 
-# What You'll Learn
+# What You'll Know Afterwards
 
-By the end of the Getting Started guide, you'll understand the fundamental building blocks of every Drogular application:
+By the end of Getting Started, you should be able to answer four practical questions:
 
-- Pages
-- Components
-- Services
-- Dependency Injection
-- Routing
+1. **What files do I create?**
+2. **What do I include?**
+3. **What belongs in `main.cpp`?**
+4. **How does a request reach my application code?**
 
-These concepts form the foundation for everything covered in the Cookbook and Architecture sections.
+From there, use:
 
----
-
-# Next Steps
-
-After completing this guide, continue with:
-
-- **Cookbook** for practical development patterns.
-- **Architecture** to understand Drogular's internal design.
-- **API Reference** for detailed information about public classes and interfaces.
+- the [Cookbook](../cookbook/README.md) for practical patterns
+- [Architecture](../architecture/README.md) for design and runtime details
+- the [API Reference](../reference/README.md) for exact public interfaces
+- the repository examples for complete working applications

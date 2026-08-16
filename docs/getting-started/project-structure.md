@@ -1,214 +1,272 @@
 # Project Structure
 
-This guide explains the recommended directory structure for Drogular applications.
+This guide explains how to grow the small project from the previous tutorial without turning `main.cpp` into the entire application.
 
-The goal is to keep projects easy to navigate, maintain, and scale as they grow.
-
-The same structure works for both small applications and large production systems.
+There is no mandatory directory layout in Drogular. The structure below is a recommended starting point for applications large enough to have multiple features.
 
 ---
 
-# Recommended Structure
+# Start Small
+
+The first application used this layout:
 
 ```text
 src/
-├── components/
-├── pages/
-├── services/
-├── models/
-├── stores/
-├── actions/
-├── graphql/
-├── layouts/
-├── middleware/
-├── routing/
-├── app/
-└── main.cpp
+├── main.cpp
+├── home_service.hpp
+├── home_page.hpp
+└── components/
+    └── home_message_component.hpp
 ```
 
-Each directory has a single responsibility.
+Do not create directories only because the framework supports a feature. Add structure when the application actually needs it.
 
 ---
 
-# pages/
+# Recommended Growing Structure
 
-The **pages** directory contains application entry points.
+A larger application may evolve toward:
 
-A page receives an incoming request, coordinates the required services, and returns the response.
+```text
+src/
+├── main.cpp
+├── app/
+│   ├── configure_services.hpp
+│   └── register_routes.hpp
+├── pages/
+├── components/
+├── actions/
+├── services/
+├── models/
+├── stores/
+└── graphql/
+templates/
+├── layouts/
+├── components/
+└── ...
+public/
+└── ...
+```
 
-Pages should remain lightweight and avoid implementing business logic.
+The exact names are application choices, not framework requirements.
+
+---
+
+# `main.cpp`
+
+`main.cpp` is the process entry point and should describe startup at a high level.
+
+For example:
+
+```cpp
+#include "app/configure_services.hpp"
+#include "app/register_routes.hpp"
+
+#include <drogular/app.hpp>
+
+int main()
+{
+    drogular::App app;
+
+    app.templateRoot("templates");
+    app.staticFiles("/assets", "public");
+
+    configureServices(app);
+    registerRoutes(app);
+
+    app.run(8080);
+
+    return 0;
+}
+```
+
+A useful rule is that `main.cpp` should answer **how the application starts**, not **how a feature works**.
+
+Keep here:
+
+- creation of `drogular::App`
+- top-level runtime profile and paths
+- calls that register services, components, pages, and actions
+- the listening port
+- `app.run(...)`
+
+Move feature-specific business logic, query construction, validation, and rendering elsewhere.
+
+---
+
+# `app/`
+
+The optional `app/` directory is useful when startup registration becomes too large for `main.cpp`.
+
+Typical responsibilities:
+
+- registering application services
+- registering components
+- registering pages and actions
+- application-wide configuration helpers
+
+For example, service registration can be grouped in one function:
+
+```cpp
+#pragma once
+
+#include "../services/user_service.hpp"
+
+#include <drogular/app.hpp>
+
+inline void configureServices(drogular::App& app)
+{
+    app.services().add<UserService>(
+        drogular::ServiceLifetime::Singleton
+    );
+}
+```
+
+This is ordinary application code; Drogular does not require a special startup class.
+
+---
+
+# `pages/`
+
+Pages are GET-oriented HTTP entry points that render full responses.
+
+They should coordinate request-specific work and presentation rather than own business logic.
 
 Examples:
 
 ```text
 pages/
-├── HomePage
-├── LoginPage
-├── DashboardPage
+├── home_page.hpp
+├── login_page.hpp
+└── dashboard_page.hpp
 ```
 
 ---
 
-# components/
+# `actions/`
 
-Components are responsible for rendering the user interface.
-
-They are reusable building blocks that can be composed to build complex pages.
+Actions are POST-oriented HTTP entry points for user intent and mutations.
 
 Examples:
 
 ```text
-components/
-├── NavigationComponent
-├── TodoListComponent
-├── UserCardComponent
+actions/
+├── login_action.hpp
+├── create_todo_action.hpp
+└── delete_todo_action.hpp
+```
+
+Pages and Actions are both registered during startup:
+
+```cpp
+app.page<HomePage>("/");
+app.action<LoginAction>("/login");
 ```
 
 ---
 
-# services/
+# `components/`
 
-Services contain business logic.
+Components render reusable pieces of UI and are normally registered once during startup:
+
+```cpp
+app.component<UserCardComponent>();
+```
+
+Template components can then be used by tag from templates.
+
+---
+
+# `services/`
+
+Services contain application or domain behavior and integrations.
 
 Typical responsibilities include:
 
-- database access
+- database or repository access
 - GraphQL communication
-- authentication
-- validation
-- domain logic
+- authentication backends
+- domain rules
+- coordination with external systems
 
-Services are provided through Drogular's dependency injection container.
-
----
-
-# models/
-
-Models represent application data.
-
-Examples:
-
-- User
-- Todo
-- Product
-- Order
-
-Models should not contain presentation logic.
+Register shared services in `ApplicationServices` and resolve them through `RenderContext` or `ActionContext`.
 
 ---
 
-# stores/
+# `models/`
 
-Stores manage application state.
+Models represent application data such as `User`, `Todo`, `Product`, or `Order`.
 
-They provide a predictable way to share state between components.
-
-Not every application requires stores, but they become valuable as applications grow.
+Keep presentation-specific state out of domain models unless it is intentionally part of that model.
 
 ---
 
-# actions/
+# `stores/`
 
-Actions represent user intent.
+Stores can coordinate shared application state where that pattern is appropriate.
 
-Examples:
-
-- CreateTodo
-- DeleteTodo
-- LoginUser
-- LogoutUser
-
-Separating actions from components helps keep user interfaces focused on presentation.
+Remember that application-wide mutable state must be safe for concurrent requests. A Singleton lifetime does not make the object itself thread-safe.
 
 ---
 
-# graphql/
+# `graphql/`
 
-The **graphql** directory contains GraphQL operations.
+Keep application GraphQL documents, providers, serializers, and transport adapters together when GraphQL is a significant part of a feature.
 
-Typical contents include:
-
-- queries
-- mutations
-- fragments
-
-Keeping GraphQL definitions together makes them easier to discover and maintain.
+For larger applications, Drogular's own `PortalDemo` goes further and groups these files **by feature** rather than keeping one global GraphQL directory. Either structure is valid; prefer the one that keeps related code easiest to find.
 
 ---
 
-# layouts/
+# `templates/` and `public/`
 
-Layouts define the common structure shared by multiple pages.
+`templates/` contains server-rendered templates configured through `app.templateRoot(...)`.
 
-Typical examples include:
+`public/` commonly contains static assets exposed through `app.staticFiles(...)`.
 
-- application layout
-- authentication layout
-- administration layout
-
-Layouts help eliminate duplicated page structure.
+These paths are application choices. They become meaningful only when you configure them during startup.
 
 ---
 
-# middleware/
+# Flat vs Feature-Oriented Layout
 
-Middleware contains request processing logic that executes before or after pages.
+A flat technical layout is easy to learn:
 
-Typical responsibilities include:
+```text
+pages/
+components/
+services/
+actions/
+```
 
-- authentication
-- logging
-- localization
-- request validation
+As the application grows, a feature-oriented layout may become easier to maintain:
 
----
+```text
+features/
+├── users/
+│   ├── pages/
+│   ├── actions/
+│   └── services/
+└── projects/
+    ├── pages/
+    ├── actions/
+    └── services/
+```
 
-# routing/
-
-The **routing** directory contains route registration.
-
-Keeping routing separate from pages provides a single place to understand the application's URL structure.
-
----
-
-# app/
-
-The **app** directory contains application-wide configuration.
-
-Typical responsibilities include:
-
-- dependency injection registration
-- application configuration
-- startup logic
-
----
-
-# main.cpp
-
-`main.cpp` is the application's entry point.
-
-Its responsibility should remain minimal:
-
-- create the application
-- initialize Drogular
-- start the server
-
-Business logic should never be implemented here.
+`PortalDemo` is the reference for this larger feature-oriented style.
 
 ---
 
 # Design Principles
 
-This structure follows several engineering principles used throughout Drogular:
-
-- One directory, one responsibility.
-- Keep business logic out of pages.
-- Keep presentation inside components.
-- Prefer composition over duplication.
-- Make project navigation predictable.
+- Keep `main.cpp` readable as a startup outline.
+- Register infrastructure during startup, not during request handling.
+- Keep Pages and Actions thin.
+- Keep rendering in Components and templates.
+- Keep application/domain behavior in Services and providers.
+- Start with the smallest structure that is clear, then introduce feature modules as the codebase grows.
 
 ---
 
 # What's Next?
 
-In the next guide, you'll learn how components work and why they are the primary building blocks of every Drogular application.
+Continue with [Components](components.md) to look more closely at component lifecycle, service access, and composition.

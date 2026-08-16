@@ -1,163 +1,155 @@
 # Routing
 
-Routing connects incoming HTTP requests to pages.
+Routing connects incoming HTTP requests to Drogular Pages and Actions.
 
-Every request received by a Drogular application is matched to a route, which determines which page should handle the request.
+For the high-level application API, the common split is:
+
+- `app.page<T>(path)` for GET page rendering
+- `app.action<T>(path)` for POST mutations and user intent
 
 ---
 
-# Routes
+# Register Routes During Startup
 
-A route consists of two parts:
+A small application can register routes directly in `main.cpp`:
 
-- an HTTP method
-- a URL path
+```cpp
+#include "actions/create_todo_action.hpp"
+#include "pages/todo_page.hpp"
 
-For example:
+#include <drogular/app.hpp>
 
-```text
-GET /
-        ↓
-HomePage
+// ...
+
+app.page<TodoPage>("/");
+app.action<CreateTodoAction>("/todos/create");
 ```
 
-When a client sends a `GET` request to `/`, Drogular invokes `HomePage`.
+A larger application can move these calls into a `registerRoutes(app)` helper while keeping the same API.
 
 ---
 
-# Pages Own Routes
+# Pages
 
-Routes should point to pages.
+Pages are full renderable responses registered for GET requests:
 
-Pages are the application's entry points and coordinate the work required to generate a response.
-
-A page may:
-
-- receive request parameters
-- resolve services through dependency injection
-- create components
-- return the final response
-
-Components and services should never be registered as routes.
-
----
-
-# Route Registration
-
-Routes are registered during application startup.
-
-Keeping all route registrations together makes the application's URL structure easy to understand and maintain.
-
-For example:
-
-```text
-/
-├── HomePage
-├── AboutPage
-├── LoginPage
-└── DashboardPage
+```cpp
+app.page<HomePage>("/");
+app.page<UserPage>("/users/{id}");
 ```
+
+Drogular creates a fresh Page instance for each matching HTTP request.
+
+Pages normally prepare render data in `onInit(RenderContext&)` and render HTML through `Page` or `TemplatePage`.
+
+---
+
+# Actions
+
+Actions are POST request handlers:
+
+```cpp
+app.action<LoginAction>("/login");
+app.action<CreateTodoAction>("/todos/create");
+```
+
+Drogular also creates a fresh Action instance for each request. Actions receive an `ActionContext`, read form/request data, resolve services, and return an `ActionResult`.
+
+Use Pages for presentation and Actions for mutations rather than putting POST handling into a UI component.
 
 ---
 
 # Route Parameters
 
-Routes may contain parameters.
+Routes may contain parameters:
 
-For example:
-
-```text
-/users/{id}
+```cpp
+app.page<UserPage>("/users/{id}");
 ```
 
-When a request matches the route, the parameter is passed to the page.
+Pages read route parameters from `RenderContext`; Actions use `ActionContext`.
 
-The page is responsible for validating and using the parameter.
-
----
-
-# HTTP Methods
-
-Different HTTP methods usually represent different intentions.
-
-Typical examples include:
-
-| Method | Purpose |
-|---------|---------|
-| GET | Read data |
-| POST | Create resources |
-| PUT | Replace resources |
-| PATCH | Update resources |
-| DELETE | Remove resources |
-
-Using the appropriate HTTP method makes APIs easier to understand.
+Required values should use the corresponding `requireRouteParam()` API so a missing route parameter is treated as an explicit context error instead of silently becoming an empty value.
 
 ---
 
-# Keep Pages Thin
+# Request Flow
 
-Pages should coordinate work rather than implement business logic.
-
-A typical request flow looks like this:
+A rendered page follows this high-level path:
 
 ```text
-HTTP Request
-        │
-        ▼
-      Route
-        │
-        ▼
-      Page
-        │
-        ▼
-     Service
-        │
-        ▼
-   Component
-        │
-        ▼
- HTTP Response
+GET request
+    ↓
+Router
+    ↓
+fresh Page
+    ↓
+RenderContext
+    ↓
+Components / Services
+    ↓
+HTML response
 ```
 
-Each layer has a single responsibility.
-
----
-
-# Organizing Routes
-
-As applications grow, routes should remain organized.
-
-A common approach is grouping related routes together.
-
-For example:
+A mutation follows:
 
 ```text
-/
-├── Home
-├── Authentication
-│   ├── Login
-│   └── Logout
-├── Users
-├── Products
-└── Administration
+POST request
+    ↓
+Router
+    ↓
+fresh Action
+    ↓
+ActionContext
+    ↓
+Validation / Services
+    ↓
+ActionResult
 ```
 
-This organization makes navigation predictable for both developers and users.
+`ActionValidationError` is translated by the Router into `400 Bad Request`; unexpected action exceptions become a safe `500 Internal Server Error` response.
 
 ---
 
-# Best Practices
+# Keep HTTP Entry Points Thin
 
-- Register routes in a single location.
-- Route requests only to pages.
-- Keep pages focused on request coordination.
-- Delegate business logic to services.
-- Return components responsible for presentation.
+Pages and Actions should coordinate request work rather than own the application's business rules.
+
+A common boundary is:
+
+```text
+Page / Action
+      ↓
+application Service or Provider
+      ↓
+repository / GraphQL / external system
+```
+
+This keeps routing code small and makes application behavior reusable outside one HTTP endpoint.
+
+---
+
+# Route Organization
+
+Keep route registration easy to discover.
+
+For a small application, `main.cpp` is enough. For a larger application, group registrations in one startup helper or by feature:
+
+```cpp
+void registerUserRoutes(drogular::App& app)
+{
+    app.page<UsersPage>("/users");
+    app.page<UserEditPage>("/users/{id}/edit");
+    app.action<UpdateUserAction>("/users/{id}/update");
+}
+```
+
+The helper is ordinary application code; the framework does not require a special routing module type.
 
 ---
 
 # What's Next?
 
-You now understand how requests reach your application.
+You now have the core Getting Started model: build configuration, startup organization, Components, dependency injection, Pages, and Actions.
 
-The next guide explains how Pages coordinate services and components to produce the final response.
+Continue with the [Cookbook](../cookbook/README.md) for task-oriented patterns, or read the [Request Lifecycle](../architecture/request-lifecycle.md) when you want a deeper architectural view of the same request path.

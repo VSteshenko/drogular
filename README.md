@@ -118,18 +118,36 @@ Rather than being a collection of isolated examples, PortalDemo shows how these 
 
 ## Quick Start
 
+A complete minimal route needs only a Page and `drogular::App`:
+
 ```cpp
+#include <drogular/app.hpp>
+#include <drogular/page.hpp>
+#include <drogular/render_context.hpp>
+
+#include <string>
+
+class HomePage final : public drogular::Page
+{
+public:
+    std::string render(drogular::RenderContext&) override
+    {
+        return "<h1>Hello Drogular</h1>";
+    }
+};
+
 int main()
 {
-    drogular::Application app;
+    drogular::App app;
 
-    app.profile(drogular::ApplicationProfile::Development);
+    app.page<HomePage>("/");
+    app.run(8080);
 
-    app.run();
+    return 0;
 }
 ```
 
-See the **Getting Started** guide for a complete walkthrough.
+The [Getting Started](docs/getting-started/README.md) guide adds the required CMake setup, templates, Components, services, dependency injection, and project organization.
 
 ---
 
@@ -151,11 +169,12 @@ See the **Getting Started** guide for a complete walkthrough.
 
 ## Documentation
 
-- 📖 Getting Started
-- 🍳 Cookbook
-- 📚 API Reference
-- 🧩 Examples
-- 🚀 PortalDemo Reference Application
+- 📖 [Getting Started](docs/getting-started/README.md)
+- 🍳 [Cookbook](docs/cookbook/README.md)
+- 🏗 [Architecture](docs/architecture/README.md)
+- 📚 [API Reference](docs/reference/README.md)
+- 🧩 [Examples](examples/)
+- 🚀 [PortalDemo Reference Application](examples/portal_demo/)
 
 ---
 
