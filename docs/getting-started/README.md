@@ -24,7 +24,20 @@ You'll learn:
 
 ---
 
-## 2. [Your First Drogular Application](your-first-drogular-application.md)
+## 2. [Creating a Project with the Drogular CLI](creating-a-project.md)
+
+Generate a ready-to-build application skeleton with `drogular new`.
+
+You'll learn:
+
+- what files the CLI creates
+- how to build and run the generated application
+- how generated projects are pinned to the matching Drogular release
+- how to override the Git ref when developing against another branch or commit
+
+---
+
+## 3. [Your First Drogular Application](your-first-drogular-application.md)
 
 Build a complete page from real framework APIs.
 
@@ -40,7 +53,7 @@ The guide also explains the startup order inside `main.cpp` and shows every requ
 
 ---
 
-## 3. [Project Structure](project-structure.md)
+## 4. [Project Structure](project-structure.md)
 
 Grow the first project without turning `main.cpp` into the entire application.
 
@@ -53,7 +66,7 @@ You'll see:
 
 ---
 
-## 4. [Components](components.md)
+## 5. [Components](components.md)
 
 Learn the server-side UI model.
 
@@ -68,7 +81,7 @@ Topics include:
 
 ---
 
-## 5. [Dependency Injection](dependency-injection.md)
+## 6. [Dependency Injection](dependency-injection.md)
 
 Learn how Drogular creates and scopes application services.
 
@@ -82,7 +95,7 @@ Topics include:
 
 ---
 
-## 6. [Routing](routing.md)
+## 7. [Routing](routing.md)
 
 Learn how HTTP requests reach Pages and Actions.
 

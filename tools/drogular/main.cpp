@@ -118,7 +118,8 @@ int createProject(const std::string& name, const fs::path& executable) {
     try {
         drogular::cli::ProjectGenerator generator(
             findTemplatesRoot(executable),
-            DROGULAR_CLI_VERSION);
+            DROGULAR_CLI_VERSION,
+            DROGULAR_CLI_GIT_REF);
         generator.generate(name);
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

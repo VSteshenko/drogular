@@ -37,9 +37,11 @@ std::string currentYear() {
 
 ProjectGenerator::ProjectGenerator(
     fs::path templatesRoot,
-    std::string drogularVersion)
+    std::string drogularVersion,
+    std::string drogularGitRef)
     : templatesRoot_(std::move(templatesRoot)),
-      drogularVersion_(std::move(drogularVersion))
+      drogularVersion_(std::move(drogularVersion)),
+      drogularGitRef_(std::move(drogularGitRef))
 {
 }
 
@@ -60,6 +62,7 @@ void ProjectGenerator::generate(const std::string& projectName) const {
         {"PROJECT_NAME", projectName},
         {"PROJECT_NAMESPACE", projectNamespace(projectName)},
         {"DROGULAR_VERSION", drogularVersion_},
+        {"DROGULAR_GIT_REF", drogularGitRef_},
         {"YEAR", currentYear()},
     };
 
