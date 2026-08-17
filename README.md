@@ -199,6 +199,7 @@ The generated project includes a Page, a reusable Component, templates, a public
 - Developer Tools Platform
 - Application Inspection
 - Extensible Diagnostics
+- Drogular CLI and project generator
 - Reference Application improvements
 
 ### 1.0
@@ -206,6 +207,15 @@ The generated project includes a Page, a reusable Component, templates, a public
 - Stable Public API
 - Production Ready
 - Long-term API Compatibility
+
+### CLI Roadmap
+
+The first Drogular CLI version intentionally stays small and focused on project creation. Future commands will build on the same external template infrastructure.
+
+- **Next:** `drogular generate page`, `drogular generate component`
+- **Later:** `drogular generate action`, `drogular generate service`, `drogular generate middleware`
+- **Templates:** `drogular templates`, `drogular new --template=...`
+- **After API stabilization:** GraphQL, CRUD, and feature generators
 
 ---
 

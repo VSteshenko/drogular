@@ -1,12 +1,27 @@
+#include "project_generator.hpp"
+
+#include <cstdint>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
+
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
 
 #ifndef DROGULAR_CLI_VERSION
 #define DROGULAR_CLI_VERSION "development"
+#endif
+
+#ifndef DROGULAR_CLI_TEMPLATE_DIR
+#define DROGULAR_CLI_TEMPLATE_DIR ""
+#endif
+
+#ifndef DROGULAR_CLI_INSTALL_TEMPLATE_DIR
+#define DROGULAR_CLI_INSTALL_TEMPLATE_DIR ""
 #endif
 
 namespace fs = std::filesystem;
@@ -42,146 +57,71 @@ bool validProjectName(std::string_view name) {
     return true;
 }
 
-void writeFile(const fs::path& path, std::string_view content) {
-    std::ofstream output(path);
-    if (!output) {
-        throw std::runtime_error("Cannot create file: " + path.string());
-    }
+fs::path executablePath(const fs::path& fallback) {
+#if defined(__APPLE__)
+    std::uint32_t size = 0;
+    _NSGetExecutablePath(nullptr, &size);
 
-    output << content;
+    std::vector<char> buffer(size);
+    if (_NSGetExecutablePath(buffer.data(), &size) == 0) {
+        return fs::weakly_canonical(fs::path(buffer.data()));
+    }
+#elif defined(__linux__)
+    {
+        std::error_code error;
+        const fs::path path = fs::read_symlink("/proc/self/exe", error);
+        if (!error) {
+            return path;
+        }
+    }
+#endif
+
+    std::error_code error;
+    const fs::path path = fs::absolute(fallback, error);
+    return error ? fallback : path;
 }
 
-int createProject(const std::string& name) {
+fs::path findTemplatesRoot(const fs::path& executable) {
+    std::vector<fs::path> candidates;
+
+    const fs::path resolvedExecutable = executablePath(executable);
+    candidates.push_back(
+        resolvedExecutable.parent_path() / ".." / "share" / "drogular" / "templates");
+
+    if (std::string_view(DROGULAR_CLI_TEMPLATE_DIR).size() > 0) {
+        candidates.emplace_back(DROGULAR_CLI_TEMPLATE_DIR);
+    }
+
+    if (std::string_view(DROGULAR_CLI_INSTALL_TEMPLATE_DIR).size() > 0) {
+        candidates.emplace_back(DROGULAR_CLI_INSTALL_TEMPLATE_DIR);
+    }
+
+    candidates.push_back(fs::current_path() / "tools" / "drogular" / "templates");
+    candidates.push_back(fs::current_path() / "templates");
+
+    for (const auto& candidate : candidates) {
+        if (fs::is_directory(candidate / "minimal")) {
+            return fs::weakly_canonical(candidate);
+        }
+    }
+
+    throw std::runtime_error("Drogular CLI templates could not be found.");
+}
+
+int createProject(const std::string& name, const fs::path& executable) {
     if (!validProjectName(name)) {
         std::cerr << "Invalid project name: " << name << '\n';
         std::cerr << "Use only letters, digits, '-' and '_'.\n";
         return 1;
     }
 
-    const fs::path root{name};
-    if (fs::exists(root)) {
-        std::cerr << "Path already exists: " << root << '\n';
-        return 1;
-    }
-
     try {
-        fs::create_directories(root / "src" / "components");
-        fs::create_directories(root / "templates" / "components");
-        fs::create_directories(root / "public");
-
-        writeFile(
-            root / "CMakeLists.txt",
-            "cmake_minimum_required(VERSION 3.24)\n\n"
-            "project(" + name + " LANGUAGES CXX)\n\n"
-            "set(CMAKE_CXX_STANDARD 20)\n"
-            "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n"
-            "set(CMAKE_CXX_EXTENSIONS OFF)\n\n"
-            "include(FetchContent)\n\n"
-            "set(DROGULAR_BUILD_EXAMPLES OFF CACHE BOOL \"\" FORCE)\n"
-            "set(DROGULAR_BUILD_TESTS OFF CACHE BOOL \"\" FORCE)\n"
-            "set(DROGULAR_BUILD_TOOLS OFF CACHE BOOL \"\" FORCE)\n\n"
-            "FetchContent_Declare(\n"
-            "    drogular\n"
-            "    GIT_REPOSITORY https://github.com/VSteshenko/drogular.git\n"
-            "    GIT_TAG main\n"
-            ")\n\n"
-            "FetchContent_MakeAvailable(drogular)\n\n"
-            "add_executable(" + name + "\n"
-            "    src/main.cpp\n"
-            ")\n\n"
-            "target_link_libraries(" + name + "\n"
-            "    PRIVATE\n"
-            "        Drogular::drogular\n"
-            ")\n");
-
-        writeFile(
-            root / "src" / "home_page.hpp",
-            "#pragma once\n\n"
-            "#include <drogular/page.hpp>\n\n"
-            "#include <string>\n\n"
-            "class HomePage final : public drogular::TemplatePage\n"
-            "{\n"
-            "public:\n"
-            "    std::string templatePath() const override\n"
-            "    {\n"
-            "        return \"home.html\";\n"
-            "    }\n"
-            "};\n");
-
-        writeFile(
-            root / "src" / "components" / "home_component.hpp",
-            "#pragma once\n\n"
-            "#include <drogular/component.hpp>\n\n"
-            "#include <string>\n\n"
-            "class HomeComponent final : public drogular::TemplateComponent\n"
-            "{\n"
-            "public:\n"
-            "    static constexpr auto tag = \"Home\";\n\n"
-            "    std::string templatePath() const override\n"
-            "    {\n"
-            "        return \"components/home.html\";\n"
-            "    }\n"
-            "};\n");
-
-        writeFile(
-            root / "src" / "main.cpp",
-            "#include \"components/home_component.hpp\"\n"
-            "#include \"home_page.hpp\"\n\n"
-            "#include <drogular/app.hpp>\n\n"
-            "int main()\n"
-            "{\n"
-            "    drogular::App app;\n\n"
-            "    app.templateRoot(\"templates\");\n"
-            "    app.staticFiles(\"/assets\", \"public\");\n\n"
-            "    app.component<HomeComponent>();\n"
-            "    app.page<HomePage>(\"/\");\n\n"
-            "    app.run(8080);\n\n"
-            "    return 0;\n"
-            "}\n");
-
-        writeFile(
-            root / "templates" / "home.html",
-            "<!doctype html>\n"
-            "<html lang=\"en\">\n"
-            "<head>\n"
-            "    <meta charset=\"utf-8\" />\n"
-            "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n"
-            "    <title>" + name + "</title>\n"
-            "</head>\n"
-            "<body>\n"
-            "    <h1>Hello Drogular</h1>\n"
-            "    <Home />\n"
-            "</body>\n"
-            "</html>\n");
-
-        writeFile(
-            root / "templates" / "components" / "home.html",
-            "<p>Your Drogular application is running.</p>\n");
-
-        writeFile(
-            root / ".gitignore",
-            "build/\n"
-            ".DS_Store\n");
-
-        writeFile(
-            root / "README.md",
-            "# " + name + "\n\n"
-            "A Drogular application.\n\n"
-            "## Build\n\n"
-            "```bash\n"
-            "cmake -S . -B build\n"
-            "cmake --build build\n"
-            "```\n\n"
-            "## Run\n\n"
-            "```bash\n"
-            "./build/" + name + "\n"
-            "```\n\n"
-            "Then open http://localhost:8080/.\n");
+        drogular::cli::ProjectGenerator generator(
+            findTemplatesRoot(executable),
+            DROGULAR_CLI_VERSION);
+        generator.generate(name);
     } catch (const std::exception& error) {
-        std::error_code ignored;
-        fs::remove_all(root, ignored);
         std::cerr << error.what() << '\n';
-
         return 1;
     }
 
@@ -213,7 +153,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc == 3 && std::string_view(argv[1]) == "new") {
-        return createProject(argv[2]);
+        return createProject(argv[2], argv[0]);
     }
 
     printHelp();
