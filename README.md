@@ -149,6 +149,20 @@ int main()
 
 The [Getting Started](docs/getting-started/README.md) guide adds the required CMake setup, templates, Components, services, dependency injection, and project organization.
 
+### Create a new project
+
+The Drogular CLI can create a ready-to-build application skeleton:
+
+```bash
+drogular new hello_drogular
+cd hello_drogular
+cmake -S . -B build
+cmake --build build
+./build/hello_drogular
+```
+
+The generated project includes a Page, a reusable Component, templates, a public-assets directory, and the recommended startup structure.
+
 ---
 
 ## Feature Overview
