@@ -57,4 +57,4 @@ TodoPWA and PortalDemo use this flow to keep search, sorting, page size, and pag
 - [Routing API Reference](../routing/README.md)
 - [`Url`](../routing/url.md)
 - [`RenderContext`](../rendering/render-context.md)
-- [Pagination Cookbook guide *(coming soon)*](../../cookbook/README.md#pagination)
+- [Pagination Cookbook guide](../../cookbook/pagination.md)

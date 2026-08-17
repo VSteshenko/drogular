@@ -73,7 +73,7 @@ The built-in `Session` and `SessionStore` synchronize access to their in-memory 
 
 ## Cookbook
 
-- Authentication & Authorization *(coming soon)*
+A dedicated Authentication & Authorization Cookbook guide is planned. Until then, use this reference together with the [`auth_sample`](../../../examples/auth_sample/) example for a complete working authentication flow.
 
 ## Related Reference
 
