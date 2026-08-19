@@ -111,12 +111,26 @@ Rather than being a collection of isolated examples, PortalDemo shows how these 
 | Example | Demonstrates |
 |----------|--------------|
 | TodoPWA | Components, State Management, Forms & Validation |
+| Auth Sample | Authentication & Sessions |
 | Developer Tools | Extending the Developer Tools platform |
+| Repository Sample | Repository pattern and data access |
 | PortalDemo | Complete reference application architecture |
 
 ---
 
 ## Quick Start
+
+The fastest way to start a Drogular application is with the CLI:
+
+```bash
+drogular new hello_drogular
+cd hello_drogular
+cmake -S . -B build
+cmake --build build
+./build/hello_drogular
+```
+
+The generated project is pinned to the matching Drogular release and includes a Page, reusable Component, templates, public assets, and the recommended startup structure.
 
 A complete minimal route needs only a Page and `drogular::App`:
 
@@ -147,21 +161,7 @@ int main()
 }
 ```
 
-The [Getting Started](docs/getting-started/README.md) guide adds the required CMake setup, templates, Components, services, dependency injection, and project organization.
-
-### Create a new project
-
-The Drogular CLI can create a ready-to-build application skeleton:
-
-```bash
-drogular new hello_drogular
-cd hello_drogular
-cmake -S . -B build
-cmake --build build
-./build/hello_drogular
-```
-
-The generated project includes a Page, a reusable Component, templates, a public-assets directory, and the recommended startup structure.
+The [Getting Started](docs/getting-started/README.md) guide adds the required CMake setup, templates, Components, services, dependency injection, CLI workflow, and project organization.
 
 ---
 
@@ -181,6 +181,22 @@ The generated project includes a Page, a reusable Component, templates, a public
 
 ---
 
+## What's New in 0.21
+
+Drogular 0.21 focuses on developer experience, diagnostics, and production readiness.
+
+- 🚀 Standalone Drogular CLI with reproducible project generation
+- 🔍 Application Inspection API
+- 🛠 Extensible Developer Tools platform
+- 📊 Built-in Diagnostics Page and JSON inspection endpoint
+- ⚙️ Request-scoped dependency injection across request contexts
+- 🔒 Thread-safety improvements for template caching and lazy singletons
+- 📚 Major expansion of Getting Started, Cookbook, and API Reference documentation
+
+See [RELEASE_NOTES_0.21.md](RELEASE_NOTES_0.21.md) for the complete release notes.
+
+---
+
 ## Documentation
 
 - 📖 [Getting Started](docs/getting-started/README.md)
@@ -194,30 +210,22 @@ The generated project includes a Page, a reusable Component, templates, a public
 
 ## Roadmap
 
-### 0.21
+### 0.22 — Developer Productivity
 
-- Developer Tools Platform
-- Application Inspection
-- Extensible Diagnostics
-- Drogular CLI and project generator
-- Reference Application improvements
+- CLI Generators
+- Feature-first scaffolding
+- Project Templates
+- Feature / CRUD generation
+- Asset Pipeline
+- Localization 2.0
+- PortalDemo expansion
+- Architecture, Best Practices, and CLI documentation
 
 ### 1.0
 
 - Stable Public API
 - Production Ready
 - Long-term API Compatibility
-
-### CLI Roadmap
-
-The first Drogular CLI version intentionally stays small and focused on project creation. Future commands will build on the same external template infrastructure.
-
-- **Next:** `drogular generate page`, `drogular generate component`
-- **Later:** `drogular generate action`, `drogular generate service`, `drogular generate middleware`
-- **Templates:** `drogular templates`, `drogular new --template=...`
-- **After API stabilization:** GraphQL, CRUD, and feature generators
-
----
 
 ## Design Philosophy
 

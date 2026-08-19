@@ -5,7 +5,7 @@ if(POLICY CMP0135)
 endif()
 
 project(Drogular
-    VERSION 0.20.0
+    VERSION 0.21.0
     LANGUAGES CXX
 )
 
