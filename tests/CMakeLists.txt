@@ -130,8 +130,7 @@ add_executable(drogular_tests
     portal_demo/portal_ui_component_tests.cpp
 )
 
-target_compile_definitions(
-    drogular_tests
+target_compile_definitions(drogular_tests
     PRIVATE
     DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
@@ -152,6 +151,7 @@ target_include_directories(drogular_tests
 )
 
 add_executable(drogular_project_generator_tests
+    project_generator/project_generator_generation_tests.cpp
     project_generator/project_generator_file_renderer_tests.cpp
     project_generator/project_generator_template_registry_tests.cpp
 )
@@ -169,8 +169,7 @@ add_executable(drogular_cli_tests
     ../tools/drogular/project_generator.cpp
 )
 
-target_compile_definitions(
-    drogular_cli_tests
+target_compile_definitions(drogular_cli_tests
     PRIVATE
     DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
@@ -194,3 +193,4 @@ include(GoogleTest)
 
 gtest_discover_tests(drogular_tests)
 gtest_discover_tests(drogular_cli_tests)
+gtest_discover_tests(drogular_project_generator_tests)

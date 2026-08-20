@@ -2,10 +2,19 @@
 
 #include "file_renderer.hpp"
 
+#include <filesystem>
+#include <string>
+
 namespace drogular::generation {
 
 class TemplateRegistry;
 class TemplateSource;
+
+struct GenerationRequest {
+    std::string templateId;
+    std::filesystem::path destination;
+    FileRenderer::Variables variables;
+};
 
 class ProjectGenerator {
 public:
@@ -13,6 +22,8 @@ public:
         const TemplateRegistry& registry,
         const TemplateSource& source,
         FileRenderer renderer = {});
+
+    void generate(const GenerationRequest& request) const;
 
 private:
     const TemplateRegistry& registry_;
