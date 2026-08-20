@@ -153,6 +153,7 @@ target_include_directories(drogular_tests
 add_executable(drogular_project_generator_tests
     project_generator/project_generator_generation_tests.cpp
     project_generator/project_generator_file_renderer_tests.cpp
+    project_generator/project_generator_embedded_template_tests.cpp
     project_generator/project_generator_template_registry_tests.cpp
 )
 

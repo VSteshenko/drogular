@@ -1,0 +1,18 @@
+# {{PROJECT_NAME}}
+
+A Drogular application generated with Drogular {{DROGULAR_VERSION}}.
+
+## Build
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+## Run
+
+```bash
+./build/{{PROJECT_NAME}}
+```
+
+Then open http://localhost:8080/.

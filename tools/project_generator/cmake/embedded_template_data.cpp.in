@@ -1,0 +1,17 @@
+#include "embedded_template_data.hpp"
+
+namespace drogular::generation::detail {
+
+const std::unordered_map<std::string, std::string>& embeddedTemplateFiles() {
+    static const std::unordered_map<std::string, std::string> files{
+@DROGULAR_EMBEDDED_FILE_ENTRIES@    };
+    return files;
+}
+
+const std::vector<ProjectTemplate>& embeddedProjectTemplates() {
+    static const std::vector<ProjectTemplate> templates{
+@DROGULAR_EMBEDDED_TEMPLATE_ENTRIES@    };
+    return templates;
+}
+
+} // namespace drogular::generation::detail

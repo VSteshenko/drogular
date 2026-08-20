@@ -1,0 +1,43 @@
+{
+  "id": "minimal",
+  "name": "Minimal Application",
+  "description": "Minimal Drogular application",
+  "files": [
+    {
+      "source": "CMakeLists.txt.in",
+      "destination": "CMakeLists.txt"
+    },
+    {
+      "source": ".gitignore.in",
+      "destination": ".gitignore"
+    },
+    {
+      "source": "README.md.in",
+      "destination": "README.md"
+    },
+    {
+      "source": "src/main.cpp.in",
+      "destination": "src/main.cpp"
+    },
+    {
+      "source": "src/home_page.hpp.in",
+      "destination": "src/home_page.hpp"
+    },
+    {
+      "source": "src/components/home_component.hpp.in",
+      "destination": "src/components/home_component.hpp"
+    },
+    {
+      "source": "templates/home.html.in",
+      "destination": "templates/home.html"
+    },
+    {
+      "source": "templates/components/home.html.in",
+      "destination": "templates/components/home.html"
+    },
+    {
+      "source": "public/.gitkeep",
+      "destination": "public/.gitkeep"
+    }
+  ]
+}

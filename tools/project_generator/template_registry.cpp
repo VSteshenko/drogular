@@ -1,9 +1,16 @@
 #include "template_registry.hpp"
+#include "template_source.hpp"
 
 #include <stdexcept>
 #include <utility>
 
 namespace drogular::generation {
+
+void TemplateRegistry::load(const TemplateSource& source) {
+    for (ProjectTemplate projectTemplate : source.projectTemplates()) {
+        add(std::move(projectTemplate));
+    }
+}
 
 void TemplateRegistry::add(ProjectTemplate projectTemplate) {
     if (projectTemplate.id.empty()) {
