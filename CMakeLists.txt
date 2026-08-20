@@ -111,6 +111,10 @@ if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/developer_tools)
 endif()
 
+if(DROGULAR_BUILD_TOOLS OR DROGULAR_BUILD_TESTS)
+    add_subdirectory(tools/project_generator)
+endif()
+
 if(DROGULAR_BUILD_TOOLS)
     add_subdirectory(tools/drogular)
 endif()

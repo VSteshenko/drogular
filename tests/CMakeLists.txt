@@ -151,6 +151,17 @@ target_include_directories(drogular_tests
     ${CMAKE_SOURCE_DIR}/examples/portal_demo
 )
 
+add_executable(drogular_project_generator_tests
+    project_generator/project_generator_file_renderer_tests.cpp
+    project_generator/project_generator_template_registry_tests.cpp
+)
+
+target_link_libraries(drogular_project_generator_tests
+    PRIVATE
+    Drogular::project_generator
+    GTest::gtest_main
+)
+
 add_executable(drogular_cli_tests
     cli/cli_template_engine_tests.cpp
     cli/cli_project_generator_tests.cpp
