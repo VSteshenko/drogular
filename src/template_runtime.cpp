@@ -306,17 +306,36 @@ bool compareValues(
 
 class ConditionParser {
 public:
-    ConditionParser(std::string_view expression, const RenderContext& context)
+    ConditionParser(
+        std::string_view expression,
+        const RenderContext* context = nullptr
+    )
         : expression_(expression), context_(context) {}
 
     std::optional<bool> parse() {
+        skipWhitespace();
+        if (position_ == expression_.size()) {
+            fail("Expected condition expression", position_);
+            return std::nullopt;
+        }
+
         const auto value = parseOr();
         skipWhitespace();
-        if (!value.has_value() || position_ != expression_.size()) {
+
+        if (!value.has_value()) {
+            return std::nullopt;
+        }
+
+        if (position_ != expression_.size()) {
+            fail("Unexpected token", position_);
             return std::nullopt;
         }
 
         return value;
+    }
+
+    const std::optional<ConditionExpressionError>& error() const {
+        return error_;
     }
 
 private:
@@ -327,8 +346,10 @@ private:
         }
 
         while (consume("||")) {
+            const auto operatorPosition = previousTokenPosition_;
             const auto right = parseAnd();
             if (!right.has_value()) {
+                fail("Expected expression after '||'", operatorPosition + 2);
                 return std::nullopt;
             }
             *left = *left || *right;
@@ -344,8 +365,10 @@ private:
         }
 
         while (consume("&&")) {
+            const auto operatorPosition = previousTokenPosition_;
             const auto right = parseUnary();
             if (!right.has_value()) {
+                fail("Expected expression after '&&'", operatorPosition + 2);
                 return std::nullopt;
             }
             *left = *left && *right;
@@ -356,8 +379,10 @@ private:
 
     std::optional<bool> parseUnary() {
         if (consume("!")) {
+            const auto operatorPosition = previousTokenPosition_;
             const auto value = parseUnary();
             if (!value.has_value()) {
+                fail("Expected expression after '!'", operatorPosition + 1);
                 return std::nullopt;
             }
 
@@ -366,7 +391,11 @@ private:
 
         if (consume("(")) {
             const auto value = parseOr();
-            if (!value.has_value() || !consume(")")) {
+            if (!value.has_value()) {
+                return std::nullopt;
+            }
+            if (!consume(")")) {
+                fail("Expected ')'", position_);
                 return std::nullopt;
             }
 
@@ -379,41 +408,55 @@ private:
     std::optional<bool> parseComparison() {
         const auto left = parseValue();
         if (!left.has_value()) {
+            fail("Expected value", position_);
             return std::nullopt;
         }
 
-        if (consume("==")) {
+        const auto parseRight = [&](std::string_view op)
+            -> std::optional<ConditionValue> {
+            const auto operatorPosition = previousTokenPosition_;
             const auto right = parseValue();
+            if (!right.has_value()) {
+                fail(
+                    "Expected value after '" + std::string(op) + "'",
+                    operatorPosition + op.size()
+                );
+            }
+            return right;
+        };
+
+        if (consume("==")) {
+            const auto right = parseRight("==");
             return right.has_value()
                 ? std::optional<bool>(equalValues(*left, *right))
                 : std::nullopt;
         }
         if (consume("!=")) {
-            const auto right = parseValue();
+            const auto right = parseRight("!=");
             return right.has_value()
                 ? std::optional<bool>(!equalValues(*left, *right))
                 : std::nullopt;
         }
         if (consume("<=")) {
-            const auto right = parseValue();
+            const auto right = parseRight("<=");
             return right.has_value()
                 ? std::optional<bool>(compareValues(*left, *right, RelationalOperator::LessEqual))
                 : std::nullopt;
         }
         if (consume(">=")) {
-            const auto right = parseValue();
+            const auto right = parseRight(">=");
             return right.has_value()
                 ? std::optional<bool>(compareValues(*left, *right, RelationalOperator::GreaterEqual))
                 : std::nullopt;
         }
         if (consume("<")) {
-            const auto right = parseValue();
+            const auto right = parseRight("<");
             return right.has_value()
                 ? std::optional<bool>(compareValues(*left, *right, RelationalOperator::Less))
                 : std::nullopt;
         }
         if (consume(">")) {
-            const auto right = parseValue();
+            const auto right = parseRight(">");
             return right.has_value()
                 ? std::optional<bool>(compareValues(*left, *right, RelationalOperator::Greater))
                 : std::nullopt;
@@ -454,10 +497,13 @@ private:
             return ConditionValue();
         }
 
-        return resolveConditionValue(identifier, context_);
+        return context_ != nullptr
+            ? resolveConditionValue(identifier, *context_)
+            : ConditionValue();
     }
 
     std::optional<ConditionValue> parseString() {
+        const auto start = position_;
         const auto quote = expression_[position_++];
         std::string result;
 
@@ -487,6 +533,7 @@ private:
             }
         }
 
+        fail("Unterminated string literal", start);
         return std::nullopt;
     }
 
@@ -496,26 +543,28 @@ private:
         if (expression_[position_] == '-') ++position_;
 
         while (position_ < expression_.size() &&
-               std::isdigit(static_cast<unsigned char>(expression_[position_]))
-        ) {
+               std::isdigit(static_cast<unsigned char>(expression_[position_]))) {
             ++position_;
         }
         if (position_ < expression_.size() && expression_[position_] == '.') {
             ++position_;
+            const auto fractionalStart = position_;
             while (position_ < expression_.size() &&
-                   std::isdigit(static_cast<unsigned char>(expression_[position_]))
-            ) {
+                   std::isdigit(static_cast<unsigned char>(expression_[position_]))) {
                 ++position_;
+            }
+            if (fractionalStart == position_) {
+                fail("Expected digits after decimal point", position_);
+                return std::nullopt;
             }
         }
 
         try {
             return ConditionValue(
-                std::stod(
-                    std::string(expression_.substr(start, position_ - start))
-                )
+                std::stod(std::string(expression_.substr(start, position_ - start)))
             );
         } catch (...) {
+            fail("Invalid number literal", start);
             return std::nullopt;
         }
     }
@@ -541,6 +590,8 @@ private:
         if (expression_.substr(position_, token.size()) != token) {
             return false;
         }
+
+        previousTokenPosition_ = position_;
         position_ += token.size();
 
         return true;
@@ -548,24 +599,42 @@ private:
 
     void skipWhitespace() {
         while (position_ < expression_.size() &&
-               std::isspace(static_cast<unsigned char>(expression_[position_]))
-        ) {
+               std::isspace(static_cast<unsigned char>(expression_[position_]))) {
             ++position_;
         }
     }
 
+    void fail(std::string message, std::size_t position) {
+        if (!error_.has_value()) {
+            error_ = ConditionExpressionError{
+                .message = std::move(message),
+                .position = position
+            };
+        }
+    }
+
     std::string_view expression_;
-    const RenderContext& context_;
+    const RenderContext* context_ = nullptr;
     size_t position_ = 0;
+    size_t previousTokenPosition_ = 0;
+    std::optional<ConditionExpressionError> error_;
 };
 
 } // namespace
+
+std::optional<ConditionExpressionError> validateConditionExpression(
+    std::string_view expression
+) {
+    ConditionParser parser(expression);
+    parser.parse();
+    return parser.error();
+}
 
 bool evaluateCondition(
     std::string_view expression,
     const RenderContext& context
 ) {
-    return ConditionParser(expression, context).parse().value_or(false);
+    return ConditionParser(expression, &context).parse().value_or(false);
 }
 
 std::optional<Json::Value> resolveJsonValue(

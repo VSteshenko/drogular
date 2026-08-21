@@ -2,6 +2,7 @@
 
 #include <drogular/component.hpp>
 
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -25,13 +26,30 @@ std::optional<std::string> resolveRawVariable(
     const RenderContext& context
 );
 
+struct ConditionExpressionError {
+    std::string message;
+    std::size_t position = 0;
+};
+
+/**
+ * Validates the syntax of a template condition.
+ *
+ * Returns the first syntax error, if any.
+ */
+std::optional<ConditionExpressionError> validateConditionExpression(
+    std::string_view expression
+);
+
 /**
  * Evaluates a template condition.
+ *
+ * Invalid expressions evaluate to false. Template compilation reports
+ * condition syntax errors through TemplateDiagnostics.
  */
 bool evaluateCondition(
     std::string_view expression,
     const RenderContext& context
-    );
+);
 
 /**
  * Resolves a template expression into Json::Value.

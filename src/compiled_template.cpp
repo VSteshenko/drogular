@@ -266,7 +266,7 @@ CompiledTemplate compile(std::string_view html) {
 
     return CompiledTemplate(
         parse(
-            tokenize(html),
+            tokenize(html, diagnostics),
             diagnostics
         )
     );
@@ -283,7 +283,7 @@ CompileResult compileWithDiagnostics(
 
     auto nodes =
         parse(
-            tokenize(html),
+            tokenize(html, diagnostics),
             diagnostics
         );
 

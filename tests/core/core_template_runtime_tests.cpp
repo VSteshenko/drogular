@@ -178,3 +178,28 @@ TEST(CoreTemplateRuntimeTests, EvaluatesJsonFieldsAndLiterals) {
         context
     ));
 }
+
+TEST(CoreTemplateRuntimeTests, ValidatesConditionExpressionSyntax) {
+    EXPECT_FALSE(
+        validateConditionExpression(
+            "user.role == 'admin' && (page > 1 || hasNext)"
+        ).has_value()
+    );
+
+    const auto missingValue = validateConditionExpression("page >");
+    ASSERT_TRUE(missingValue.has_value());
+    EXPECT_EQ(missingValue->message, "Expected value after '>'");
+
+    const auto missingParenthesis =
+        validateConditionExpression("(page > 1");
+    ASSERT_TRUE(missingParenthesis.has_value());
+    EXPECT_EQ(missingParenthesis->message, "Expected ')'");
+
+    const auto unterminatedString =
+        validateConditionExpression("status == 'active");
+    ASSERT_TRUE(unterminatedString.has_value());
+    EXPECT_EQ(
+        unterminatedString->message,
+        "Unterminated string literal"
+    );
+}

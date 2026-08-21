@@ -57,6 +57,14 @@ CompileResult compileWithDiagnostics(
 
 Compiles template text and returns the compiled result together with template diagnostics.
 
+## Conditional-expression diagnostics
+
+Template compilation validates the syntax of `@if(...)` expressions. Invalid expressions are reported through `TemplateDiagnostics` using `DGL-TPL-006`, with a source position inside the condition where parsing failed.
+
+For example, `@if(page >)` reports `Invalid @if expression: Expected value` instead of silently treating the malformed condition as a normal false branch.
+
+See [Template Conditional Expressions](conditional-expressions.md) for the supported operators, literals, precedence rules, and diagnostic behavior.
+
 ## Lifetime and Thread Safety
 
 A `CompiledTemplate` owns its compiled AST. Rendering reads that AST and uses the supplied `RenderContext` for request-specific values.

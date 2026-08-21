@@ -1,4 +1,5 @@
 #include <drogular/template_parser.hpp>
+#include <drogular/template_runtime.hpp>
 
 #include <memory>
 
@@ -52,6 +53,14 @@ NodePtr parseNode(
 
         case TokenType::If: {
             const auto ifPosition = token.position;
+
+            if (const auto error = validateConditionExpression(token.value)) {
+                diagnostics.error(
+                    "DGL-TPL-006",
+                    "Invalid @if expression: " + error->message,
+                    ifPosition + 4 + error->position
+                );
+            }
 
             auto ifNode =
                 std::make_shared<IfNode>(token.value);

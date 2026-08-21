@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/template_diagnostics.hpp>
+
 #include <string>
 #include <string_view>
 #include <vector>
@@ -28,5 +30,13 @@ struct Token {
  * Converts template text into tokens.
  */
 std::vector<Token> tokenize(std::string_view html);
+
+/**
+ * Converts template text into tokens and records tokenizer diagnostics.
+ */
+std::vector<Token> tokenize(
+    std::string_view html,
+    TemplateDiagnostics& diagnostics
+);
 
 } // namespace drogular::template_compiler

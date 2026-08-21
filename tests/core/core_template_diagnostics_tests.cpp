@@ -114,3 +114,38 @@ TEST(CoreTemplateDiagnosticsTests, KeepsAllSeverityLevels) {
     );
     EXPECT_EQ(diagnostics.errors()[0].code, "DGL-TEST-003");
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidIfExpression) {
+    const auto result = compileWithDiagnostics(
+        "<main>\n  @if(page >)Visible@endif\n</main>",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+
+    const auto& diagnostic = result.diagnostics.errors()[0];
+
+    EXPECT_EQ(diagnostic.code, "DGL-TPL-006");
+    EXPECT_EQ(
+        diagnostic.message,
+        "Invalid @if expression: Expected value after '>'"
+    );
+    EXPECT_EQ(diagnostic.location.source, "pages/example.html");
+    EXPECT_EQ(diagnostic.location.line, 2);
+    EXPECT_EQ(diagnostic.location.column, 13);
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsUnterminatedIfDirective) {
+    const auto result = compileWithDiagnostics(
+        "@if(status == \"active)Visible@endif"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-006");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @if expression: Missing closing ')'"
+    );
+}

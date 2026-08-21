@@ -81,6 +81,14 @@ size_t findDirectiveExpressionEnd(
 } // namespace
 
 std::vector<Token> tokenize(std::string_view html) {
+    TemplateDiagnostics diagnostics;
+    return tokenize(html, diagnostics);
+}
+
+std::vector<Token> tokenize(
+    std::string_view html,
+    TemplateDiagnostics& diagnostics
+) {
     std::vector<Token> tokens;
     size_t position = 0;
     size_t textStart = 0;
@@ -163,6 +171,11 @@ std::vector<Token> tokenize(std::string_view html) {
                 findDirectiveExpressionEnd(html, position + 4);
 
             if (end == std::string_view::npos) {
+                diagnostics.error(
+                    "DGL-TPL-006",
+                    "Invalid @if expression: Missing closing ')'",
+                    position
+                );
                 tokens.push_back({
                     .type = TokenType::Text,
                     .value = std::string(html.substr(position)),
