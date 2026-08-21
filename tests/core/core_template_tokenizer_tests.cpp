@@ -50,9 +50,23 @@ TEST(CoreTemplateTokenizerTests, TokenizesForeach) {
 }
 
 TEST(CoreTemplateTokenizerTests, TokenizesComponentTag) {
-    const auto tokens = tokenize("<Card title=\"Hello\" />");
+    const auto tokens =
+        tokenize("<Card title=\"Hello\" />");
 
     ASSERT_EQ(tokens.size(), 1);
     EXPECT_EQ(tokens[0].type, TokenType::ComponentTag);
     EXPECT_EQ(tokens[0].value, "<Card title=\"Hello\" />");
+}
+
+TEST(CoreTemplateTokenizerTests, TokenizesIfExpressionWithNestedParentheses) {
+    const auto tokens = tokenize(
+        "@if((page > 1) && (status == \"active\"))yes@endif"
+    );
+
+    ASSERT_GE(tokens.size(), 3);
+    EXPECT_EQ(tokens[0].type, TokenType::If);
+    EXPECT_EQ(
+        tokens[0].value,
+        "(page > 1) && (status == \"active\")"
+    );
 }

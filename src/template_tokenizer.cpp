@@ -38,6 +38,46 @@ size_t findComponentTagEnd(
     return html.find('>', position);
 }
 
+size_t findDirectiveExpressionEnd(
+    std::string_view html,
+    size_t position
+) {
+    size_t depth = 1;
+    char quote = '\0';
+    bool escaped = false;
+
+    for (size_t i = position; i < html.size(); ++i) {
+        const auto ch = html[i];
+
+        if (quote != '\0') {
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (ch == '\\') {
+                escaped = true;
+                continue;
+            }
+            if (ch == quote) quote = '\0';
+            continue;
+        }
+
+        if (ch == '\'' || ch == '"') {
+            quote = ch;
+            continue;
+        }
+        if (ch == '(') {
+            ++depth;
+            continue;
+        }
+        if (ch == ')' && --depth == 0) {
+            return i;
+        }
+    }
+
+    return std::string_view::npos;
+}
+
 } // namespace
 
 std::vector<Token> tokenize(std::string_view html) {
@@ -83,6 +123,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position = end + 3;
             textStart = position;
+
             continue;
         }
 
@@ -111,6 +152,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position = end + 2;
             textStart = position;
+
             continue;
         }
 
@@ -118,7 +160,7 @@ std::vector<Token> tokenize(std::string_view html) {
             flushText();
 
             const auto end =
-                html.find(")", position + 4);
+                findDirectiveExpressionEnd(html, position + 4);
 
             if (end == std::string_view::npos) {
                 tokens.push_back({
@@ -139,6 +181,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position = end + 1;
             textStart = position;
+
             continue;
         }
 
@@ -153,6 +196,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position += 5;
             textStart = position;
+
             continue;
         }
 
@@ -167,6 +211,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position += 6;
             textStart = position;
+
             continue;
         }
 
@@ -195,6 +240,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position = end + 1;
             textStart = position;
+
             continue;
         }
 
@@ -209,6 +255,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position += 11;
             textStart = position;
+
             continue;
         }
 
@@ -233,6 +280,7 @@ std::vector<Token> tokenize(std::string_view html) {
 
             position = end + 1;
             textStart = position;
+
             continue;
         }
 

@@ -98,3 +98,83 @@ TEST(CoreTemplateRuntimeTests, ResolvesVariableContainingQueryString) {
         "/projects?search=port"
     );
 }
+
+TEST(CoreTemplateRuntimeTests, EvaluatesComparisonOperators) {
+    drogular::RenderContext context;
+    context.set("page", 3);
+    context.set("status", std::string("active"));
+
+    EXPECT_TRUE(evaluateCondition("page > 1", context));
+    EXPECT_TRUE(evaluateCondition("page >= 3", context));
+    EXPECT_TRUE(evaluateCondition("page < 4", context));
+    EXPECT_TRUE(evaluateCondition("page <= 3", context));
+    EXPECT_TRUE(evaluateCondition("page == 3", context));
+    EXPECT_TRUE(evaluateCondition("page != 2", context));
+
+    EXPECT_TRUE(evaluateCondition(
+        "status == \"active\"",
+        context
+    ));
+    EXPECT_FALSE(evaluateCondition(
+        "status == \"disabled\"",
+        context
+    ));
+}
+
+TEST(CoreTemplateRuntimeTests, EvaluatesLogicalOperatorsAndParentheses) {
+    drogular::RenderContext context;
+    context.set("page", 3);
+    context.set("hasNext", true);
+    context.set("disabled", false);
+
+    EXPECT_TRUE(evaluateCondition(
+        "page > 1 && hasNext",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition(
+        "disabled || page == 3",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition(
+        "!disabled",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition(
+        "(page > 1 && hasNext) || disabled",
+        context
+    ));
+    EXPECT_FALSE(evaluateCondition(
+        "!(page > 1)",
+        context
+    ));
+}
+
+TEST(CoreTemplateRuntimeTests, EvaluatesJsonFieldsAndLiterals) {
+    drogular::RenderContext context;
+    Json::Value user;
+    user["role"] = "admin";
+    user["active"] = true;
+    user["score"] = 42;
+    context.set("user", user);
+
+    EXPECT_TRUE(evaluateCondition(
+        "user.role == 'admin' && user.active",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition(
+        "user.score >= 40",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition(
+        "true",
+        context
+    ));
+    EXPECT_FALSE(evaluateCondition(
+        "false",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition(
+        "missing == null",
+        context
+    ));
+}

@@ -193,3 +193,19 @@ TEST(CoreCompiledTemplateTests, RendersFieldsFromCustomStructureStoredAsJson) {
         "portal active"
     );
 }
+
+TEST(CoreCompiledTemplateTests, RendersConditionalExpression) {
+    drogular::RenderContext context;
+    context.set("page", 2);
+    context.set("hasNext", true);
+
+    const auto compiled =
+        drogular::template_compiler::compile(
+            "@if((page > 1) && hasNext)<p>Next</p>@else<p>Done</p>@endif"
+        );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<p>Next</p>"
+    );
+}

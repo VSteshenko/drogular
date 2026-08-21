@@ -665,3 +665,16 @@ TEST(CoreTemplateEngineTests, RendersDeepJsonConditionInsideForeach) {
 
     EXPECT_EQ(html, "Learn Drogular");
 }
+
+TEST(CoreTemplateEngineTests, RendersConditionalExpression) {
+    drogular::RenderContext context;
+    context.set("count", 4);
+    context.set("enabled", true);
+
+    const auto html = drogular::template_engine::render(
+        "@if((count >= 4) && enabled)yes@elseno@endif",
+        context
+    );
+
+    EXPECT_EQ(html, "yes");
+}

@@ -160,16 +160,6 @@ std::string renderNode(
             const auto ifNode =
                 std::dynamic_pointer_cast<IfNode>(node);
 
-            const auto conditionHtml =
-                template_engine::render(
-                    "@if(" + ifNode->condition() + ")1@else0@endif",
-                    context
-                );
-
-            if (conditionHtml == "1") {
-                return renderNodes(ifNode->trueBranch(), context);
-            }
-
             if (evaluateCondition(ifNode->condition(), context)) {
                 return renderNodes(ifNode->trueBranch(), context);
             }

@@ -1,5 +1,6 @@
 #include <drogular/template_engine.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/template_runtime.hpp>
 
 #include <optional>
 #include <string>
@@ -316,50 +317,42 @@ std::string renderForeachBlocks(
     return output;
 }
 
-/**
- * Resolves a template condition from RenderContext.
- */
-bool conditionToBool(
-    const RenderContext& context,
-    const std::string& key
+size_t findConditionEnd(
+    std::string_view html,
+    size_t position
 ) {
-    const auto resolved = resolveValue(context, key);
+    size_t depth = 1;
+    char quote = '\0';
+    bool escaped = false;
 
-    if (resolved.type == ResolvedValue::Type::String) {
-        return !resolved.stringValue.empty() &&
-               resolved.stringValue != "false" &&
-               resolved.stringValue != "0";
+    for (size_t i = position; i < html.size(); ++i) {
+        const auto ch = html[i];
+
+        if (quote != '\0') {
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (ch == '\\') {
+                escaped = true;
+                continue;
+            }
+            if (ch == quote) quote = '\0';
+            continue;
+        }
+
+        if (ch == '\'' || ch == '"') {
+            quote = ch;
+            continue;
+        }
+        if (ch == '(') {
+            ++depth;
+            continue;
+        }
+        if (ch == ')' && --depth == 0) return i;
     }
 
-    if (resolved.type == ResolvedValue::Type::Json) {
-        const auto& value = resolved.jsonValue;
-
-        if (value.isBool()) {
-            return value.asBool();
-        }
-
-        if (value.isString()) {
-            return !value.asString().empty();
-        }
-
-        if (value.isInt()) {
-            return value.asInt() != 0;
-        }
-
-        if (value.isUInt()) {
-            return value.asUInt() != 0;
-        }
-
-        if (value.isDouble()) {
-            return value.asDouble() != 0.0;
-        }
-
-        if (value.isArray() || value.isObject()) {
-            return !value.empty();
-        }
-    }
-
-    return false;
+    return std::string_view::npos;
 }
 
 /**
@@ -382,7 +375,7 @@ std::string renderIfBlocks(
 
         output.append(html.substr(position, ifStart - position));
 
-        const auto conditionEnd = html.find(")", ifStart + 4);
+        const auto conditionEnd = findConditionEnd(html, ifStart + 4);
 
         if (conditionEnd == std::string_view::npos) {
             output.append(html.substr(ifStart));
@@ -416,7 +409,8 @@ std::string renderIfBlocks(
                           blockEnd - elseStart - std::string_view("@else").size())
             : std::string_view{};
 
-        const auto condition = conditionToBool(context, conditionName);
+        const auto condition =
+            template_compiler::evaluateCondition(conditionName, context);
 
         if (condition) {
             output.append(trueBlock);
