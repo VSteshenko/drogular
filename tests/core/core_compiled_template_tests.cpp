@@ -209,3 +209,79 @@ TEST(CoreCompiledTemplateTests, RendersConditionalExpression) {
         "<p>Next</p>"
     );
 }
+
+TEST(CoreCompiledTemplateTests, RendersForeachWithWhereCondition) {
+    drogular::RenderContext context;
+
+    Json::Value todos(Json::arrayValue);
+
+    Json::Value first;
+    first["title"] = "A";
+    first["completed"] = false;
+    todos.append(first);
+
+    Json::Value second;
+    second["title"] = "B";
+    second["completed"] = true;
+    todos.append(second);
+
+    Json::Value third;
+    third["title"] = "C";
+    third["completed"] = false;
+    todos.append(third);
+
+    context.set("todos", todos);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(todo in todos where !todo.completed)"
+        "{{ todo.title }}"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "AC");
+}
+
+TEST(CoreCompiledTemplateTests, ExposesForeachLoopMetadata) {
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    items.append("A");
+    items.append("B");
+    items.append("C");
+    context.set("items", items);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(item in items)"
+        "{{ loop.index }}:{{ loop.number }}:{{ loop.count }}:"
+        "{{ loop.first }}:{{ loop.last }}={{ item }};"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "0:1:3:true:false=A;"
+        "1:2:3:false:false=B;"
+        "2:3:3:false:true=C;"
+    );
+}
+
+TEST(CoreCompiledTemplateTests, LoopMetadataUsesFilteredSequence) {
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    for (int value = 1; value <= 4; ++value) {
+        Json::Value item;
+        item["value"] = value;
+        item["visible"] = value % 2 == 0;
+        items.append(item);
+    }
+    context.set("items", items);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(item in items where item.visible)"
+        "{{ loop.number }}/{{ loop.count }}={{ item.value }};"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "1/2=2;2/2=4;");
+}

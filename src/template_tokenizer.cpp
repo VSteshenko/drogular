@@ -232,9 +232,14 @@ std::vector<Token> tokenize(
             flushText();
 
             const auto end =
-                html.find(")", position + 9);
+                findDirectiveExpressionEnd(html, position + 9);
 
             if (end == std::string_view::npos) {
+                diagnostics.error(
+                    "DGL-TPL-007",
+                    "Invalid @foreach expression: Missing closing ')'",
+                    position
+                );
                 tokens.push_back({
                     .type = TokenType::Text,
                     .value = std::string(html.substr(position)),

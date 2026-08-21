@@ -149,3 +149,47 @@ TEST(CoreTemplateDiagnosticsTests, DetectsUnterminatedIfDirective) {
         "Invalid @if expression: Missing closing ')'"
     );
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidForeachExpression) {
+    const auto result = compileWithDiagnostics(
+        "@foreach(item items){{ item }}@endforeach",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-007");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @foreach expression: Expected 'in'"
+    );
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidForeachWhereCondition) {
+    const auto result = compileWithDiagnostics(
+        "@foreach(item in items where item.score >){{ item }}@endforeach",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-008");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @foreach where condition: Expected value after '>'"
+    );
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsUnterminatedForeachDirective) {
+    const auto result = compileWithDiagnostics(
+        "@foreach(item in items where (item.active){{ item }}@endforeach"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-007");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @foreach expression: Missing closing ')'"
+    );
+}

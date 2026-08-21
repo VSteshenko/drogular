@@ -678,3 +678,43 @@ TEST(CoreTemplateEngineTests, RendersConditionalExpression) {
 
     EXPECT_EQ(html, "yes");
 }
+
+TEST(CoreTemplateEngineTests, RendersForeachWithWhereCondition) {
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    for (int value = 1; value <= 3; ++value) {
+        Json::Value item;
+        item["value"] = value;
+        item["visible"] = value != 2;
+        items.append(item);
+    }
+    context.set("items", items);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(item in items where item.visible)"
+        "{{ item.value }}"
+        "@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "13");
+}
+
+TEST(CoreTemplateEngineTests, ExposesForeachLoopMetadata) {
+    drogular::RenderContext context;
+
+    Json::Value items(Json::arrayValue);
+    items.append("A");
+    items.append("B");
+    context.set("items", items);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(item in items)"
+        "{{ loop.number }}/{{ loop.count }}:{{ loop.first }}:{{ loop.last }}={{ item }};"
+        "@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "1/2:true:false=A;2/2:false:true=B;");
+}

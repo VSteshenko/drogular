@@ -70,3 +70,17 @@ TEST(CoreTemplateTokenizerTests, TokenizesIfExpressionWithNestedParentheses) {
         "(page > 1) && (status == \"active\")"
     );
 }
+
+TEST(CoreTemplateTokenizerTests, TokenizesForeachWhereWithParentheses) {
+    const auto tokens = tokenize(
+        "@foreach(item in items where item.active && (item.score >= 10))"
+        "{{ item.name }}@endforeach"
+    );
+
+    ASSERT_GE(tokens.size(), 3);
+    EXPECT_EQ(tokens[0].type, TokenType::Foreach);
+    EXPECT_EQ(
+        tokens[0].value,
+        "item in items where item.active && (item.score >= 10)"
+    );
+}

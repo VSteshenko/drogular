@@ -208,6 +208,11 @@ std::string escapeHtml(std::string_view value) {
     return output;
 }
 
+size_t findConditionEnd(
+    std::string_view html,
+    size_t position
+);
+
 std::string renderForeachBlocks(
     std::string_view html,
     const RenderContext& context
@@ -216,102 +221,110 @@ std::string renderForeachBlocks(
     size_t position = 0;
 
     while (position < html.size()) {
-        const auto foreachStart =
-            html.find("@foreach(", position);
+        const auto foreachStart = html.find("@foreach(", position);
 
         if (foreachStart == std::string_view::npos) {
             output.append(html.substr(position));
             break;
         }
 
-        output.append(
-            html.substr(
-                position,
-                foreachStart - position
-            )
-        );
+        output.append(html.substr(position, foreachStart - position));
 
-        const auto headerEnd =
-            html.find(")", foreachStart);
+        const auto headerEnd = findConditionEnd(html, foreachStart + 9);
 
         if (headerEnd == std::string_view::npos) {
             output.append(html.substr(foreachStart));
             break;
         }
 
-        const auto blockEnd =
-            html.find("@endforeach", headerEnd);
+        const auto blockEnd = html.find("@endforeach", headerEnd);
 
         if (blockEnd == std::string_view::npos) {
             output.append(html.substr(foreachStart));
             break;
         }
 
+        const auto rawExpression = html.substr(
+            foreachStart + 9,
+            headerEnd - foreachStart - 9
+        );
         const auto expression =
-            trim(
-                html.substr(
-                    foreachStart + 9,
-                    headerEnd - foreachStart - 9
-                )
-            );
+            template_compiler::parseForeachExpression(rawExpression);
 
-        const auto inPos =
-            expression.find(" in ");
-
-        if (inPos == std::string::npos) {
+        if (!expression.has_value()) {
             output.append(html.substr(foreachStart));
             break;
         }
 
-        const auto itemName =
-            trim(expression.substr(0, inPos));
+        const auto templateBlock = std::string(
+            html.substr(headerEnd + 1, blockEnd - headerEnd - 1)
+        );
 
-        const auto collectionName =
-            trim(expression.substr(inPos + 4));
+        const auto makeLoop = [](std::size_t index, std::size_t count) {
+            Json::Value loop(Json::objectValue);
+            loop["index"] = static_cast<Json::UInt64>(index);
+            loop["number"] = static_cast<Json::UInt64>(index + 1);
+            loop["first"] = index == 0;
+            loop["last"] = index + 1 == count;
+            loop["count"] = static_cast<Json::UInt64>(count);
+            return loop;
+        };
 
-        const auto templateBlock =
-            std::string(
-                html.substr(
-                    headerEnd + 1,
-                    blockEnd - headerEnd - 1
-                )
-            );
+        if (const auto stringValues =
+            context.get<std::vector<std::string>>(expression->collection)) {
+            std::vector<std::size_t> selected;
+            selected.reserve(stringValues->size());
 
-        const auto stringValues =
-            context.get<std::vector<std::string>>(
-                collectionName
-            );
+            for (std::size_t index = 0; index < stringValues->size(); ++index) {
+                if (expression->condition.has_value()) {
+                    auto conditionContext = context.createChild();
+                    conditionContext.set(expression->variable, (*stringValues)[index]);
+                    if (!template_compiler::evaluateCondition(
+                            *expression->condition,
+                            conditionContext)) {
+                        continue;
+                    }
+                }
+                selected.push_back(index);
+            }
 
-        if (stringValues.has_value()) {
-            for (const auto& value : *stringValues) {
+            for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto itemContext = context.createChild();
-
-                itemContext.set(itemName, value);
-
-                output += render(
-                    templateBlock,
-                    itemContext
+                itemContext.set(
+                    expression->variable,
+                    (*stringValues)[selected[index]]
                 );
+                itemContext.set("loop", makeLoop(index, selected.size()));
+                output += render(templateBlock, itemContext);
             }
         } else if (const auto jsonValues =
-            context.get<Json::Value>(collectionName);
-            jsonValues.has_value() && jsonValues->isArray())
-        {
+            template_compiler::resolveJsonValue(expression->collection, context);
+            jsonValues.has_value() && jsonValues->isArray()) {
+            std::vector<Json::Value> selected;
+            selected.reserve(jsonValues->size());
+
             for (const auto& value : *jsonValues) {
+                if (expression->condition.has_value()) {
+                    auto conditionContext = context.createChild();
+                    conditionContext.set(expression->variable, value);
+                    if (!template_compiler::evaluateCondition(
+                            *expression->condition,
+                            conditionContext)) {
+                        continue;
+                    }
+                }
+                selected.push_back(value);
+            }
+
+            for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto itemContext = context.createChild();
-
-                itemContext.set(itemName, value);
-
-                output += render(
-                    templateBlock,
-                    itemContext
-                );
+                itemContext.set(expression->variable, selected[index]);
+                itemContext.set("loop", makeLoop(index, selected.size()));
+                output += render(templateBlock, itemContext);
             }
         }
 
-        position =
-            blockEnd +
-            std::string_view("@endforeach").size();
+        position = blockEnd + std::string_view("@endforeach").size();
     }
 
     return output;

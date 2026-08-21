@@ -31,6 +31,36 @@ struct ConditionExpressionError {
     std::size_t position = 0;
 };
 
+struct ForeachExpression {
+    std::string variable;
+    std::string collection;
+    std::optional<std::string> condition;
+    std::size_t conditionPosition = 0;
+};
+
+struct ForeachExpressionError {
+    std::string message;
+    std::size_t position = 0;
+};
+
+/**
+ * Parses a @foreach expression.
+ *
+ * Supported forms:
+ *   item in items
+ *   item in items where item.active
+ */
+std::optional<ForeachExpression> parseForeachExpression(
+    std::string_view expression
+);
+
+/**
+ * Validates the structure of a @foreach expression.
+ */
+std::optional<ForeachExpressionError> validateForeachExpression(
+    std::string_view expression
+);
+
 /**
  * Validates the syntax of a template condition.
  *

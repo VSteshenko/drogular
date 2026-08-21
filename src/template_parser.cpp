@@ -110,6 +110,26 @@ NodePtr parseNode(
         case TokenType::Foreach: {
             const auto foreachPosition = token.position;
 
+            if (const auto error = validateForeachExpression(token.value)) {
+                diagnostics.error(
+                    "DGL-TPL-007",
+                    "Invalid @foreach expression: " + error->message,
+                    foreachPosition + 9 + error->position
+                );
+            } else if (const auto expression = parseForeachExpression(token.value);
+                expression.has_value() && expression->condition.has_value()
+            ) {
+                if (const auto error =
+                    validateConditionExpression(*expression->condition)
+                ) {
+                    diagnostics.error(
+                        "DGL-TPL-008",
+                        "Invalid @foreach where condition: " + error->message,
+                        foreachPosition + 9 + expression->conditionPosition + error->position
+                    );
+                }
+            }
+
             auto foreachNode =
                 std::make_shared<ForeachNode>(token.value);
 

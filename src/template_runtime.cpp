@@ -622,6 +622,112 @@ private:
 
 } // namespace
 
+std::optional<ForeachExpressionError> validateForeachExpression(
+    std::string_view expression
+) {
+    const auto inPosition = expression.find(" in ");
+
+    if (inPosition == std::string_view::npos) {
+        return ForeachExpressionError{
+            .message = "Expected 'in'",
+            .position = expression.size()
+        };
+    }
+
+    const auto variable = trim(expression.substr(0, inPosition));
+    if (variable.empty()) {
+        return ForeachExpressionError{
+            .message = "Expected loop variable before 'in'",
+            .position = 0
+        };
+    }
+
+    if (!(std::isalpha(static_cast<unsigned char>(variable.front())) ||
+        variable.front() == '_')
+    ) {
+        return ForeachExpressionError{
+            .message = "Invalid loop variable '" + variable + "'",
+            .position = 0
+        };
+    }
+
+    for (std::size_t index = 1; index < variable.size(); ++index) {
+        const auto ch = static_cast<unsigned char>(variable[index]);
+        if (!std::isalnum(ch) && variable[index] != '_') {
+            return ForeachExpressionError{
+                .message = "Invalid loop variable '" + variable + "'",
+                .position = index
+            };
+        }
+    }
+
+    const auto remainderStart = inPosition + 4;
+    const auto remainder = expression.substr(remainderStart);
+    const auto wherePosition = remainder.find(" where ");
+    const auto collectionPart = wherePosition == std::string_view::npos
+        ? remainder
+        : remainder.substr(0, wherePosition);
+    const auto collection = trim(collectionPart);
+
+    if (collection.empty()) {
+        return ForeachExpressionError{
+            .message = "Expected collection after 'in'",
+            .position = remainderStart
+        };
+    }
+
+    if (wherePosition != std::string_view::npos) {
+        const auto conditionStart = remainderStart + wherePosition + 7;
+        const auto condition = trim(expression.substr(conditionStart));
+
+        if (condition.empty()) {
+            return ForeachExpressionError{
+                .message = "Expected condition after 'where'",
+                .position = conditionStart
+            };
+        }
+    }
+
+    return std::nullopt;
+}
+
+std::optional<ForeachExpression> parseForeachExpression(
+    std::string_view expression
+) {
+    if (validateForeachExpression(expression).has_value()) {
+        return std::nullopt;
+    }
+
+    const auto inPosition = expression.find(" in ");
+    const auto remainderStart = inPosition + 4;
+    const auto remainder = expression.substr(remainderStart);
+    const auto wherePosition = remainder.find(" where ");
+
+    ForeachExpression result{
+        .variable = trim(expression.substr(0, inPosition)),
+        .collection = trim(
+            wherePosition == std::string_view::npos
+                ? remainder
+                : remainder.substr(0, wherePosition)
+        )
+    };
+
+    if (wherePosition != std::string_view::npos) {
+        const auto rawConditionStart = remainderStart + wherePosition + 7;
+        auto conditionStart = rawConditionStart;
+        while (conditionStart < expression.size() &&
+            std::isspace(static_cast<unsigned char>(expression[conditionStart]))
+        ) {
+            ++conditionStart;
+        }
+
+        result.condition = trim(expression.substr(rawConditionStart));
+        result.conditionPosition = conditionStart;
+    }
+
+    return result;
+}
+
 std::optional<ConditionExpressionError> validateConditionExpression(
     std::string_view expression
 ) {

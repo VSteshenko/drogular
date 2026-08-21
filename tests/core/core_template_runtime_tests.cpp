@@ -203,3 +203,38 @@ TEST(CoreTemplateRuntimeTests, ValidatesConditionExpressionSyntax) {
         "Unterminated string literal"
     );
 }
+
+TEST(CoreTemplateRuntimeTests, ParsesForeachExpressionWithWhereCondition) {
+    const auto expression = parseForeachExpression(
+        "todo in todos where !todo.completed && todo.priority >= 2"
+    );
+
+    ASSERT_TRUE(expression.has_value());
+    EXPECT_EQ(expression->variable, "todo");
+    EXPECT_EQ(expression->collection, "todos");
+    ASSERT_TRUE(expression->condition.has_value());
+    EXPECT_EQ(
+        *expression->condition,
+        "!todo.completed && todo.priority >= 2"
+    );
+}
+
+TEST(CoreTemplateRuntimeTests, ValidatesForeachExpressionSyntax) {
+    EXPECT_FALSE(validateForeachExpression("item in items").has_value());
+    EXPECT_FALSE(
+        validateForeachExpression("item in items where item.active").has_value()
+    );
+
+    const auto missingIn = validateForeachExpression("item items");
+    ASSERT_TRUE(missingIn.has_value());
+    EXPECT_EQ(missingIn->message, "Expected 'in'");
+
+    const auto missingCollection = validateForeachExpression("item in ");
+    ASSERT_TRUE(missingCollection.has_value());
+    EXPECT_EQ(missingCollection->message, "Expected collection after 'in'");
+
+    const auto missingCondition =
+        validateForeachExpression("item in items where ");
+    ASSERT_TRUE(missingCondition.has_value());
+    EXPECT_EQ(missingCondition->message, "Expected condition after 'where'");
+}

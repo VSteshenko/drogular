@@ -1,6 +1,5 @@
 #include <drogular/compiled_template.hpp>
 #include <drogular/component_renderer.hpp>
-#include <drogular/template_engine.hpp>
 #include <drogular/template_parser.hpp>
 #include <drogular/template_tokenizer.hpp>
 #include <drogular/template_runtime.hpp>
@@ -11,43 +10,6 @@
 namespace drogular::template_compiler {
 
 namespace {
-
-struct ForeachExpression {
-    std::string variable;
-    std::string collection;
-};
-
-std::string trim(std::string_view value) {
-    size_t start = 0;
-    size_t end = value.size();
-
-    while (start < end &&
-           std::isspace(static_cast<unsigned char>(value[start]))) {
-        ++start;
-           }
-
-    while (end > start &&
-           std::isspace(static_cast<unsigned char>(value[end - 1]))) {
-        --end;
-           }
-
-    return std::string(value.substr(start, end - start));
-}
-
-std::optional<ForeachExpression> parseForeachExpression(
-    std::string_view expression
-) {
-    const auto separator = expression.find(" in ");
-
-    if (separator == std::string_view::npos) {
-        return std::nullopt;
-    }
-
-    return ForeachExpression{
-        .variable = trim(expression.substr(0, separator)),
-        .collection = trim(expression.substr(separator + 4))
-    };
-}
 
 std::string nodesToTemplate(
     const std::vector<NodePtr>& nodes
@@ -178,21 +140,46 @@ std::string renderNode(
                 return "";
             }
 
+            const auto makeLoop = [](std::size_t index, std::size_t count) {
+                Json::Value loop(Json::objectValue);
+                loop["index"] = static_cast<Json::UInt64>(index);
+                loop["number"] = static_cast<Json::UInt64>(index + 1);
+                loop["first"] = index == 0;
+                loop["last"] = index + 1 == count;
+                loop["count"] = static_cast<Json::UInt64>(count);
+
+                return loop;
+            };
+
             if (const auto stringValues =
                 context.get<std::vector<std::string>>(expression->collection)) {
-                std::string output;
+                std::vector<std::size_t> selected;
+                selected.reserve(stringValues->size());
 
-                for (const auto& item : *stringValues) {
-                    auto childContext = context.createChild();
-
-                    childContext.set(expression->variable, item);
-
-                    output += renderNodes(
-                        foreachNode->body(),
-                        childContext
-                    );
+                for (std::size_t index = 0; index < stringValues->size(); ++index) {
+                    if (expression->condition.has_value()) {
+                        auto conditionContext = context.createChild();
+                        conditionContext.set(expression->variable, (*stringValues)[index]);
+                        if (!evaluateCondition(*expression->condition, conditionContext)) {
+                            continue;
+                        }
+                    }
+                    selected.push_back(index);
                 }
 
+                std::string output;
+                for (std::size_t renderedIndex = 0;
+                     renderedIndex < selected.size();
+                     ++renderedIndex
+                ) {
+                    auto childContext = context.createChild();
+                    childContext.set(
+                        expression->variable,
+                        (*stringValues)[selected[renderedIndex]]
+                    );
+                    childContext.set("loop", makeLoop(renderedIndex, selected.size()));
+                    output += renderNodes(foreachNode->body(), childContext);
+                }
                 return output;
             }
 
@@ -203,19 +190,27 @@ std::string renderNode(
                 return "";
             }
 
-            std::string output;
+            std::vector<Json::Value> selected;
+            selected.reserve(collection->size());
 
             for (const auto& item : *collection) {
-                auto childContext = context.createChild();
-
-                childContext.set(expression->variable, item);
-
-                output += renderNodes(
-                    foreachNode->body(),
-                    childContext
-                );
+                if (expression->condition.has_value()) {
+                    auto conditionContext = context.createChild();
+                    conditionContext.set(expression->variable, item);
+                    if (!evaluateCondition(*expression->condition, conditionContext)) {
+                        continue;
+                    }
+                }
+                selected.push_back(item);
             }
 
+            std::string output;
+            for (std::size_t index = 0; index < selected.size(); ++index) {
+                auto childContext = context.createChild();
+                childContext.set(expression->variable, selected[index]);
+                childContext.set("loop", makeLoop(index, selected.size()));
+                output += renderNodes(foreachNode->body(), childContext);
+            }
             return output;
         }
 
