@@ -163,35 +163,7 @@ target_link_libraries(drogular_project_generator_tests
     GTest::gtest_main
 )
 
-add_executable(drogular_cli_tests
-    cli/cli_template_engine_tests.cpp
-    cli/cli_project_generator_tests.cpp
-    ../tools/drogular/template_engine.cpp
-    ../tools/drogular/project_generator.cpp
-)
-
-target_compile_definitions(drogular_cli_tests
-    PRIVATE
-    DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
-)
-
-target_include_directories(drogular_cli_tests
-    PRIVATE
-    ${CMAKE_SOURCE_DIR}/tools/drogular
-)
-
-target_compile_features(drogular_cli_tests
-    PRIVATE
-    cxx_std_20
-)
-
-target_link_libraries(drogular_cli_tests
-    PRIVATE
-    GTest::gtest_main
-)
-
 include(GoogleTest)
 
 gtest_discover_tests(drogular_tests)
-gtest_discover_tests(drogular_cli_tests)
 gtest_discover_tests(drogular_project_generator_tests)

@@ -1,27 +1,20 @@
+#include "embedded_template_source.hpp"
 #include "project_generator.hpp"
+#include "template_registry.hpp"
 
-#include <cstdint>
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <vector>
-
-#if defined(__APPLE__)
-#include <mach-o/dyld.h>
-#endif
 
 #ifndef DROGULAR_CLI_VERSION
 #define DROGULAR_CLI_VERSION "development"
 #endif
 
-#ifndef DROGULAR_CLI_TEMPLATE_DIR
-#define DROGULAR_CLI_TEMPLATE_DIR ""
-#endif
-
-#ifndef DROGULAR_CLI_INSTALL_TEMPLATE_DIR
-#define DROGULAR_CLI_INSTALL_TEMPLATE_DIR ""
+#ifndef DROGULAR_CLI_GIT_REF
+#define DROGULAR_CLI_GIT_REF "main"
 #endif
 
 namespace fs = std::filesystem;
@@ -57,58 +50,29 @@ bool validProjectName(std::string_view name) {
     return true;
 }
 
-fs::path executablePath(const fs::path& fallback) {
-#if defined(__APPLE__)
-    std::uint32_t size = 0;
-    _NSGetExecutablePath(nullptr, &size);
+std::string projectNamespace(const std::string& projectName) {
+    std::string result;
+    result.reserve(projectName.size() + 1);
 
-    std::vector<char> buffer(size);
-    if (_NSGetExecutablePath(buffer.data(), &size) == 0) {
-        return fs::weakly_canonical(fs::path(buffer.data()));
+    if (!projectName.empty() && projectName.front() >= '0' && projectName.front() <= '9') {
+        result.push_back('_');
     }
-#elif defined(__linux__)
-    {
-        std::error_code error;
-        const fs::path path = fs::read_symlink("/proc/self/exe", error);
-        if (!error) {
-            return path;
-        }
-    }
-#endif
 
-    std::error_code error;
-    const fs::path path = fs::absolute(fallback, error);
-    return error ? fallback : path;
+    for (const char ch : projectName) {
+        result.push_back(ch == '-' ? '_' : ch);
+    }
+
+    return result;
 }
 
-fs::path findTemplatesRoot(const fs::path& executable) {
-    std::vector<fs::path> candidates;
-
-    const fs::path resolvedExecutable = executablePath(executable);
-    candidates.push_back(
-        resolvedExecutable.parent_path() / ".." / "share" / "drogular" / "templates");
-
-    if (std::string_view(DROGULAR_CLI_TEMPLATE_DIR).size() > 0) {
-        candidates.emplace_back(DROGULAR_CLI_TEMPLATE_DIR);
-    }
-
-    if (std::string_view(DROGULAR_CLI_INSTALL_TEMPLATE_DIR).size() > 0) {
-        candidates.emplace_back(DROGULAR_CLI_INSTALL_TEMPLATE_DIR);
-    }
-
-    candidates.push_back(fs::current_path() / "tools" / "drogular" / "templates");
-    candidates.push_back(fs::current_path() / "templates");
-
-    for (const auto& candidate : candidates) {
-        if (fs::is_directory(candidate / "minimal")) {
-            return fs::weakly_canonical(candidate);
-        }
-    }
-
-    throw std::runtime_error("Drogular CLI templates could not be found.");
+std::string currentYear() {
+    const auto today = std::chrono::floor<std::chrono::days>(
+        std::chrono::system_clock::now());
+    const std::chrono::year_month_day date{today};
+    return std::to_string(static_cast<int>(date.year()));
 }
 
-int createProject(const std::string& name, const fs::path& executable) {
+int createProject(const std::string& name) {
     if (!validProjectName(name)) {
         std::cerr << "Invalid project name: " << name << '\n';
         std::cerr << "Use only letters, digits, '-' and '_'.\n";
@@ -116,11 +80,22 @@ int createProject(const std::string& name, const fs::path& executable) {
     }
 
     try {
-        drogular::cli::ProjectGenerator generator(
-            findTemplatesRoot(executable),
-            DROGULAR_CLI_VERSION,
-            DROGULAR_CLI_GIT_REF);
-        generator.generate(name);
+        drogular::generation::EmbeddedTemplateSource source;
+        drogular::generation::TemplateRegistry registry;
+        registry.load(source);
+
+        drogular::generation::ProjectGenerator generator(registry, source);
+        generator.generate({
+            .templateId = "minimal",
+            .destination = fs::path{name},
+            .variables = {
+                {"PROJECT_NAME", name},
+                {"PROJECT_NAMESPACE", projectNamespace(name)},
+                {"DROGULAR_VERSION", DROGULAR_CLI_VERSION},
+                {"DROGULAR_GIT_REF", DROGULAR_CLI_GIT_REF},
+                {"YEAR", currentYear()},
+            },
+        });
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
         return 1;
@@ -136,7 +111,7 @@ int createProject(const std::string& name, const fs::path& executable) {
     return 0;
 }
 
-}
+} // namespace
 
 int main(int argc, char* argv[]) {
     if (argc == 2) {
@@ -154,7 +129,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (argc == 3 && std::string_view(argv[1]) == "new") {
-        return createProject(argv[2], argv[0]);
+        return createProject(argv[2]);
     }
 
     printHelp();
