@@ -754,6 +754,37 @@ TEST(CoreTemplateEngineTests, SupportsContinueInsideForeach) {
     EXPECT_EQ(html, "13");
 }
 
+TEST(CoreTemplateEngineTests, ContinueOnlySkipsNearestForeachIteration) {
+    drogular::RenderContext context;
+
+    Json::Value rows(Json::arrayValue);
+    for (int rowValue = 1; rowValue <= 2; ++rowValue) {
+        Json::Value row;
+        row["value"] = rowValue;
+        Json::Value cells(Json::arrayValue);
+        cells.append("A");
+        cells.append("B");
+        cells.append("C");
+        row["cells"] = cells;
+        rows.append(row);
+    }
+    context.set("rows", rows);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(row in rows)"
+        "{{ row.value }}["
+        "@foreach(cell in row.cells)"
+        "@if(cell == \"B\")@continue@endif"
+        "{{ cell }}"
+        "@endforeach"
+        "];"
+        "@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "1[AC];2[AC];");
+}
+
 TEST(CoreTemplateEngineTests, SupportsBreakInsideForeach) {
     drogular::RenderContext context;
     Json::Value items(Json::arrayValue);
