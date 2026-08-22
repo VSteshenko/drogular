@@ -156,6 +156,12 @@ Low-level calls to `evaluateCondition()` remain safe: an invalid expression eval
 @endif
 ```
 
+## Architecture
+
+`@if(...)` does not implement a separate condition parser. Conditions are parsed into the shared Template Expression AST and evaluated through `template_expression::ExpressionValue`. The compatibility functions `validateConditionExpression()` and `evaluateCondition()` delegate to that engine. 
+
+See [Template Expression Engine](../../architecture/template_expression_engine.md).
+
 ## Related APIs
 
 - [`CompiledTemplate`](compiled-template.md)

@@ -12,6 +12,7 @@ Rendering connects pages, components, templates, request data, application servi
 - [`GraphQLResult`](graphql-result.md) — stores typed GraphQL-derived values associated with a render context.
 - [`TemplateRenderable`](template-renderable.md) — shared template pipeline used by template-backed pages and components.
 - [`template_compiler::CompiledTemplate`](compiled-template.md) — low-level compiled-template representation and compilation entry points.
+- [Template Expression Engine](../../architecture/template_expression_engine.md) — shared expression lexer/parser/AST/evaluator used by template control flow.
 - [Template Conditional Expressions](conditional-expressions.md) — `@if(...)` comparisons, logical operators, literals, grouping, and diagnostics.
 - [Template `@foreach`](foreach.md) — filtering, loop metadata, `@empty`, `@continue`, `@break`, and loop diagnostics.
 

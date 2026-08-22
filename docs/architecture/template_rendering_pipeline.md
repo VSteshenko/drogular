@@ -22,8 +22,9 @@ Every template-backed render executes the same stages:
 3. Compose `layoutPath()` around `@content` when a layout is provided.
 4. Process `@include` directives.
 5. Compile the template into the AST and reuse `TemplateCache`.
-6. Render expressions, conditions and loops against `RenderContext`.
-7. Expand registered component tags recursively.
+6. Parse/evaluate directive expressions through the shared Expression Engine.
+7. Render conditions and loops against `RenderContext`.
+8. Expand registered component tags recursively.
 
 `TemplateComponent` applies its inputs to the component render context before
 entering this pipeline. `TemplatePage` enters the pipeline directly.
@@ -63,3 +64,9 @@ would increase the stable API surface before 1.0.
 `TemplateComponent` instances created from the component registry are created for each component expansion. They use the same rendering pipeline but remain distinct component objects with their own lifecycle.
 
 See [Request Lifecycle](request-lifecycle.md) for the ownership model around Pages, child render contexts, services, and component lifecycle.
+
+## Expression engine
+
+Template directives share a dedicated lexer, parser, expression AST, evaluator, and `ExpressionValue` abstraction. This prevents `@if`, `@foreach where`, and future directives from growing separate expression grammars. 
+
+See [Template Expression Engine](template_expression_engine.md).

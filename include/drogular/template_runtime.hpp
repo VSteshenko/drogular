@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/component.hpp>
+#include <drogular/template_expression.hpp>
 
 #include <cstddef>
 #include <optional>
@@ -26,10 +27,7 @@ std::optional<std::string> resolveRawVariable(
     const RenderContext& context
 );
 
-struct ConditionExpressionError {
-    std::string message;
-    std::size_t position = 0;
-};
+using ConditionExpressionError = template_expression::ExpressionError;
 
 struct ForeachExpression {
     std::string variable;
