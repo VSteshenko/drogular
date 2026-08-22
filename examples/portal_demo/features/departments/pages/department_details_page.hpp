@@ -104,7 +104,6 @@ public:
             members.append(std::move(item));
         }
         context.set("departmentMembers", members);
-        context.set("hasDepartmentMembers", !members.empty());
 
         Json::Value candidates(Json::arrayValue);
         for (const auto& user : users) {

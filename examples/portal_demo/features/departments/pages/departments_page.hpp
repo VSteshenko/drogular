@@ -203,10 +203,6 @@ public:
             departments
         );
         context.set(
-            "hasDepartments",
-            !departments.empty()
-        );
-        context.set(
             "departmentTotalItems",
             result.totalItems
         );

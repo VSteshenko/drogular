@@ -134,7 +134,6 @@
     </fieldset>
 </form>
 
-@if(hasDepartments)
 <ul>
     @foreach(department in departments)
     <li>
@@ -153,13 +152,10 @@
         </a>
         @endif
     </li>
+    @empty
+    <li>{{ departmentsEmpty }}</li>
     @endforeach
 </ul>
-@else
-<p>
-    {{ departmentsEmpty }}
-</p>
-@endif
 
 <PortalPagination
     model="pagination"

@@ -18,4 +18,28 @@
 <p>
     Role: {{ currentRole }}
 </p>
+
+<h3>{{ dashboardQuickLinks }}</h3>
+@foreach(section in dashboardSections where section.visible)
+<section
+    data-section-number="{{ loop.number }}"
+    data-loop-depth="{{ loop.depth }}"
+>
+    <h4>{{ section.title }}</h4>
+    <ul>
+        @foreach(link in section.links where link.visible)
+        <li
+            data-link-number="{{ loop.parent.number }}.{{ loop.number }}"
+            data-loop-depth="{{ loop.depth }}"
+        >
+            <a href="{{ link.url }}">{{ link.title }}</a>
+        </li>
+        @empty
+        <li>{{ dashboardNoLinks }}</li>
+        @endforeach
+    </ul>
+</section>
+@empty
+<p>{{ dashboardNoLinks }}</p>
+@endforeach
 @endif

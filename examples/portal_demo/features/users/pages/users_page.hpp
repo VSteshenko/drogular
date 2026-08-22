@@ -243,7 +243,6 @@ public:
         );
 
         context.set("users", users);
-        context.set("hasUsers", !users.empty());
         context.setJson("pagination", pagination);
         context.set("userTotalItems", pageResult.totalItems);
     }

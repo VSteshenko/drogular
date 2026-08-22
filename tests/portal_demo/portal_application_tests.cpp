@@ -25,6 +25,7 @@
 #include "features/departments/pages/departments_page.hpp"
 #include "features/departments/pages/department_details_page.hpp"
 #include "features/departments/pages/department_edit_page.hpp"
+#include "features/dashboard/pages/dashboard_page.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 #include "features/department_members/actions/add_department_member_action.hpp"
@@ -33,6 +34,153 @@
 #include <algorithm>
 
 #include <gtest/gtest.h>
+
+TEST(PortalApplicationTests, DashboardUsesNestedLoopMetadataForQuickLinks) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDashboardPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(data-section-number="1")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(data-loop-depth="0")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(data-link-number="1.1")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(data-loop-depth="1")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/project-types")"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, DashboardFiltersAdminQuickLinksForRegularUser) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsUser();
+
+    const auto html = app.render<PortalDashboardPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/projects")"
+        )
+    );
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/admin")"
+        )
+    );
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(href="/roles")"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectsPageUsesForeachEmptyState) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectsPage>({
+        {"search", "no-project-can-match-this"}
+    });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "No projects found."
+        )
+    );
+}
+
+TEST(PortalApplicationTests, UsersPageUsesForeachEmptyState) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalUsersPage>({
+        {"search", "no-user-can-match-this"}
+    });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "No users found."
+        )
+    );
+}
+
+TEST(PortalApplicationTests, DepartmentsPageUsesForeachEmptyState) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentsPage>({
+        {"search", "no-department-can-match-this"}
+    });
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "No departments found."
+        )
+    );
+}
+
+TEST(PortalApplicationTests, DepartmentDetailsUsesForeachEmptyForMembers) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {},
+        {{"id", "3"}}
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "This department has no members."
+        )
+    );
+}
 
 TEST(PortalApplicationTests, AdminCreatesProject) {
     PortalApplicationTestHost app(

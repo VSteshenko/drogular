@@ -90,7 +90,29 @@ add_executable(drogular_tests
     repository_sample/repository_sample_user_repository_tests.cpp
     repository_sample/repository_sample_users_page_tests.cpp
     repository_sample/repository_sample_create_user_action_tests.cpp
-    # portal_demo
+)
+
+target_compile_definitions(drogular_tests
+    PRIVATE
+    DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+target_link_libraries(drogular_tests
+    PRIVATE
+    Drogular::drogular
+    GTest::gtest_main
+)
+
+target_include_directories(drogular_tests
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests
+    ${CMAKE_SOURCE_DIR}/examples/todo_pwa
+    ${CMAKE_SOURCE_DIR}/examples/auth_sample
+    ${CMAKE_SOURCE_DIR}/examples/repository_sample
+    ${CMAKE_SOURCE_DIR}/examples/portal_demo
+)
+
+add_executable(drogular_portal_demo_tests
     ../examples/portal_demo/features/projects/graphql/documents/project_queries.cpp
     ../examples/portal_demo/features/projects/graphql/documents/project_mutations.cpp
     ../examples/portal_demo/features/users/graphql/documents/user_queries.cpp
@@ -130,24 +152,21 @@ add_executable(drogular_tests
     portal_demo/portal_ui_component_tests.cpp
 )
 
-target_compile_definitions(drogular_tests
+target_compile_definitions(drogular_portal_demo_tests
     PRIVATE
     DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
-target_link_libraries(drogular_tests
+target_include_directories(drogular_portal_demo_tests
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests
+    ${CMAKE_SOURCE_DIR}/examples/portal_demo
+)
+
+target_link_libraries(drogular_portal_demo_tests
     PRIVATE
     Drogular::drogular
     GTest::gtest_main
-)
-
-target_include_directories(drogular_tests
-    PRIVATE
-    ${CMAKE_SOURCE_DIR}/tests
-    ${CMAKE_SOURCE_DIR}/examples/todo_pwa
-    ${CMAKE_SOURCE_DIR}/examples/auth_sample
-    ${CMAKE_SOURCE_DIR}/examples/repository_sample
-    ${CMAKE_SOURCE_DIR}/examples/portal_demo
 )
 
 add_executable(drogular_project_generator_tests
@@ -166,4 +185,5 @@ target_link_libraries(drogular_project_generator_tests
 include(GoogleTest)
 
 gtest_discover_tests(drogular_tests)
+gtest_discover_tests(drogular_portal_demo_tests)
 gtest_discover_tests(drogular_project_generator_tests)

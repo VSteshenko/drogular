@@ -363,7 +363,6 @@ public:
         );
 
         context.set("projects", projects);
-        context.set("hasProjects", !projects.empty());
         context.setJson("pagination", pagination);
         context.set("currentPage", pageResult.page);
         context.set("totalPages", pageResult.totalPages);

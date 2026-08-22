@@ -73,7 +73,6 @@
     </fieldset>
 </form>
 
-@if(hasUsers)
 <ul>
     @foreach(user in users)
     <li>
@@ -82,11 +81,10 @@
         <a href="{{ user.editUrl }}">{{ usersEdit }}</a>
         @endif
     </li>
+    @empty
+    <li>{{ usersEmpty }}</li>
     @endforeach
 </ul>
-@else
-<p>{{ usersEmpty }}</p>
-@endif
 
 <PortalPagination
     model="pagination"

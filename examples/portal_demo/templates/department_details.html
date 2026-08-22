@@ -48,7 +48,6 @@
 </p>
 
 <h3>{{ departmentsMembers }}</h3>
-@if(hasDepartmentMembers)
 <ul>
 @foreach(member in departmentMembers)
 <li>
@@ -64,11 +63,10 @@
     </form>
     @endif
 </li>
+@empty
+<li>{{ departmentsMembersEmpty }}</li>
 @endforeach
 </ul>
-@else
-<p>{{ departmentsMembersEmpty }}</p>
-@endif
 
 @if(isAdmin)
 <h3>{{ departmentsAddMember }}</h3>

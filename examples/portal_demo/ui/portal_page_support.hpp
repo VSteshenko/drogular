@@ -54,6 +54,8 @@ public:
             {"navAdmin", "nav.admin"},
             {"navLogin", "nav.login"},
             {"navLogout", "nav.logout"},
+            {"dashboardQuickLinks", "dashboard.quick_links"},
+            {"dashboardNoLinks", "dashboard.no_links"},
 
             {"loginUsername", "login.username"},
             {"loginPassword", "login.password"},
