@@ -37,6 +37,8 @@ Each iteration exposes a `loop` object:
 | `loop.count` | Number of selected items |
 | `loop.first` | `true` for the first selected item |
 | `loop.last` | `true` for the last selected item |
+| `loop.depth` | Zero-based nesting depth; the outermost loop has depth `0` |
+| `loop.parent` | Metadata of the nearest outer loop, or `null` for the outermost loop |
 
 Example:
 
@@ -44,6 +46,52 @@ Example:
 @foreach(item in items)
     {{ loop.number }}/{{ loop.count }} — {{ item.name }}
 @endforeach
+```
+
+## Nested loops
+
+Each nested `@foreach` gets its own `loop` object. The current loop metadata
+shadows the outer loop metadata, while `loop.parent` provides access to the
+nearest outer loop. Parents can be chained for deeper nesting.
+
+```html
+@foreach(category in categories)
+    <h2>{{ loop.number }}. {{ category.name }}</h2>
+
+    @foreach(product in category.products)
+        <p>
+            {{ loop.parent.number }}.{{ loop.number }}
+            {{ product.name }}
+        </p>
+    @endforeach
+@endforeach
+```
+
+`loop.depth` starts at `0` for the outermost loop and increases by one for
+each nested `@foreach`:
+
+```html
+@foreach(category in categories)
+    {{ loop.depth }}
+
+    @foreach(product in category.products)
+        {{ loop.depth }}
+
+        @foreach(tag in product.tags)
+            {{ loop.depth }}
+            {{ loop.parent.parent.number }}
+        @endforeach
+    @endforeach
+@endforeach
+```
+
+The three nesting levels above have depths `0`, `1`, and `2`. On the
+outermost loop `loop.parent` is `null`, so it can be tested directly:
+
+```html
+@if(loop.parent)
+    Nested loop
+@endif
 ```
 
 ## Empty branch

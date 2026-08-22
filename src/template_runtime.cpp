@@ -778,4 +778,38 @@ std::optional<Json::Value> resolveJsonValue(
     return current;
 }
 
+namespace detail {
+
+void setLoopMetadata(
+    RenderContext& childContext,
+    const RenderContext& parentContext,
+    std::size_t index,
+    std::size_t count
+) {
+    constexpr std::string_view internalLoopKey =
+        "__drogular_template_loop_metadata";
+
+    Json::Value loop(Json::objectValue);
+    loop["index"] = static_cast<Json::UInt64>(index);
+    loop["number"] = static_cast<Json::UInt64>(index + 1);
+    loop["first"] = index == 0;
+    loop["last"] = index + 1 == count;
+    loop["count"] = static_cast<Json::UInt64>(count);
+
+    if (const auto parent =
+        parentContext.get<Json::Value>(std::string(internalLoopKey))) {
+        loop["parent"] = *parent;
+        const auto parentDepth = (*parent)["depth"].asUInt64();
+        loop["depth"] = static_cast<Json::UInt64>(parentDepth + 1);
+    } else {
+        loop["parent"] = Json::Value(Json::nullValue);
+        loop["depth"] = static_cast<Json::UInt64>(0);
+    }
+
+    childContext.set("loop", loop);
+    childContext.set(std::string(internalLoopKey), std::move(loop));
+}
+
+} // namespace detail
+
 } // namespace drogular::template_compiler

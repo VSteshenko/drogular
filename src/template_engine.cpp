@@ -364,16 +364,6 @@ std::string renderForeachBlocks(
                 bounds.blockEnd - bounds.emptyStart - std::string_view("@empty").size()
             ));
 
-        const auto makeLoop = [](std::size_t index, std::size_t count) {
-            Json::Value loop(Json::objectValue);
-            loop["index"] = static_cast<Json::UInt64>(index);
-            loop["number"] = static_cast<Json::UInt64>(index + 1);
-            loop["first"] = index == 0;
-            loop["last"] = index + 1 == count;
-            loop["count"] = static_cast<Json::UInt64>(count);
-            return loop;
-        };
-
         std::size_t renderedCount = 0;
 
         if (const auto stringValues =
@@ -401,7 +391,12 @@ std::string renderForeachBlocks(
                     expression->variable,
                     (*stringValues)[selected[index]]
                 );
-                itemContext.set("loop", makeLoop(index, selected.size()));
+                template_compiler::detail::setLoopMetadata(
+                    itemContext,
+                    context,
+                    index,
+                    selected.size()
+                );
 
                 const auto control = appendRenderedIteration(
                     render(templateBlock, itemContext),
@@ -434,7 +429,12 @@ std::string renderForeachBlocks(
             for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto itemContext = context.createChild();
                 itemContext.set(expression->variable, selected[index]);
-                itemContext.set("loop", makeLoop(index, selected.size()));
+                template_compiler::detail::setLoopMetadata(
+                    itemContext,
+                    context,
+                    index,
+                    selected.size()
+                );
 
                 const auto control = appendRenderedIteration(
                     render(templateBlock, itemContext),

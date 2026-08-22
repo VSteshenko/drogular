@@ -95,4 +95,21 @@ std::optional<Json::Value> resolveJsonValue(
     const RenderContext& context
 );
 
+namespace detail {
+
+/**
+ * Creates and stores metadata for a @foreach iteration.
+ *
+ * Nested loops expose the nearest outer loop through `parent` and use
+ * zero-based `depth` (outermost loop = 0).
+ */
+void setLoopMetadata(
+    RenderContext& childContext,
+    const RenderContext& parentContext,
+    std::size_t index,
+    std::size_t count
+);
+
+} // namespace detail
+
 } // namespace drogular::template_compiler

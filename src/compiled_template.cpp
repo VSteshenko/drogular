@@ -175,17 +175,6 @@ RenderResult renderNode(
                 return {};
             }
 
-            const auto makeLoop = [](std::size_t index, std::size_t count) {
-                Json::Value loop(Json::objectValue);
-                loop["index"] = static_cast<Json::UInt64>(index);
-                loop["number"] = static_cast<Json::UInt64>(index + 1);
-                loop["first"] = index == 0;
-                loop["last"] = index + 1 == count;
-                loop["count"] = static_cast<Json::UInt64>(count);
-
-                return loop;
-            };
-
             std::string output;
 
             if (const auto stringValues =
@@ -217,7 +206,12 @@ RenderResult renderNode(
                         expression->variable,
                         (*stringValues)[selected[renderedIndex]]
                     );
-                    childContext.set("loop", makeLoop(renderedIndex, selected.size()));
+                    detail::setLoopMetadata(
+                        childContext,
+                        context,
+                        renderedIndex,
+                        selected.size()
+                    );
 
                     auto result = renderNodes(foreachNode->body(), childContext);
                     output += result.output;
@@ -261,7 +255,12 @@ RenderResult renderNode(
             for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto childContext = context.createChild();
                 childContext.set(expression->variable, selected[index]);
-                childContext.set("loop", makeLoop(index, selected.size()));
+                detail::setLoopMetadata(
+                    childContext,
+                    context,
+                    index,
+                    selected.size()
+                );
 
                 auto result = renderNodes(foreachNode->body(), childContext);
                 output += result.output;

@@ -719,6 +719,66 @@ TEST(CoreTemplateEngineTests, ExposesForeachLoopMetadata) {
     EXPECT_EQ(html, "1/2:true:false=A;2/2:false:true=B;");
 }
 
+TEST(CoreTemplateEngineTests, ExposesParentAndDepthForNestedForeach) {
+    drogular::RenderContext context;
+
+    Json::Value rows(Json::arrayValue);
+    for (int rowIndex = 0; rowIndex < 2; ++rowIndex) {
+        Json::Value row;
+        Json::Value cells(Json::arrayValue);
+        Json::Value cell;
+        Json::Value tags(Json::arrayValue);
+        tags.append(rowIndex == 0 ? "A" : "B");
+        cell["tags"] = tags;
+        cells.append(cell);
+        row["cells"] = cells;
+        rows.append(row);
+    }
+    context.set("rows", rows);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(row in rows)"
+        "{{ loop.depth }}:{{ loop.number }}:"
+        "@if(loop.parent)parent@elseroot@endif["
+        "@foreach(cell in row.cells)"
+        "{{ loop.depth }}:{{ loop.parent.number }}.{{ loop.number }}["
+        "@foreach(tag in cell.tags)"
+        "{{ loop.depth }}:{{ loop.parent.parent.number }}."
+        "{{ loop.parent.number }}.{{ loop.number }}={{ tag }};"
+        "@endforeach"
+        "]@endforeach"
+        "];@endforeach",
+        context
+    );
+
+    EXPECT_EQ(
+        html,
+        "0:1:root[1:1.1[2:1.1.1=A;]];"
+        "0:2:root[1:2.1[2:2.1.1=B;]];"
+    );
+}
+
+TEST(CoreTemplateEngineTests, RootLoopIgnoresUserLoopValueAsParent) {
+    drogular::RenderContext context;
+
+    Json::Value userLoop(Json::objectValue);
+    userLoop["depth"] = 99;
+    context.set("loop", userLoop);
+
+    Json::Value items(Json::arrayValue);
+    items.append("A");
+    context.set("items", items);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(item in items)"
+        "{{ loop.depth }}:@if(loop.parent)parent@elseroot@endif"
+        "@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "0:root");
+}
+
 TEST(CoreTemplateEngineTests, RendersForeachEmptyBranch) {
     drogular::RenderContext context;
     Json::Value items(Json::arrayValue);
