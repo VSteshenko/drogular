@@ -88,6 +88,22 @@ const std::vector<NodePtr>& ForeachNode::body() const {
     return body_;
 }
 
+std::vector<NodePtr>& ForeachNode::emptyBranch() {
+    return emptyBranch_;
+}
+
+const std::vector<NodePtr>& ForeachNode::emptyBranch() const {
+    return emptyBranch_;
+}
+
+NodeType BreakNode::type() const {
+    return NodeType::Break;
+}
+
+NodeType ContinueNode::type() const {
+    return NodeType::Continue;
+}
+
 ComponentNode::ComponentNode(std::string tagHtml)
     : tagHtml_(std::move(tagHtml)) {
 }

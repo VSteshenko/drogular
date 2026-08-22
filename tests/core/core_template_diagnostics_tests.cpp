@@ -193,3 +193,36 @@ TEST(CoreTemplateDiagnosticsTests, DetectsUnterminatedForeachDirective) {
         "Invalid @foreach expression: Missing closing ')'"
     );
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsUnexpectedEmpty) {
+    const auto result = compileWithDiagnostics("@empty");
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-009");
+    EXPECT_EQ(result.diagnostics.errors()[0].message, "Unexpected @empty");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsBreakOutsideForeach) {
+    const auto result = compileWithDiagnostics("@break");
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-010");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Unexpected @break outside @foreach"
+    );
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsContinueOutsideForeach) {
+    const auto result = compileWithDiagnostics("@continue");
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-011");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Unexpected @continue outside @foreach"
+    );
+}

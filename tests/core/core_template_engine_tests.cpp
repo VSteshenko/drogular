@@ -718,3 +718,58 @@ TEST(CoreTemplateEngineTests, ExposesForeachLoopMetadata) {
 
     EXPECT_EQ(html, "1/2:true:false=A;2/2:false:true=B;");
 }
+
+TEST(CoreTemplateEngineTests, RendersForeachEmptyBranch) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    context.set("items", items);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(item in items){{ item }}@empty<p>Empty</p>@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "<p>Empty</p>");
+}
+
+TEST(CoreTemplateEngineTests, SupportsContinueInsideForeach) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    for (int value = 1; value <= 4; ++value) {
+        Json::Value item;
+        item["value"] = value;
+        item["skip"] = value % 2 == 0;
+        items.append(item);
+    }
+    context.set("items", items);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(item in items)"
+        "@if(item.skip)@continue@endif"
+        "{{ item.value }}"
+        "@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "13");
+}
+
+TEST(CoreTemplateEngineTests, SupportsBreakInsideForeach) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    items.append(1);
+    items.append(2);
+    items.append(3);
+    items.append(4);
+    context.set("items", items);
+
+    const auto html = drogular::template_engine::render(
+        "@foreach(item in items)"
+        "@if(item == 3)@break@endif"
+        "{{ item }}"
+        "@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "12");
+}

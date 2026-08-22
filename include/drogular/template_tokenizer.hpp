@@ -16,6 +16,9 @@ enum class TokenType {
     Else,
     EndIf,
     Foreach,
+    Empty,
+    Break,
+    Continue,
     EndForeach,
     ComponentTag
 };

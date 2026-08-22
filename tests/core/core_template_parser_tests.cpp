@@ -152,3 +152,21 @@ TEST(CoreTemplateParserTests, ParsesInlineIfBetweenHtmlAttributes) {
     ASSERT_EQ(condition->condition(), "selected");
     ASSERT_EQ(condition->trueBranch().size(), 1);
 }
+
+TEST(CoreTemplateParserTests, ParsesForeachEmptyAndControlNodes) {
+    const auto nodes = parse(tokenize(
+        "@foreach(item in items)@continue@break@emptyEmpty@endforeach"
+    ));
+
+    ASSERT_EQ(nodes.size(), 1);
+    ASSERT_EQ(nodes[0]->type(), NodeType::Foreach);
+
+    const auto foreachNode =
+        std::dynamic_pointer_cast<ForeachNode>(nodes[0]);
+    ASSERT_NE(foreachNode, nullptr);
+    ASSERT_EQ(foreachNode->body().size(), 2);
+    EXPECT_EQ(foreachNode->body()[0]->type(), NodeType::Continue);
+    EXPECT_EQ(foreachNode->body()[1]->type(), NodeType::Break);
+    ASSERT_EQ(foreachNode->emptyBranch().size(), 1);
+    EXPECT_EQ(foreachNode->emptyBranch()[0]->type(), NodeType::Text);
+}

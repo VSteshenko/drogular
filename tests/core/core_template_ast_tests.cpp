@@ -60,3 +60,19 @@ TEST(CoreTemplateAstTests, CreatesComponentNode) {
     EXPECT_EQ(node.type(), NodeType::Component);
     EXPECT_EQ(node.tagHtml(), "<Card />");
 }
+
+TEST(CoreTemplateAstTests, CreatesForeachEmptyBranch) {
+    ForeachNode node("item in items");
+    node.emptyBranch().push_back(std::make_shared<TextNode>("Empty"));
+
+    ASSERT_EQ(node.emptyBranch().size(), 1);
+    EXPECT_EQ(node.emptyBranch()[0]->type(), NodeType::Text);
+}
+
+TEST(CoreTemplateAstTests, CreatesLoopControlNodes) {
+    BreakNode breakNode;
+    ContinueNode continueNode;
+
+    EXPECT_EQ(breakNode.type(), NodeType::Break);
+    EXPECT_EQ(continueNode.type(), NodeType::Continue);
+}

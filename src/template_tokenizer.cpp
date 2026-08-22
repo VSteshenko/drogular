@@ -262,6 +262,51 @@ std::vector<Token> tokenize(
             continue;
         }
 
+        if (startsWith(html, position, "@empty")) {
+            flushText();
+
+            tokens.push_back({
+                .type = TokenType::Empty,
+                .value = "",
+                .position = position
+            });
+
+            position += 6;
+            textStart = position;
+
+            continue;
+        }
+
+        if (startsWith(html, position, "@break")) {
+            flushText();
+
+            tokens.push_back({
+                .type = TokenType::Break,
+                .value = "",
+                .position = position
+            });
+
+            position += 6;
+            textStart = position;
+
+            continue;
+        }
+
+        if (startsWith(html, position, "@continue")) {
+            flushText();
+
+            tokens.push_back({
+                .type = TokenType::Continue,
+                .value = "",
+                .position = position
+            });
+
+            position += 9;
+            textStart = position;
+
+            continue;
+        }
+
         if (startsWith(html, position, "@endforeach")) {
             flushText();
 

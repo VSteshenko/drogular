@@ -213,6 +213,100 @@ size_t findConditionEnd(
     size_t position
 );
 
+enum class LoopControl {
+    None,
+    Break,
+    Continue
+};
+
+struct ForeachBlockBounds {
+    size_t blockEnd = std::string_view::npos;
+    size_t emptyStart = std::string_view::npos;
+};
+
+ForeachBlockBounds findForeachBlockBounds(
+    std::string_view html,
+    size_t blockStart
+) {
+    size_t depth = 1;
+    size_t position = blockStart;
+    size_t emptyStart = std::string_view::npos;
+
+    while (position < html.size()) {
+        const auto nestedStart = html.find("@foreach(", position);
+        const auto empty = html.find("@empty", position);
+        const auto end = html.find("@endforeach", position);
+
+        auto next = end;
+        enum class Match { End, Foreach, Empty } match = Match::End;
+
+        if (nestedStart != std::string_view::npos &&
+            (next == std::string_view::npos || nestedStart < next)) {
+            next = nestedStart;
+            match = Match::Foreach;
+        }
+
+        if (empty != std::string_view::npos &&
+            (next == std::string_view::npos || empty < next)) {
+            next = empty;
+            match = Match::Empty;
+        }
+
+        if (next == std::string_view::npos) {
+            return {};
+        }
+
+        if (match == Match::Foreach) {
+            ++depth;
+            position = next + 9;
+            continue;
+        }
+
+        if (match == Match::Empty) {
+            if (depth == 1 && emptyStart == std::string_view::npos) {
+                emptyStart = next;
+            }
+            position = next + 6;
+            continue;
+        }
+
+        --depth;
+        if (depth == 0) {
+            return {
+                .blockEnd = next,
+                .emptyStart = emptyStart
+            };
+        }
+
+        position = next + std::string_view("@endforeach").size();
+    }
+
+    return {};
+}
+
+LoopControl appendRenderedIteration(
+    std::string rendered,
+    std::string& output
+) {
+    const auto breakPosition = rendered.find("@break");
+    const auto continuePosition = rendered.find("@continue");
+
+    if (breakPosition == std::string::npos &&
+        continuePosition == std::string::npos) {
+        output += rendered;
+        return LoopControl::None;
+    }
+
+    if (breakPosition != std::string::npos &&
+        (continuePosition == std::string::npos || breakPosition < continuePosition)) {
+        output.append(rendered, 0, breakPosition);
+        return LoopControl::Break;
+    }
+
+    output.append(rendered, 0, continuePosition);
+    return LoopControl::Continue;
+}
+
 std::string renderForeachBlocks(
     std::string_view html,
     const RenderContext& context
@@ -237,9 +331,8 @@ std::string renderForeachBlocks(
             break;
         }
 
-        const auto blockEnd = html.find("@endforeach", headerEnd);
-
-        if (blockEnd == std::string_view::npos) {
+        const auto bounds = findForeachBlockBounds(html, headerEnd + 1);
+        if (bounds.blockEnd == std::string_view::npos) {
             output.append(html.substr(foreachStart));
             break;
         }
@@ -256,9 +349,20 @@ std::string renderForeachBlocks(
             break;
         }
 
+        const auto bodyEnd = bounds.emptyStart == std::string_view::npos
+            ? bounds.blockEnd
+            : bounds.emptyStart;
+
         const auto templateBlock = std::string(
-            html.substr(headerEnd + 1, blockEnd - headerEnd - 1)
+            html.substr(headerEnd + 1, bodyEnd - headerEnd - 1)
         );
+
+        const auto emptyBlock = bounds.emptyStart == std::string_view::npos
+            ? std::string{}
+            : std::string(html.substr(
+                bounds.emptyStart + std::string_view("@empty").size(),
+                bounds.blockEnd - bounds.emptyStart - std::string_view("@empty").size()
+            ));
 
         const auto makeLoop = [](std::size_t index, std::size_t count) {
             Json::Value loop(Json::objectValue);
@@ -269,6 +373,8 @@ std::string renderForeachBlocks(
             loop["count"] = static_cast<Json::UInt64>(count);
             return loop;
         };
+
+        std::size_t renderedCount = 0;
 
         if (const auto stringValues =
             context.get<std::vector<std::string>>(expression->collection)) {
@@ -288,6 +394,7 @@ std::string renderForeachBlocks(
                 selected.push_back(index);
             }
 
+            renderedCount = selected.size();
             for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto itemContext = context.createChild();
                 itemContext.set(
@@ -295,7 +402,14 @@ std::string renderForeachBlocks(
                     (*stringValues)[selected[index]]
                 );
                 itemContext.set("loop", makeLoop(index, selected.size()));
-                output += render(templateBlock, itemContext);
+
+                const auto control = appendRenderedIteration(
+                    render(templateBlock, itemContext),
+                    output
+                );
+                if (control == LoopControl::Break) {
+                    break;
+                }
             }
         } else if (const auto jsonValues =
             template_compiler::resolveJsonValue(expression->collection, context);
@@ -316,15 +430,27 @@ std::string renderForeachBlocks(
                 selected.push_back(value);
             }
 
+            renderedCount = selected.size();
             for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto itemContext = context.createChild();
                 itemContext.set(expression->variable, selected[index]);
                 itemContext.set("loop", makeLoop(index, selected.size()));
-                output += render(templateBlock, itemContext);
+
+                const auto control = appendRenderedIteration(
+                    render(templateBlock, itemContext),
+                    output
+                );
+                if (control == LoopControl::Break) {
+                    break;
+                }
             }
         }
 
-        position = blockEnd + std::string_view("@endforeach").size();
+        if (renderedCount == 0 && !emptyBlock.empty()) {
+            output += render(emptyBlock, context);
+        }
+
+        position = bounds.blockEnd + std::string_view("@endforeach").size();
     }
 
     return output;

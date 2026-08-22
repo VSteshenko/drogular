@@ -84,3 +84,16 @@ TEST(CoreTemplateTokenizerTests, TokenizesForeachWhereWithParentheses) {
         "item in items where item.active && (item.score >= 10)"
     );
 }
+
+TEST(CoreTemplateTokenizerTests, TokenizesForeachControlDirectives) {
+    const auto tokens = tokenize(
+        "@foreach(item in items)@continue@break@emptyempty@endforeach"
+    );
+
+    ASSERT_EQ(tokens.size(), 6);
+    EXPECT_EQ(tokens[0].type, TokenType::Foreach);
+    EXPECT_EQ(tokens[1].type, TokenType::Continue);
+    EXPECT_EQ(tokens[2].type, TokenType::Break);
+    EXPECT_EQ(tokens[3].type, TokenType::Empty);
+    EXPECT_EQ(tokens[5].type, TokenType::EndForeach);
+}

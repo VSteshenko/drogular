@@ -24,13 +24,15 @@ std::vector<NodePtr> parseUntil(
     const std::vector<Token>& tokens,
     size_t& position,
     const std::vector<TokenType>& stopTokens,
-    TemplateDiagnostics& diagnostics
+    TemplateDiagnostics& diagnostics,
+    std::size_t loopDepth
 );
 
 NodePtr parseNode(
     const std::vector<Token>& tokens,
     size_t& position,
-    TemplateDiagnostics& diagnostics
+    TemplateDiagnostics& diagnostics,
+    std::size_t loopDepth
 ) {
     const auto& token = tokens[position];
 
@@ -71,11 +73,12 @@ NodePtr parseNode(
                 parseUntil(
                     tokens,
                     position,
-        {
+                    {
                         TokenType::Else,
                         TokenType::EndIf
                     },
-                    diagnostics
+                    diagnostics,
+                    loopDepth
                 );
 
             if (position < tokens.size() &&
@@ -86,10 +89,11 @@ NodePtr parseNode(
                     parseUntil(
                         tokens,
                         position,
-            {
+                        {
                             TokenType::EndIf
                         },
-                        diagnostics
+                        diagnostics,
+                        loopDepth
                     );
             }
 
@@ -140,27 +144,67 @@ NodePtr parseNode(
                     tokens,
                     position,
                     {
+                        TokenType::Empty,
                         TokenType::EndForeach
                     },
-                    diagnostics
+                    diagnostics,
+                    loopDepth + 1
                 );
 
             if (position < tokens.size() &&
-                tokens[position].type == TokenType::EndForeach) {
+                tokens[position].type == TokenType::Empty
+            ) {
                 ++position;
-                } else {
-                    diagnostics.error(
-                        "DGL-TPL-005",
-                        "Missing @endforeach",
-                        foreachPosition
+                foreachNode->emptyBranch() =
+                    parseUntil(
+                        tokens,
+                        position,
+                        { TokenType::EndForeach },
+                        diagnostics,
+                        loopDepth
                     );
+            }
+
+            if (position < tokens.size() &&
+                tokens[position].type == TokenType::EndForeach
+            ) {
+                ++position;
+            } else {
+                diagnostics.error(
+                    "DGL-TPL-005",
+                    "Missing @endforeach",
+                    foreachPosition
+                );
             }
 
             return foreachNode;
         }
 
+        case TokenType::Break:
+            if (loopDepth == 0) {
+                diagnostics.error(
+                    "DGL-TPL-010",
+                    "Unexpected @break outside @foreach",
+                    token.position
+                );
+            }
+            ++position;
+            return std::make_shared<BreakNode>();
+
+        case TokenType::Continue:
+            if (loopDepth == 0) {
+                diagnostics.error(
+                    "DGL-TPL-011",
+                    "Unexpected @continue outside @foreach",
+                    token.position
+                );
+            }
+            ++position;
+            return std::make_shared<ContinueNode>();
+
         case TokenType::Else:
         case TokenType::EndIf:
+        case TokenType::Empty:
         case TokenType::EndForeach:
             return nullptr;
     }
@@ -172,7 +216,8 @@ std::vector<NodePtr> parseUntil(
     const std::vector<Token>& tokens,
     size_t& position,
     const std::vector<TokenType>& stopTokens,
-    TemplateDiagnostics& diagnostics
+    TemplateDiagnostics& diagnostics,
+    std::size_t loopDepth
 ) {
     std::vector<NodePtr> nodes;
 
@@ -181,7 +226,7 @@ std::vector<NodePtr> parseUntil(
             break;
         }
 
-        auto node = parseNode(tokens, position, diagnostics);
+        auto node = parseNode(tokens, position, diagnostics, loopDepth);
 
         if (node != nullptr) {
             nodes.push_back(std::move(node));
@@ -212,7 +257,8 @@ std::vector<NodePtr> parse(
             tokens,
             position,
             {},
-            diagnostics
+            diagnostics,
+            0
         );
 
     while (position < tokens.size()) {
@@ -228,6 +274,12 @@ std::vector<NodePtr> parse(
             diagnostics.error(
                 "DGL-TPL-002",
                 "Unexpected @endif",
+                token.position
+            );
+        } else if (token.type == TokenType::Empty) {
+            diagnostics.error(
+                "DGL-TPL-009",
+                "Unexpected @empty",
                 token.position
             );
         } else if (token.type == TokenType::EndForeach) {

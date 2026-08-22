@@ -12,6 +12,8 @@ enum class NodeType {
     RawVariable,
     If,
     Foreach,
+    Break,
+    Continue,
     Component
 };
 
@@ -91,9 +93,23 @@ public:
     std::vector<NodePtr>& body();
     const std::vector<NodePtr>& body() const;
 
+    std::vector<NodePtr>& emptyBranch();
+    const std::vector<NodePtr>& emptyBranch() const;
+
 private:
     std::string expression_;
     std::vector<NodePtr> body_;
+    std::vector<NodePtr> emptyBranch_;
+};
+
+class BreakNode final : public Node {
+public:
+    NodeType type() const override;
+};
+
+class ContinueNode final : public Node {
+public:
+    NodeType type() const override;
 };
 
 class ComponentNode final : public Node {

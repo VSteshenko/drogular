@@ -285,3 +285,101 @@ TEST(CoreCompiledTemplateTests, LoopMetadataUsesFilteredSequence) {
 
     EXPECT_EQ(compiled.render(context), "1/2=2;2/2=4;");
 }
+
+TEST(CoreCompiledTemplateTests, RendersForeachEmptyBranch) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    context.set("items", items);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(item in items){{ item }}@empty<p>Empty</p>@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "<p>Empty</p>");
+}
+
+TEST(CoreCompiledTemplateTests, ForeachEmptyUsesFilteredSequence) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    Json::Value item;
+    item["visible"] = false;
+    items.append(item);
+    context.set("items", items);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(item in items where item.visible)visible@emptyempty@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "empty");
+}
+
+TEST(CoreCompiledTemplateTests, SupportsContinueInsideForeach) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    for (int value = 1; value <= 4; ++value) {
+        Json::Value item;
+        item["value"] = value;
+        item["skip"] = value % 2 == 0;
+        items.append(item);
+    }
+    context.set("items", items);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(item in items)"
+        "@if(item.skip)@continue@endif"
+        "{{ item.value }}"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "13");
+}
+
+TEST(CoreCompiledTemplateTests, SupportsBreakInsideForeach) {
+    drogular::RenderContext context;
+    Json::Value items(Json::arrayValue);
+    for (int value = 1; value <= 4; ++value) {
+        Json::Value item;
+        item["value"] = value;
+        items.append(item);
+    }
+    context.set("items", items);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(item in items)"
+        "@if(item.value == 3)@break@endif"
+        "{{ item.value }}"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "12");
+}
+
+TEST(CoreCompiledTemplateTests, BreakOnlyStopsNearestForeach) {
+    drogular::RenderContext context;
+
+    Json::Value rows(Json::arrayValue);
+    for (int rowValue = 1; rowValue <= 2; ++rowValue) {
+        Json::Value row;
+        row["value"] = rowValue;
+        Json::Value cells(Json::arrayValue);
+        cells.append("A");
+        cells.append("B");
+        cells.append("C");
+        row["cells"] = cells;
+        rows.append(row);
+    }
+    context.set("rows", rows);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(row in rows)"
+        "{{ row.value }}["
+        "@foreach(cell in row.cells)"
+        "@if(cell == \"B\")@break@endif"
+        "{{ cell }}"
+        "@endforeach"
+        "];"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "1[A];2[A];");
+}

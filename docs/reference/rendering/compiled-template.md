@@ -65,6 +65,12 @@ For example, `@if(page >)` reports `Invalid @if expression: Expected value` inst
 
 See [Template Conditional Expressions](conditional-expressions.md) for the supported operators, literals, precedence rules, and diagnostic behavior.
 
+## Loop directives
+
+Compiled templates support `@foreach(...)` filtering with `where`, `loop.*` metadata, an `@empty` fallback branch, and `@continue` / `@break` control directives. Loop control is scoped to the nearest active `@foreach`.
+
+See [Template `@foreach`](foreach.md) for syntax, semantics, and diagnostics.
+
 ## Lifetime and Thread Safety
 
 A `CompiledTemplate` owns its compiled AST. Rendering reads that AST and uses the supplied `RenderContext` for request-specific values.

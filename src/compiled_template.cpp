@@ -72,21 +72,46 @@ std::string nodesToTemplate(
 
                 output += "@foreach(" + foreachNode->expression() + ")";
                 output += nodesToTemplate(foreachNode->body());
+
+                if (!foreachNode->emptyBranch().empty()) {
+                    output += "@empty";
+                    output += nodesToTemplate(foreachNode->emptyBranch());
+                }
+
                 output += "@endforeach";
                 break;
             }
+
+            case NodeType::Break:
+                output += "@break";
+                break;
+
+            case NodeType::Continue:
+                output += "@continue";
+                break;
         }
     }
 
     return output;
 }
 
-std::string renderNodes(
+enum class RenderControl {
+    None,
+    Break,
+    Continue
+};
+
+struct RenderResult {
+    std::string output;
+    RenderControl control = RenderControl::None;
+};
+
+RenderResult renderNodes(
     const std::vector<NodePtr>& nodes,
     RenderContext& context
 );
 
-std::string renderNode(
+RenderResult renderNode(
     const NodePtr& node,
     RenderContext& context
 ) {
@@ -95,27 +120,31 @@ std::string renderNode(
             const auto textNode =
                 std::dynamic_pointer_cast<TextNode>(node);
 
-            return textNode->text();
+            return { .output = textNode->text() };
         }
 
         case NodeType::Variable: {
             const auto variableNode =
                 std::dynamic_pointer_cast<VariableNode>(node);
 
-            return resolveVariable(
-                variableNode->expression(),
-                context
-            ).value_or("");
+            return {
+                .output = resolveVariable(
+                    variableNode->expression(),
+                    context
+                ).value_or("")
+            };
         }
 
         case NodeType::RawVariable: {
             const auto rawNode =
                 std::dynamic_pointer_cast<RawVariableNode>(node);
 
-            return resolveRawVariable(
-                rawNode->expression(),
-                context
-            ).value_or("");
+            return {
+                .output = resolveRawVariable(
+                    rawNode->expression(),
+                    context
+                ).value_or("")
+            };
         }
 
         case NodeType::If: {
@@ -129,6 +158,12 @@ std::string renderNode(
             return renderNodes(ifNode->falseBranch(), context);
         }
 
+        case NodeType::Break:
+            return { .control = RenderControl::Break };
+
+        case NodeType::Continue:
+            return { .control = RenderControl::Continue };
+
         case NodeType::Foreach: {
             const auto foreachNode =
                 std::dynamic_pointer_cast<ForeachNode>(node);
@@ -137,7 +172,7 @@ std::string renderNode(
                 parseForeachExpression(foreachNode->expression());
 
             if (!expression.has_value()) {
-                return "";
+                return {};
             }
 
             const auto makeLoop = [](std::size_t index, std::size_t count) {
@@ -150,6 +185,8 @@ std::string renderNode(
 
                 return loop;
             };
+
+            std::string output;
 
             if (const auto stringValues =
                 context.get<std::vector<std::string>>(expression->collection)) {
@@ -167,7 +204,10 @@ std::string renderNode(
                     selected.push_back(index);
                 }
 
-                std::string output;
+                if (selected.empty()) {
+                    return renderNodes(foreachNode->emptyBranch(), context);
+                }
+
                 for (std::size_t renderedIndex = 0;
                      renderedIndex < selected.size();
                      ++renderedIndex
@@ -178,16 +218,26 @@ std::string renderNode(
                         (*stringValues)[selected[renderedIndex]]
                     );
                     childContext.set("loop", makeLoop(renderedIndex, selected.size()));
-                    output += renderNodes(foreachNode->body(), childContext);
+
+                    auto result = renderNodes(foreachNode->body(), childContext);
+                    output += result.output;
+
+                    if (result.control == RenderControl::Break) {
+                        break;
+                    }
+                    if (result.control == RenderControl::Continue) {
+                        continue;
+                    }
                 }
-                return output;
+
+                return { .output = std::move(output) };
             }
 
             const auto collection =
                 resolveJsonValue(expression->collection, context);
 
             if (!collection.has_value() || !collection->isArray()) {
-                return "";
+                return renderNodes(foreachNode->emptyBranch(), context);
             }
 
             std::vector<Json::Value> selected;
@@ -204,14 +254,27 @@ std::string renderNode(
                 selected.push_back(item);
             }
 
-            std::string output;
+            if (selected.empty()) {
+                return renderNodes(foreachNode->emptyBranch(), context);
+            }
+
             for (std::size_t index = 0; index < selected.size(); ++index) {
                 auto childContext = context.createChild();
                 childContext.set(expression->variable, selected[index]);
                 childContext.set("loop", makeLoop(index, selected.size()));
-                output += renderNodes(foreachNode->body(), childContext);
+
+                auto result = renderNodes(foreachNode->body(), childContext);
+                output += result.output;
+
+                if (result.control == RenderControl::Break) {
+                    break;
+                }
+                if (result.control == RenderControl::Continue) {
+                    continue;
+                }
             }
-            return output;
+
+            return { .output = std::move(output) };
         }
 
         case NodeType::Component: {
@@ -219,31 +282,39 @@ std::string renderNode(
                 std::dynamic_pointer_cast<ComponentNode>(node);
 
             if (context.services() == nullptr) {
-                return componentNode->tagHtml();
+                return { .output = componentNode->tagHtml() };
             }
 
-            return component_renderer::render(
-                componentNode->tagHtml(),
-                context.services()->components(),
-                context
-            );
+            return {
+                .output = component_renderer::render(
+                    componentNode->tagHtml(),
+                    context.services()->components(),
+                    context
+                )
+            };
         }
     }
 
-    return "";
+    return {};
 }
 
-std::string renderNodes(
+RenderResult renderNodes(
     const std::vector<NodePtr>& nodes,
     RenderContext& context
 ) {
-    std::string output;
+    RenderResult result;
 
     for (const auto& node : nodes) {
-        output += renderNode(node, context);
+        auto nodeResult = renderNode(node, context);
+        result.output += nodeResult.output;
+
+        if (nodeResult.control != RenderControl::None) {
+            result.control = nodeResult.control;
+            break;
+        }
     }
 
-    return output;
+    return result;
 }
 
 } // namespace
@@ -253,7 +324,7 @@ CompiledTemplate::CompiledTemplate(std::vector<NodePtr> nodes)
 }
 
 std::string CompiledTemplate::render(RenderContext& context) const {
-    return renderNodes(nodes_, context);
+    return renderNodes(nodes_, context).output;
 }
 
 CompiledTemplate compile(std::string_view html) {
