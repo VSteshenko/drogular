@@ -19,6 +19,9 @@ Expression Parser
  Expression AST
       │
       ▼
+BindingContext
+      │
+      ▼
    Evaluator
       │
       ▼
@@ -38,12 +41,14 @@ include/drogular/template/expression/
     value.hpp
     ast.hpp
     parser.hpp
+    binding_context.hpp
     evaluator.hpp
     functions.hpp
     expression.hpp
 
 src/template/expression/
     parser.cpp
+    binding_context.cpp
     evaluator.cpp
     functions.cpp
 ```
@@ -106,7 +111,43 @@ The evaluator therefore works on parsed semantics and does not need to inspect
 the original expression string.
 
 The AST is immutable after parsing and may be reused for multiple evaluations
-against different `RenderContext` instances.
+against different `BindingContext` / `RenderContext` instances.
+
+## BindingContext
+
+`template_expression::BindingContext` is the lexical variable layer between the
+template runtime and application-owned `RenderContext` data.
+
+Lookup order is:
+
+```text
+current lexical scope
+        ↓
+parent lexical scopes
+        ↓
+base RenderContext
+```
+
+Bindings therefore shadow view/request data without mutating it. A child scope
+may shadow a parent binding, while duplicate definitions inside the same scope
+are rejected. This gives future `@let` and `@const` directives normal lexical
+scope semantics.
+
+Each binding stores an `ExpressionValue` directly, so expression-owned Lists and
+Ranges do not need to be converted through JSON. Bindings also carry
+`BindingMutability` metadata (`Mutable` or `Constant`). The current runtime only
+defines bindings; assignment is intentionally not part of the API yet.
+
+The evaluator exposes overloads for both `BindingContext` and `RenderContext`.
+The `RenderContext` overloads are compatibility facades that create an empty
+root binding scope and delegate to the same evaluator. Existing callers
+therefore keep their API while new template directives can pass lexical scopes
+explicitly.
+
+This stage intentionally does not add a template declaration directive yet.
+`@let` and `@const` will consume this scope model in later stages; introducing
+the scope independently keeps binding semantics testable without changing
+template syntax at the same time.
 
 ## Collection methods
 

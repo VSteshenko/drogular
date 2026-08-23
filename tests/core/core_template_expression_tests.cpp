@@ -444,3 +444,102 @@ TEST(CoreTemplateExpressionTests, CollectionMethodsValidateArityAndReceiver) {
     EXPECT_TRUE(evaluate("1.count()", context).isNull());
     EXPECT_TRUE(evaluate("[1, 2].unknown()", context).isNull());
 }
+
+TEST(CoreTemplateExpressionTests, BindingContextShadowsRenderContextLexically) {
+    drogular::RenderContext renderContext;
+    renderContext.set("page", 10);
+
+    BindingContext root(renderContext);
+    ASSERT_TRUE(root.define("page", ExpressionValue(2.0)));
+
+    auto child = root.createChild();
+    ASSERT_TRUE(child.define("page", ExpressionValue(4.0)));
+
+    const auto rootValue = evaluate("page + 1", root);
+    const auto childValue = evaluate("page + 1", child);
+
+    ASSERT_TRUE(rootValue.number().has_value());
+    ASSERT_TRUE(childValue.number().has_value());
+    EXPECT_DOUBLE_EQ(*rootValue.number(), 3.0);
+    EXPECT_DOUBLE_EQ(*childValue.number(), 5.0);
+    EXPECT_EQ(renderContext.require<int>("page"), 10);
+}
+
+TEST(CoreTemplateExpressionTests, BindingContextFallsBackToRenderContext) {
+    drogular::RenderContext renderContext;
+    renderContext.set("page", 3);
+
+    BindingContext bindings(renderContext);
+
+    const auto value = evaluate("page * 2", bindings);
+    ASSERT_TRUE(value.number().has_value());
+    EXPECT_DOUBLE_EQ(*value.number(), 6.0);
+}
+
+TEST(CoreTemplateExpressionTests, BindingContextResolvesDottedBindingMembers) {
+    drogular::RenderContext renderContext;
+
+    Json::Value user;
+    user["name"] = "render";
+    renderContext.set("user", user);
+
+    Json::Value boundUser;
+    boundUser["name"] = "binding";
+
+    BindingContext bindings(renderContext);
+    ASSERT_TRUE(bindings.define("user", ExpressionValue(boundUser)));
+
+    const auto value = resolve("user.name", bindings);
+    ASSERT_TRUE(value.string().has_value());
+    EXPECT_EQ(*value.string(), "binding");
+}
+
+TEST(CoreTemplateExpressionTests, BindingContextRejectsDuplicateLocalBindingsButAllowsShadowing) {
+    drogular::RenderContext renderContext;
+    BindingContext root(renderContext);
+
+    ASSERT_TRUE(root.define("value", ExpressionValue(1.0)));
+    EXPECT_FALSE(root.define("value", ExpressionValue(2.0)));
+
+    auto child = root.createChild();
+    EXPECT_TRUE(child.define("value", ExpressionValue(3.0)));
+
+    const auto* rootBinding = root.find("value");
+    const auto* childBinding = child.find("value");
+    ASSERT_NE(rootBinding, nullptr);
+    ASSERT_NE(childBinding, nullptr);
+    ASSERT_TRUE(rootBinding->value.number().has_value());
+    ASSERT_TRUE(childBinding->value.number().has_value());
+    EXPECT_DOUBLE_EQ(*rootBinding->value.number(), 1.0);
+    EXPECT_DOUBLE_EQ(*childBinding->value.number(), 3.0);
+}
+
+TEST(CoreTemplateExpressionTests, BindingContextPreservesMutabilityMetadata) {
+    drogular::RenderContext renderContext;
+    BindingContext bindings(renderContext);
+
+    ASSERT_TRUE(bindings.define(
+        "PageSize",
+        ExpressionValue(20.0),
+        BindingMutability::Constant
+    ));
+
+    const auto* binding = bindings.find("PageSize");
+    ASSERT_NE(binding, nullptr);
+    EXPECT_EQ(binding->mutability, BindingMutability::Constant);
+}
+
+TEST(CoreTemplateExpressionTests, BindingContextKeepsExpressionOwnedValues) {
+    drogular::RenderContext renderContext;
+    BindingContext bindings(renderContext);
+
+    const auto pages = evaluate("[1..5]", bindings);
+    ASSERT_TRUE(bindings.define("pages", pages));
+
+    const auto count = evaluate("pages.count()", bindings);
+    const auto contains = evaluate("3 in pages", bindings);
+
+    ASSERT_TRUE(count.number().has_value());
+    EXPECT_DOUBLE_EQ(*count.number(), 5.0);
+    EXPECT_TRUE(contains.truthy());
+}

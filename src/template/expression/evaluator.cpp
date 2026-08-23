@@ -385,7 +385,7 @@ std::optional<std::int64_t> integerValue(const ExpressionValue& value) {
     return static_cast<std::int64_t>(*number);
 }
 
-ExpressionValue evaluateNode(const Expression& expression, const RenderContext& context) {
+ExpressionValue evaluateNode(const Expression& expression, const BindingContext& context) {
     if (const auto* node = std::get_if<LiteralExpression>(&expression.node)) {
         return node->value;
     }
@@ -561,11 +561,16 @@ ExpressionValue evaluateNode(const Expression& expression, const RenderContext& 
 
 } // namespace
 
-ExpressionValue evaluate(const Expression& expression, const RenderContext& context) {
+ExpressionValue evaluate(const Expression& expression, const BindingContext& context) {
     return evaluateNode(expression, context);
 }
 
-ExpressionValue evaluate(std::string_view source, const RenderContext& context) {
+ExpressionValue evaluate(const Expression& expression, const RenderContext& context) {
+    const BindingContext bindings(context);
+    return evaluate(expression, bindings);
+}
+
+ExpressionValue evaluate(std::string_view source, const BindingContext& context) {
     const auto result = parse(source);
     if (!result) {
         return ExpressionValue();
@@ -574,67 +579,18 @@ ExpressionValue evaluate(std::string_view source, const RenderContext& context) 
     return evaluate(*result.expression, context);
 }
 
+ExpressionValue evaluate(std::string_view source, const RenderContext& context) {
+    const BindingContext bindings(context);
+    return evaluate(source, bindings);
+}
+
+ExpressionValue resolve(std::string_view path, const BindingContext& context) {
+    return context.resolve(path);
+}
+
 ExpressionValue resolve(std::string_view path, const RenderContext& context) {
-    const auto key = std::string(path);
-    if (key.empty()) {
-        return ExpressionValue();
-    }
-
-    if (const auto value = context.get<ExpressionValue>(key)) {
-        return *value;
-    }
-    if (const auto value = context.get<bool>(key)) {
-        return ExpressionValue(*value);
-    }
-    if (const auto value = context.get<int>(key)) {
-        return ExpressionValue(static_cast<double>(*value));
-    }
-    if (const auto value = context.get<double>(key)) {
-        return ExpressionValue(*value);
-    }
-    if (const auto value = context.get<std::string>(key)) {
-        return ExpressionValue(*value);
-    }
-    if (const auto values = context.get<std::vector<std::string>>(key)) {
-        auto array = std::make_shared<ExpressionArray>();
-        array->values.reserve(values->size());
-        for (const auto& value : *values) {
-            array->values.emplace_back(value);
-        }
-        return ExpressionValue(std::move(array));
-    }
-
-    const auto separator = key.find('.');
-    const auto rootKey = separator == std::string::npos
-        ? key
-        : key.substr(0, separator);
-    const auto root = context.get<Json::Value>(rootKey);
-    if (!root.has_value()) {
-        return ExpressionValue();
-    }
-    if (separator == std::string::npos) {
-        return ExpressionValue(*root);
-    }
-
-    Json::Value current = *root;
-    std::size_t start = separator + 1;
-    while (start <= key.size()) {
-        const auto end = key.find('.', start);
-        const auto member =
-            key.substr(start, end == std::string::npos
-                ? std::string::npos
-                : end - start);
-        if (member.empty() || !current.isObject() || !current.isMember(member)) {
-            return ExpressionValue();
-        }
-        current = current[member];
-        if (end == std::string::npos) {
-            break;
-        }
-        start = end + 1;
-    }
-
-    return ExpressionValue(std::move(current));
+    const BindingContext bindings(context);
+    return bindings.resolve(path);
 }
 
 } // namespace drogular::template_expression
