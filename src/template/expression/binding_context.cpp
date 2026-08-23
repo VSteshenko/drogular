@@ -3,6 +3,8 @@
 
 #include <json/json.h>
 
+#include <cmath>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
