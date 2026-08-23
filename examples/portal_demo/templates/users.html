@@ -1,7 +1,7 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
-<p>{{ authLoginRequiredMessage }}</p>
-<p><a href="/login">{{ navLogin }}</a></p>
+<h2>{{ t('auth.login_required.title') }}</h2>
+<p>{{ t('auth.login_required.message') }}</p>
+<p><a href="/login">{{ t('nav.login') }}</a></p>
 @else
 <h2>{{ pageTitle }}</h2>
 
@@ -31,19 +31,19 @@
                 required="{{ usersRoleRequired }}"
         />
     </div>
-    <button type="submit">{{ usersCreate }}</button>
+    <button type="submit">{{ t('users.create') }}</button>
 </form>
 @endif
 
 <form method="get" action="/users">
     <fieldset>
-        <legend>{{ usersFiltersTitle }}</legend>
+        <legend>{{ t('users.filters.title') }}</legend>
         <div>
-            <label for="userSearch">{{ usersSearchLabel }}</label><br />
+            <label for="userSearch">{{ t('users.search.label') }}</label><br />
             <input id="userSearch" name="search" value="{{ userSearch }}" type="search" />
         </div>
         <div>
-            <label for="userRoleFilter">{{ usersRoleFilterLabel }}</label><br />
+            <label for="userRoleFilter">{{ t('users.filter.role.label') }}</label><br />
             <PortalSelect
                     id="userRoleFilter"
                     name="role"
@@ -51,7 +51,7 @@
             />
         </div>
         <div>
-            <label for="userSort">{{ usersSortLabel }}</label><br />
+            <label for="userSort">{{ t('users.sort.label') }}</label><br />
             <PortalSelect
                     id="userSort"
                     name="sort"
@@ -59,16 +59,16 @@
             />
         </div>
         <div>
-            <label for="userSortDirection">{{ usersSortDirectionLabel }}</label><br />
+            <label for="userSortDirection">{{ t('users.sort.direction.label') }}</label><br />
             <PortalSelect
                     id="userSortDirection"
                     name="direction"
                     options="userSortDirectionOptions"
             />
         </div>
-        <button type="submit">{{ usersSearch }}</button>
+        <button type="submit">{{ t('users.search.button') }}</button>
         @if(hasActiveUserFilters)
-        <a href="/users">{{ usersClearSearch }}</a>
+        <a href="/users">{{ t('users.search.clear') }}</a>
         @endif
     </fieldset>
 </form>
@@ -78,18 +78,18 @@
     <li>
         <strong>{{ user.username }}</strong> — {{ user.role }}
         @if(isAdmin)
-        <a href="{{ user.editUrl }}">{{ usersEdit }}</a>
+        <a href="{{ user.editUrl }}">{{ t('users.edit') }}</a>
         @endif
     </li>
     @empty
-    <li>{{ usersEmpty }}</li>
+    <li>{{ t('users.empty') }}</li>
     @endforeach
 </ul>
 
 <PortalPagination
     model="pagination"
-    ariaLabel="{{ usersPaginationLabel }}"
-    previousLabel="{{ usersPreviousPage }}"
-    nextLabel="{{ usersNextPage }}"
+    ariaLabel="{{ t('users.pagination.label') }}"
+    previousLabel="{{ t('users.pagination.previous') }}"
+    nextLabel="{{ t('users.pagination.next') }}"
 />
 @endif

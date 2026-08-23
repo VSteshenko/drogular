@@ -21,62 +21,64 @@ public:
             return;
         }
 
-        const auto isAdmin =
-            context.get<bool>("isAdmin").value_or(false);
-
         Json::Value sections(Json::arrayValue);
-
-        Json::Value workspace(Json::objectValue);
-        workspace["title"] = context.translate("dashboard.section.workspace");
-        workspace["visible"] = true;
-        workspace["links"] = Json::Value(Json::arrayValue);
 
         const auto addLink = [](
             Json::Value& links,
-            std::string title,
+            std::string titleKey,
             std::string url,
-            bool visible = true
+            bool adminOnly = false
         ) {
             Json::Value link(Json::objectValue);
-            link["title"] = std::move(title);
+            link["titleKey"] = std::move(titleKey);
             link["url"] = std::move(url);
-            link["visible"] = visible;
+            link["adminOnly"] = adminOnly;
             links.append(std::move(link));
         };
 
+        Json::Value workspace(Json::objectValue);
+        workspace["titleKey"] = "dashboard.section.workspace";
+        workspace["adminOnly"] = false;
+        workspace["links"] = Json::Value(Json::arrayValue);
         addLink(
             workspace["links"],
-            context.translate("nav.projects"),
-            "/projects");
+            "nav.projects",
+            "/projects"
+        );
         addLink(
             workspace["links"],
-            context.translate("nav.departments"),
-            "/departments");
+            "nav.departments",
+            "/departments"
+        );
         addLink(
             workspace["links"],
-            context.translate("nav.users"),
-            "/users");
+            "nav.users",
+            "/users"
+        );
         sections.append(std::move(workspace));
 
         Json::Value administration(Json::objectValue);
-        administration["title"] = context.translate("dashboard.section.administration");
-        administration["visible"] = isAdmin;
+        administration["titleKey"] = "dashboard.section.administration";
+        administration["adminOnly"] = true;
         administration["links"] = Json::Value(Json::arrayValue);
         addLink(
             administration["links"],
-            context.translate("nav.admin"),
+            "nav.admin",
             "/admin",
-            isAdmin);
+            true
+        );
         addLink(
             administration["links"],
-            context.translate("roles.manage"),
+            "roles.manage",
             "/roles",
-            isAdmin);
+            true
+        );
         addLink(
             administration["links"],
-            context.translate("project_types.manage"),
+            "project_types.manage",
             "/project-types",
-            isAdmin);
+            true
+        );
         sections.append(std::move(administration));
 
         context.set("dashboardSections", sections);

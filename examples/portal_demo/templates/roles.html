@@ -1,17 +1,17 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
-<p>{{ authLoginRequiredMessage }}</p>
+<p>{{ t('auth.login_required.message') }}</p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @endif
 
 @if(accessDenied)
-<h2>{{ authAccessDeniedTitle }}</h2>
+<h2>{{ t('auth.access_denied.title') }}</h2>
 
-<p>{{ authAccessDeniedMessage }}</p>
+<p>{{ t('auth.access_denied.message') }}</p>
 @endif
 
 @if(hasAdminAccess)
@@ -19,7 +19,7 @@
 
 <p>
     <a href="/admin">
-        {{ rolesBackToAdmin }}
+        {{ t('roles.back_to_admin') }}
     </a>
 </p>
 
@@ -64,7 +64,7 @@
     </div>
 
     <button type="submit">
-        {{ rolesCreate }}
+        {{ t('roles.create') }}
     </button>
 </form>
 
@@ -82,7 +82,7 @@
         </span>
 
         <a href="{{ item.editUrl }}">
-            {{ rolesEdit }}
+            {{ t('roles.edit') }}
         </a>
 
         @if(item.canDelete)
@@ -91,7 +91,7 @@
             action="{{ item.deleteUrl }}"
         >
             <button type="submit">
-                {{ rolesDelete }}
+                {{ t('roles.delete') }}
             </button>
         </form>
         @endif

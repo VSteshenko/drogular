@@ -1,27 +1,27 @@
 <header>
     <div style="display:flex; align-items:center; gap:1rem;">
-        <h1 style="margin-right:auto;">{{ appTitle }}</h1>
+        <h1 style="margin-right:auto;">{{ t('app.title') }}</h1>
     </div>
 
     @if(isAuthenticated)
         <nav>
-            <a href="/dashboard">{{ navDashboard }}</a>
+            <a href="/dashboard">{{ t('nav.dashboard') }}</a>
             |
-            <a href="/users">{{ navUsers }}</a>
+            <a href="/users">{{ t('nav.users') }}</a>
             |
-            <a href="/projects">{{ navProjects }}</a>
+            <a href="/projects">{{ t('nav.projects') }}</a>
             |
-            <a href="/departments">{{ navDepartments }}</a>
+            <a href="/departments">{{ t('nav.departments') }}</a>
             @if(isAdmin)
             |
-            <a href="/admin">{{ navAdmin }}</a>
+            <a href="/admin">{{ t('nav.admin') }}</a>
             @endif
             |
             <form method="post" action="/logout" style="display:inline">
                 <button
                         type="submit"
                         style="border:none; background:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-                    {{ navLogout }}
+                    {{ t('nav.logout') }}
                 </button>
             </form>
         </nav>
@@ -30,7 +30,7 @@
     <div style="display:flex; align-items:center; gap:0.75rem;">
         @if(isAuthenticated)
             <small>
-                {{ headerSignedInAs }}: {{ currentUsername }}
+                {{ t('header.signed_in_as') }}: {{ currentUsername }}
             </small>
         @endif
 
@@ -38,7 +38,7 @@
             <form method="post" action="/language" style="display:inline">
                 <input type="hidden" name="language" value="en">
                 <input type="hidden" name="redirect" value="{{ currentPath }}">
-                <button type="submit" @if(isEnglish)disabled@endif>
+                <button type="submit" @if(locale == "en")disabled@endif>
                     EN
                 </button>
             </form>
@@ -46,7 +46,7 @@
             <form method="post" action="/language" style="display:inline">
                 <input type="hidden" name="language" value="de">
                 <input type="hidden" name="redirect" value="{{ currentPath }}">
-                <button type="submit" @if(isGerman)disabled@endif>
+                <button type="submit" @if(locale == "de")disabled@endif>
                     DE
                 </button>
             </form>

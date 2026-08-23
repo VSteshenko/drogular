@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "features/projects/providers/project_provider.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
@@ -153,12 +152,12 @@ public:
         const auto addStatusOption =
             [&statusOptions, &status](
                 const std::string& value,
-                const std::string& label
+                const std::string& labelKey
             ) {
                 Json::Value option(Json::objectValue);
 
                 option["value"] = value;
-                option["label"] = label;
+                option["labelKey"] = labelKey;
                 option["selected"] = status == value;
 
                 statusOptions.append(std::move(option));
@@ -166,27 +165,19 @@ public:
 
         addStatusOption(
             "",
-            context.translate(
-                "projects.query.status.all"
-            )
+            "projects.query.status.all"
         );
         addStatusOption(
             "active",
-            context.translate(
-                "projects.status.active"
-            )
+            "projects.status.active"
         );
         addStatusOption(
             "paused",
-            context.translate(
-                "projects.status.paused"
-            )
+            "projects.status.paused"
         );
         addStatusOption(
             "done",
-            context.translate(
-                "projects.status.done"
-            )
+            "projects.status.done"
         );
 
         Json::Value projectTypeFilterOptions(Json::arrayValue);
@@ -194,7 +185,7 @@ public:
             Json::Value option(Json::objectValue);
 
             option["value"] = "";
-            option["label"] = context.translate("projects.filter.type.all");
+            option["labelKey"] = "projects.filter.type.all";
             option["selected"] = !projectTypeId.has_value();
 
             projectTypeFilterOptions.append(std::move(option));
@@ -221,7 +212,7 @@ public:
             Json::Value option(Json::objectValue);
 
             option["value"] = "";
-            option["label"] = context.translate("projects.filter.owner.all");
+            option["labelKey"] = "projects.filter.owner.all";
             option["selected"] = !ownerId.has_value();
 
             ownerFilterOptions.append(std::move(option));
@@ -244,12 +235,12 @@ public:
         const auto addSortOption =
             [&sortOptions, &sortField](
                 const std::string& value,
-                const std::string& label
+                const std::string& labelKey
             ) {
                 Json::Value option(Json::objectValue);
 
                 option["value"] = value;
-                option["label"] = label;
+                option["labelKey"] = labelKey;
                 option["selected"] =
                     sortField == value;
 
@@ -258,21 +249,15 @@ public:
 
         addSortOption(
             "title",
-            context.translate(
-                "projects.sort.title"
-            )
+            "projects.sort.title"
         );
         addSortOption(
             "status",
-            context.translate(
-                "projects.sort.status"
-            )
+            "projects.sort.status"
         );
         addSortOption(
             "id",
-            context.translate(
-                "projects.sort.id"
-            )
+            "projects.sort.id"
         );
 
         Json::Value directionOptions(Json::arrayValue);
@@ -281,12 +266,12 @@ public:
         const auto addDirectionOption =
             [&directionOptions, &selectedDirection](
                 const std::string& value,
-                const std::string& label
+                const std::string& labelKey
             ) {
                 Json::Value option(Json::objectValue);
 
                 option["value"] = value;
-                option["label"] = label;
+                option["labelKey"] = labelKey;
                 option["selected"] =
                     selectedDirection == value;
 
@@ -295,15 +280,11 @@ public:
 
         addDirectionOption(
             "asc",
-            context.translate(
-                "projects.sort.ascending"
-            )
+            "projects.sort.ascending"
         );
         addDirectionOption(
             "desc",
-            context.translate(
-                "projects.sort.descending"
-            )
+            "projects.sort.descending"
         );
 
         portal::PortalProjectQueryViewModel filters;

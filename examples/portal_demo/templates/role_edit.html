@@ -1,27 +1,27 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
-<p>{{ authLoginRequiredMessage }}</p>
+<p>{{ t('auth.login_required.message') }}</p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @endif
 
 @if(accessDenied)
-<h2>{{ authAccessDeniedTitle }}</h2>
+<h2>{{ t('auth.access_denied.title') }}</h2>
 
-<p>{{ authAccessDeniedMessage }}</p>
+<p>{{ t('auth.access_denied.message') }}</p>
 @endif
 
 @if(roleNotFound)
-<h2>{{ roleNotFoundTitle }}</h2>
+<h2>{{ t('roles.not_found.title') }}</h2>
 
-<p>{{ roleNotFoundMessage }}</p>
+<p>{{ t('roles.not_found.message') }}</p>
 
 <p>
     <a href="/roles">
-        {{ rolesBack }}
+        {{ t('roles.back') }}
     </a>
 </p>
 @endif
@@ -70,13 +70,13 @@
     </div>
 
     <button type="submit">
-        {{ rolesUpdate }}
+        {{ t('roles.update') }}
     </button>
 </form>
 
 <p>
     <a href="/roles">
-        {{ rolesBack }}
+        {{ t('roles.back') }}
     </a>
 </p>
 

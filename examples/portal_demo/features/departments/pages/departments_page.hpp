@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "ui/portal_page_support.hpp"
 #include "features/departments/providers/department_provider.hpp"
 #include "features/departments/ui/portal_department_query_parser.hpp"
@@ -70,12 +69,12 @@ public:
         const auto addActive =
             [&activeOptions, &query](
                 const std::string& value,
-                const std::string& label,
+                const std::string& labelKey,
                 std::optional<bool> state) {
                 Json::Value item(Json::objectValue);
 
                 item["value"] = value;
-                item["label"] = label;
+                item["labelKey"] = labelKey;
                 item["selected"] =
                     query.isActive == state;
 
@@ -84,17 +83,17 @@ public:
 
         addActive(
             "",
-            context.translate("departments.filter.all"),
+            "departments.filter.all",
             std::nullopt
         );
         addActive(
             "true",
-            context.translate("departments.filter.active"),
+            "departments.filter.active",
             true
         );
         addActive(
             "false",
-            context.translate("departments.filter.inactive"),
+            "departments.filter.inactive",
             false
         );
 
@@ -119,7 +118,7 @@ public:
             Json::Value item(Json::objectValue);
 
             item["value"] = entry.first;
-            item["label"] = context.translate(entry.second);
+            item["labelKey"] = entry.second;
             item["selected"] =
                 sort.field == entry.first;
 
@@ -140,7 +139,7 @@ public:
             Json::Value item(Json::objectValue);
 
             item["value"] = entry.first;
-            item["label"] = context.translate(entry.second);
+            item["labelKey"] = entry.second;
             item["selected"] =
                 toString(sort.direction) == entry.first;
 
@@ -184,10 +183,6 @@ public:
             item["description"] = value.description;
             item["manager"] = managerName(value.managerId);
             item["active"] = value.isActive;
-            item["status"] = context.translate(
-                value.isActive
-                ? "departments.active"
-                : "departments.inactive");
             item["detailsUrl"] =
                 "/departments/" + std::to_string(value.id);
             item["editUrl"] =

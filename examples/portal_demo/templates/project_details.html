@@ -1,27 +1,27 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @else
 
 @if(projectNotFound)
-<h2>{{ projectNotFoundTitle }}</h2>
+<h2>{{ t('projects.not_found.title') }}</h2>
 
 <p>
-    {{ projectNotFoundMessage }}</p>
+    {{ t('projects.not_found.message') }}</p>
 
 <p>
     <a
         id="projectsBackFromNotFoundLink"
         href="{{ projectsBackUrl }}"
     >
-        {{ projectsBack }}
+        {{ t('projects.back') }}
     </a>
 </p>
 @else
@@ -41,7 +41,16 @@
 
 <p>
     <strong>{{ statusLabel }}:</strong>
-    {{ projectStatus }}
+    @switch(projectStatus)
+            @case("active")
+                {{ t('projects.status.active') }}
+            @case("paused")
+                {{ t('projects.status.paused') }}
+            @case("done")
+                {{ t('projects.status.done') }}
+            @default
+                {{ projectStatus }}
+        @endswitch
 </p>
 
 @if(hasProjectOwner)
@@ -61,11 +70,11 @@
 @endif
 
 <p>
-    <a href="/projects/{{ projectId }}/edit">{{ projectsUpdate }}</a>
+    <a href="/projects/{{ projectId }}/edit">{{ t('projects.update') }}</a>
 </p>
 
 <form method="post" action="/projects/{{ projectId }}/delete">
-    <button type="submit">{{ projectsDelete }}</button>
+    <button type="submit">{{ t('projects.delete') }}</button>
 </form>
 
 <p>
@@ -73,7 +82,7 @@
         id="projectsBackFromDetailsLink"
         href="{{ projectsBackUrl }}"
     >
-        {{ projectsBack }}
+        {{ t('projects.back') }}
     </a>
 </p>
 

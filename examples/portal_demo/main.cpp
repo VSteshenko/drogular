@@ -23,6 +23,7 @@
 #include "features/users/actions/update_user_action.hpp"
 #include "features/offline/pages/offline_page.hpp"
 #include "features/localization/support/portal_translations.hpp"
+#include "support/portal_expression_functions.hpp"
 #include "features/projects/actions/create_project_action.hpp"
 #include "features/projects/pages/projects_page.hpp"
 #include "features/projects/pages/project_details_page.hpp"
@@ -105,6 +106,11 @@ int main(
     .developerToolsComponent(
         "portal.summary",
         "/assets/portal-inspection.js"
+    );
+
+    app.expressionFunction(
+        "t",
+        portalTranslationExpressionFunction()
     );
 
     app.services().addFactory<drogular::TranslationProvider>(

@@ -1,11 +1,11 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @else
 <h2>{{ pageTitle }}</h2>
@@ -17,7 +17,7 @@
 >
     <div>
     <label>
-        {{ departmentsName }}
+        {{ t('departments.name') }}
         <input
                 name="name" required
         />
@@ -26,7 +26,7 @@
 
     <div>
         <label>
-            {{ departmentsDescription }}
+            {{ t('departments.description') }}
             <input
                     name="description"
             />
@@ -35,7 +35,7 @@
 
     <div>
         <label>
-            {{ departmentsManager }}
+            {{ t('departments.manager') }}
             <select
                     name="managerId"
             >
@@ -55,13 +55,13 @@
                     name="isActive"
                     checked
             />
-            {{ departmentsActive }}
+            {{ t('departments.active') }}
         </label>
     </div>
 
     <div>
         <button type="submit">
-            {{ departmentsCreate }}
+            {{ t('departments.create') }}
         </button>
     </div>
 </form>
@@ -70,12 +70,12 @@
 <form method="get" action="/departments">
     <fieldset>
         <legend>
-            {{ departmentsFiltersTitle }}
+            {{ t('departments.filter.title') }}
         </legend>
 
         <div>
             <label for="search">
-                {{ departmentsSearchLabel }}
+                {{ t('departments.search') }}
             </label>
             <br />
 
@@ -89,7 +89,7 @@
 
         <div>
             <label for="status">
-                {{ departmentsStatusFilterLabel }}
+                {{ t('departments.filter.status') }}
             </label>
             <br />
 
@@ -102,7 +102,7 @@
 
         <div>
             <label for="sort">
-                {{ departmentsSortLabel }}
+                {{ t('departments.sort.label') }}
             </label>
             <br />
 
@@ -115,7 +115,7 @@
 
         <div>
             <label for="direction">
-                {{ departmentsDirectionLabel }}
+                {{ t('departments.sort.direction.label') }}
             </label>
             <br />
 
@@ -128,7 +128,7 @@
 
         <div>
             <button type="submit">
-                {{ departmentsApply }}
+                {{ t('departments.apply') }}
             </button>
         </div>
     </fieldset>
@@ -142,25 +142,30 @@
                 {{ department.name }}
             </a>
         </strong>
-        — {{ department.manager }} — {{ department.status }}
+        — {{ department.manager }} —
+        @if(department.active)
+            {{ t('departments.active') }}
+        @else
+            {{ t('departments.inactive') }}
+        @endif
         <br />
         {{ department.description }}
 
         @if(isAdmin)
         <a href="{{ department.editUrl }}">
-            {{ departmentsEdit }}
+            {{ t('departments.edit') }}
         </a>
         @endif
     </li>
     @empty
-    <li>{{ departmentsEmpty }}</li>
+    <li>{{ t('departments.empty') }}</li>
     @endforeach
 </ul>
 
 <PortalPagination
     model="pagination"
-    ariaLabel="{{ departmentsPaginationLabel }}"
-    previousLabel="{{ commonPrevious }}"
-    nextLabel="{{ commonNext }}"
+    ariaLabel="{{ t('departments.pagination.label') }}"
+    previousLabel="{{ t('common.previous') }}"
+    nextLabel="{{ t('common.next') }}"
 />
 @endif

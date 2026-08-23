@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "features/users/providers/user_provider.hpp"
 #include "features/users/ui/portal_user_query_parser.hpp"
 #include "features/users/ui/portal_user_query_serializer.hpp"
@@ -114,7 +113,7 @@ public:
             Json::Value option(Json::objectValue);
 
             option["value"] = "";
-            option["label"] = context.translate("users.filter.role.all");
+            option["labelKey"] = "users.filter.role.all";
             option["selected"] = role.empty();
 
             roleFilterOptions.append(std::move(option));
@@ -138,33 +137,27 @@ public:
         const auto addSortOption =
             [&sortOptions, &sort](
                 const std::string& value,
-                const std::string& label
+                const std::string& labelKey
             ) {
                 Json::Value option(Json::objectValue);
 
                 option["value"] = value;
-                option["label"] = label;
+                option["labelKey"] = labelKey;
                 option["selected"] = sort.field == value;
 
                 sortOptions.append(std::move(option));
             };
         addSortOption(
             "username",
-            context.translate(
-                "users.sort.username"
-            )
+            "users.sort.username"
         );
         addSortOption(
             "role",
-            context.translate(
-                "users.sort.role"
-            )
+            "users.sort.role"
         );
         addSortOption(
             "id",
-            context.translate(
-                "users.sort.id"
-            )
+            "users.sort.id"
         );
         context.set(
             "userSortOptions",
@@ -177,25 +170,21 @@ public:
         const auto addDirection =
             [&directionOptions, &selectedDirection](
                 const std::string& value,
-                const std::string& label
+                const std::string& labelKey
             ) {
                 Json::Value option(Json::objectValue);
                 option["value"] = value;
-                option["label"] = label;
+                option["labelKey"] = labelKey;
                 option["selected"] = selectedDirection == value;
                 directionOptions.append(std::move(option));
             };
         addDirection(
             "asc",
-            context.translate(
-                "users.sort.ascending"
-            )
+            "users.sort.ascending"
         );
         addDirection(
             "desc",
-            context.translate(
-                "users.sort.descending"
-            )
+            "users.sort.descending"
         );
         context.set(
             "userSortDirectionOptions",

@@ -6,16 +6,16 @@
 
 <form method="post" action="/login">
     <div>
-        <label for="username">{{ loginUsername }}</label>
+        <label for="username">{{ t('login.username') }}</label>
         <input id="username" name="username" />
     </div>
 
     <div>
-        <label for="password">{{ loginPassword }}</label>
+        <label for="password">{{ t('login.password') }}</label>
         <input id="password" name="password" type="password" />
     </div>
 
     <div>
-        <button type="submit">{{ loginSubmit }}</button>
+        <button type="submit">{{ t('login.submit') }}</button>
     </div>
 </form>

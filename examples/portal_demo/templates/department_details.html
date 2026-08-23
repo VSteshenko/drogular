@@ -1,19 +1,19 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 <p>
     <a href="/login">
-        {{ navLogin }}
+        {{ t('nav.login') }}
     </a>
 </p>
 @else
 @if(departmentNotFound)
-<h2>{{ departmentsNotFound }}</h2>
+<h2>{{ t('departments.not_found') }}</h2>
 <p>
     <a href="{{ departmentsBackUrl }}">
-        {{ departmentsBack }}
+        {{ t('departments.back') }}
     </a>
 </p>
 @else
@@ -21,33 +21,38 @@
 
 <p>
     <strong>
-        {{ departmentsName }}:
+        {{ t('departments.name') }}:
     </strong>
     {{ departmentName }}
 </p>
 
 <p>
     <strong>
-        {{ departmentsDescription }}:
+        {{ t('departments.description') }}:
     </strong>
     {{ departmentDescription }}
 </p>
 
 <p>
     <strong>
-        {{ departmentsManager }}:
+        {{ t('departments.manager') }}:
     </strong>
     {{ departmentManager }}
 </p>
 
 <p>
     <strong>
-        {{ departmentsStatusLabel }}:
+        {{ t('departments.status') }}:
     </strong>
-    {{ departmentStatus }}
+    @switch(departmentActive)
+        @case(true)
+            {{ t('departments.active') }}
+        @default
+            {{ t('departments.inactive') }}
+    @endswitch
 </p>
 
-<h3>{{ departmentsMembers }}</h3>
+<h3>{{ t('departments.members') }}</h3>
 <ul>
 @foreach(member in departmentMembers)
 <li>
@@ -58,19 +63,20 @@
     @if(isAdmin)
     <form method="post" action="{{ member.removeUrl }}" style="display:inline">
         <button type="submit">
-            {{ departmentsRemoveMember }}
+            {{ t('departments.members.remove') }}
         </button>
     </form>
     @endif
 </li>
 @empty
-<li>{{ departmentsMembersEmpty }}</li>
+<li>{{ t('departments.members.empty') }}</li>
 @endforeach
 </ul>
 
 @if(isAdmin)
-<h3>{{ departmentsAddMember }}</h3>
-@if(hasDepartmentMemberCandidates)
+<h3>{{ t('departments.members.add') }}</h3>
+@let(hasMemberCandidates = !departmentMemberCandidates.empty())
+@if(hasMemberCandidates)
 <form method="post" action="/departments/{{ departmentId }}/members/add">
     <select
             name="userId"
@@ -83,23 +89,23 @@
     @endforeach
     </select>
     <button type="submit">
-        {{ departmentsAddMember }}
+        {{ t('departments.members.add') }}
     </button>
 </form>
 @else
 <p>
-    {{ departmentsNoMemberCandidates }}
+    {{ t('departments.members.no_candidates') }}
 </p>
 @endif
 <p>
     <a href="/departments/{{ departmentId }}/edit">
-        {{ departmentsEdit }}
+        {{ t('departments.edit') }}
     </a>
 </p>
 @endif
 <p>
     <a href="{{ departmentsBackUrl }}">
-        {{ departmentsBack }}
+        {{ t('departments.back') }}
     </a>
 </p>
 @endif

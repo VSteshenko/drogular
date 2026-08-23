@@ -1,20 +1,20 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @endif
 
 @if(accessDenied)
-<h2>{{ authAccessDeniedTitle }}</h2>
+<h2>{{ t('auth.access_denied.title') }}</h2>
 
 <p>
-    {{ authAccessDeniedMessage }}
+    {{ t('auth.access_denied.message') }}
 </p>
 @endif
 
@@ -28,17 +28,17 @@
 <ul>
     <li>
         <a href="/roles">
-            {{ rolesManage }}
+            {{ t('roles.manage') }}
         </a>
     </li>
     <li>
         <a href="/project-types">
-            {{ projectTypesManage }}
+            {{ t('project_types.manage') }}
         </a>
     </li>
     <li>
         <a href="/__drogular">
-            {{ adminDiagnostics }}
+            {{ t('admin.diagnostics') }}
         </a>
     </li>
 </ul>

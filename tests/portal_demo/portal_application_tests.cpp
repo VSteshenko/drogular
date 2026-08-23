@@ -182,6 +182,78 @@ TEST(PortalApplicationTests, DepartmentDetailsUsesForeachEmptyForMembers) {
     );
 }
 
+TEST(PortalApplicationTests, DashboardTranslatesQuickLinksThroughExpressionFunction) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDashboardPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Workspace"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Administration"
+        )
+    );
+    EXPECT_FALSE(
+        HtmlTestSupport::containsText(
+            html,
+            "dashboard.section.workspace"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectsPageFormatsStatusWithSwitch) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectsPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Active"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Paused"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, DepartmentDetailsUsesCollectionFunctionForCandidates) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {},
+        {{"id", "1"}}
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "Add member"
+        )
+    );
+}
+
 TEST(PortalApplicationTests, AdminCreatesProject) {
     PortalApplicationTestHost app(
         DemoDataset::create()

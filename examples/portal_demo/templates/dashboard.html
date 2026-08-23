@@ -1,14 +1,15 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @else
+@const(adminRoles = ["admin"])
 <h2>{{ pageTitle }}</h2>
 
 <p>
@@ -19,27 +20,27 @@
     Role: {{ currentRole }}
 </p>
 
-<h3>{{ dashboardQuickLinks }}</h3>
-@foreach(section in dashboardSections where section.visible)
+<h3>{{ t('dashboard.quick_links') }}</h3>
+@foreach(section in dashboardSections where !section.adminOnly || currentRole in adminRoles)
 <section
     data-section-number="{{ loop.number }}"
     data-loop-depth="{{ loop.depth }}"
 >
-    <h4>{{ section.title }}</h4>
+    <h4>{{ t(section.titleKey) }}</h4>
     <ul>
-        @foreach(link in section.links where link.visible)
+        @foreach(link in section.links where !link.adminOnly || currentRole in adminRoles)
         <li
             data-link-number="{{ loop.parent.number }}.{{ loop.number }}"
             data-loop-depth="{{ loop.depth }}"
         >
-            <a href="{{ link.url }}">{{ link.title }}</a>
+            <a href="{{ link.url }}">{{ t(link.titleKey) }}</a>
         </li>
         @empty
-        <li>{{ dashboardNoLinks }}</li>
+        <li>{{ t('dashboard.no_links') }}</li>
         @endforeach
     </ul>
 </section>
 @empty
-<p>{{ dashboardNoLinks }}</p>
+<p>{{ t('dashboard.no_links') }}</p>
 @endforeach
 @endif

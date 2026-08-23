@@ -1,13 +1,13 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
-<p>{{ authLoginRequiredMessage }}</p>
-<p><a href="/login">{{ navLogin }}</a></p>
+<h2>{{ t('auth.login_required.title') }}</h2>
+<p>{{ t('auth.login_required.message') }}</p>
+<p><a href="/login">{{ t('nav.login') }}</a></p>
 @else
 
 @if(projectNotFound)
-<h2>{{ projectNotFoundTitle }}</h2>
-<p>{{ projectNotFoundMessage }}</p>
-<p><a href="/projects">{{ projectsBack }}</a></p>
+<h2>{{ t('projects.not_found.title') }}</h2>
+<p>{{ t('projects.not_found.message') }}</p>
+<p><a href="/projects">{{ t('projects.back') }}</a></p>
 @else
 
 <h2>{{ pageTitle }}</h2>
@@ -54,17 +54,17 @@
                 name="status"
                 @if(projectStatusRequired)required@endif
         >
-            <option value="active" @if(isActive)selected@endif>{{ projectStatusActive }}</option>
-            <option value="paused" @if(isPaused)selected@endif>{{ projectStatusPaused }}</option>
-            <option value="done" @if(isDone)selected@endif>{{ projectStatusDone }}</option>
+            <option value="active" @if(isActive)selected@endif>{{ t('projects.status.active') }}</option>
+            <option value="paused" @if(isPaused)selected@endif>{{ t('projects.status.paused') }}</option>
+            <option value="done" @if(isDone)selected@endif>{{ t('projects.status.done') }}</option>
         </select>
     </div>
 
-    <button type="submit">{{ projectsUpdate }}</button>
+    <button type="submit">{{ t('projects.update') }}</button>
 </form>
 
 <p>
-    <a href="/projects/{{ projectId }}">{{ projectsBackToDetails }}</a>
+    <a href="/projects/{{ projectId }}">{{ t('projects.back_to_details') }}</a>
 </p>
 
 @endif

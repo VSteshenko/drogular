@@ -8,6 +8,7 @@
 #include "features/department_members/providers/department_member_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
 #include "features/localization/support/portal_translations.hpp"
+#include "support/portal_expression_functions.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
 #include "features/roles/graphql/portal_graphql_role_provider.hpp"
@@ -123,6 +124,11 @@ public:
                     client
                 );
             }
+        );
+
+        services_.expressionFunctions().registerFunction(
+            "t",
+            portalTranslationExpressionFunction()
         );
 
         services_.addFactory<drogular::TranslationProvider>(

@@ -1,12 +1,12 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @else
 <h2>{{ pageTitle }}</h2>
@@ -57,24 +57,24 @@
                 name="status"
                 @if(projectStatusRequired)required@endif
         >
-            <option value="active">{{ projectStatusActive }}</option>
-            <option value="paused">{{ projectStatusPaused }}</option>
-            <option value="done">{{ projectStatusDone }}</option>
+            <option value="active">{{ t('projects.status.active') }}</option>
+            <option value="paused">{{ t('projects.status.paused') }}</option>
+            <option value="done">{{ t('projects.status.done') }}</option>
         </select>
     </div>
 
-    <button type="submit">{{ projectsCreate }}</button>
+    <button type="submit">{{ t('projects.create') }}</button>
 </form>
 
 <form method="get" action="/projects">
     <fieldset>
         <legend>
-            {{ projectsFiltersTitle }}
+            {{ t('projects.filters.title') }}
         </legend>
 
         <div>
             <label for="search">
-                {{ projectsSearchLabel }}
+                {{ t('projects.search.label') }}
             </label>
             <br />
 
@@ -88,7 +88,7 @@
 
         <div>
             <label for="statusFilter">
-                {{ projectsStatusFilterLabel }}
+                {{ t('projects.filter.status') }}
             </label>
             <br />
 
@@ -101,7 +101,7 @@
 
         <div>
             <label for="projectTypeFilter">
-                {{ projectsTypeFilterLabel }}
+                {{ t('projects.filter.type') }}
             </label>
             <br />
 
@@ -114,7 +114,7 @@
 
         <div>
             <label for="projectOwnerFilter">
-                {{ projectsOwnerFilterLabel }}
+                {{ t('projects.filter.owner') }}
             </label>
             <br />
 
@@ -127,7 +127,7 @@
 
         <div>
             <label for="projectSort">
-                {{ projectsSortLabel }}
+                {{ t('projects.sort.label') }}
             </label>
             <br />
 
@@ -140,7 +140,7 @@
 
         <div>
             <label for="projectSortDirection">
-                {{ projectsSortDirectionLabel }}
+                {{ t('projects.sort.direction') }}
             </label>
             <br />
 
@@ -153,12 +153,12 @@
 
         <div>
             <button type="submit">
-                {{ projectsSearch }}
+                {{ t('projects.search.button') }}
             </button>
 
             @if(filters.hasActiveFilters)
             <a href="/projects">
-                {{ projectsClearSearch }}
+                {{ t('projects.search.clear') }}
             </a>
             @endif
         </div>
@@ -171,17 +171,26 @@
         <a href="{{ project.detailsUrl }}">
             {{ project.title }}
         </a>
-        — {{ project.status }}
+        — @switch(project.status)
+            @case("active")
+                {{ t('projects.status.active') }}
+            @case("paused")
+                {{ t('projects.status.paused') }}
+            @case("done")
+                {{ t('projects.status.done') }}
+            @default
+                {{ project.status }}
+        @endswitch
     </li>
     @empty
-    <li>{{ projectsEmpty }}</li>
+    <li>{{ t('projects.empty') }}</li>
     @endforeach
 </ul>
 
 <PortalPagination
         model="pagination"
-        ariaLabel="{{ projectsPaginationLabel }}"
-        previousLabel="{{ projectsPreviousPage }}"
-        nextLabel="{{ projectsNextPage }}"
+        ariaLabel="{{ t('projects.pagination.label') }}"
+        previousLabel="{{ t('projects.pagination.previous') }}"
+        nextLabel="{{ t('projects.pagination.next') }}"
 />
 @endif

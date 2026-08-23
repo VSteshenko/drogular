@@ -1,20 +1,20 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @endif
 
 @if(accessDenied)
-<h2>{{ authAccessDeniedTitle }}</h2>
+<h2>{{ t('auth.access_denied.title') }}</h2>
 
 <p>
-    {{ authAccessDeniedMessage }}
+    {{ t('auth.access_denied.message') }}
 </p>
 @endif
 
@@ -23,7 +23,7 @@
 
 <p>
     <a href="/admin">
-        {{ projectTypesBackToAdmin }}
+        {{ t('project_types.back_to_admin') }}
     </a>
 </p>
 
@@ -68,7 +68,7 @@
     </div>
 
     <button type="submit">
-        {{ projectTypesCreate }}
+        {{ t('project_types.create') }}
     </button>
 </form>
 
@@ -86,7 +86,7 @@
         </span>
 
         <a href="{{ item.editUrl }}">
-            {{ projectTypesEdit }}
+            {{ t('project_types.edit') }}
         </a>
 
         @if(item.canDelete)
@@ -95,7 +95,7 @@
                 action="{{ item.deleteUrl }}"
         >
             <button type="submit">
-                {{ projectTypesDelete }}
+                {{ t('project_types.delete') }}
             </button>
         </form>
         @endif

@@ -63,14 +63,7 @@ public:
         context.set("departmentId", department->id);
         context.set("departmentName", department->name);
         context.set("departmentDescription", department->description);
-        context.set(
-            "departmentStatus",
-            context.translate(
-                department->isActive
-                ? "departments.active"
-                : "departments.inactive"
-            )
-        );
+        context.set("departmentActive", department->isActive);
         const auto manager = userById(department->managerId);
         context.set(
             "departmentManager",
@@ -119,7 +112,6 @@ public:
             candidates.append(std::move(item));
         }
         context.set("departmentMemberCandidates", candidates);
-        context.set("hasDepartmentMemberCandidates", !candidates.empty());
     }
 
     std::string templatePath() const override {

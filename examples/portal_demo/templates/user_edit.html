@@ -1,30 +1,30 @@
 @if(loginRequired)
-<h2>{{ authLoginRequiredTitle }}</h2>
+<h2>{{ t('auth.login_required.title') }}</h2>
 
 <p>
-    {{ authLoginRequiredMessage }}
+    {{ t('auth.login_required.message') }}
 </p>
 
 <p>
-    <a href="/login">{{ navLogin }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @else
 
 @if(accessDenied)
-<h2>{{ authAccessDeniedTitle }}</h2>
+<h2>{{ t('auth.access_denied.title') }}</h2>
 
 <p>
-    {{ authAccessDeniedMessage }}
+    {{ t('auth.access_denied.message') }}
 </p>
 @else
 
 @if(userNotFound)
-<h2>{{ userNotFoundTitle }}</h2>
+<h2>{{ t('users.not_found.title') }}</h2>
 
-<p>{{ userNotFoundMessage }}</p>
+<p>{{ t('users.not_found.message') }}</p>
 
 <p>
-    <a href="/users">{{ usersBack }}</a>
+    <a href="/users">{{ t('users.back') }}</a>
 </p>
 @else
 
@@ -67,12 +67,12 @@
     </div>
 
     <button type="submit">
-        {{ usersUpdate }}
+        {{ t('users.update') }}
     </button>
 </form>
 
 <p>
-    <a href="/users">{{ usersBack }}</a>
+    <a href="/users">{{ t('users.back') }}</a>
 </p>
 
 @endif

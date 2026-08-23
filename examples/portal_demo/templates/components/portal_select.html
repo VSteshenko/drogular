@@ -9,6 +9,6 @@
         value="{{ item.value }}"
         @if(item.selected)selected@endif
         @if(item.disabled)disabled@endif
-    >{{ item.label }}</option>
+    >@if(item.labelKey){{ t(item.labelKey) }}@else{{ item.label }}@endif</option>
     @endforeach
 </select>

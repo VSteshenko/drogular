@@ -1,5 +1,5 @@
 @if(departmentNotFound)
-<h2>{{ departmentsNotFound }}
+<h2>{{ t('departments.not_found') }}
 </h2>
 @else
 <h2>
@@ -9,7 +9,7 @@
 <form method="post" action="/departments/{{ departmentId }}/update">
     <div>
         <label>
-            {{ departmentsName }}
+            {{ t('departments.name') }}
             <input
                     name="name"
                     value="{{ departmentName }}"
@@ -19,7 +19,7 @@
 
     <div>
         <label>
-            {{ departmentsDescription }}
+            {{ t('departments.description') }}
             <input
                     name="description"
                     value="{{ departmentDescription }}" />
@@ -28,7 +28,7 @@
 
     <div>
         <label>
-            {{ departmentsManager }}
+            {{ t('departments.manager') }}
             <select name="managerId">
                 @foreach(manager in departmentManagers)
                 <option
@@ -49,12 +49,12 @@
                     name="isActive"
                     @if(departmentActive)checked@endif
             />
-            {{ departmentsActive }}
+            {{ t('departments.active') }}
         </label>
     </div>
 
     <div>
-        <button type="submit">{{ departmentsSave }}</button>
+        <button type="submit">{{ t('departments.save') }}</button>
     </div>
 </form>
 @endif
