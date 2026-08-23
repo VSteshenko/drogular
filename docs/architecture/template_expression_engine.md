@@ -39,11 +39,13 @@ include/drogular/template/expression/
     ast.hpp
     parser.hpp
     evaluator.hpp
+    functions.hpp
     expression.hpp
 
 src/template/expression/
     parser.cpp
     evaluator.cpp
+    functions.cpp
 ```
 
 `<drogular/template_expression.hpp>` remains as a compatibility umbrella. New
@@ -95,6 +97,8 @@ The AST contains:
 - `UnaryExpression`;
 - `BinaryExpression`;
 - `ListExpression`;
+- `MemberAccessExpression`;
+- `MethodCallExpression`;
 - `RangeExpression`.
 
 Unary and binary nodes carry explicit operator enums rather than source text.
@@ -103,6 +107,29 @@ the original expression string.
 
 The AST is immutable after parsing and may be reused for multiple evaluations
 against different `RenderContext` instances.
+
+## Collection methods
+
+Iterable expression values expose a small built-in method API:
+
+```text
+count()
+empty()
+first()
+last()
+contains(value)
+```
+
+The methods work uniformly for JSON arrays, list literals, and ranges. Method
+calls are represented by `MethodCallExpression` and are dispatched through
+`ExpressionFunctionRegistry`, keeping built-in function implementations outside
+the evaluator. Returned values remain normal `ExpressionValue` instances, so
+postfix chaining such as `projects.first().name` and
+`projects.first().roles.contains("Admin")` is supported.
+
+`contains(value)` delegates to the same membership implementation used by `in`,
+so the method and operator cannot diverge semantically. Range membership remains
+lazy and arithmetic.
 
 ## Arithmetic expressions
 
@@ -270,10 +297,10 @@ source element is bound and before loop metadata is calculated.
 The expression engine now provides the value and iterable models needed for
 the next language steps:
 
-1. collection functions such as `count()`, `empty()`, `contains()`, `first()`, and `last()`;
-2. `@let` bindings;
-3. compile-time `@const` bindings;
-4. `@switch` / `@case`.
+1. `@let` bindings;
+2. compile-time `@const` bindings;
+3. `@switch` / `@case`;
+4. additional collection transformations when their semantics are justified.
 
 Those features belong in the expression engine rather than in individual
 template directives whenever they represent values or operators.

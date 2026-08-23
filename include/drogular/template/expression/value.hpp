@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -68,6 +69,15 @@ public:
     [[nodiscard]] ArrayPtr array() const;
     [[nodiscard]] const ExpressionRange* range() const;
     [[nodiscard]] const Storage& storage() const noexcept;
+
+    /** Value equality used by ==, in, and collection contains(). */
+    [[nodiscard]] bool equals(const ExpressionValue& other) const;
+
+    /** Membership test for lists, ranges, and JSON arrays. */
+    [[nodiscard]] bool contains(const ExpressionValue& candidate) const;
+
+    /** Resolves an object member from a JSON object, or returns null. */
+    [[nodiscard]] ExpressionValue member(std::string_view name) const;
 
     /** Returns true for native lists, ranges, and JSON arrays. */
     [[nodiscard]] bool isIterable() const;

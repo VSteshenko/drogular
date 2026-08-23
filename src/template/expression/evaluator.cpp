@@ -1,4 +1,5 @@
 #include <drogular/template/expression/evaluator.hpp>
+#include <drogular/template/expression/functions.hpp>
 #include <drogular/template/expression/parser.hpp>
 #include <drogular/render_context.hpp>
 
@@ -6,6 +7,7 @@
 #include <limits>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace drogular::template_expression {
 
@@ -151,6 +153,42 @@ const ExpressionValue::Storage& ExpressionValue::storage() const noexcept {
     return value_;
 }
 
+bool ExpressionValue::equals(const ExpressionValue& other) const {
+    if (isNull() || other.isNull()) {
+        return isNull() && other.isNull();
+    }
+    if (const auto lhs = number()) {
+        if (const auto rhs = other.number()) {
+            return *lhs == *rhs;
+        }
+    }
+    if (const auto lhs = string()) {
+        if (const auto rhs = other.string()) {
+            return *lhs == *rhs;
+        }
+    }
+    if (const auto lhs = boolean()) {
+        if (const auto rhs = other.boolean()) {
+            return *lhs == *rhs;
+        }
+    }
+
+    return false;
+}
+
+ExpressionValue ExpressionValue::member(std::string_view name) const {
+    if (const auto* json = std::get_if<Json::Value>(&value_);
+        json && json->isObject()
+    ) {
+        const auto key = std::string(name);
+        if (json->isMember(key)) {
+            return ExpressionValue((*json)[key]);
+        }
+    }
+
+    return ExpressionValue();
+}
+
 bool ExpressionValue::isIterable() const {
     if (std::holds_alternative<ArrayPtr>(value_)) {
         return true;
@@ -246,8 +284,7 @@ ExpressionValue ExpressionIterable::at(std::size_t index) const {
         return ExpressionValue();
     }
     if (const auto* json = std::get_if<Json::Value>(&value_.storage());
-        json && json->isArray()
-    ) {
+        json && json->isArray()) {
         if (index < json->size()) {
             return ExpressionValue((*json)[static_cast<Json::ArrayIndex>(index)]);
         }
@@ -262,34 +299,61 @@ ExpressionValue ExpressionIterable::at(std::size_t index) const {
             static_cast<long double>(index);
         return ExpressionValue(static_cast<double>(result));
     }
-
     return ExpressionValue();
 }
 
-namespace {
+bool ExpressionValue::contains(const ExpressionValue& candidate) const {
+    if (const auto* rangeValue = range()) {
+        const auto number = candidate.number();
+        if (!number || !std::isfinite(*number) || std::trunc(*number) != *number ||
+            *number < static_cast<double>(std::numeric_limits<std::int64_t>::min()) ||
+            *number > static_cast<double>(std::numeric_limits<std::int64_t>::max())
+        ) {
+            return false;
+        }
+        const auto value = static_cast<std::int64_t>(*number);
+        if (rangeValue->step == 0) {
+            return false;
+        }
+        if (rangeValue->step > 0) {
+            if (value < rangeValue->start ||
+                (rangeValue->upperInclusive
+                    ? value > rangeValue->end
+                    : value >= rangeValue->end)
+            ) {
+                return false;
+            }
+            const auto distance = static_cast<std::uint64_t>(value) -
+                static_cast<std::uint64_t>(rangeValue->start);
+            return distance % static_cast<std::uint64_t>(rangeValue->step) == 0;
+        }
+        if (value > rangeValue->start ||
+            (rangeValue->upperInclusive
+                ? value < rangeValue->end
+                : value <= rangeValue->end)
+        ) {
+            return false;
+        }
+        const auto distance = static_cast<std::uint64_t>(rangeValue->start) -
+            static_cast<std::uint64_t>(value);
+        const auto stepMagnitude = std::uint64_t{0} -
+            static_cast<std::uint64_t>(rangeValue->step);
+        return distance % stepMagnitude == 0;
+    }
 
-bool equalValues(const ExpressionValue& left, const ExpressionValue& right) {
-    if (left.isNull() || right.isNull()) {
-        return left.isNull() && right.isNull();
+    const auto values = iterable();
+    if (!values) {
+        return false;
     }
-    if (const auto lhs = left.number()) {
-        if (const auto rhs = right.number()) {
-            return *lhs == *rhs;
+    for (std::size_t index = 0; index < values->size(); ++index) {
+        if (candidate.equals(values->at(index))) {
+            return true;
         }
     }
-    if (const auto lhs = left.string()) {
-        if (const auto rhs = right.string()) {
-            return *lhs == *rhs;
-        }
-    }
-    if (const auto lhs = left.boolean()) {
-        if (const auto rhs = right.boolean()) {
-            return *lhs == *rhs;
-        }
-    }
-
     return false;
 }
+
+namespace {
 
 template <typename Predicate>
 bool compareValues(const ExpressionValue& left, const ExpressionValue& right, Predicate predicate) {
@@ -321,61 +385,6 @@ std::optional<std::int64_t> integerValue(const ExpressionValue& value) {
     return static_cast<std::int64_t>(*number);
 }
 
-bool rangeContains(const ExpressionRange& range, const ExpressionValue& candidate) {
-    const auto value = integerValue(candidate);
-    if (!value || range.step == 0) {
-        return false;
-    }
-
-    if (range.step > 0) {
-        if (*value < range.start ||
-            (range.upperInclusive ? *value > range.end : *value >= range.end)
-        ) {
-            return false;
-        }
-    } else {
-        if (*value > range.start ||
-            (range.upperInclusive ? *value < range.end : *value <= range.end)
-        ) {
-            return false;
-        }
-    }
-
-    if (range.step > 0) {
-        const auto distance =
-            static_cast<std::uint64_t>(*value) -
-            static_cast<std::uint64_t>(range.start);
-        return distance % static_cast<std::uint64_t>(range.step) == 0;
-    }
-
-    const auto distance =
-        static_cast<std::uint64_t>(range.start) -
-        static_cast<std::uint64_t>(*value);
-    const auto stepMagnitude =
-        std::uint64_t{0} - static_cast<std::uint64_t>(range.step);
-    return distance % stepMagnitude == 0;
-}
-
-bool containsValue(const ExpressionValue& container, const ExpressionValue& candidate) {
-    // Range membership is arithmetic so large ranges never require iteration.
-    if (const auto* range = container.range()) {
-        return rangeContains(*range, candidate);
-    }
-
-    const auto iterable = container.iterable();
-    if (iterable == nullptr) {
-        return false;
-    }
-
-    for (std::size_t index = 0; index < iterable->size(); ++index) {
-        if (equalValues(candidate, iterable->at(index))) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 ExpressionValue evaluateNode(const Expression& expression, const RenderContext& context) {
     if (const auto* node = std::get_if<LiteralExpression>(&expression.node)) {
         return node->value;
@@ -400,6 +409,22 @@ ExpressionValue evaluateNode(const Expression& expression, const RenderContext& 
             array->values.push_back(evaluateNode(*element, context));
         }
         return ExpressionValue(std::move(array));
+    }
+    if (const auto* node = std::get_if<MemberAccessExpression>(&expression.node)) {
+        return evaluateNode(*node->object, context).member(node->member);
+    }
+    if (const auto* node = std::get_if<MethodCallExpression>(&expression.node)) {
+        const auto self = evaluateNode(*node->object, context);
+        std::vector<ExpressionValue> arguments;
+        arguments.reserve(node->arguments.size());
+        for (const auto& argument : node->arguments) {
+            arguments.push_back(evaluateNode(*argument, context));
+        }
+        const auto* function = builtinFunctionRegistry().find(node->method);
+        if (!function) {
+            return ExpressionValue();
+        }
+        return function->invoke(self, arguments);
     }
     if (const auto* node = std::get_if<RangeExpression>(&expression.node)) {
         const auto start = integerValue(evaluateNode(*node->start, context));
@@ -479,10 +504,10 @@ ExpressionValue evaluateNode(const Expression& expression, const RenderContext& 
         }
 
         case BinaryOperator::Equal:
-            return ExpressionValue(equalValues(left, right));
+            return ExpressionValue(left.equals(right));
 
         case BinaryOperator::NotEqual:
-            return ExpressionValue(!equalValues(left, right));
+            return ExpressionValue(!left.equals(right));
 
         case BinaryOperator::Less:
             return ExpressionValue(compareValues(
@@ -521,10 +546,10 @@ ExpressionValue evaluateNode(const Expression& expression, const RenderContext& 
             ));
 
         case BinaryOperator::In:
-            return ExpressionValue(containsValue(right, left));
+            return ExpressionValue(right.contains(left));
 
         case BinaryOperator::NotIn:
-            return ExpressionValue(!containsValue(right, left));
+            return ExpressionValue(!right.contains(left));
 
         case BinaryOperator::And:
         case BinaryOperator::Or:

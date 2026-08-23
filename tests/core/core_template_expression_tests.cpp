@@ -300,13 +300,15 @@ TEST(CoreTemplateExpressionTests, ReportsIncompleteNotInOperator) {
 TEST(CoreTemplateExpressionTests, ExposesUniformIterableForListRangeAndJsonArray) {
     drogular::RenderContext context;
 
-    const auto list = evaluate("[1, 3, 5]", context).iterable();
+    const auto list =
+        evaluate("[1, 3, 5]", context).iterable();
     ASSERT_NE(list, nullptr);
     EXPECT_EQ(list->size(), 3);
     ASSERT_TRUE(list->at(1).number().has_value());
     EXPECT_EQ(*list->at(1).number(), 3);
 
-    const auto range = evaluate("[2..8 step 2]", context).iterable();
+    const auto range =
+        evaluate("[2..8 step 2]", context).iterable();
     ASSERT_NE(range, nullptr);
     EXPECT_EQ(range->size(), 4);
     ASSERT_TRUE(range->at(3).number().has_value());
@@ -316,7 +318,8 @@ TEST(CoreTemplateExpressionTests, ExposesUniformIterableForListRangeAndJsonArray
     values.append("A");
     values.append("B");
     context.set("values", values);
-    const auto json = evaluate("values", context).iterable();
+    const auto json =
+        evaluate("values", context).iterable();
     ASSERT_NE(json, nullptr);
     EXPECT_EQ(json->size(), 2);
     ASSERT_TRUE(json->at(0).string().has_value());
@@ -325,10 +328,119 @@ TEST(CoreTemplateExpressionTests, ExposesUniformIterableForListRangeAndJsonArray
 
 TEST(CoreTemplateExpressionTests, RangeIterableDoesNotRequireMaterialization) {
     drogular::RenderContext context;
-    const auto range = evaluate("[1..1000000000 step 10]", context).iterable();
+    const auto range =
+        evaluate("[1..1000000000 step 10]", context).iterable();
 
     ASSERT_NE(range, nullptr);
     EXPECT_EQ(range->size(), 100000000);
     ASSERT_TRUE(range->at(99999999).number().has_value());
     EXPECT_EQ(*range->at(99999999).number(), 999999991);
+}
+
+TEST(CoreTemplateExpressionTests, ParsesCollectionMethodCallsIntoAst) {
+    const auto result = parse("projects.count() > 0");
+
+    ASSERT_TRUE(result);
+    const auto* comparison =
+        std::get_if<BinaryExpression>(&result.expression->node);
+    ASSERT_NE(comparison, nullptr);
+    EXPECT_EQ(comparison->op, BinaryOperator::Greater);
+
+    const auto* call =
+        std::get_if<MethodCallExpression>(&comparison->left->node);
+    ASSERT_NE(call, nullptr);
+    EXPECT_EQ(call->method, "count");
+    EXPECT_TRUE(call->arguments.empty());
+
+    const auto* receiver =
+        std::get_if<VariableExpression>(&call->object->node);
+    ASSERT_NE(receiver, nullptr);
+    EXPECT_EQ(receiver->path, "projects");
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesCollectionCountAndEmptyMethods) {
+    drogular::RenderContext context;
+
+    EXPECT_DOUBLE_EQ(*evaluate("[1, 3, 5].count()", context).number(), 3.0);
+    EXPECT_DOUBLE_EQ(*evaluate("[1..<10 step 2].count()", context).number(), 5.0);
+    EXPECT_TRUE(evaluate("[].empty()", context).truthy());
+    EXPECT_FALSE(evaluate("[1..1].empty()", context).truthy());
+
+    Json::Value projects(Json::arrayValue);
+    projects.append("A");
+    projects.append("B");
+    context.set("projects", projects);
+
+    EXPECT_DOUBLE_EQ(*evaluate("projects.count()", context).number(), 2.0);
+    EXPECT_FALSE(evaluate("projects.empty()", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesFirstLastAndContainsMethods) {
+    drogular::RenderContext context;
+
+    const auto first =
+        evaluate("[10..20 step 5].first()", context);
+    const auto last =
+        evaluate("[10..20 step 5].last()", context);
+    ASSERT_TRUE(first.number().has_value());
+    ASSERT_TRUE(last.number().has_value());
+    EXPECT_DOUBLE_EQ(*first.number(), 10.0);
+    EXPECT_DOUBLE_EQ(*last.number(), 20.0);
+
+    EXPECT_TRUE(evaluate("[1..10].contains(7)", context).truthy());
+    EXPECT_FALSE(evaluate("[1..10 step 2].contains(8)", context).truthy());
+    EXPECT_TRUE(evaluate("['Admin', 'User'].contains('Admin')", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, MethodContainsMatchesMembershipSemantics) {
+    drogular::RenderContext context;
+    context.set("role", std::string("Admin"));
+
+    EXPECT_EQ(
+        evaluate("['Admin', 'User'].contains(role)", context).truthy(),
+        evaluate("role in ['Admin', 'User']", context).truthy()
+    );
+    EXPECT_EQ(
+        evaluate("[1..<10 step 2].contains(7)", context).truthy(),
+        evaluate("7 in [1..<10 step 2]", context).truthy()
+    );
+}
+
+TEST(CoreTemplateExpressionTests, SupportsMethodAndMemberChaining) {
+    drogular::RenderContext context;
+
+    Json::Value projects(Json::arrayValue);
+    Json::Value project;
+    project["name"] = "Drogular";
+    project["roles"] = Json::Value(Json::arrayValue);
+    project["roles"].append("Admin");
+    project["roles"].append("User");
+    projects.append(project);
+    context.set("projects", projects);
+
+    const auto name =
+        evaluate("projects.first().name", context);
+    ASSERT_TRUE(name.string().has_value());
+    EXPECT_EQ(*name.string(), "Drogular");
+    EXPECT_TRUE(evaluate(
+        "projects.first().roles.contains('Admin')",
+        context
+    ).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, EmptyCollectionsReturnNullFirstAndLast) {
+    drogular::RenderContext context;
+
+    EXPECT_TRUE(evaluate("[].first()", context).isNull());
+    EXPECT_TRUE(evaluate("[].last()", context).isNull());
+}
+
+TEST(CoreTemplateExpressionTests, CollectionMethodsValidateArityAndReceiver) {
+    drogular::RenderContext context;
+
+    EXPECT_TRUE(evaluate("[1, 2].count(1)", context).isNull());
+    EXPECT_TRUE(evaluate("[1, 2].contains()", context).isNull());
+    EXPECT_TRUE(evaluate("[1, 2].contains(1, 2)", context).isNull());
+    EXPECT_TRUE(evaluate("1.count()", context).isNull());
+    EXPECT_TRUE(evaluate("[1, 2].unknown()", context).isNull());
 }

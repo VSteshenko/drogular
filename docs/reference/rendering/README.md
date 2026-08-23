@@ -61,3 +61,4 @@ The root context exists for one page request. Template loops and component expan
 - [Localization](../../cookbook/localization.md)
 - [GraphQL](../../cookbook/graphql.md)
 - [State Management](../../cookbook/state-management.md)
+- [Expression Collection Functions](expression-functions.md) — `count()`, `empty()`, `first()`, `last()`, and `contains()` on iterable expression values.

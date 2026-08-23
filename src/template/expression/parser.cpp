@@ -1,5 +1,6 @@
 #include <drogular/template/expression/parser.hpp>
 
+#include <cctype>
 #include <string>
 #include <utility>
 
@@ -24,6 +25,7 @@ enum class TokenType {
     Minus,
     Star,
     Slash,
+    Dot,
     DotDot,
     DotDotLess,
     Not,
@@ -104,7 +106,7 @@ public:
                     }
                     return simple(TokenType::DotDot, "..", start);
                 }
-                break;
+                return simple(TokenType::Dot, ".", start);
 
             case '!':
                 if (match('=')) {
@@ -368,6 +370,29 @@ ExpressionPtr binary(BinaryOperator op, ExpressionPtr left, ExpressionPtr right)
     });
 }
 
+ExpressionPtr member(ExpressionPtr object, std::string name) {
+    return std::make_shared<Expression>(Expression{
+        .node = MemberAccessExpression{
+            .object = std::move(object),
+            .member = std::move(name)
+        }
+    });
+}
+
+ExpressionPtr methodCall(
+    ExpressionPtr object,
+    std::string method,
+    std::vector<ExpressionPtr> arguments
+) {
+    return std::make_shared<Expression>(Expression{
+        .node = MethodCallExpression{
+            .object = std::move(object),
+            .method = std::move(method),
+            .arguments = std::move(arguments)
+        }
+    });
+}
+
 class Parser {
 public:
     explicit Parser(std::string_view source) : lexer_(source) {
@@ -580,7 +605,117 @@ private:
             return unary(op, std::move(operand));
         }
 
-        return parsePrimary();
+        return parsePostfix();
+    }
+
+    ExpressionPtr parsePostfix() {
+        auto expression = parsePrimary();
+        if (!expression) {
+            return nullptr;
+        }
+
+        // Existing dotted identifiers remain a single VariableExpression for
+        // compatibility. When followed by `(`, the last path component is a
+        // method and the prefix is its receiver.
+        if (current_.type == TokenType::LeftParen) {
+            if (const auto* variableNode =
+                    std::get_if<VariableExpression>(&expression->node)) {
+                const auto separator = variableNode->path.rfind('.');
+                if (separator != std::string::npos) {
+                    auto receiver = variable(variableNode->path.substr(0, separator));
+                    auto arguments = parseArguments();
+                    if (!arguments) {
+                        return nullptr;
+                    }
+                    expression = methodCall(
+                        std::move(receiver),
+                        variableNode->path.substr(separator + 1),
+                        std::move(*arguments)
+                    );
+                }
+            }
+        }
+
+        while (current_.type == TokenType::Dot) {
+            advance();
+            if (current_.type != TokenType::Identifier) {
+                fail("Expected member name after '.'", current_.position);
+                return nullptr;
+            }
+
+            auto path = current_.text;
+            advance();
+
+            // The lexer may keep a dotted suffix together (for compatibility
+            // with old dotted paths). Split it into member nodes, treating the
+            // final component as a method when followed by `(`.
+            std::vector<std::string> parts;
+            std::size_t start = 0;
+            while (start <= path.size()) {
+                const auto end = path.find('.', start);
+                parts.push_back(path.substr(
+                    start,
+                    end == std::string::npos ? std::string::npos : end - start
+                ));
+                if (end == std::string::npos) {
+                    break;
+                }
+                start = end + 1;
+            }
+
+            const bool methodAtEnd = current_.type == TokenType::LeftParen;
+            const auto memberCount = methodAtEnd && !parts.empty()
+                ? parts.size() - 1
+                : parts.size();
+            for (std::size_t index = 0; index < memberCount; ++index) {
+                expression = member(std::move(expression), parts[index]);
+            }
+
+            if (methodAtEnd) {
+                auto arguments = parseArguments();
+                if (!arguments) {
+                    return nullptr;
+                }
+                expression = methodCall(
+                    std::move(expression),
+                    parts.back(),
+                    std::move(*arguments)
+                );
+            }
+        }
+
+        return expression;
+    }
+
+    std::optional<std::vector<ExpressionPtr>> parseArguments() {
+        if (current_.type != TokenType::LeftParen) {
+            return std::nullopt;
+        }
+        advance();
+
+        std::vector<ExpressionPtr> arguments;
+        if (current_.type == TokenType::RightParen) {
+            advance();
+            return arguments;
+        }
+
+        while (true) {
+            auto argument = parseOr();
+            if (!argument) {
+                return std::nullopt;
+            }
+            arguments.push_back(std::move(argument));
+
+            if (current_.type == TokenType::RightParen) {
+                advance();
+                return arguments;
+            }
+            if (current_.type != TokenType::Comma) {
+                fail("Expected ',' or ')' in method call", current_.position);
+                return std::nullopt;
+            }
+            advance();
+        }
     }
 
     ExpressionPtr parsePrimary() {
