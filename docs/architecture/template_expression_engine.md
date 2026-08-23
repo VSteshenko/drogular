@@ -360,7 +360,6 @@ from application view data. Component boundaries may materialize visible
 bindings into a temporary child `RenderContext`, but never mutate the base
 context.
 
-
 ### Constant bindings
 
 `@const(name = expression)` uses the same lexical `BindingContext` as `@let`
@@ -369,3 +368,15 @@ evaluate their expression when execution reaches the declaration. The constant
 metadata is intentionally preserved even though the template language does not
 yet expose assignment; it provides the basis for future mutation checks and
 constant folding without changing the scope model.
+
+## Expression environment and extensions
+
+Runtime evaluation is performed through `ExpressionEnvironment`. It combines
+lexical `BindingContext` data with application expression functions registered
+at startup. This keeps data scope and executable extensions separate: bindings
+provide values, while `ExpressionFunctionRegistry` provides behavior.
+
+The application registry is reachable through `ApplicationServices`, is frozen
+when `App::run()` starts the server, and falls back to the immutable built-in
+registry. Both global `CallExpression` and receiver `MethodCallExpression` use
+this environment.

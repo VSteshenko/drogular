@@ -1,5 +1,5 @@
 #include <drogular/template/expression/evaluator.hpp>
-#include <drogular/template/expression/functions.hpp>
+#include <drogular/template/expression/environment.hpp>
 #include <drogular/template/expression/parser.hpp>
 #include <drogular/render_context.hpp>
 
@@ -385,15 +385,15 @@ std::optional<std::int64_t> integerValue(const ExpressionValue& value) {
     return static_cast<std::int64_t>(*number);
 }
 
-ExpressionValue evaluateNode(const Expression& expression, const BindingContext& context) {
+ExpressionValue evaluateNode(const Expression& expression, const ExpressionEnvironment& environment) {
     if (const auto* node = std::get_if<LiteralExpression>(&expression.node)) {
         return node->value;
     }
     if (const auto* node = std::get_if<VariableExpression>(&expression.node)) {
-        return resolve(node->path, context);
+        return resolve(node->path, environment.bindings());
     }
     if (const auto* node = std::get_if<UnaryExpression>(&expression.node)) {
-        const auto value = evaluateNode(*node->operand, context);
+        const auto value = evaluateNode(*node->operand, environment);
         if (node->op == UnaryOperator::Not) {
             return ExpressionValue(!value.truthy());
         }
@@ -406,29 +406,35 @@ ExpressionValue evaluateNode(const Expression& expression, const BindingContext&
         auto array = std::make_shared<ExpressionArray>();
         array->values.reserve(node->elements.size());
         for (const auto& element : node->elements) {
-            array->values.push_back(evaluateNode(*element, context));
+            array->values.push_back(evaluateNode(*element, environment));
         }
         return ExpressionValue(std::move(array));
     }
     if (const auto* node = std::get_if<MemberAccessExpression>(&expression.node)) {
-        return evaluateNode(*node->object, context).member(node->member);
+        return evaluateNode(*node->object, environment).member(node->member);
     }
-    if (const auto* node = std::get_if<MethodCallExpression>(&expression.node)) {
-        const auto self = evaluateNode(*node->object, context);
+    if (const auto* node = std::get_if<CallExpression>(&expression.node)) {
         std::vector<ExpressionValue> arguments;
         arguments.reserve(node->arguments.size());
         for (const auto& argument : node->arguments) {
-            arguments.push_back(evaluateNode(*argument, context));
+            arguments.push_back(evaluateNode(*argument, environment));
         }
-        const auto* function = builtinFunctionRegistry().find(node->method);
-        if (!function) {
-            return ExpressionValue();
+        return environment.invokeFunction(node->function, arguments);
+    }
+    if (const auto* node = std::get_if<MethodCallExpression>(&expression.node)) {
+        const auto self = evaluateNode(*node->object, environment);
+        std::vector<ExpressionValue> arguments;
+        arguments.reserve(node->arguments.size());
+        for (const auto& argument : node->arguments) {
+            arguments.push_back(evaluateNode(*argument, environment));
         }
-        return function->invoke(self, arguments);
+        return environment.invokeMethod(node->method, self, arguments);
     }
     if (const auto* node = std::get_if<RangeExpression>(&expression.node)) {
-        const auto start = integerValue(evaluateNode(*node->start, context));
-        const auto end = integerValue(evaluateNode(*node->end, context));
+        const auto start =
+            integerValue(evaluateNode(*node->start, environment));
+        const auto end =
+            integerValue(evaluateNode(*node->end, environment));
         if (!start || !end) {
             return ExpressionValue();
         }
@@ -436,7 +442,7 @@ ExpressionValue evaluateNode(const Expression& expression, const BindingContext&
         std::int64_t step = *start <= *end ? 1 : -1;
         if (node->step) {
             const auto explicitStep =
-                integerValue(evaluateNode(*node->step, context));
+                integerValue(evaluateNode(*node->step, environment));
             if (!explicitStep || *explicitStep == 0) {
                 return ExpressionValue();
             }
@@ -461,22 +467,23 @@ ExpressionValue evaluateNode(const Expression& expression, const BindingContext&
     }
 
     if (node->op == BinaryOperator::And) {
-        const auto left = evaluateNode(*node->left, context);
+        const auto left =
+            evaluateNode(*node->left, environment);
         if (!left.truthy()) {
             return ExpressionValue(false);
         }
-        return ExpressionValue(evaluateNode(*node->right, context).truthy());
+        return ExpressionValue(evaluateNode(*node->right, environment).truthy());
     }
     if (node->op == BinaryOperator::Or) {
-        const auto left = evaluateNode(*node->left, context);
+        const auto left = evaluateNode(*node->left, environment);
         if (left.truthy()) {
             return ExpressionValue(true);
         }
-        return ExpressionValue(evaluateNode(*node->right, context).truthy());
+        return ExpressionValue(evaluateNode(*node->right, environment).truthy());
     }
 
-    const auto left = evaluateNode(*node->left, context);
-    const auto right = evaluateNode(*node->right, context);
+    const auto left = evaluateNode(*node->left, environment);
+    const auto right = evaluateNode(*node->right, environment);
 
     switch (node->op) {
         case BinaryOperator::Add:
@@ -562,7 +569,8 @@ ExpressionValue evaluateNode(const Expression& expression, const BindingContext&
 } // namespace
 
 ExpressionValue evaluate(const Expression& expression, const BindingContext& context) {
-    return evaluateNode(expression, context);
+    const ExpressionEnvironment environment(context);
+    return evaluateNode(expression, environment);
 }
 
 ExpressionValue evaluate(const Expression& expression, const RenderContext& context) {

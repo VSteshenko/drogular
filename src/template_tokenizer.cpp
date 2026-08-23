@@ -296,6 +296,102 @@ std::vector<Token> tokenize(
             continue;
         }
 
+        if (startsWith(html, position, "@switch(")) {
+            flushText();
+
+            const auto end =
+                findDirectiveExpressionEnd(html, position + 8);
+
+            if (end == std::string_view::npos) {
+                diagnostics.error(
+                    "DGL-TPL-028",
+                    "Invalid @switch expression: Missing closing ')'",
+                    position
+                );
+                tokens.push_back({
+                    .type = TokenType::Text,
+                    .value = std::string(html.substr(position)),
+                    .position = position
+                });
+                break;
+            }
+
+            tokens.push_back({
+                .type = TokenType::Switch,
+                .value = std::string(
+                    html.substr(position + 8, end - position - 8)
+                ),
+                .position = position
+            });
+
+            position = end + 1;
+            textStart = position;
+
+            continue;
+        }
+
+        if (startsWith(html, position, "@case(")) {
+            flushText();
+
+            const auto end =
+                findDirectiveExpressionEnd(html, position + 6);
+
+            if (end == std::string_view::npos) {
+                diagnostics.error(
+                    "DGL-TPL-029",
+                    "Invalid @case expression: Missing closing ')'",
+                    position
+                );
+                tokens.push_back({
+                    .type = TokenType::Text,
+                    .value = std::string(html.substr(position)),
+                    .position = position
+                });
+                break;
+            }
+
+            tokens.push_back({
+                .type = TokenType::Case,
+                .value = std::string(
+                    html.substr(position + 6, end - position - 6)
+                ),
+                .position = position
+            });
+
+            position = end + 1;
+            textStart = position;
+
+            continue;
+        }
+
+        if (startsWith(html, position, "@default")) {
+            flushText();
+            tokens.push_back({
+                .type = TokenType::Default,
+                .value = "",
+                .position = position
+            });
+
+            position += 8;
+            textStart = position;
+
+            continue;
+        }
+
+        if (startsWith(html, position, "@endswitch")) {
+            flushText();
+            tokens.push_back({
+                .type = TokenType::EndSwitch,
+                .value = "",
+                .position = position
+            });
+
+            position += 10;
+            textStart = position;
+
+            continue;
+        }
+
         if (startsWith(html, position, "@foreach(")) {
             flushText();
 

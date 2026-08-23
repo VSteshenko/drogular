@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <stdexcept>
 
 class CoreAppTestPage final : public drogular::Page {
 public:
@@ -67,4 +68,40 @@ TEST(CoreAppTests, AppCanRegisterAction) {
     EXPECT_NO_THROW({
         app.action<CoreAppTestAction>("/test-action");
     });
+}
+
+TEST(CoreAppTests, RegistersExpressionFunctionAndMethod) {
+    drogular::App app;
+
+    EXPECT_NO_THROW(app.expressionFunction(
+        "identity",
+        [](std::span<const drogular::template_expression::ExpressionValue> arguments,
+           const drogular::template_expression::BindingContext&) {
+            return arguments.empty()
+                ? drogular::template_expression::ExpressionValue()
+                : arguments.front();
+        }
+    ));
+
+    EXPECT_NO_THROW(app.expressionMethod(
+        "identityMethod",
+        [](const drogular::template_expression::ExpressionValue& self,
+           std::span<const drogular::template_expression::ExpressionValue>,
+           const drogular::template_expression::BindingContext&) {
+            return self;
+        }
+    ));
+}
+
+TEST(CoreAppTests, RejectsDuplicateAndBuiltinExpressionNames) {
+    drogular::App app;
+    auto callback = [](
+        std::span<const drogular::template_expression::ExpressionValue>,
+        const drogular::template_expression::BindingContext&) {
+        return drogular::template_expression::ExpressionValue();
+    };
+
+    EXPECT_NO_THROW(app.expressionFunction("custom", callback));
+    EXPECT_THROW(app.expressionFunction("custom", callback), std::invalid_argument);
+    EXPECT_THROW(app.expressionFunction("count", callback), std::invalid_argument);
 }

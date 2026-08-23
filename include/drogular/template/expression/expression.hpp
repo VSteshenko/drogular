@@ -6,3 +6,4 @@
 #include <drogular/template/expression/binding_context.hpp>
 #include <drogular/template/expression/evaluator.hpp>
 #include <drogular/template/expression/functions.hpp>
+#include <drogular/template/expression/environment.hpp>

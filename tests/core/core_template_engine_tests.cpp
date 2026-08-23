@@ -921,3 +921,18 @@ TEST(CoreTemplateEngineTests, SupportsConstThroughCompiledCompatibilityPath) {
 
     EXPECT_EQ(html, "3:123");
 }
+
+TEST(CoreTemplateEngineTests, SupportsSwitchThroughCompiledCompatibilityPath) {
+    drogular::RenderContext context;
+    context.set("status", std::string("Pending"));
+
+    const auto html = drogular::template_engine::render(
+        "@switch(status)"
+        "@case(\"Draft\", \"Pending\")waiting"
+        "@defaultother"
+        "@endswitch",
+        context
+    );
+
+    EXPECT_EQ(html, "waiting");
+}

@@ -1,8 +1,12 @@
 #include <drogular/template_expression.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/services.hpp>
 
 #include <gtest/gtest.h>
+
 #include <json/json.h>
+
+#include <stdexcept>
 
 using namespace drogular::template_expression;
 
@@ -580,4 +584,128 @@ TEST(CoreTemplateExpressionTests, BindingContextMaterializesVisibleBindingsIntoC
     EXPECT_EQ(evaluate("value", materialized).number().value_or(-1.0), 3.0);
     EXPECT_EQ(evaluate("pages.count()", materialized).number().value_or(-1.0), 3.0);
     EXPECT_EQ(renderContext.get<int>("value").value_or(-1), 1);
+}
+
+TEST(CoreTemplateExpressionTests, ParsesGlobalFunctionCall) {
+    const auto parsed = parse("triple(page + 1)");
+    ASSERT_TRUE(parsed);
+    ASSERT_NE(parsed.expression, nullptr);
+
+    const auto* call = std::get_if<CallExpression>(&parsed.expression->node);
+    ASSERT_NE(call, nullptr);
+    EXPECT_EQ(call->function, "triple");
+    ASSERT_EQ(call->arguments.size(), 1u);
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesApplicationGlobalFunction) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext renderContext;
+    renderContext.setServices(&services);
+
+    ASSERT_TRUE(services.expressionFunctions().registerFunction(
+        "triple",
+        [](std::span<const ExpressionValue> arguments, const BindingContext&) {
+            if (arguments.size() != 1 || !arguments[0].number()) {
+                return ExpressionValue();
+            }
+            return ExpressionValue(*arguments[0].number() * 3.0);
+        }
+    ));
+
+    renderContext.set("value", 4);
+    const auto result = evaluate("triple(value)", renderContext);
+    ASSERT_TRUE(result.number().has_value());
+    EXPECT_DOUBLE_EQ(*result.number(), 12.0);
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesApplicationExpressionMethod) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext renderContext;
+    renderContext.setServices(&services);
+
+    ASSERT_TRUE(services.expressionFunctions().registerMethod(
+        "times",
+        [](const ExpressionValue& self,
+           std::span<const ExpressionValue> arguments,
+           const BindingContext&) {
+            if (arguments.size() != 1 || !self.number() || !arguments[0].number()) {
+                return ExpressionValue();
+            }
+            return ExpressionValue(*self.number() * *arguments[0].number());
+        }
+    ));
+
+    const auto result = evaluate("6.times(7)", renderContext);
+    ASSERT_TRUE(result.number().has_value());
+    EXPECT_DOUBLE_EQ(*result.number(), 42.0);
+}
+
+TEST(CoreTemplateExpressionTests, CustomFunctionCanReadLexicalBindings) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext renderContext;
+    renderContext.setServices(&services);
+
+    ASSERT_TRUE(services.expressionFunctions().registerFunction(
+        "prefixed",
+        [](std::span<const ExpressionValue> arguments, const BindingContext& context) {
+            if (arguments.size() != 1) return ExpressionValue();
+            const auto prefix = context.resolve("prefix").string();
+            const auto value = arguments[0].string();
+            if (!prefix || !value) return ExpressionValue();
+            return ExpressionValue(*prefix + *value);
+        }
+    ));
+
+    BindingContext bindings(renderContext);
+    ASSERT_TRUE(bindings.define("prefix", ExpressionValue(std::string("de:"))));
+
+    const auto result = evaluate("prefixed('projects.title')", bindings);
+    ASSERT_TRUE(result.string().has_value());
+    EXPECT_EQ(*result.string(), "de:projects.title");
+}
+
+TEST(CoreTemplateExpressionTests, CustomFunctionExceptionsBecomeNull) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext renderContext;
+    renderContext.setServices(&services);
+
+    ASSERT_TRUE(services.expressionFunctions().registerFunction(
+        "fails",
+        [](std::span<const ExpressionValue>, const BindingContext&) -> ExpressionValue {
+            throw std::runtime_error("boom");
+        }
+    ));
+
+    EXPECT_TRUE(evaluate("fails()", renderContext).isNull());
+}
+
+TEST(CoreTemplateExpressionTests, FunctionRegistryCanBeFrozen) {
+    ExpressionFunctionRegistry registry;
+    ASSERT_TRUE(registry.registerFunction(
+        "value",
+        [](std::span<const ExpressionValue>, const BindingContext&) {
+            return ExpressionValue(1.0);
+        }
+    ));
+
+    registry.freeze();
+    EXPECT_TRUE(registry.frozen());
+    EXPECT_FALSE(registry.registerFunction(
+        "other",
+        [](std::span<const ExpressionValue>, const BindingContext&) {
+            return ExpressionValue(2.0);
+        }
+    ));
+}
+
+TEST(CoreTemplateExpressionTests, ApplicationRegistryCannotOverrideBuiltins) {
+    drogular::ApplicationServices services;
+    EXPECT_FALSE(services.expressionFunctions().registerMethod(
+        "count",
+        [](const ExpressionValue&,
+           std::span<const ExpressionValue>,
+           const BindingContext&) {
+            return ExpressionValue(99.0);
+        }
+    ));
 }

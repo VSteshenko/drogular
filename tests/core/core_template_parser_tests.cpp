@@ -200,3 +200,41 @@ TEST(CoreTemplateParserTests, ParsesConstNode) {
     EXPECT_EQ(constNode->name(), "PageSize");
     EXPECT_EQ(constNode->expression(), "20");
 }
+
+TEST(CoreTemplateParserTests, ParsesSwitchNode) {
+    const auto nodes = parse(tokenize(
+        "@switch(status)"
+        "@case(\"Draft\", \"Pending\")waiting"
+        "@case(\"Published\")public"
+        "@defaultunknown"
+        "@endswitch"
+    ));
+
+    ASSERT_EQ(nodes.size(), 1);
+    ASSERT_EQ(nodes[0]->type(), NodeType::Switch);
+
+    const auto switchNode =
+        std::dynamic_pointer_cast<SwitchNode>(nodes[0]);
+    ASSERT_NE(switchNode, nullptr);
+    EXPECT_EQ(switchNode->expression(), "status");
+    ASSERT_EQ(switchNode->cases().size(), 2);
+    EXPECT_EQ(switchNode->cases()[0].expressions, "\"Draft\", \"Pending\"");
+    ASSERT_EQ(switchNode->cases()[0].body.size(), 1);
+    ASSERT_EQ(switchNode->defaultBranch().size(), 1);
+}
+
+TEST(CoreTemplateParserTests, ParsesNestedSwitch) {
+    const auto nodes = parse(tokenize(
+        "@switch(status)@case(\"Draft\")"
+        "@switch(priority)@case(\"High\")high@defaultnormal@endswitch"
+        "@endswitch"
+    ));
+
+    ASSERT_EQ(nodes.size(), 1);
+    const auto outer =
+        std::dynamic_pointer_cast<SwitchNode>(nodes[0]);
+    ASSERT_NE(outer, nullptr);
+    ASSERT_EQ(outer->cases().size(), 1);
+    ASSERT_EQ(outer->cases()[0].body.size(), 1);
+    EXPECT_EQ(outer->cases()[0].body[0]->type(), NodeType::Switch);
+}

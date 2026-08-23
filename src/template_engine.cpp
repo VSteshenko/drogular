@@ -559,7 +559,9 @@ std::string render(
     // shares the same BindingContext semantics instead of maintaining a
     // second scope implementation.
     if (html.find("@let(") != std::string_view::npos ||
-        html.find("@const(") != std::string_view::npos) {
+        html.find("@const(") != std::string_view::npos ||
+        html.find("@switch(") != std::string_view::npos
+    ) {
         auto renderContext = context.createChild();
         return template_compiler::compile(html).render(renderContext);
     }

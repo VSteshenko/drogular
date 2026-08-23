@@ -284,7 +284,46 @@ App& App::developerToolsComponent(
     return *this;
 }
 
+App& App::expressionFunction(
+    std::string name,
+    template_expression::ExpressionFunctionCallback callback
+) {
+    if (template_expression::builtinFunctionRegistry().findFunction(name) ||
+        template_expression::builtinFunctionRegistry().findMethod(name) ||
+        !services_.expressionFunctions().registerFunction(
+            std::move(name),
+            std::move(callback)
+        )
+    ) {
+        throw std::invalid_argument(
+            "Expression function name is already registered or registry is frozen"
+        );
+    }
+
+    return *this;
+}
+
+App& App::expressionMethod(
+    std::string name,
+    template_expression::ExpressionMethodCallback callback
+) {
+    if (template_expression::builtinFunctionRegistry().findFunction(name) ||
+        template_expression::builtinFunctionRegistry().findMethod(name) ||
+        !services_.expressionFunctions().registerMethod(
+            std::move(name),
+            std::move(callback)
+        )
+    ) {
+        throw std::invalid_argument(
+            "Expression method name is already registered or registry is frozen"
+        );
+    }
+
+    return *this;
+}
+
 void App::run(unsigned short port) {
+    services_.expressionFunctions().freeze();
     for (const auto& mapping : options_.staticFiles()) {
         router_.staticFiles(
             mapping.routePrefix,

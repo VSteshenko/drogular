@@ -10,6 +10,7 @@
 #include <drogular/developer_tools/application_inspection.hpp>
 #include <drogular/developer_tools/application_inspection_controller.hpp>
 #include <drogular/developer_tools/component_registry.hpp>
+#include <drogular/template/expression/functions.hpp>
 
 #include <memory>
 #include <string>
@@ -283,6 +284,22 @@ public:
 
         return *this;
     }
+
+    /**
+     * Registers an application-global expression function.
+     */
+    App& expressionFunction(
+        std::string name,
+        template_expression::ExpressionFunctionCallback callback
+    );
+
+    /**
+     * Registers an expression method callable on a receiver value.
+     */
+    App& expressionMethod(
+        std::string name,
+        template_expression::ExpressionMethodCallback callback
+    );
 
     /**
      * Starts the HTTP server on the given port.

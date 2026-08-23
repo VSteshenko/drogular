@@ -189,6 +189,121 @@ NodePtr parseNode(
             );
         }
 
+        case TokenType::Switch: {
+            const auto switchPosition = token.position;
+            if (const auto error = validateConditionExpression(token.value)) {
+                diagnostics.error(
+                    "DGL-TPL-028",
+                    "Invalid @switch expression: " + error->message,
+                    switchPosition + 8 + error->position
+                );
+            }
+
+            auto switchNode = std::make_shared<SwitchNode>(token.value);
+            ++position;
+            bool hasDefault = false;
+
+            while (position < tokens.size() &&
+                   tokens[position].type != TokenType::EndSwitch) {
+                if (tokens[position].type == TokenType::Case) {
+                    const auto caseToken = tokens[position];
+                    if (caseToken.value.empty()) {
+                        diagnostics.error(
+                            "DGL-TPL-029",
+                            "Invalid @case expression: Expected value",
+                            caseToken.position
+                        );
+                    } else {
+                        const auto parsed = template_expression::parse(
+                            "[" + caseToken.value + "]"
+                        );
+                        if (!parsed) {
+                            diagnostics.error(
+                                "DGL-TPL-029",
+                                "Invalid @case expression: " + parsed.error->message,
+                                caseToken.position + 6 +
+                                    (parsed.error->position > 0
+                                        ? parsed.error->position - 1
+                                        : 0)
+                            );
+                        }
+                    }
+
+                    ++position;
+                    SwitchCase switchCase;
+                    switchCase.expressions = caseToken.value;
+                    switchCase.body = parseUntil(
+                        tokens,
+                        position,
+                        { TokenType::Case, TokenType::Default, TokenType::EndSwitch },
+                        diagnostics,
+                        loopDepth
+                    );
+                    switchNode->cases().push_back(std::move(switchCase));
+                    continue;
+                }
+
+                if (tokens[position].type == TokenType::Default) {
+                    const auto defaultPosition = tokens[position].position;
+                    const bool duplicateDefault = hasDefault;
+                    if (duplicateDefault) {
+                        diagnostics.error(
+                            "DGL-TPL-027",
+                            "Duplicate @default",
+                            defaultPosition
+                        );
+                    }
+                    hasDefault = true;
+                    ++position;
+                    auto branch = parseUntil(
+                        tokens,
+                        position,
+                        { TokenType::Case, TokenType::Default, TokenType::EndSwitch },
+                        diagnostics,
+                        loopDepth
+                    );
+                    if (!duplicateDefault) {
+                        switchNode->defaultBranch() = std::move(branch);
+                    }
+                    continue;
+                }
+
+                if (tokens[position].type == TokenType::Text) {
+                    bool whitespaceOnly = true;
+                    for (const auto ch : tokens[position].value) {
+                        if (!std::isspace(static_cast<unsigned char>(ch))) {
+                            whitespaceOnly = false;
+                            break;
+                        }
+                    }
+                    if (whitespaceOnly) {
+                        ++position;
+                        continue;
+                    }
+                }
+
+                diagnostics.error(
+                    "DGL-TPL-025",
+                    "Expected @case or @default inside @switch",
+                    tokens[position].position
+                );
+                ++position;
+            }
+
+            if (position < tokens.size() &&
+                tokens[position].type == TokenType::EndSwitch) {
+                ++position;
+            } else {
+                diagnostics.error(
+                    "DGL-TPL-030",
+                    "Missing @endswitch",
+                    switchPosition
+                );
+            }
+
+            return switchNode;
+        }
+
         case TokenType::Foreach: {
             const auto foreachPosition = token.position;
 
@@ -279,6 +394,33 @@ NodePtr parseNode(
             }
             ++position;
             return std::make_shared<ContinueNode>();
+
+        case TokenType::Case:
+            diagnostics.error(
+                "DGL-TPL-025",
+                "Unexpected @case",
+                token.position
+            );
+            ++position;
+            return std::make_shared<TextNode>("");
+
+        case TokenType::Default:
+            diagnostics.error(
+                "DGL-TPL-026",
+                "Unexpected @default",
+                token.position
+            );
+            ++position;
+            return std::make_shared<TextNode>("");
+
+        case TokenType::EndSwitch:
+            diagnostics.error(
+                "DGL-TPL-031",
+                "Unexpected @endswitch",
+                token.position
+            );
+            ++position;
+            return std::make_shared<TextNode>("");
 
         case TokenType::Else:
         case TokenType::EndIf:

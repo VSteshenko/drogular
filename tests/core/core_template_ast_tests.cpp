@@ -98,3 +98,19 @@ TEST(CoreTemplateAstTests, CreatesConstNode) {
     EXPECT_EQ(node.name(), "PageSize");
     EXPECT_EQ(node.expression(), "20");
 }
+
+TEST(CoreTemplateAstTests, CreatesSwitchNode) {
+    SwitchNode node("status");
+    SwitchCase switchCase;
+    switchCase.expressions = "\"Draft\", \"Pending\"";
+    switchCase.body.push_back(std::make_shared<TextNode>("waiting"));
+    node.cases().push_back(std::move(switchCase));
+    node.defaultBranch().push_back(std::make_shared<TextNode>("other"));
+
+    EXPECT_EQ(node.type(), NodeType::Switch);
+    EXPECT_EQ(node.expression(), "status");
+    ASSERT_EQ(node.cases().size(), 1);
+    EXPECT_EQ(node.cases()[0].expressions, "\"Draft\", \"Pending\"");
+    ASSERT_EQ(node.cases()[0].body.size(), 1);
+    ASSERT_EQ(node.defaultBranch().size(), 1);
+}

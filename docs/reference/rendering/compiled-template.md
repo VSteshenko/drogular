@@ -86,6 +86,12 @@ scopes without mutating the underlying `RenderContext`.
 
 See [Template Variables](template-variables.md).
 
+## Switch directives
+
+Compiled templates support `@switch(expression)`, multiple `@case(...)` values, and an optional `@default` branch. Switches have no fallthrough; the first matching case renders in its own lexical binding scope.
+
+See [Template `@switch`](switch.md).
+
 ## Related Types
 
 - [`TemplateRenderable`](template-renderable.md)

@@ -4,6 +4,7 @@
 #include <drogular/dependency_graph.hpp>
 #include <drogular/application_options.hpp>
 #include <drogular/template_source_cache.hpp>
+#include <drogular/template/expression/functions.hpp>
 
 #include <memory>
 #include <mutex>
@@ -78,6 +79,14 @@ private:
 
 class ApplicationServices {
 public:
+    template_expression::ExpressionFunctionRegistry& expressionFunctions() {
+        return expressionFunctions_;
+    }
+
+    const template_expression::ExpressionFunctionRegistry& expressionFunctions() const {
+        return expressionFunctions_;
+    }
+
     void setGraphQLClient(std::shared_ptr<GraphQLClient> client);
     GraphQLClient* graphQLClient() const;
 
@@ -470,6 +479,9 @@ private:
             return std::static_pointer_cast<void>(service);
         };
     }
+    template_expression::ExpressionFunctionRegistry expressionFunctions_{
+        &template_expression::builtinFunctionRegistry()
+    };
 };
 
 } // namespace drogular

@@ -14,6 +14,7 @@ enum class NodeType {
     Foreach,
     Let,
     Const,
+    Switch,
     Break,
     Continue,
     Component
@@ -111,6 +112,31 @@ public:
 private:
     std::string name_;
     std::string expression_;
+};
+
+struct SwitchCase {
+    std::string expressions;
+    std::vector<NodePtr> body;
+};
+
+class SwitchNode final : public Node {
+public:
+    explicit SwitchNode(std::string expression);
+
+    NodeType type() const override;
+
+    const std::string& expression() const;
+
+    std::vector<SwitchCase>& cases();
+    const std::vector<SwitchCase>& cases() const;
+
+    std::vector<NodePtr>& defaultBranch();
+    const std::vector<NodePtr>& defaultBranch() const;
+
+private:
+    std::string expression_;
+    std::vector<SwitchCase> cases_;
+    std::vector<NodePtr> defaultBranch_;
 };
 
 class ForeachNode final : public Node {

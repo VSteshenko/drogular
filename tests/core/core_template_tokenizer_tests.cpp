@@ -119,3 +119,31 @@ TEST(CoreTemplateTokenizerTests, TokenizesConstExpression) {
     EXPECT_EQ(tokens[0].value, "PageSize = 20");
     EXPECT_EQ(tokens[1].type, TokenType::Variable);
 }
+
+TEST(CoreTemplateTokenizerTests, TokenizesSwitchCaseDefault) {
+    const auto tokens = tokenize(
+        "@switch(status)@case(\"Draft\", \"Pending\")draft"
+        "@defaultother@endswitch"
+    );
+
+    ASSERT_EQ(tokens.size(), 6);
+    EXPECT_EQ(tokens[0].type, TokenType::Switch);
+    EXPECT_EQ(tokens[0].value, "status");
+    EXPECT_EQ(tokens[1].type, TokenType::Case);
+    EXPECT_EQ(tokens[1].value, "\"Draft\", \"Pending\"");
+    EXPECT_EQ(tokens[3].type, TokenType::Default);
+    EXPECT_EQ(tokens[5].type, TokenType::EndSwitch);
+}
+
+TEST(CoreTemplateTokenizerTests, TokenizesNestedSwitchExpressions) {
+    const auto tokens = tokenize(
+        "@switch(t(\"status\", user.role))"
+        "@case(pageCount - 1, user.role)yes@endswitch"
+    );
+
+    ASSERT_EQ(tokens.size(), 4);
+    EXPECT_EQ(tokens[0].type, TokenType::Switch);
+    EXPECT_EQ(tokens[0].value, "t(\"status\", user.role)");
+    EXPECT_EQ(tokens[1].type, TokenType::Case);
+    EXPECT_EQ(tokens[1].value, "pageCount - 1, user.role");
+}

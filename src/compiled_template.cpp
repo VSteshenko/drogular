@@ -84,6 +84,23 @@ std::string nodesToTemplate(
                 break;
             }
 
+            case NodeType::Switch: {
+                const auto switchNode =
+                    std::dynamic_pointer_cast<SwitchNode>(node);
+
+                output += "@switch(" + switchNode->expression() + ")";
+                for (const auto& switchCase : switchNode->cases()) {
+                    output += "@case(" + switchCase.expressions + ")";
+                    output += nodesToTemplate(switchCase.body);
+                }
+                if (!switchNode->defaultBranch().empty()) {
+                    output += "@default";
+                    output += nodesToTemplate(switchNode->defaultBranch());
+                }
+                output += "@endswitch";
+                break;
+            }
+
             case NodeType::Foreach: {
                 const auto foreachNode =
                     std::dynamic_pointer_cast<ForeachNode>(node);
@@ -222,6 +239,57 @@ RenderResult renderNode(
 
         case NodeType::Continue:
             return { .control = RenderControl::Continue };
+
+        case NodeType::Switch: {
+            const auto switchNode =
+                std::dynamic_pointer_cast<SwitchNode>(node);
+
+            const auto switchExpression =
+                template_expression::parse(switchNode->expression());
+            if (!switchExpression) {
+                return {};
+            }
+
+            const auto switchValue = template_expression::evaluate(
+                *switchExpression.expression, bindings
+            );
+
+            for (const auto& switchCase : switchNode->cases()) {
+                const auto caseExpression = template_expression::parse(
+                    "[" + switchCase.expressions + "]"
+                );
+                if (!caseExpression) {
+                    continue;
+                }
+
+                const auto candidates = template_expression::evaluate(
+                    *caseExpression.expression, bindings
+                ).iterable();
+                if (candidates == nullptr) {
+                    continue;
+                }
+
+                bool matches = false;
+                for (std::size_t index = 0; index < candidates->size(); ++index) {
+                    if (switchValue.equals(candidates->at(index))) {
+                        matches = true;
+                        break;
+                    }
+                }
+
+                if (matches) {
+                    auto branchBindings = bindings.createChild();
+                    return renderNodes(
+                        switchCase.body, context, branchBindings
+                    );
+                }
+            }
+
+            auto defaultBindings = bindings.createChild();
+            return renderNodes(
+                switchNode->defaultBranch(), context, defaultBindings
+            );
+        }
 
         case NodeType::Foreach: {
             const auto foreachNode =

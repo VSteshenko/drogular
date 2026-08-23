@@ -67,6 +67,7 @@ add_library(drogular
     src/static_file_last_modified.cpp
     src/template_engine.cpp
     src/template/expression/binding_context.cpp
+    src/template/expression/environment.cpp
     src/template/expression/evaluator.cpp
     src/template/expression/functions.cpp
     src/template/expression/parser.cpp

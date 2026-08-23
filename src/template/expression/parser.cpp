@@ -379,6 +379,18 @@ ExpressionPtr member(ExpressionPtr object, std::string name) {
     });
 }
 
+ExpressionPtr call(
+    std::string function,
+    std::vector<ExpressionPtr> arguments
+) {
+    return std::make_shared<Expression>(Expression{
+        .node = CallExpression{
+            .function = std::move(function),
+            .arguments = std::move(arguments)
+        }
+    });
+}
+
 ExpressionPtr methodCall(
     ExpressionPtr object,
     std::string method,
@@ -619,16 +631,19 @@ private:
         // method and the prefix is its receiver.
         if (current_.type == TokenType::LeftParen) {
             if (const auto* variableNode =
-                    std::get_if<VariableExpression>(&expression->node)) {
+                    std::get_if<VariableExpression>(&expression->node)
+            ) {
                 const auto separator = variableNode->path.rfind('.');
-                if (separator != std::string::npos) {
-                    auto receiver = variable(variableNode->path.substr(0, separator));
-                    auto arguments = parseArguments();
-                    if (!arguments) {
-                        return nullptr;
-                    }
+                auto arguments = parseArguments();
+                if (!arguments) {
+                    return nullptr;
+                }
+                if (separator == std::string::npos) {
+                    expression =
+                        call(variableNode->path, std::move(*arguments));
+                } else {
                     expression = methodCall(
-                        std::move(receiver),
+                        variable(variableNode->path.substr(0, separator)),
                         variableNode->path.substr(separator + 1),
                         std::move(*arguments)
                     );
@@ -711,7 +726,9 @@ private:
                 return arguments;
             }
             if (current_.type != TokenType::Comma) {
-                fail("Expected ',' or ')' in method call", current_.position);
+                fail(
+                    "Expected ',' or ')' in function call",
+                    current_.position);
                 return std::nullopt;
             }
             advance();

@@ -335,3 +335,53 @@ TEST(CoreTemplateDiagnosticsTests, AllowsConstShadowingInNestedScope) {
 
     EXPECT_TRUE(result.valid());
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsUnexpectedCase) {
+    const auto result = compileWithDiagnostics("@case(1)value");
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-025");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsUnexpectedDefault) {
+    const auto result = compileWithDiagnostics("@defaultvalue");
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-026");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsDuplicateSwitchDefault) {
+    const auto result = compileWithDiagnostics(
+        "@switch(value)@defaulta@defaultb@endswitch"
+    );
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-027");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidSwitchExpression) {
+    const auto result = compileWithDiagnostics(
+        "@switch(value +)@case(1)a@endswitch"
+    );
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-028");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidCaseExpression) {
+    const auto result = compileWithDiagnostics(
+        "@switch(value)@case(1 +)a@endswitch"
+    );
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-029");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsMissingEndSwitch) {
+    const auto result = compileWithDiagnostics(
+        "@switch(value)@case(1)a"
+    );
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-030");
+}

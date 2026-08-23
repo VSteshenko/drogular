@@ -74,3 +74,89 @@ Methods are represented by `MethodCallExpression` in the expression AST. The
 evaluator resolves method names through `ExpressionFunctionRegistry`; built-in
 collection functions live outside the evaluator itself. This keeps parser and
 evaluator changes unnecessary when additional built-in functions are added.
+
+## Application functions
+
+Applications can extend the expression language during startup without changing
+the parser or evaluator.
+
+Global functions are registered through `App::expressionFunction`:
+
+```cpp
+app.expressionFunction(
+    "t",
+    [](std::span<const ExpressionValue> args,
+       const BindingContext& context) -> ExpressionValue {
+        if (args.size() != 1 || !args[0].string()) {
+            return {};
+        }
+
+        // Resolve an application localization service from the base
+        // RenderContext and translate using the current request locale.
+        auto localizer = context.renderContext().requireService<MyLocalizer>();
+        return ExpressionValue(localizer->translate(*args[0].string()));
+    }
+);
+```
+
+The function is then available everywhere an expression is accepted:
+
+```html
+<h1>{{ t("projects.title") }}</h1>
+
+@let(emptyMessage = t("projects.empty"))
+
+@if(projects.empty())
+    <p>{{ emptyMessage }}</p>
+@endif
+```
+
+Receiver methods are registered through `App::expressionMethod`:
+
+```cpp
+app.expressionMethod(
+    "currency",
+    [](const ExpressionValue& self,
+       std::span<const ExpressionValue> args,
+       const BindingContext&) -> ExpressionValue {
+        // ...
+    }
+);
+```
+
+and used as normal expression methods:
+
+```text
+price.currency("EUR")
+```
+
+Callbacks receive the current `BindingContext`, so they can read lexical
+`@let` / `@const` values and reach request/application services through
+`context.renderContext()`. Functions should treat bindings as read-only.
+
+## Registration lifecycle
+
+Expression extensions are intended to be registered during application startup.
+`App::run()` freezes the application registry before the server begins serving
+requests. Attempts to register another function after the registry is frozen are
+rejected.
+
+Built-in names such as `count`, `empty`, `first`, `last`, and `contains` cannot
+be replaced through the `App` facade. Duplicate application names are also
+rejected.
+
+User callback exceptions are contained by the expression environment and the
+call evaluates to `null` instead of aborting template rendering.
+
+## Runtime architecture
+
+Expression evaluation uses an `ExpressionEnvironment` containing the lexical
+`BindingContext` plus the application function registry. Resolution order is:
+
+1. application functions/methods;
+2. built-in functions/methods;
+3. `null` when no callable exists.
+
+Global calls are represented by `CallExpression`; receiver calls continue to
+use `MethodCallExpression`. Function results are ordinary `ExpressionValue`
+instances, so chaining works naturally.

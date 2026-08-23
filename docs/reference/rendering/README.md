@@ -16,6 +16,7 @@ Rendering connects pages, components, templates, request data, application servi
 - [Template Conditional Expressions](conditional-expressions.md) — `@if(...)` comparisons, logical operators, literals, grouping, and diagnostics.
 - [Template `@foreach`](foreach.md) — iterable expressions, filtering, loop metadata, `@empty`, `@continue`, `@break`, and loop diagnostics.
 - [Template Variables](template-variables.md) — lexical `@let` / `@const` bindings, shadowing, scope, and diagnostics.
+- [Template `@switch`](switch.md) — case selection, multiple values, lexical branch scope, and diagnostics.
 
 `RenderContextError` is documented as part of [`RenderContext`](render-context.md) and the framework error contract.
 

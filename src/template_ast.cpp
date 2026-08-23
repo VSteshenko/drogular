@@ -105,6 +105,34 @@ const std::string& ConstNode::expression() const {
     return expression_;
 }
 
+SwitchNode::SwitchNode(std::string expression)
+    : expression_(std::move(expression)) {
+}
+
+NodeType SwitchNode::type() const {
+    return NodeType::Switch;
+}
+
+const std::string& SwitchNode::expression() const {
+    return expression_;
+}
+
+std::vector<SwitchCase>& SwitchNode::cases() {
+    return cases_;
+}
+
+const std::vector<SwitchCase>& SwitchNode::cases() const {
+    return cases_;
+}
+
+std::vector<NodePtr>& SwitchNode::defaultBranch() {
+    return defaultBranch_;
+}
+
+const std::vector<NodePtr>& SwitchNode::defaultBranch() const {
+    return defaultBranch_;
+}
+
 ForeachNode::ForeachNode(std::string expression)
     : expression_(std::move(expression)) {
 }

@@ -1,5 +1,7 @@
 #include <drogular/compiled_template.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/services.hpp>
+#include <drogular/template_expression.hpp>
 
 #include <gtest/gtest.h>
 
@@ -648,4 +650,114 @@ TEST(CoreCompiledTemplateTests, ConstCanBeShadowedInNestedScope) {
     );
 
     EXPECT_EQ(compiled.render(context), "121");
+}
+
+TEST(CoreCompiledTemplateTests, RendersApplicationExpressionFunction) {
+    drogular::ApplicationServices services;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    ASSERT_TRUE(services.expressionFunctions().registerFunction(
+        "t",
+        [](std::span<const drogular::template_expression::ExpressionValue> arguments,
+           const drogular::template_expression::BindingContext&) {
+            if (arguments.size() != 1 || !arguments[0].string()) {
+                return drogular::template_expression::ExpressionValue();
+            }
+            return drogular::template_expression::ExpressionValue(
+                std::string("translated:") + *arguments[0].string()
+            );
+        }
+    ));
+
+    const auto compiled = drogular::template_compiler::compile(
+        "<h1>{{ t('projects.title') }}</h1>"
+    );
+
+    EXPECT_EQ(
+        compiled.render(context),
+        "<h1>translated:projects.title</h1>"
+    );
+}
+
+TEST(CoreCompiledTemplateTests, RendersSwitchMatchingCase) {
+    drogular::RenderContext context;
+    context.set("status", std::string("Published"));
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@switch(status)"
+        "@case(\"Draft\")draft"
+        "@case(\"Published\")published"
+        "@defaultunknown"
+        "@endswitch"
+    );
+
+    EXPECT_EQ(compiled.render(context), "published");
+}
+
+TEST(CoreCompiledTemplateTests, SwitchSupportsMultipleCaseValues) {
+    drogular::RenderContext context;
+    context.set("status", std::string("Pending"));
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@switch(status)"
+        "@case(\"Draft\", \"Pending\")waiting"
+        "@defaultother"
+        "@endswitch"
+    );
+
+    EXPECT_EQ(compiled.render(context), "waiting");
+}
+
+TEST(CoreCompiledTemplateTests, SwitchSupportsExpressionCasesAndBindings) {
+    drogular::RenderContext context;
+    context.set("page", 3);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@const(last = 3)"
+        "@switch(page)"
+        "@case(last - 1)before"
+        "@case(last)@let(label = \"last\"){{ label }}"
+        "@defaultother"
+        "@endswitch"
+    );
+
+    EXPECT_EQ(compiled.render(context), "last");
+}
+
+TEST(CoreCompiledTemplateTests, SwitchUsesDefaultWhenNoCaseMatches) {
+    drogular::RenderContext context;
+    context.set("status", std::string("Archived"));
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@switch(status)@case(\"Draft\")draft@defaultother@endswitch"
+    );
+
+    EXPECT_EQ(compiled.render(context), "other");
+}
+
+TEST(CoreCompiledTemplateTests, SwitchBranchBindingsDoNotLeak) {
+    drogular::RenderContext context;
+    context.set("status", 1);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@switch(status)@case(1)@let(local = 7){{ local }}@endswitch"
+        "{{ local }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "7");
+}
+
+TEST(CoreCompiledTemplateTests, SupportsNestedSwitch) {
+    drogular::RenderContext context;
+    context.set("status", std::string("Draft"));
+    context.set("priority", std::string("High"));
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@switch(status)@case(\"Draft\")"
+        "@switch(priority)@case(\"High\")urgent@defaultnormal@endswitch"
+        "@defaultother@endswitch"
+    );
+
+    EXPECT_EQ(compiled.render(context), "urgent");
 }

@@ -62,6 +62,11 @@ struct MemberAccessExpression {
     std::string member;
 };
 
+struct CallExpression {
+    std::string function;
+    std::vector<ExpressionPtr> arguments;
+};
+
 struct MethodCallExpression {
     ExpressionPtr object;
     std::string method;
@@ -82,6 +87,7 @@ using ExpressionNode = std::variant<
     BinaryExpression,
     ListExpression,
     MemberAccessExpression,
+    CallExpression,
     MethodCallExpression,
     RangeExpression
 >;
