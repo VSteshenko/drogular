@@ -205,3 +205,94 @@ TEST(CoreTemplateExpressionTests, ParsesRangeSeparatelyFromDottedPaths) {
     EXPECT_EQ(start->path, "start");
     EXPECT_EQ(end->path, "user.lastPage");
 }
+
+TEST(CoreTemplateExpressionTests, ParsesMembershipOperatorsAtComparisonPrecedence) {
+    const auto result = parse("role in ['Admin', 'Moderator'] && active");
+
+    ASSERT_TRUE(result);
+    const auto* root =
+        std::get_if<BinaryExpression>(&result.expression->node);
+    ASSERT_NE(root, nullptr);
+    EXPECT_EQ(root->op, BinaryOperator::And);
+
+    const auto* membership =
+        std::get_if<BinaryExpression>(&root->left->node);
+    ASSERT_NE(membership, nullptr);
+    EXPECT_EQ(membership->op, BinaryOperator::In);
+
+    const auto excluded = parse("role not in ['Guest']");
+    ASSERT_TRUE(excluded);
+    const auto* notIn =
+        std::get_if<BinaryExpression>(&excluded.expression->node);
+    ASSERT_NE(notIn, nullptr);
+    EXPECT_EQ(notIn->op, BinaryOperator::NotIn);
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesMembershipInExpressionLists) {
+    drogular::RenderContext context;
+    context.set("role", std::string("Admin"));
+    context.set("page", 3);
+
+    EXPECT_TRUE(evaluate(
+        "role in ['Admin', 'Moderator']",
+        context
+    ).truthy());
+    EXPECT_FALSE(evaluate(
+        "role not in ['Admin', 'Moderator']",
+        context
+    ).truthy());
+    EXPECT_TRUE(evaluate("page in [1, 3, 5, 7]", context).truthy());
+    EXPECT_FALSE(evaluate("page in [2, 4, 6]", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesMembershipInJsonArrays) {
+    drogular::RenderContext context;
+    context.set("role", std::string("Moderator"));
+
+    Json::Value roles(Json::arrayValue);
+    roles.append("Admin");
+    roles.append("Moderator");
+    context.set("roles", roles);
+
+    EXPECT_TRUE(evaluate("role in roles", context).truthy());
+    EXPECT_FALSE(evaluate("'Guest' in roles", context).truthy());
+    EXPECT_TRUE(evaluate("'Guest' not in roles", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesMembershipInRangesWithoutMaterializing) {
+    drogular::RenderContext context;
+
+    EXPECT_TRUE(evaluate("5 in [1..10]", context).truthy());
+    EXPECT_TRUE(evaluate("9 in [1..<10]", context).truthy());
+    EXPECT_FALSE(evaluate("10 in [1..<10]", context).truthy());
+
+    EXPECT_TRUE(evaluate("7 in [1..10 step 2]", context).truthy());
+    EXPECT_FALSE(evaluate("8 in [1..10 step 2]", context).truthy());
+
+    EXPECT_TRUE(evaluate("4 in [10..0 step -2]", context).truthy());
+    EXPECT_FALSE(evaluate("5 in [10..0 step -2]", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, MembershipRequiresIterableRightOperand) {
+    drogular::RenderContext context;
+
+    EXPECT_FALSE(evaluate("1 in 1", context).truthy());
+    EXPECT_TRUE(evaluate("1 not in 1", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, MembershipKeywordsRemainValidVariables) {
+    drogular::RenderContext context;
+    context.set("in", 3);
+    context.set("not", 4);
+
+    EXPECT_TRUE(evaluate("in == 3", context).truthy());
+    EXPECT_TRUE(evaluate("not == 4", context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, ReportsIncompleteNotInOperator) {
+    const auto result = parse("role not ['Guest']");
+
+    ASSERT_FALSE(result);
+    ASSERT_TRUE(result.error.has_value());
+    EXPECT_EQ(result.error->message, "Expected 'in' after 'not'");
+}

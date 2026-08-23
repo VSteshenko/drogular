@@ -81,7 +81,7 @@ as well as unary negation:
 ```
 
 Normal arithmetic precedence applies: unary operators, multiplication/division,
-addition/subtraction, comparisons, `&&`, then `||`.
+addition/subtraction, comparisons and membership, `&&`, then `||`.
 
 This means range bounds and steps may be arbitrary expressions:
 
@@ -145,6 +145,35 @@ Range values require integral bounds and an integral, non-zero step. An
 explicit step whose direction cannot reach the end bound evaluates to null,
 which prevents a non-terminating range.
 
+## Membership operators
+
+The expression engine supports membership tests at comparison precedence:
+
+```text
+value in collection
+value not in collection
+```
+
+Membership works with expression-owned list literals, integer ranges, and
+`Json::Value` arrays resolved from `RenderContext`:
+
+```text
+role in ["Admin", "Moderator"]
+page in [1..10]
+index not in [0..<reservedCount]
+user.id in allowedUserIds
+```
+
+Range membership respects both the upper-bound mode and `step`. It is checked
+mathematically and does not materialize the range, so membership in a large
+range does not allocate an intermediate array.
+
+The right operand must be an iterable collection supported by the expression
+engine. Membership against another value type evaluates to `false`; `not in`
+is its logical inverse. `in` and `not` remain ordinary identifiers outside the
+binary-operator position, so existing context keys with those names continue
+to resolve normally.
+
 ## RenderContext resolution
 
 `template_expression::resolve()` resolves primitive context values and dotted
@@ -179,9 +208,9 @@ expressions directly.
 The expression engine now provides the value model needed for the next
 language steps:
 
-1. `in` / `not in`;
-2. `@foreach` over arbitrary iterable expressions;
-3. `@let` bindings;
+1. `@foreach` over arbitrary iterable expressions;
+2. `@let` bindings;
+3. compile-time `@const` bindings;
 4. `@switch` / `@case`.
 
 Those features belong in the expression engine rather than in individual

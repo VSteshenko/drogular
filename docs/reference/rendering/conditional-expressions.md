@@ -30,18 +30,22 @@ Conditions can also combine comparisons, logical operators, literals, dotted JSO
 
 | Category | Operators           |
 | --- |---------------------|
+| Arithmetic | `+`, `-`, `*`, `/` |
 | Equality | `==`, `!=`          |
 | Relational | `<`, `<=`, `>`, `>=` |
+| Membership | `in`, `not in` |
 | Logical | `&&`, `\|\|` |
-| Unary | `!`                 |
+| Unary | `!`, unary `-`       |
 | Grouping | `(`, `)`            |
 
 Operator precedence, from highest to lowest, is:
 
-1. parentheses and unary `!`
-2. comparison operators
-3. `&&`
-4. `||`
+1. parentheses and unary `!` / unary `-`
+2. `*` and `/`
+3. `+` and `-`
+4. comparison and membership operators
+5. `&&`
+6. `||`
 
 Use parentheses when they make the intended condition clearer.
 
@@ -75,6 +79,24 @@ The following literals are supported:
 - strings: `"active"`, `'admin'`
 
 Both single-quoted and double-quoted string literals are accepted.
+
+List and range expressions can be used directly in conditions:
+
+```html
+@if(user.role in ["Admin", "Moderator"])
+    ...
+@endif
+
+@if(page in [1..10])
+    ...
+@endif
+
+@if(index not in [0..<reservedCount])
+    ...
+@endif
+```
+
+Membership also works with JSON arrays supplied through `RenderContext`.
 
 ## Truthy Conditions
 

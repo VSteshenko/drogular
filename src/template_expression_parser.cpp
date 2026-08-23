@@ -457,19 +457,38 @@ private:
             return nullptr;
         }
 
-        const auto op = comparisonOperator(current_.type);
-        if (!op) {
+        auto op = comparisonOperator(current_.type);
+        std::string operatorText;
+        std::size_t operatorPosition = current_.position;
+
+        if (current_.type == TokenType::Identifier && current_.text == "in") {
+            op = BinaryOperator::In;
+            operatorText = "in";
+            advance();
+        } else if (current_.type == TokenType::Identifier && current_.text == "not") {
+            const auto notToken = current_;
+            advance();
+            if (current_.type != TokenType::Identifier || current_.text != "in") {
+                fail("Expected 'in' after 'not'", current_.position);
+                return nullptr;
+            }
+            op = BinaryOperator::NotIn;
+            operatorText = "not in";
+            operatorPosition = notToken.position;
+            advance();
+        } else if (op) {
+            operatorText = current_.text;
+            advance();
+        } else {
             return left;
         }
 
-        const auto operatorToken = current_;
-        advance();
         auto right = parseAdditive();
         if (!right) {
             if (!error_) {
                 fail(
-                    "Expected value after '" + operatorToken.text + "'",
-                    operatorToken.position + operatorToken.text.size()
+                    "Expected value after '" + operatorText + "'",
+                    operatorPosition + operatorText.size()
                 );
             }
             return nullptr;

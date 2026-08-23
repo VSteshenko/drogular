@@ -238,3 +238,16 @@ TEST(CoreTemplateRuntimeTests, ValidatesForeachExpressionSyntax) {
     ASSERT_TRUE(missingCondition.has_value());
     EXPECT_EQ(missingCondition->message, "Expected condition after 'where'");
 }
+
+TEST(CoreTemplateRuntimeTests, EvaluatesMembershipConditionsThroughRuntimeFacade) {
+    drogular::RenderContext context;
+    context.set("role", std::string("Admin"));
+    context.set("page", 5);
+
+    EXPECT_TRUE(evaluateCondition(
+        "role in ['Admin', 'Moderator']",
+        context
+    ));
+    EXPECT_TRUE(evaluateCondition("page in [1..10]", context));
+    EXPECT_TRUE(evaluateCondition("page not in [6..<10]", context));
+}

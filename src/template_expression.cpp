@@ -206,6 +206,65 @@ std::optional<std::int64_t> integerValue(const ExpressionValue& value) {
     return static_cast<std::int64_t>(*number);
 }
 
+bool rangeContains(const ExpressionRange& range, const ExpressionValue& candidate) {
+    const auto value = integerValue(candidate);
+    if (!value || range.step == 0) {
+        return false;
+    }
+
+    if (range.step > 0) {
+        if (*value < range.start ||
+            (range.upperInclusive ? *value > range.end : *value >= range.end)) {
+            return false;
+        }
+    } else {
+        if (*value > range.start ||
+            (range.upperInclusive ? *value < range.end : *value <= range.end)) {
+            return false;
+        }
+    }
+
+    if (range.step > 0) {
+        const auto distance =
+            static_cast<std::uint64_t>(*value) -
+            static_cast<std::uint64_t>(range.start);
+        return distance % static_cast<std::uint64_t>(range.step) == 0;
+    }
+
+    const auto distance =
+        static_cast<std::uint64_t>(range.start) -
+        static_cast<std::uint64_t>(*value);
+    const auto stepMagnitude =
+        std::uint64_t{0} - static_cast<std::uint64_t>(range.step);
+    return distance % stepMagnitude == 0;
+}
+
+bool containsValue(const ExpressionValue& container, const ExpressionValue& candidate) {
+    if (const auto array = container.array()) {
+        for (const auto& value : array->values) {
+            if (equalValues(candidate, value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (const auto* range = container.range()) {
+        return rangeContains(*range, candidate);
+    }
+
+    if (const auto* json = std::get_if<Json::Value>(&container.storage());
+        json && json->isArray()) {
+        for (const auto& value : *json) {
+            if (equalValues(candidate, ExpressionValue(value))) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 ExpressionValue evaluateNode(const Expression& expression, const RenderContext& context) {
     if (const auto* node = std::get_if<LiteralExpression>(&expression.node)) {
         return node->value;
@@ -349,6 +408,12 @@ ExpressionValue evaluateNode(const Expression& expression, const RenderContext& 
                     return lhs >= rhs;
                 }
             ));
+
+        case BinaryOperator::In:
+            return ExpressionValue(containsValue(right, left));
+
+        case BinaryOperator::NotIn:
+            return ExpressionValue(!containsValue(right, left));
 
         case BinaryOperator::And:
         case BinaryOperator::Or:

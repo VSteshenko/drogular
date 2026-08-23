@@ -102,6 +102,8 @@ enum class BinaryOperator {
     LessEqual,
     Greater,
     GreaterEqual,
+    In,
+    NotIn,
     And,
     Or
 };
