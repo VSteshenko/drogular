@@ -864,3 +864,24 @@ TEST(CoreTemplateEngineTests, SupportsBreakInsideForeach) {
 
     EXPECT_EQ(html, "12");
 }
+
+TEST(CoreTemplateEngineTests, ForeachAcceptsListAndRangeExpressions) {
+    drogular::RenderContext context;
+    context.set("end", 5);
+
+    EXPECT_EQ(
+        drogular::template_engine::render(
+            "@foreach(value in [1, 3, 5]){{ value }}@endforeach",
+            context
+        ),
+        "135"
+    );
+
+    EXPECT_EQ(
+        drogular::template_engine::render(
+            "@foreach(value in [1..<end step 2]){{ value }}@endforeach",
+            context
+        ),
+        "13"
+    );
+}

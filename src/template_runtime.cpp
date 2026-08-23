@@ -1,10 +1,13 @@
 #include <drogular/template_runtime.hpp>
-#include <drogular/template_expression.hpp>
+#include <drogular/template/expression/expression.hpp>
 #include <drogular/render_context.hpp>
 
 #include <json/json.h>
 
 #include <optional>
+#include <cmath>
+#include <limits>
+#include <variant>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -101,6 +104,76 @@ std::optional<std::string> resolveToString(
     return std::nullopt;
 }
 
+std::size_t findTopLevelWhere(
+    std::string_view expression,
+    std::size_t from
+) {
+    std::size_t parenDepth = 0;
+    std::size_t bracketDepth = 0;
+    char quote = '\0';
+    bool escaped = false;
+
+    for (std::size_t i = from; i < expression.size(); ++i) {
+        const char ch = expression[i];
+        if (quote != '\0') {
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (ch == '\\') {
+                escaped = true;
+                continue;
+            }
+            if (ch == quote) {
+                quote = '\0';
+            }
+            continue;
+        }
+
+        if (ch == '\'' || ch == '"') {
+            quote = ch;
+            continue;
+        }
+        if (ch == '(') {
+            ++parenDepth;
+            continue;
+        }
+        if (ch == ')') {
+            if (parenDepth > 0) --parenDepth;
+            continue;
+        }
+        if (ch == '[') {
+            ++bracketDepth;
+            continue;
+        }
+        if (ch == ']') {
+            if (bracketDepth > 0) --bracketDepth;
+            continue;
+        }
+
+        if (parenDepth != 0 || bracketDepth != 0 || ch != 'w') {
+            continue;
+        }
+        constexpr std::string_view keyword = "where";
+        if (i + keyword.size() > expression.size() ||
+            expression.substr(i, keyword.size()) != keyword) {
+            continue;
+        }
+        if (i == from ||
+            !std::isspace(static_cast<unsigned char>(expression[i - 1]))) {
+            continue;
+        }
+        const auto after = i + keyword.size();
+        if (after >= expression.size() ||
+            !std::isspace(static_cast<unsigned char>(expression[after]))) {
+            continue;
+        }
+        return i;
+    }
+
+    return std::string_view::npos;
+}
+
 } // namespace
 
 std::optional<std::string> resolveVariable(
@@ -126,62 +199,101 @@ std::optional<std::string> resolveRawVariable(
 std::optional<ForeachExpressionError> validateForeachExpression(
     std::string_view expression
 ) {
-    const auto inPosition = expression.find(" in ");
-
-    if (inPosition == std::string_view::npos) {
-        return ForeachExpressionError{
-            .message = "Expected 'in'",
-            .position = expression.size()
-        };
+    const auto parsed = parseForeachExpression(expression);
+    if (parsed.has_value()) {
+        return std::nullopt;
     }
 
-    const auto variable = trim(expression.substr(0, inPosition));
-    if (variable.empty()) {
-        return ForeachExpressionError{
-            .message = "Expected loop variable before 'in'",
-            .position = 0
-        };
+    std::size_t position = 0;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
     }
 
-    if (!(std::isalpha(static_cast<unsigned char>(variable.front())) ||
-        variable.front() == '_')
+    if (position >= expression.size() ||
+        !(std::isalpha(static_cast<unsigned char>(expression[position])) ||
+          expression[position] == '_')
     ) {
         return ForeachExpressionError{
-            .message = "Invalid loop variable '" + variable + "'",
-            .position = 0
+            .message = "Expected loop variable before 'in'",
+            .position = position
         };
     }
 
-    for (std::size_t index = 1; index < variable.size(); ++index) {
-        const auto ch = static_cast<unsigned char>(variable[index]);
-        if (!std::isalnum(ch) && variable[index] != '_') {
-            return ForeachExpressionError{
-                .message = "Invalid loop variable '" + variable + "'",
-                .position = index
-            };
-        }
+    const auto variableStart = position;
+    ++position;
+    while (position < expression.size() &&
+           (std::isalnum(static_cast<unsigned char>(expression[position])) ||
+            expression[position] == '_')
+    ) {
+        ++position;
     }
 
-    const auto remainderStart = inPosition + 4;
-    const auto remainder = expression.substr(remainderStart);
-    const auto wherePosition = remainder.find(" where ");
-    const auto collectionPart = wherePosition == std::string_view::npos
-        ? remainder
-        : remainder.substr(0, wherePosition);
-    const auto collection = trim(collectionPart);
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
 
-    if (collection.empty()) {
+    if (position + 2 > expression.size() ||
+        expression.substr(position, 2) != "in" ||
+        (position + 2 < expression.size() &&
+         !std::isspace(static_cast<unsigned char>(expression[position + 2])))
+    ) {
+        return ForeachExpressionError{
+            .message = "Expected 'in'",
+            .position = position
+        };
+    }
+
+    position += 2;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+    if (position >= expression.size()) {
         return ForeachExpressionError{
             .message = "Expected collection after 'in'",
-            .position = remainderStart
+            .position = position
+        };
+    }
+
+    // Re-scan the top-level `where` separator to report expression errors
+    // at their precise position.
+    const auto wherePosition = findTopLevelWhere(expression, position);
+    auto collectionEnd = wherePosition == std::string_view::npos
+        ? expression.size()
+        : wherePosition;
+    while (collectionEnd > position &&
+           std::isspace(static_cast<unsigned char>(expression[collectionEnd - 1]))
+    ) {
+        --collectionEnd;
+    }
+    if (collectionEnd == position) {
+        return ForeachExpressionError{
+            .message = "Expected collection after 'in'",
+            .position = position
+        };
+    }
+
+    const auto collection =
+        expression.substr(position, collectionEnd - position);
+    if (const auto result = template_expression::parse(collection); !result) {
+        return ForeachExpressionError{
+            .message = "Invalid collection expression: " + result.error->message,
+            .position = position + result.error->position
         };
     }
 
     if (wherePosition != std::string_view::npos) {
-        const auto conditionStart = remainderStart + wherePosition + 7;
-        const auto condition = trim(expression.substr(conditionStart));
-
-        if (condition.empty()) {
+        auto conditionStart = wherePosition + 5;
+        while (conditionStart < expression.size() &&
+               std::isspace(static_cast<unsigned char>(expression[conditionStart]))) {
+            ++conditionStart;
+        }
+        if (conditionStart >= expression.size()) {
             return ForeachExpressionError{
                 .message = "Expected condition after 'where'",
                 .position = conditionStart
@@ -189,40 +301,102 @@ std::optional<ForeachExpressionError> validateForeachExpression(
         }
     }
 
-    return std::nullopt;
+    return ForeachExpressionError{
+        .message = "Invalid @foreach expression",
+        .position = variableStart
+    };
 }
 
 std::optional<ForeachExpression> parseForeachExpression(
     std::string_view expression
 ) {
-    if (validateForeachExpression(expression).has_value()) {
+    std::size_t position = 0;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+    if (position >= expression.size() ||
+        !(std::isalpha(static_cast<unsigned char>(expression[position])) ||
+          expression[position] == '_')
+    ) {
         return std::nullopt;
     }
 
-    const auto inPosition = expression.find(" in ");
-    const auto remainderStart = inPosition + 4;
-    const auto remainder = expression.substr(remainderStart);
-    const auto wherePosition = remainder.find(" where ");
+    const auto variableStart = position;
+    ++position;
+    while (position < expression.size() &&
+           (std::isalnum(static_cast<unsigned char>(expression[position])) ||
+            expression[position] == '_')
+    ) {
+        ++position;
+    }
+    const auto variable =
+        std::string(expression.substr(variableStart, position - variableStart));
+
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+    if (position + 2 > expression.size() || expression.substr(position, 2) != "in" ||
+        (position + 2 < expression.size() &&
+         !std::isspace(static_cast<unsigned char>(expression[position + 2])))
+    ) {
+        return std::nullopt;
+    }
+    position += 2;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+    const auto collectionStart = position;
+    if (collectionStart >= expression.size()) {
+        return std::nullopt;
+    }
+
+    const auto wherePosition = findTopLevelWhere(expression, collectionStart);
+
+    auto collectionEnd = wherePosition == std::string_view::npos
+        ? expression.size()
+        : wherePosition;
+    while (collectionEnd > collectionStart &&
+           std::isspace(static_cast<unsigned char>(expression[collectionEnd - 1]))
+    ) {
+        --collectionEnd;
+    }
+    if (collectionEnd == collectionStart) {
+        return std::nullopt;
+    }
+
+    const auto collection = std::string(
+        expression.substr(collectionStart, collectionEnd - collectionStart));
+    const auto parsedCollection =
+        template_expression::parse(collection);
+    if (!parsedCollection) {
+        return std::nullopt;
+    }
 
     ForeachExpression result{
-        .variable = trim(expression.substr(0, inPosition)),
-        .collection = trim(
-            wherePosition == std::string_view::npos
-                ? remainder
-                : remainder.substr(0, wherePosition)
-        )
+        .variable = variable,
+        .collection = collection,
+        .collectionPosition = collectionStart,
+        .condition = std::nullopt,
+        .conditionPosition = 0
     };
 
     if (wherePosition != std::string_view::npos) {
-        const auto rawConditionStart = remainderStart + wherePosition + 7;
-        auto conditionStart = rawConditionStart;
+        auto conditionStart = wherePosition + 5;
         while (conditionStart < expression.size() &&
-            std::isspace(static_cast<unsigned char>(expression[conditionStart]))
+               std::isspace(static_cast<unsigned char>(expression[conditionStart]))
         ) {
             ++conditionStart;
         }
-
-        result.condition = trim(expression.substr(rawConditionStart));
+        if (conditionStart >= expression.size()) {
+            return std::nullopt;
+        }
+        result.condition = trim(expression.substr(conditionStart));
         result.conditionPosition = conditionStart;
     }
 
@@ -283,6 +457,46 @@ std::optional<Json::Value> resolveJsonValue(
 }
 
 namespace detail {
+
+void setExpressionValue(
+    RenderContext& context,
+    std::string key,
+    template_expression::ExpressionValue value
+) {
+    const auto& storage = value.storage();
+    if (const auto* boolean = std::get_if<bool>(&storage)) {
+        context.set(std::move(key), *boolean);
+        return;
+    }
+    if (const auto* number = std::get_if<double>(&storage)) {
+        if (std::isfinite(*number) && std::trunc(*number) == *number &&
+            *number >= static_cast<double>(std::numeric_limits<int>::min()) &&
+            *number <= static_cast<double>(std::numeric_limits<int>::max())
+        ) {
+            context.set(std::move(key), static_cast<int>(*number));
+        } else {
+            context.set(std::move(key), *number);
+        }
+        return;
+    }
+    if (const auto* string = std::get_if<std::string>(&storage)) {
+        context.set(std::move(key), *string);
+        return;
+    }
+    if (const auto* json = std::get_if<Json::Value>(&storage)) {
+        context.set(std::move(key), *json);
+        return;
+    }
+    if (std::holds_alternative<std::monostate>(storage)) {
+        context.set(std::move(key), Json::Value(Json::nullValue));
+        return;
+    }
+
+    // Native List/Range values have no RenderContext counterpart. Preserve
+    // the ExpressionValue so nested expressions and future bindings can use
+    // them without lossy conversion.
+    context.set(std::move(key), std::move(value));
+}
 
 void setLoopMetadata(
     RenderContext& childContext,

@@ -471,3 +471,61 @@ TEST(CoreCompiledTemplateTests, BreakOnlyStopsNearestForeach) {
 
     EXPECT_EQ(compiled.render(context), "1[A];2[A];");
 }
+
+TEST(CoreCompiledTemplateTests, ForeachAcceptsListExpression) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(value in [1, 3, 5, 7]){{ value }}@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "1357");
+}
+
+TEST(CoreCompiledTemplateTests, ForeachAcceptsComputedRangeExpression) {
+    drogular::RenderContext context;
+    context.set("start", 2);
+    context.set("count", 4);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(value in [start..start + count - 1])"
+        "{{ loop.number }}={{ value }};"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "1=2;2=3;3=4;4=5;");
+}
+
+TEST(CoreCompiledTemplateTests, ForeachWhereFiltersExpressionIterable) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(value in [1..10] where value in [2, 4, 6, 8])"
+        "{{ value }}"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "2468");
+}
+
+TEST(CoreCompiledTemplateTests, ForeachEmptySupportsEmptyExpressionList) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(value in []){{ value }}@emptyempty@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "empty");
+}
+
+TEST(CoreCompiledTemplateTests, ForeachPreservesNestedExpressionIterables) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(row in [[1, 2], [3, 4]])"
+        "@foreach(cell in row){{ cell }}@endforeach;"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "12;34;");
+}

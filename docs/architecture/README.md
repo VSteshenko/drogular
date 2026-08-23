@@ -34,6 +34,7 @@ Pages and Actions are created per request. Long-lived application services are r
 - [Feature Architecture](feature-architecture.md) — the feature-oriented structure validated by Portal Demo.
 - [Data Provider Architecture](data-providers.md) — how Pages and Actions depend on application-facing provider interfaces instead of transports.
 - [Template Rendering Pipeline](template_rendering_pipeline.md) — the shared pipeline used by `TemplatePage` and `TemplateComponent`.
+- [Template Expression Engine](template_expression_engine.md) — expression values, AST, parser/evaluator boundaries, iterable expressions, lists, ranges, and operators.
 - [Portal Feature Validation](portal_feature_validation_report.md) — what Projects, Users, and Departments currently prove, and which abstractions are still intentionally deferred.
 
 ## Architecture versus API Reference

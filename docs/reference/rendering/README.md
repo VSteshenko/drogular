@@ -14,7 +14,7 @@ Rendering connects pages, components, templates, request data, application servi
 - [`template_compiler::CompiledTemplate`](compiled-template.md) — low-level compiled-template representation and compilation entry points.
 - [Template Expression Engine](../../architecture/template_expression_engine.md) — shared expression lexer/parser/AST/evaluator used by template control flow.
 - [Template Conditional Expressions](conditional-expressions.md) — `@if(...)` comparisons, logical operators, literals, grouping, and diagnostics.
-- [Template `@foreach`](foreach.md) — filtering, loop metadata, `@empty`, `@continue`, `@break`, and loop diagnostics.
+- [Template `@foreach`](foreach.md) — iterable expressions, filtering, loop metadata, `@empty`, `@continue`, `@break`, and loop diagnostics.
 
 `RenderContextError` is documented as part of [`RenderContext`](render-context.md) and the framework error contract.
 

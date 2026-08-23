@@ -170,96 +170,64 @@ RenderResult renderNode(
 
             const auto expression =
                 parseForeachExpression(foreachNode->expression());
-
             if (!expression.has_value()) {
                 return {};
             }
 
-            std::string output;
+            const auto source = template_expression::parse(expression->collection);
+            if (!source) {
+                return renderNodes(foreachNode->emptyBranch(), context);
+            }
 
-            if (const auto stringValues =
-                context.get<std::vector<std::string>>(expression->collection)) {
-                std::vector<std::size_t> selected;
-                selected.reserve(stringValues->size());
+            const auto iterable = template_expression::evaluate(
+                *source.expression,
+                context
+            ).iterable();
+            if (iterable == nullptr || iterable->empty()) {
+                return renderNodes(foreachNode->emptyBranch(), context);
+            }
 
-                for (std::size_t index = 0; index < stringValues->size(); ++index) {
-                    if (expression->condition.has_value()) {
-                        auto conditionContext = context.createChild();
-                        conditionContext.set(expression->variable, (*stringValues)[index]);
-                        if (!evaluateCondition(*expression->condition, conditionContext)) {
-                            continue;
-                        }
+            std::vector<template_expression::ExpressionValue> selected;
+            if (expression->condition.has_value()) {
+                selected.reserve(iterable->size());
+                for (std::size_t index = 0; index < iterable->size(); ++index) {
+                    auto value = iterable->at(index);
+                    auto conditionContext = context.createChild();
+                    detail::setExpressionValue(
+                        conditionContext,
+                        expression->variable,
+                        value
+                    );
+                    if (evaluateCondition(*expression->condition, conditionContext)) {
+                        selected.push_back(std::move(value));
                     }
-                    selected.push_back(index);
                 }
 
                 if (selected.empty()) {
                     return renderNodes(foreachNode->emptyBranch(), context);
                 }
-
-                for (std::size_t renderedIndex = 0;
-                     renderedIndex < selected.size();
-                     ++renderedIndex
-                ) {
-                    auto childContext = context.createChild();
-                    childContext.set(
-                        expression->variable,
-                        (*stringValues)[selected[renderedIndex]]
-                    );
-                    detail::setLoopMetadata(
-                        childContext,
-                        context,
-                        renderedIndex,
-                        selected.size()
-                    );
-
-                    auto result = renderNodes(foreachNode->body(), childContext);
-                    output += result.output;
-
-                    if (result.control == RenderControl::Break) {
-                        break;
-                    }
-                    if (result.control == RenderControl::Continue) {
-                        continue;
-                    }
-                }
-
-                return { .output = std::move(output) };
             }
 
-            const auto collection =
-                resolveJsonValue(expression->collection, context);
+            const auto count = expression->condition.has_value()
+                ? selected.size()
+                : iterable->size();
+            std::string output;
 
-            if (!collection.has_value() || !collection->isArray()) {
-                return renderNodes(foreachNode->emptyBranch(), context);
-            }
-
-            std::vector<Json::Value> selected;
-            selected.reserve(collection->size());
-
-            for (const auto& item : *collection) {
-                if (expression->condition.has_value()) {
-                    auto conditionContext = context.createChild();
-                    conditionContext.set(expression->variable, item);
-                    if (!evaluateCondition(*expression->condition, conditionContext)) {
-                        continue;
-                    }
-                }
-                selected.push_back(item);
-            }
-
-            if (selected.empty()) {
-                return renderNodes(foreachNode->emptyBranch(), context);
-            }
-
-            for (std::size_t index = 0; index < selected.size(); ++index) {
+            for (std::size_t index = 0; index < count; ++index) {
                 auto childContext = context.createChild();
-                childContext.set(expression->variable, selected[index]);
+                auto value = expression->condition.has_value()
+                    ? selected[index]
+                    : iterable->at(index);
+                detail::setExpressionValue(
+                    childContext,
+                    expression->variable,
+                    std::move(value)
+                );
                 detail::setLoopMetadata(
                     childContext,
                     context,
                     index,
-                    selected.size()
+                    count
                 );
 
                 auto result = renderNodes(foreachNode->body(), childContext);

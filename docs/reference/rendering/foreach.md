@@ -1,6 +1,6 @@
 # Template `@foreach`
 
-The `@foreach` directive renders a block once for each selected item in a collection.
+The `@foreach` directive renders a block once for each selected item produced by an iterable expression.
 
 ## Basic loop
 
@@ -10,7 +10,27 @@ The `@foreach` directive renders a block once for each selected item in a collec
 @endforeach
 ```
 
-The existing `@foreach(variable in collection)` form remains the basic syntax.
+The source after `in` is a full template expression. Existing context-backed
+collections therefore remain unchanged, while list and range expressions can
+be used directly:
+
+```html
+@foreach(i in [1..10])
+    {{ i }}
+@endforeach
+
+@foreach(i in [0..<count step 2])
+    {{ i }}
+@endforeach
+
+@foreach(role in ["Admin", "Moderator"])
+    {{ role }}
+@endforeach
+```
+
+Supported iterable results are JSON arrays, expression list literals, and
+integer ranges. Range values are generated on demand rather than materialized
+into an intermediate array.
 
 ## Filtering with `where`
 
@@ -22,7 +42,9 @@ A loop can filter its collection before rendering:
 @endforeach
 ```
 
-The `where` condition uses the same expression language as `@if(...)`, including comparisons, logical operators, literals, dotted paths, and grouping.
+The `where` condition uses the same expression language as `@if(...)`, including
+arithmetic, comparisons, membership (`in` / `not in`), logical operators,
+literals, dotted paths, lists, ranges, and grouping.
 
 Filtering happens before loop metadata is calculated. Therefore `loop.count`, `loop.index`, `loop.first`, and `loop.last` describe the filtered sequence.
 
@@ -108,8 +130,8 @@ Use `@empty` to render fallback content when the loop has no selected items:
 
 The empty branch is used when:
 
-- the collection is missing or cannot be resolved as an array;
-- the collection is empty;
+- the source expression is missing, evaluates to a non-iterable value, or cannot be resolved;
+- the resulting iterable is empty;
 - a `where` condition filters out every item.
 
 `@empty` belongs to the nearest `@foreach` block.

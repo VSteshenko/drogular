@@ -226,3 +226,18 @@ TEST(CoreTemplateDiagnosticsTests, DetectsContinueOutsideForeach) {
         "Unexpected @continue outside @foreach"
     );
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidForeachCollectionExpression) {
+    const auto result = compileWithDiagnostics(
+        "@foreach(value in [1..]){{ value }}@endforeach",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-007");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @foreach expression: Invalid collection expression: Expected value"
+    );
+}

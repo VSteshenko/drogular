@@ -1,7 +1,7 @@
 #pragma once
 
 #include <drogular/component.hpp>
-#include <drogular/template_expression.hpp>
+#include <drogular/template/expression/expression.hpp>
 
 #include <cstddef>
 #include <optional>
@@ -32,6 +32,7 @@ using ConditionExpressionError = template_expression::ExpressionError;
 struct ForeachExpression {
     std::string variable;
     std::string collection;
+    std::size_t collectionPosition = 0;
     std::optional<std::string> condition;
     std::size_t conditionPosition = 0;
 };
@@ -46,7 +47,8 @@ struct ForeachExpressionError {
  *
  * Supported forms:
  *   item in items
- *   item in items where item.active
+ *   item in [1..10]
+ *   item in expression where item.active
  */
 std::optional<ForeachExpression> parseForeachExpression(
     std::string_view expression
@@ -106,6 +108,13 @@ void setLoopMetadata(
     const RenderContext& parentContext,
     std::size_t index,
     std::size_t count
+);
+
+/** Stores an ExpressionValue in a render context without losing its type. */
+void setExpressionValue(
+    RenderContext& context,
+    std::string key,
+    template_expression::ExpressionValue value
 );
 
 } // namespace detail

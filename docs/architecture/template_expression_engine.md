@@ -29,6 +29,26 @@ The template parser owns directive structure (`@if`, `@foreach`, and future
 control-flow nodes). It passes expression source to the expression engine and
 uses the resulting value or diagnostic.
 
+## Module layout
+
+The engine lives independently under `template/expression`:
+
+```text
+include/drogular/template/expression/
+    value.hpp
+    ast.hpp
+    parser.hpp
+    evaluator.hpp
+    expression.hpp
+
+src/template/expression/
+    parser.cpp
+    evaluator.cpp
+```
+
+`<drogular/template_expression.hpp>` remains as a compatibility umbrella. New
+code may include the narrower expression headers directly.
+
 ## ExpressionValue
 
 `template_expression::ExpressionValue` is the common runtime value abstraction.
@@ -46,6 +66,25 @@ Keeping JSON as a supported value allows existing `RenderContext` data and
 dotted JSON paths to pass through the engine without an intermediate model.
 Expression-owned arrays and ranges provide the foundation for iterable template
 expressions without coupling them to `Json::Value`.
+
+## Iterable values
+
+`ExpressionValue::iterable()` provides one indexed view over all collection
+forms currently understood by the engine:
+
+- `Json::Value` arrays;
+- expression list literals;
+- integer ranges.
+
+`ExpressionIterable` exposes `size()`, `empty()`, and `at(index)`. Range values
+are generated on demand rather than materialized, so a loop over a range does
+not first allocate an intermediate array. The same iterable abstraction is used
+by membership operations and `@foreach`.
+
+The evaluated element is bound back into the child `RenderContext` without
+losing its expression type. This is important for nested expression-owned
+collections and is also the storage model future `@let` / `@const` bindings can
+reuse.
 
 ## Expression AST
 
@@ -203,12 +242,35 @@ They delegate to the expression engine. This keeps the current public template
 API source-compatible while allowing future directives to consume parsed
 expressions directly.
 
+## `@foreach` integration
+
+The collection side of `@foreach` is now a full expression rather than a
+RenderContext key:
+
+```html
+@foreach(i in [1..10])
+    {{ i }}
+@endforeach
+
+@foreach(i in [0..<count step 2])
+    {{ i }}
+@endforeach
+
+@foreach(role in ["Admin", "Moderator"])
+    {{ role }}
+@endforeach
+```
+
+Existing context-backed forms remain unchanged because identifiers and dotted
+paths are expressions too. The optional `where` clause is evaluated after each
+source element is bound and before loop metadata is calculated.
+
 ## Extension path
 
-The expression engine now provides the value model needed for the next
-language steps:
+The expression engine now provides the value and iterable models needed for
+the next language steps:
 
-1. `@foreach` over arbitrary iterable expressions;
+1. collection functions such as `count()`, `empty()`, `contains()`, `first()`, and `last()`;
 2. `@let` bindings;
 3. compile-time `@const` bindings;
 4. `@switch` / `@case`.

@@ -66,8 +66,8 @@ add_library(drogular
     src/static_file_etag.cpp
     src/static_file_last_modified.cpp
     src/template_engine.cpp
-    src/template_expression.cpp
-    src/template_expression_parser.cpp
+    src/template/expression/evaluator.cpp
+    src/template/expression/parser.cpp
     src/template_tokenizer.cpp
     src/template_ast.cpp
     src/template_parser.cpp

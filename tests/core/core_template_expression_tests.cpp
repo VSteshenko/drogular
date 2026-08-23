@@ -296,3 +296,39 @@ TEST(CoreTemplateExpressionTests, ReportsIncompleteNotInOperator) {
     ASSERT_TRUE(result.error.has_value());
     EXPECT_EQ(result.error->message, "Expected 'in' after 'not'");
 }
+
+TEST(CoreTemplateExpressionTests, ExposesUniformIterableForListRangeAndJsonArray) {
+    drogular::RenderContext context;
+
+    const auto list = evaluate("[1, 3, 5]", context).iterable();
+    ASSERT_NE(list, nullptr);
+    EXPECT_EQ(list->size(), 3);
+    ASSERT_TRUE(list->at(1).number().has_value());
+    EXPECT_EQ(*list->at(1).number(), 3);
+
+    const auto range = evaluate("[2..8 step 2]", context).iterable();
+    ASSERT_NE(range, nullptr);
+    EXPECT_EQ(range->size(), 4);
+    ASSERT_TRUE(range->at(3).number().has_value());
+    EXPECT_EQ(*range->at(3).number(), 8);
+
+    Json::Value values(Json::arrayValue);
+    values.append("A");
+    values.append("B");
+    context.set("values", values);
+    const auto json = evaluate("values", context).iterable();
+    ASSERT_NE(json, nullptr);
+    EXPECT_EQ(json->size(), 2);
+    ASSERT_TRUE(json->at(0).string().has_value());
+    EXPECT_EQ(*json->at(0).string(), "A");
+}
+
+TEST(CoreTemplateExpressionTests, RangeIterableDoesNotRequireMaterialization) {
+    drogular::RenderContext context;
+    const auto range = evaluate("[1..1000000000 step 10]", context).iterable();
+
+    ASSERT_NE(range, nullptr);
+    EXPECT_EQ(range->size(), 100000000);
+    ASSERT_TRUE(range->at(99999999).number().has_value());
+    EXPECT_EQ(*range->at(99999999).number(), 999999991);
+}

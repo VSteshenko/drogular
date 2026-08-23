@@ -1,8 +1,8 @@
-#include <drogular/template_expression.hpp>
+#include <drogular/template/expression/evaluator.hpp>
+#include <drogular/template/expression/parser.hpp>
 #include <drogular/render_context.hpp>
 
 #include <cmath>
-#include <cstdint>
 #include <limits>
 #include <string>
 #include <utility>
@@ -151,6 +151,121 @@ const ExpressionValue::Storage& ExpressionValue::storage() const noexcept {
     return value_;
 }
 
+bool ExpressionValue::isIterable() const {
+    if (std::holds_alternative<ArrayPtr>(value_)) {
+        return true;
+    }
+    if (std::holds_alternative<ExpressionRange>(value_)) {
+        return true;
+    }
+    if (const auto value = std::get_if<Json::Value>(&value_)) {
+        return value->isArray();
+    }
+
+    return false;
+}
+
+std::shared_ptr<const ExpressionIterable> ExpressionValue::iterable() const {
+    if (!isIterable()) {
+        return nullptr;
+    }
+
+    return std::make_shared<ExpressionIterable>(*this);
+}
+
+ExpressionIterable::ExpressionIterable(ExpressionValue value)
+    : value_(std::move(value)) {
+}
+
+std::size_t ExpressionIterable::size() const {
+    if (const auto array = value_.array()) {
+        return array->values.size();
+    }
+    if (const auto* json = std::get_if<Json::Value>(&value_.storage());
+        json && json->isArray()) {
+        return json->size();
+    }
+    if (const auto* range = value_.range()) {
+        if (range->step == 0) {
+            return 0;
+        }
+        if (range->step > 0) {
+            if (range->upperInclusive
+                ? range->start > range->end
+                : range->start >= range->end
+            ) {
+                return 0;
+            }
+        } else if (range->upperInclusive
+            ? range->start < range->end
+            : range->start <= range->end
+        ) {
+            return 0;
+        }
+
+        const auto distance = range->step > 0
+            ? static_cast<std::uint64_t>(range->end) -
+                static_cast<std::uint64_t>(range->start)
+            : static_cast<std::uint64_t>(range->start) -
+                static_cast<std::uint64_t>(range->end);
+        const auto stepMagnitude = range->step > 0
+            ? static_cast<std::uint64_t>(range->step)
+            : std::uint64_t{0} - static_cast<std::uint64_t>(range->step);
+
+        std::uint64_t count = 0;
+        if (range->upperInclusive) {
+            const auto quotient = distance / stepMagnitude;
+            if (quotient == std::numeric_limits<std::uint64_t>::max()) {
+                return std::numeric_limits<std::size_t>::max();
+            }
+            count = quotient + 1;
+        } else if (distance != 0) {
+            count = (distance - 1) / stepMagnitude + 1;
+        }
+
+        if constexpr (sizeof(std::size_t) < sizeof(std::uint64_t)) {
+            if (count > static_cast<std::uint64_t>(
+                    std::numeric_limits<std::size_t>::max())) {
+                return std::numeric_limits<std::size_t>::max();
+            }
+        }
+        return static_cast<std::size_t>(count);
+    }
+    return 0;
+}
+
+bool ExpressionIterable::empty() const {
+    return size() == 0;
+}
+
+ExpressionValue ExpressionIterable::at(std::size_t index) const {
+    if (const auto array = value_.array()) {
+        if (index < array->values.size()) {
+            return array->values[index];
+        }
+        return ExpressionValue();
+    }
+    if (const auto* json = std::get_if<Json::Value>(&value_.storage());
+        json && json->isArray()
+    ) {
+        if (index < json->size()) {
+            return ExpressionValue((*json)[static_cast<Json::ArrayIndex>(index)]);
+        }
+        return ExpressionValue();
+    }
+    if (const auto* range = value_.range()) {
+        if (index >= size()) {
+            return ExpressionValue();
+        }
+        const auto result = static_cast<long double>(range->start) +
+            static_cast<long double>(range->step) *
+            static_cast<long double>(index);
+        return ExpressionValue(static_cast<double>(result));
+    }
+
+    return ExpressionValue();
+}
+
 namespace {
 
 bool equalValues(const ExpressionValue& left, const ExpressionValue& right) {
@@ -214,12 +329,14 @@ bool rangeContains(const ExpressionRange& range, const ExpressionValue& candidat
 
     if (range.step > 0) {
         if (*value < range.start ||
-            (range.upperInclusive ? *value > range.end : *value >= range.end)) {
+            (range.upperInclusive ? *value > range.end : *value >= range.end)
+        ) {
             return false;
         }
     } else {
         if (*value > range.start ||
-            (range.upperInclusive ? *value < range.end : *value <= range.end)) {
+            (range.upperInclusive ? *value < range.end : *value <= range.end)
+        ) {
             return false;
         }
     }
@@ -240,25 +357,19 @@ bool rangeContains(const ExpressionRange& range, const ExpressionValue& candidat
 }
 
 bool containsValue(const ExpressionValue& container, const ExpressionValue& candidate) {
-    if (const auto array = container.array()) {
-        for (const auto& value : array->values) {
-            if (equalValues(candidate, value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    // Range membership is arithmetic so large ranges never require iteration.
     if (const auto* range = container.range()) {
         return rangeContains(*range, candidate);
     }
 
-    if (const auto* json = std::get_if<Json::Value>(&container.storage());
-        json && json->isArray()) {
-        for (const auto& value : *json) {
-            if (equalValues(candidate, ExpressionValue(value))) {
-                return true;
-            }
+    const auto iterable = container.iterable();
+    if (iterable == nullptr) {
+        return false;
+    }
+
+    for (std::size_t index = 0; index < iterable->size(); ++index) {
+        if (equalValues(candidate, iterable->at(index))) {
+            return true;
         }
     }
 
@@ -419,6 +530,7 @@ ExpressionValue evaluateNode(const Expression& expression, const RenderContext& 
         case BinaryOperator::Or:
             break;
     }
+
     return ExpressionValue();
 }
 
@@ -443,6 +555,9 @@ ExpressionValue resolve(std::string_view path, const RenderContext& context) {
         return ExpressionValue();
     }
 
+    if (const auto value = context.get<ExpressionValue>(key)) {
+        return *value;
+    }
     if (const auto value = context.get<bool>(key)) {
         return ExpressionValue(*value);
     }
@@ -454,6 +569,14 @@ ExpressionValue resolve(std::string_view path, const RenderContext& context) {
     }
     if (const auto value = context.get<std::string>(key)) {
         return ExpressionValue(*value);
+    }
+    if (const auto values = context.get<std::vector<std::string>>(key)) {
+        auto array = std::make_shared<ExpressionArray>();
+        array->values.reserve(values->size());
+        for (const auto& value : *values) {
+            array->values.emplace_back(value);
+        }
+        return ExpressionValue(std::move(array));
     }
 
     const auto separator = key.find('.');

@@ -67,7 +67,7 @@ See [Template Conditional Expressions](conditional-expressions.md) for the suppo
 
 ## Loop directives
 
-Compiled templates support `@foreach(...)` filtering with `where`, `loop.*` metadata, an `@empty` fallback branch, and `@continue` / `@break` control directives. Loop control is scoped to the nearest active `@foreach`.
+Compiled templates support expression-based `@foreach(...)` sources, filtering with `where`, `loop.*` metadata, an `@empty` fallback branch, and `@continue` / `@break` control directives. Loop control is scoped to the nearest active `@foreach`.
 
 See [Template `@foreach`](foreach.md) for syntax, semantics, and diagnostics.
 

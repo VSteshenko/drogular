@@ -366,74 +366,52 @@ std::string renderForeachBlocks(
 
         std::size_t renderedCount = 0;
 
-        if (const auto stringValues =
-            context.get<std::vector<std::string>>(expression->collection)) {
-            std::vector<std::size_t> selected;
-            selected.reserve(stringValues->size());
+        const auto source =
+            template_expression::parse(expression->collection);
+        const auto iterable = source
+            ? template_expression::evaluate(*source.expression, context).iterable()
+            : nullptr;
 
-            for (std::size_t index = 0; index < stringValues->size(); ++index) {
-                if (expression->condition.has_value()) {
+        if (iterable != nullptr) {
+            std::vector<template_expression::ExpressionValue> selected;
+            if (expression->condition.has_value()) {
+                selected.reserve(iterable->size());
+                for (std::size_t index = 0; index < iterable->size(); ++index) {
+                    auto value = iterable->at(index);
                     auto conditionContext = context.createChild();
-                    conditionContext.set(expression->variable, (*stringValues)[index]);
-                    if (!template_compiler::evaluateCondition(
+                    template_compiler::detail::setExpressionValue(
+                        conditionContext,
+                        expression->variable,
+                        value
+                    );
+                    if (template_compiler::evaluateCondition(
                             *expression->condition,
-                            conditionContext)) {
-                        continue;
+                            conditionContext)
+                    ) {
+                        selected.push_back(std::move(value));
                     }
                 }
-                selected.push_back(index);
             }
 
-            renderedCount = selected.size();
-            for (std::size_t index = 0; index < selected.size(); ++index) {
+            renderedCount = expression->condition.has_value()
+                ? selected.size()
+                : iterable->size();
+
+            for (std::size_t index = 0; index < renderedCount; ++index) {
                 auto itemContext = context.createChild();
-                itemContext.set(
+                auto value = expression->condition.has_value()
+                    ? selected[index]
+                    : iterable->at(index);
+                template_compiler::detail::setExpressionValue(
+                    itemContext,
                     expression->variable,
-                    (*stringValues)[selected[index]]
+                    std::move(value)
                 );
                 template_compiler::detail::setLoopMetadata(
                     itemContext,
                     context,
                     index,
-                    selected.size()
-                );
-
-                const auto control = appendRenderedIteration(
-                    render(templateBlock, itemContext),
-                    output
-                );
-                if (control == LoopControl::Break) {
-                    break;
-                }
-            }
-        } else if (const auto jsonValues =
-            template_compiler::resolveJsonValue(expression->collection, context);
-            jsonValues.has_value() && jsonValues->isArray()) {
-            std::vector<Json::Value> selected;
-            selected.reserve(jsonValues->size());
-
-            for (const auto& value : *jsonValues) {
-                if (expression->condition.has_value()) {
-                    auto conditionContext = context.createChild();
-                    conditionContext.set(expression->variable, value);
-                    if (!template_compiler::evaluateCondition(
-                            *expression->condition,
-                            conditionContext)) {
-                        continue;
-                    }
-                }
-                selected.push_back(value);
-            }
-
-            renderedCount = selected.size();
-            for (std::size_t index = 0; index < selected.size(); ++index) {
-                auto itemContext = context.createChild();
-                itemContext.set(expression->variable, selected[index]);
-                template_compiler::detail::setLoopMetadata(
-                    itemContext,
-                    context,
-                    index,
-                    selected.size()
+                    renderedCount
                 );
 
                 const auto control = appendRenderedIteration(

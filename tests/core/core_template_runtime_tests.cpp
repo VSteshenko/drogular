@@ -251,3 +251,34 @@ TEST(CoreTemplateRuntimeTests, EvaluatesMembershipConditionsThroughRuntimeFacade
     EXPECT_TRUE(evaluateCondition("page in [1..10]", context));
     EXPECT_TRUE(evaluateCondition("page not in [6..<10]", context));
 }
+
+TEST(CoreTemplateRuntimeTests, ParsesForeachIterableExpressionBeforeWhere) {
+    const auto expression = parseForeachExpression(
+        "value in [start..end step stride] where value not in skipped"
+    );
+
+    ASSERT_TRUE(expression.has_value());
+    EXPECT_EQ(expression->variable, "value");
+    EXPECT_EQ(expression->collection, "[start..end step stride]");
+    EXPECT_EQ(expression->collectionPosition, 9);
+    ASSERT_TRUE(expression->condition.has_value());
+    EXPECT_EQ(*expression->condition, "value not in skipped");
+}
+
+TEST(CoreTemplateRuntimeTests, ForeachWhereSeparatorIgnoresNestedAndQuotedText) {
+    const auto list = parseForeachExpression(
+        "value in ['a where b', 'c'] where value != 'c'"
+    );
+    ASSERT_TRUE(list.has_value());
+    EXPECT_EQ(list->collection, "['a where b', 'c']");
+    ASSERT_TRUE(list->condition.has_value());
+    EXPECT_EQ(*list->condition, "value != 'c'");
+}
+
+TEST(CoreTemplateRuntimeTests, ValidatesForeachCollectionExpression) {
+    const auto invalid = validateForeachExpression("value in [1..]");
+
+    ASSERT_TRUE(invalid.has_value());
+    EXPECT_EQ(invalid->message, "Invalid collection expression: Expected value");
+    EXPECT_GE(invalid->position, 9);
+}
