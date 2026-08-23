@@ -1,4 +1,5 @@
 #include <drogular/template_engine.hpp>
+#include <drogular/compiled_template.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/template_runtime.hpp>
 
@@ -164,6 +165,9 @@ std::optional<std::string> valueToString(
     const RenderContext& context,
     const std::string& key
 ) {
+    // Preserve the legacy formatting contract for direct RenderContext
+    // values. In particular, doubles historically use std::to_string()
+    // and therefore render with six fractional digits.
     const auto resolved = resolveValue(context, key);
 
     if (resolved.type == ResolvedValue::Type::String) {
@@ -174,7 +178,10 @@ std::optional<std::string> valueToString(
         return jsonValueToString(resolved.jsonValue);
     }
 
-    return std::nullopt;
+    // Fall back to the Expression Engine only when the input is not a
+    // directly resolvable legacy key. This enables method calls and other
+    // expressions without changing existing interpolation output.
+    return template_compiler::resolveRawVariable(key, context);
 }
 /**
  * Escapes text for safe HTML output.
@@ -547,6 +554,14 @@ std::string render(
     std::string_view html,
     const RenderContext& context
 ) {
+    // @let requires lexical scope tracking. Route templates that use it
+    // through the compiled renderer so the legacy entry point shares the
+    // same BindingContext semantics instead of maintaining a second scope
+    // implementation.
+    if (html.find("@let(") != std::string_view::npos) {
+        auto renderContext = context.createChild();
+        return template_compiler::compile(html).render(renderContext);
+    }
     auto processed =
         renderForeachBlocks(html, context);
     processed = renderIfBlocks(processed, context);

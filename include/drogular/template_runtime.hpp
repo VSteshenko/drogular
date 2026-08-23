@@ -19,6 +19,11 @@ std::optional<std::string> resolveVariable(
     const RenderContext& context
 );
 
+std::optional<std::string> resolveVariable(
+    std::string_view expression,
+    const template_expression::BindingContext& context
+);
+
 /**
  * Resolves a template expression into raw text.
  */
@@ -27,7 +32,32 @@ std::optional<std::string> resolveRawVariable(
     const RenderContext& context
 );
 
+std::optional<std::string> resolveRawVariable(
+    std::string_view expression,
+    const template_expression::BindingContext& context
+);
+
 using ConditionExpressionError = template_expression::ExpressionError;
+
+struct LetExpression {
+    std::string name;
+    std::string expression;
+    std::size_t expressionPosition = 0;
+};
+
+struct LetExpressionError {
+    std::string message;
+    std::size_t position = 0;
+};
+
+/** Parses a @let declaration in the form `name = expression`. */
+std::optional<LetExpression> parseLetExpression(std::string_view expression);
+
+/** Validates @let declaration syntax and the right-hand expression. */
+std::optional<LetExpressionError> validateLetExpression(
+    std::string_view expression
+);
+
 
 struct ForeachExpression {
     std::string variable;
@@ -79,6 +109,11 @@ std::optional<ConditionExpressionError> validateConditionExpression(
 bool evaluateCondition(
     std::string_view expression,
     const RenderContext& context
+);
+
+bool evaluateCondition(
+    std::string_view expression,
+    const template_expression::BindingContext& context
 );
 
 /**

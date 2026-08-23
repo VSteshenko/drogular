@@ -170,3 +170,18 @@ TEST(CoreTemplateParserTests, ParsesForeachEmptyAndControlNodes) {
     ASSERT_EQ(foreachNode->emptyBranch().size(), 1);
     EXPECT_EQ(foreachNode->emptyBranch()[0]->type(), NodeType::Text);
 }
+
+TEST(CoreTemplateParserTests, ParsesLetNode) {
+    const auto nodes = parse(tokenize(
+        "@let(total = projects.count()){{ total }}"
+    ));
+
+    ASSERT_EQ(nodes.size(), 2);
+    ASSERT_EQ(nodes[0]->type(), NodeType::Let);
+
+    const auto letNode =
+        std::dynamic_pointer_cast<LetNode>(nodes[0]);
+    ASSERT_NE(letNode, nullptr);
+    EXPECT_EQ(letNode->name(), "total");
+    EXPECT_EQ(letNode->expression(), "projects.count()");
+}

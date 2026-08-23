@@ -2,6 +2,7 @@
 #include <drogular/template_runtime.hpp>
 
 #include <memory>
+#include <unordered_set>
 
 namespace drogular::template_compiler {
 
@@ -32,7 +33,8 @@ NodePtr parseNode(
     const std::vector<Token>& tokens,
     size_t& position,
     TemplateDiagnostics& diagnostics,
-    std::size_t loopDepth
+    std::size_t loopDepth,
+    std::unordered_set<std::string>& localBindings
 ) {
     const auto& token = tokens[position];
 
@@ -109,6 +111,43 @@ NodePtr parseNode(
             }
 
             return ifNode;
+        }
+
+        case TokenType::Let: {
+            const auto letPosition = token.position;
+            const auto error = validateLetExpression(token.value);
+            if (error.has_value()) {
+                const auto code = error->message == "Expected binding identifier"
+                    ? "DGL-TPL-022"
+                    : "DGL-TPL-020";
+                diagnostics.error(
+                    code,
+                    "Invalid @let expression: " + error->message,
+                    letPosition + 5 + error->position
+                );
+                ++position;
+                return std::make_shared<TextNode>("");
+            }
+
+            const auto declaration = parseLetExpression(token.value);
+            if (!declaration.has_value()) {
+                ++position;
+                return std::make_shared<TextNode>("");
+            }
+
+            if (!localBindings.insert(declaration->name).second) {
+                diagnostics.error(
+                    "DGL-TPL-021",
+                    "Duplicate binding '" + declaration->name + "' in the same scope",
+                    letPosition
+                );
+            }
+
+            ++position;
+            return std::make_shared<LetNode>(
+                declaration->name,
+                declaration->expression
+            );
         }
 
         case TokenType::Foreach: {
@@ -220,13 +259,16 @@ std::vector<NodePtr> parseUntil(
     std::size_t loopDepth
 ) {
     std::vector<NodePtr> nodes;
+    std::unordered_set<std::string> localBindings;
 
     while (position < tokens.size()) {
         if (isStopToken(tokens[position].type, stopTokens)) {
             break;
         }
 
-        auto node = parseNode(tokens, position, diagnostics, loopDepth);
+        auto node = parseNode(
+            tokens, position, diagnostics, loopDepth, localBindings
+        );
 
         if (node != nullptr) {
             nodes.push_back(std::move(node));

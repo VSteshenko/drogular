@@ -345,3 +345,17 @@ the next language steps:
 
 Those features belong in the expression engine rather than in individual
 template directives whenever they represent values or operators.
+
+## Template bindings
+
+`BindingContext` is the lexical environment used while rendering compiled
+templates. `@let(name = expression)` evaluates the expression against the
+current binding context and defines the resulting `ExpressionValue` in that
+scope. Sibling nodes reuse the same scope; nested `@if` branches and each
+`@foreach` iteration receive child scopes.
+
+Bindings are resolved before the immutable `RenderContext` fallback. This keeps
+local variables, expression-owned Lists/Ranges, and future constants separate
+from application view data. Component boundaries may materialize visible
+bindings into a temporary child `RenderContext`, but never mutate the base
+context.

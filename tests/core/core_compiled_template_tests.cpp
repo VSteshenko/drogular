@@ -529,3 +529,86 @@ TEST(CoreCompiledTemplateTests, ForeachPreservesNestedExpressionIterables) {
 
     EXPECT_EQ(compiled.render(context), "12;34;");
 }
+
+TEST(CoreCompiledTemplateTests, RendersExpressionMethodCallInInterpolation) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "{{ [1, 2, 3].count() }}:{{ [1..5].last() }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "3:5");
+}
+
+TEST(CoreCompiledTemplateTests, RendersLetBinding) {
+    drogular::RenderContext context;
+    context.set("count", 5);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@let(pages = [0..<count]){{ pages.count() }}:{{ pages.last() }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "5:4");
+}
+
+TEST(CoreCompiledTemplateTests, LetBindingPersistsToEndOfCurrentBlock) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@let(value = 10){{ value }}-{{ value + 1 }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "10-11");
+}
+
+TEST(CoreCompiledTemplateTests, LetBindingShadowsOnlyInsideIfScope) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@let(value = 1)"
+        "{{ value }}"
+        "@if(true)@let(value = 2){{ value }}@endif"
+        "{{ value }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "121");
+}
+
+TEST(CoreCompiledTemplateTests, LetBindingIsScopedToForeachIteration) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@foreach(i in [1..3])"
+        "@let(number = i * 10){{ number }};"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "10;20;30;");
+}
+
+TEST(CoreCompiledTemplateTests, LetCanUseLoopAndOuterBindings) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@let(multiplier = 10)"
+        "@foreach(i in [1..2])"
+        "@let(label = loop.number * multiplier + i)"
+        "{{ label }};"
+        "@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "11;22;");
+}
+
+TEST(CoreCompiledTemplateTests, LetDoesNotMutateRenderContext) {
+    drogular::RenderContext context;
+    context.set("value", 7);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@if(true)@let(value = 9){{ value }}@endif{{ value }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "97");
+    ASSERT_TRUE(context.get<int>("value").has_value());
+    EXPECT_EQ(*context.get<int>("value"), 7);
+}

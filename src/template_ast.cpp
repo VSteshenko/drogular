@@ -68,6 +68,25 @@ const std::vector<NodePtr>& IfNode::falseBranch() const {
     return falseBranch_;
 }
 
+
+LetNode::LetNode(std::string name, std::string expression)
+    : name_(std::move(name)),
+      expression_(std::move(expression))
+{
+}
+
+NodeType LetNode::type() const {
+    return NodeType::Let;
+}
+
+const std::string& LetNode::name() const {
+    return name_;
+}
+
+const std::string& LetNode::expression() const {
+    return expression_;
+}
+
 ForeachNode::ForeachNode(std::string expression)
     : expression_(std::move(expression)) {
 }

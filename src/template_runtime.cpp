@@ -7,6 +7,7 @@
 #include <optional>
 #include <cmath>
 #include <limits>
+#include <iomanip>
 #include <variant>
 #include <sstream>
 #include <string>
@@ -174,13 +175,60 @@ std::size_t findTopLevelWhere(
     return std::string_view::npos;
 }
 
+std::optional<std::string> expressionValueToString(
+    const template_expression::ExpressionValue& value
+) {
+    if (const auto string = value.string()) {
+        return *string;
+    }
+    if (const auto boolean = value.boolean()) {
+        return *boolean ? "true" : "false";
+    }
+    if (const auto number = value.number()) {
+        std::ostringstream stream;
+        stream << std::setprecision(15) << *number;
+        return stream.str();
+    }
+    if (const auto* json = std::get_if<Json::Value>(&value.storage())) {
+        return jsonValueToString(*json);
+    }
+    if (value.isNull()) {
+        return std::string{};
+    }
+
+    return std::nullopt;
+}
+
 } // namespace
 
 std::optional<std::string> resolveVariable(
     std::string_view expression,
     const RenderContext& context
 ) {
-    const auto value = resolveToString(expression, context);
+    const template_expression::BindingContext bindings(context);
+    return resolveVariable(expression, bindings);
+}
+
+std::optional<std::string> resolveVariable(
+    std::string_view expression,
+    const template_expression::BindingContext& context
+) {
+    const auto key = trim(expression);
+    const auto resolved = context.resolve(key);
+    std::optional<std::string> value;
+    if (!resolved.isNull()) {
+        value = expressionValueToString(resolved);
+    }
+
+    if (!value.has_value()) {
+        const auto parsed = template_expression::parse(expression);
+        if (!parsed) {
+            return std::nullopt;
+        }
+        value = expressionValueToString(
+            template_expression::evaluate(*parsed.expression, context)
+        );
+    }
 
     if (!value.has_value()) {
         return std::nullopt;
@@ -193,7 +241,148 @@ std::optional<std::string> resolveRawVariable(
     std::string_view expression,
     const RenderContext& context
 ) {
-    return resolveToString(expression, context);
+    const template_expression::BindingContext bindings(context);
+    return resolveRawVariable(expression, bindings);
+}
+
+std::optional<std::string> resolveRawVariable(
+    std::string_view expression,
+    const template_expression::BindingContext& context
+) {
+    const auto key = trim(expression);
+    const auto direct = context.resolve(key);
+    if (!direct.isNull()) {
+        if (const auto resolved = expressionValueToString(direct)) {
+            return resolved;
+        }
+    }
+
+    const auto parsed = template_expression::parse(expression);
+    if (!parsed) {
+        return std::nullopt;
+    }
+
+    return expressionValueToString(
+        template_expression::evaluate(*parsed.expression, context)
+    );
+}
+
+std::optional<LetExpression> parseLetExpression(
+    std::string_view expression
+) {
+    std::size_t position = 0;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+
+    if (position >= expression.size() ||
+        !(std::isalpha(static_cast<unsigned char>(expression[position])) ||
+          expression[position] == '_')
+    ) {
+        return std::nullopt;
+    }
+
+    const auto nameStart = position++;
+    while (position < expression.size() &&
+           (std::isalnum(static_cast<unsigned char>(expression[position])) ||
+            expression[position] == '_')
+    ) {
+        ++position;
+    }
+    const auto name = std::string(
+        expression.substr(nameStart, position - nameStart)
+    );
+
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+    if (position >= expression.size() || expression[position] != '=' ||
+        (position + 1 < expression.size() && expression[position + 1] == '=')
+    ) {
+        return std::nullopt;
+    }
+    ++position;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))
+    ) {
+        ++position;
+    }
+    if (position >= expression.size()) {
+        return std::nullopt;
+    }
+
+    const auto rhs = trim(expression.substr(position));
+    const auto parsed = template_expression::parse(rhs);
+    if (!parsed) {
+        return std::nullopt;
+    }
+
+    return LetExpression{
+        .name = name,
+        .expression = rhs,
+        .expressionPosition = position
+    };
+}
+
+std::optional<LetExpressionError> validateLetExpression(
+    std::string_view expression
+) {
+    std::size_t position = 0;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))) {
+        ++position;
+    }
+    if (position >= expression.size() ||
+        !(std::isalpha(static_cast<unsigned char>(expression[position])) ||
+          expression[position] == '_')) {
+        return LetExpressionError{
+            .message = "Expected binding identifier",
+            .position = position
+        };
+    }
+    ++position;
+    while (position < expression.size() &&
+           (std::isalnum(static_cast<unsigned char>(expression[position])) ||
+            expression[position] == '_')) {
+        ++position;
+    }
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))) {
+        ++position;
+    }
+    if (position >= expression.size() || expression[position] != '=' ||
+        (position + 1 < expression.size() && expression[position + 1] == '=')) {
+        return LetExpressionError{
+            .message = "Expected '=' after binding identifier",
+            .position = position
+        };
+    }
+    ++position;
+    while (position < expression.size() &&
+           std::isspace(static_cast<unsigned char>(expression[position]))) {
+        ++position;
+    }
+    if (position >= expression.size()) {
+        return LetExpressionError{
+            .message = "Expected expression after '='",
+            .position = position
+        };
+    }
+
+    const auto rhs = expression.substr(position);
+    const auto parsed = template_expression::parse(rhs);
+    if (!parsed) {
+        return LetExpressionError{
+            .message = parsed.error->message,
+            .position = position + parsed.error->position
+        };
+    }
+
+    return std::nullopt;
 }
 
 std::optional<ForeachExpressionError> validateForeachExpression(
@@ -412,6 +601,14 @@ std::optional<ConditionExpressionError> validateConditionExpression(
 bool evaluateCondition(
     std::string_view expression,
     const RenderContext& context
+) {
+    const template_expression::BindingContext bindings(context);
+    return evaluateCondition(expression, bindings);
+}
+
+bool evaluateCondition(
+    std::string_view expression,
+    const template_expression::BindingContext& context
 ) {
     const auto result = template_expression::parse(expression);
     if (!result) {

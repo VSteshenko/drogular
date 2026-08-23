@@ -543,3 +543,41 @@ TEST(CoreTemplateExpressionTests, BindingContextKeepsExpressionOwnedValues) {
     EXPECT_DOUBLE_EQ(*count.number(), 5.0);
     EXPECT_TRUE(contains.truthy());
 }
+
+TEST(CoreTemplateExpressionTests, BindingContextMaterializesJsonBindingsAsNativeJson) {
+    drogular::RenderContext renderContext;
+    BindingContext bindings(renderContext);
+
+    Json::Value todo;
+    todo["title"] = "Learn Drogular";
+    ASSERT_TRUE(bindings.define("todo", ExpressionValue(todo)));
+
+    auto target = renderContext.createChild();
+    bindings.materialize(target);
+
+    const auto nativeTodo =
+        target.get<Json::Value>("todo");
+    ASSERT_TRUE(nativeTodo.has_value());
+    EXPECT_EQ((*nativeTodo)["title"].asString(), "Learn Drogular");
+    EXPECT_FALSE(target.get<ExpressionValue>("todo").has_value());
+}
+
+TEST(CoreTemplateExpressionTests, BindingContextMaterializesVisibleBindingsIntoChildContext) {
+    drogular::RenderContext renderContext;
+    renderContext.set("value", 1);
+
+    BindingContext root(renderContext);
+    ASSERT_TRUE(root.define("value", ExpressionValue(2.0)));
+    ASSERT_TRUE(root.define("pages", evaluate("[1..3]", root)));
+
+    auto child = root.createChild();
+    ASSERT_TRUE(child.define("value", ExpressionValue(3.0)));
+
+    auto target = renderContext.createChild();
+    child.materialize(target);
+
+    const BindingContext materialized(target);
+    EXPECT_EQ(evaluate("value", materialized).number().value_or(-1.0), 3.0);
+    EXPECT_EQ(evaluate("pages.count()", materialized).number().value_or(-1.0), 3.0);
+    EXPECT_EQ(renderContext.get<int>("value").value_or(-1), 1);
+}

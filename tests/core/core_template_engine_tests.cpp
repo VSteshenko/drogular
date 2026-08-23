@@ -120,6 +120,18 @@ TEST(CoreTemplateEngineTests, ReplacesDoubleVariable) {
     EXPECT_EQ(html, "<span>3.140000</span>");
 }
 
+TEST(CoreTemplateEngineTests, EvaluatesExpressionInInterpolation) {
+    drogular::RenderContext context;
+
+    const auto html =
+        drogular::template_engine::render(
+            "{{ [1, 2, 3].count() }}:{{ [1..5].last() }}",
+            context
+        );
+
+    EXPECT_EQ(html, "3:5");
+}
+
 TEST(CoreTemplateEngineTests, EscapesHtmlInStringValues) {
     drogular::RenderContext context;
 
@@ -884,4 +896,16 @@ TEST(CoreTemplateEngineTests, ForeachAcceptsListAndRangeExpressions) {
         ),
         "13"
     );
+}
+
+TEST(CoreTemplateEngineTests, SupportsLetThroughCompiledCompatibilityPath) {
+    drogular::RenderContext context;
+
+    const auto html = drogular::template_engine::render(
+        "@let(values = [1..3]){{ values.count() }}:"
+        "@foreach(value in values){{ value }}@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "3:123");
 }

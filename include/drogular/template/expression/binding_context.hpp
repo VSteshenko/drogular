@@ -57,6 +57,14 @@ public:
     /** Resolves a binding or RenderContext value, including dotted members. */
     [[nodiscard]] ExpressionValue resolve(std::string_view path) const;
 
+    /**
+     * Copies visible lexical bindings into a target RenderContext.
+     *
+     * This is intended for template/component boundaries that still consume a
+     * RenderContext. The base fallback context is never mutated.
+     */
+    void materialize(RenderContext& target) const;
+
     /** Returns the immutable RenderContext used as the fallback data source. */
     [[nodiscard]] const RenderContext& renderContext() const;
 

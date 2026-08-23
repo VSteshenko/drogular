@@ -175,6 +175,48 @@ ExpressionValue BindingContext::resolve(std::string_view path) const {
     return resolveRenderContext(path, *renderContext_);
 }
 
+void BindingContext::materialize(RenderContext& target) const {
+    if (parent_ != nullptr) {
+        parent_->materialize(target);
+    }
+
+    for (const auto& [name, binding] : bindings_) {
+        const auto& storage = binding.value.storage();
+
+        if (const auto* boolean = std::get_if<bool>(&storage)) {
+            target.set(name, *boolean);
+            continue;
+        }
+        if (const auto* number = std::get_if<double>(&storage)) {
+            if (std::isfinite(*number) && std::trunc(*number) == *number &&
+                *number >= static_cast<double>(std::numeric_limits<int>::min()) &&
+                *number <= static_cast<double>(std::numeric_limits<int>::max())
+            ) {
+                target.set(name, static_cast<int>(*number));
+            } else {
+                target.set(name, *number);
+            }
+            continue;
+        }
+        if (const auto* string = std::get_if<std::string>(&storage)) {
+            target.set(name, *string);
+            continue;
+        }
+        if (const auto* json = std::get_if<Json::Value>(&storage)) {
+            target.set(name, *json);
+            continue;
+        }
+        if (std::holds_alternative<std::monostate>(storage)) {
+            target.set(name, Json::Value(Json::nullValue));
+            continue;
+        }
+
+        // List/Range values have no legacy RenderContext representation.
+        // Preserve their ExpressionValue form across component boundaries.
+        target.set(name, binding.value);
+    }
+}
+
 const RenderContext& BindingContext::renderContext() const {
     return *renderContext_;
 }

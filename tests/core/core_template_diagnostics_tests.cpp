@@ -241,3 +241,52 @@ TEST(CoreTemplateDiagnosticsTests, DetectsInvalidForeachCollectionExpression) {
         "Invalid @foreach expression: Invalid collection expression: Expected value"
     );
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidLetIdentifier) {
+    const auto result = compileWithDiagnostics(
+        "@let(123 = 5){{ value }}",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-022");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @let expression: Expected binding identifier"
+    );
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidLetValueExpression) {
+    const auto result = compileWithDiagnostics(
+        "@let(total = projects.count( ) +){{ total }}",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-020");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsDuplicateLetInSameScope) {
+    const auto result = compileWithDiagnostics(
+        "@let(value = 1)@let(value = 2){{ value }}",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-021");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Duplicate binding 'value' in the same scope"
+    );
+}
+
+TEST(CoreTemplateDiagnosticsTests, AllowsLetShadowingInNestedScope) {
+    const auto result = compileWithDiagnostics(
+        "@let(value = 1)@if(true)@let(value = 2){{ value }}@endif{{ value }}"
+    );
+
+    EXPECT_TRUE(result.valid());
+}

@@ -77,6 +77,15 @@ A `CompiledTemplate` owns its compiled AST. Rendering reads that AST and uses th
 
 The API itself does not promise synchronization for concurrent access to a shared `RenderContext`; normal rendering uses request-local contexts.
 
+## Local variables
+
+Compiled templates support lexical `@let(name = expression)` bindings. Bindings
+are evaluated through the shared Expression Engine, remain visible to later
+nodes in the same block, and may be shadowed in nested `@if` or `@foreach`
+scopes without mutating the underlying `RenderContext`.
+
+See [Template Variables](template-variables.md).
+
 ## Related Types
 
 - [`TemplateRenderable`](template-renderable.md)

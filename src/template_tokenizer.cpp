@@ -228,6 +228,40 @@ std::vector<Token> tokenize(
             continue;
         }
 
+        if (startsWith(html, position, "@let(")) {
+            flushText();
+
+            const auto end =
+                findDirectiveExpressionEnd(html, position + 5);
+
+            if (end == std::string_view::npos) {
+                diagnostics.error(
+                    "DGL-TPL-020",
+                    "Invalid @let expression: Missing closing ')'",
+                    position
+                );
+                tokens.push_back({
+                    .type = TokenType::Text,
+                    .value = std::string(html.substr(position)),
+                    .position = position
+                });
+                break;
+            }
+
+            tokens.push_back({
+                .type = TokenType::Let,
+                .value = std::string(
+                    html.substr(position + 5, end - position - 5)
+                ),
+                .position = position
+            });
+
+            position = end + 1;
+            textStart = position;
+
+            continue;
+        }
+
         if (startsWith(html, position, "@foreach(")) {
             flushText();
 

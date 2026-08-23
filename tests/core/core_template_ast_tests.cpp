@@ -76,3 +76,14 @@ TEST(CoreTemplateAstTests, CreatesLoopControlNodes) {
     EXPECT_EQ(breakNode.type(), NodeType::Break);
     EXPECT_EQ(continueNode.type(), NodeType::Continue);
 }
+
+TEST(CoreTemplateAstTests, CreatesLetNode) {
+    LetNode node(
+        "total",
+        "projects.count()"
+    );
+
+    EXPECT_EQ(node.type(), NodeType::Let);
+    EXPECT_EQ(node.name(), "total");
+    EXPECT_EQ(node.expression(), "projects.count()");
+}

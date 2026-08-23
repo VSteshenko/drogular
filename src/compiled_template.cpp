@@ -66,6 +66,15 @@ std::string nodesToTemplate(
                 break;
             }
 
+            case NodeType::Let: {
+                const auto letNode =
+                    std::dynamic_pointer_cast<LetNode>(node);
+
+                output += "@let(" + letNode->name() + " = " +
+                    letNode->expression() + ")";
+                break;
+            }
+
             case NodeType::Foreach: {
                 const auto foreachNode =
                     std::dynamic_pointer_cast<ForeachNode>(node);
@@ -108,12 +117,14 @@ struct RenderResult {
 
 RenderResult renderNodes(
     const std::vector<NodePtr>& nodes,
-    RenderContext& context
+    RenderContext& context,
+    template_expression::BindingContext& bindings
 );
 
 RenderResult renderNode(
     const NodePtr& node,
-    RenderContext& context
+    RenderContext& context,
+    template_expression::BindingContext& bindings
 ) {
     switch (node->type()) {
         case NodeType::Text: {
@@ -130,7 +141,7 @@ RenderResult renderNode(
             return {
                 .output = resolveVariable(
                     variableNode->expression(),
-                    context
+                    bindings
                 ).value_or("")
             };
         }
@@ -142,7 +153,7 @@ RenderResult renderNode(
             return {
                 .output = resolveRawVariable(
                     rawNode->expression(),
-                    context
+                    bindings
                 ).value_or("")
             };
         }
@@ -151,11 +162,33 @@ RenderResult renderNode(
             const auto ifNode =
                 std::dynamic_pointer_cast<IfNode>(node);
 
-            if (evaluateCondition(ifNode->condition(), context)) {
-                return renderNodes(ifNode->trueBranch(), context);
+            auto branchBindings = bindings.createChild();
+            if (evaluateCondition(ifNode->condition(), bindings)) {
+                return renderNodes(
+                    ifNode->trueBranch(), context, branchBindings
+                );
             }
 
-            return renderNodes(ifNode->falseBranch(), context);
+            return renderNodes(
+                ifNode->falseBranch(), context, branchBindings
+            );
+        }
+
+        case NodeType::Let: {
+            const auto letNode =
+                std::dynamic_pointer_cast<LetNode>(node);
+            const auto parsed =
+                template_expression::parse(letNode->expression());
+            if (!parsed) {
+                return {};
+            }
+
+            bindings.define(
+                letNode->name(),
+                template_expression::evaluate(*parsed.expression, bindings),
+                template_expression::BindingMutability::Mutable
+            );
+            return {};
         }
 
         case NodeType::Break:
@@ -176,15 +209,21 @@ RenderResult renderNode(
 
             const auto source = template_expression::parse(expression->collection);
             if (!source) {
-                return renderNodes(foreachNode->emptyBranch(), context);
+                auto emptyBindings = bindings.createChild();
+                return renderNodes(
+                    foreachNode->emptyBranch(), context, emptyBindings
+                );
             }
 
             const auto iterable = template_expression::evaluate(
                 *source.expression,
-                context
+                bindings
             ).iterable();
             if (iterable == nullptr || iterable->empty()) {
-                return renderNodes(foreachNode->emptyBranch(), context);
+                auto emptyBindings = bindings.createChild();
+                return renderNodes(
+                    foreachNode->emptyBranch(), context, emptyBindings
+                );
             }
 
             std::vector<template_expression::ExpressionValue> selected;
@@ -192,19 +231,24 @@ RenderResult renderNode(
                 selected.reserve(iterable->size());
                 for (std::size_t index = 0; index < iterable->size(); ++index) {
                     auto value = iterable->at(index);
-                    auto conditionContext = context.createChild();
-                    detail::setExpressionValue(
-                        conditionContext,
+                    auto conditionBindings = bindings.createChild();
+                    conditionBindings.define(
                         expression->variable,
-                        value
+                        value,
+                        template_expression::BindingMutability::Mutable
                     );
-                    if (evaluateCondition(*expression->condition, conditionContext)) {
+                    if (evaluateCondition(
+                            *expression->condition, conditionBindings
+                    )) {
                         selected.push_back(std::move(value));
                     }
                 }
 
                 if (selected.empty()) {
-                    return renderNodes(foreachNode->emptyBranch(), context);
+                    auto emptyBindings = bindings.createChild();
+                    return renderNodes(
+                        foreachNode->emptyBranch(), context, emptyBindings
+                    );
                 }
             }
 
@@ -221,7 +265,7 @@ RenderResult renderNode(
                 detail::setExpressionValue(
                     childContext,
                     expression->variable,
-                    std::move(value)
+                    value
                 );
                 detail::setLoopMetadata(
                     childContext,
@@ -230,7 +274,23 @@ RenderResult renderNode(
                     count
                 );
 
-                auto result = renderNodes(foreachNode->body(), childContext);
+                auto bodyBindings = bindings.createChild();
+                bodyBindings.define(
+                    expression->variable,
+                    value,
+                    template_expression::BindingMutability::Mutable
+                );
+                if (const auto loop = childContext.get<Json::Value>("loop")) {
+                    bodyBindings.define(
+                        "loop",
+                        template_expression::ExpressionValue(*loop),
+                        template_expression::BindingMutability::Constant
+                    );
+                }
+
+                auto result = renderNodes(
+                    foreachNode->body(), childContext, bodyBindings
+                );
                 output += result.output;
 
                 if (result.control == RenderControl::Break) {
@@ -252,11 +312,14 @@ RenderResult renderNode(
                 return { .output = componentNode->tagHtml() };
             }
 
+            auto componentContext = context.createChild();
+            bindings.materialize(componentContext);
+
             return {
                 .output = component_renderer::render(
                     componentNode->tagHtml(),
                     context.services()->components(),
-                    context
+                    componentContext
                 )
             };
         }
@@ -267,12 +330,13 @@ RenderResult renderNode(
 
 RenderResult renderNodes(
     const std::vector<NodePtr>& nodes,
-    RenderContext& context
+    RenderContext& context,
+    template_expression::BindingContext& bindings
 ) {
     RenderResult result;
 
     for (const auto& node : nodes) {
-        auto nodeResult = renderNode(node, context);
+        auto nodeResult = renderNode(node, context, bindings);
         result.output += nodeResult.output;
 
         if (nodeResult.control != RenderControl::None) {
@@ -291,7 +355,8 @@ CompiledTemplate::CompiledTemplate(std::vector<NodePtr> nodes)
 }
 
 std::string CompiledTemplate::render(RenderContext& context) const {
-    return renderNodes(nodes_, context).output;
+    template_expression::BindingContext bindings(context);
+    return renderNodes(nodes_, context, bindings).output;
 }
 
 CompiledTemplate compile(std::string_view html) {

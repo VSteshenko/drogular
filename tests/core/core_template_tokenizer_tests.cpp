@@ -97,3 +97,14 @@ TEST(CoreTemplateTokenizerTests, TokenizesForeachControlDirectives) {
     EXPECT_EQ(tokens[3].type, TokenType::Empty);
     EXPECT_EQ(tokens[5].type, TokenType::EndForeach);
 }
+
+TEST(CoreTemplateTokenizerTests, TokenizesLetExpression) {
+    const auto tokens = tokenize(
+        "@let(pages = [0..<count step 2]){{ pages.count() }}"
+    );
+
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::Let);
+    EXPECT_EQ(tokens[0].value, "pages = [0..<count step 2]");
+    EXPECT_EQ(tokens[1].type, TokenType::Variable);
+}
