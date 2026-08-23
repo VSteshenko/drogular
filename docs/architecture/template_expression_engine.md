@@ -32,27 +32,31 @@ uses the resulting value or diagnostic.
 ## ExpressionValue
 
 `template_expression::ExpressionValue` is the common runtime value abstraction.
-The initial implementation supports:
+It supports:
 
 - null/missing values;
 - booleans;
 - numbers;
 - strings;
-- existing `Json::Value` objects and arrays.
+- existing `Json::Value` objects and arrays;
+- expression-owned arrays;
+- integer ranges.
 
 Keeping JSON as a supported value allows existing `RenderContext` data and
 dotted JSON paths to pass through the engine without an intermediate model.
-The abstraction is intentionally extensible so list and range values can be
-added without changing template directives.
+Expression-owned arrays and ranges provide the foundation for iterable template
+expressions without coupling them to `Json::Value`.
 
 ## Expression AST
 
-The initial AST contains:
+The AST contains:
 
 - `LiteralExpression`;
 - `VariableExpression`;
 - `UnaryExpression`;
-- `BinaryExpression`.
+- `BinaryExpression`;
+- `ListExpression`;
+- `RangeExpression`.
 
 Unary and binary nodes carry explicit operator enums rather than source text.
 The evaluator therefore works on parsed semantics and does not need to inspect
@@ -60,6 +64,86 @@ the original expression string.
 
 The AST is immutable after parsing and may be reused for multiple evaluations
 against different `RenderContext` instances.
+
+## Arithmetic expressions
+
+Arithmetic is part of the common expression grammar rather than a special
+feature of ranges. The engine supports:
+
+```text
++  -  *  /
+```
+
+as well as unary negation:
+
+```text
+-count
+```
+
+Normal arithmetic precedence applies: unary operators, multiplication/division,
+addition/subtraction, comparisons, `&&`, then `||`.
+
+This means range bounds and steps may be arbitrary expressions:
+
+```text
+[page * size..(page + 1) * size - 1]
+[start..<total step stride * 2]
+[(first + 1)..last]
+```
+
+The same arithmetic expressions are also available to `@if`, `where`, and
+future expression consumers.
+
+## List literals
+
+Lists may contain arbitrary expressions:
+
+```text
+[]
+[1, 3, 5, 7]
+[user.id, page + 1, total * 2]
+[[1, 2], [3, 4]]
+```
+
+A trailing comma is accepted.
+
+## Range literals
+
+Ranges are integer-valued iterable expressions.
+
+Inclusive upper bound:
+
+```text
+[1..10]
+```
+
+Exclusive upper bound:
+
+```text
+[0..<10]
+```
+
+Explicit step:
+
+```text
+[1..10 step 2]
+[10..1 step -2]
+```
+
+Without an explicit step, the evaluator selects `1` for ascending ranges and
+`-1` for descending ranges.
+
+Bounds and step expressions are evaluated against the current `RenderContext`:
+
+```text
+[start..end]
+[page * size..(page + 1) * size - 1]
+[0..<itemCount step stride]
+```
+
+Range values require integral bounds and an integral, non-zero step. An
+explicit step whose direction cannot reach the end bound evaluates to null,
+which prevents a non-terminating range.
 
 ## RenderContext resolution
 
@@ -92,15 +176,13 @@ expressions directly.
 
 ## Extension path
 
-The expression engine is the foundation for the next template-language steps:
+The expression engine now provides the value model needed for the next
+language steps:
 
-1. list literals;
-2. inclusive and exclusive ranges;
-3. range steps;
-4. `in` / `not in`;
-5. `@foreach` over arbitrary iterable expressions;
-6. `@let` bindings;
-7. `@switch` / `@case`.
+1. `in` / `not in`;
+2. `@foreach` over arbitrary iterable expressions;
+3. `@let` bindings;
+4. `@switch` / `@case`.
 
 Those features belong in the expression engine rather than in individual
 template directives whenever they represent values or operators.

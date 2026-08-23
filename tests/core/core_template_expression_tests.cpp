@@ -59,7 +59,7 @@ TEST(CoreTemplateExpressionTests, PreservesExpressionDiagnostics) {
     const auto missingValue = parse("page >");
     ASSERT_FALSE(missingValue);
     ASSERT_TRUE(missingValue.error.has_value());
-    EXPECT_EQ(missingValue.error->message, "Expected value after '>'");
+    EXPECT_EQ(missingValue.error->message, "Expected value");
     EXPECT_EQ(missingValue.error->position, 6u);
 
     const auto missingParenthesis = parse("(page > 1");
@@ -95,4 +95,113 @@ TEST(CoreTemplateExpressionTests, EvaluatesLogicalPrecedence) {
     ASSERT_TRUE(parsed);
 
     EXPECT_TRUE(evaluate(*parsed.expression, context).truthy());
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesArithmeticWithPrecedence) {
+    drogular::RenderContext context;
+    context.set("page", 2);
+    context.set("size", 10);
+
+    const auto value = evaluate("page * size + 3", context);
+
+    ASSERT_TRUE(value.number().has_value());
+    EXPECT_DOUBLE_EQ(*value.number(), 23.0);
+
+    const auto grouped = evaluate("(page + 1) * size", context);
+    ASSERT_TRUE(grouped.number().has_value());
+    EXPECT_DOUBLE_EQ(*grouped.number(), 30.0);
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesListLiteralExpressions) {
+    drogular::RenderContext context;
+    context.set("page", 2);
+
+    const auto value = evaluate("[1, page, page + 1, -4]", context);
+    const auto array = value.array();
+
+    ASSERT_NE(array, nullptr);
+    ASSERT_EQ(array->values.size(), 4u);
+    ASSERT_TRUE(array->values[0].number().has_value());
+    ASSERT_TRUE(array->values[1].number().has_value());
+    ASSERT_TRUE(array->values[2].number().has_value());
+    ASSERT_TRUE(array->values[3].number().has_value());
+    EXPECT_DOUBLE_EQ(*array->values[0].number(), 1.0);
+    EXPECT_DOUBLE_EQ(*array->values[1].number(), 2.0);
+    EXPECT_DOUBLE_EQ(*array->values[2].number(), 3.0);
+    EXPECT_DOUBLE_EQ(*array->values[3].number(), -4.0);
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesInclusiveRangeWithExpressionBounds) {
+    drogular::RenderContext context;
+    context.set("page", 2);
+    context.set("size", 3);
+
+    const auto value = evaluate(
+        "[page * size..(page + 1) * size - 1]",
+        context
+    );
+    const auto* range = value.range();
+
+    ASSERT_NE(range, nullptr);
+    EXPECT_EQ(range->start, 6);
+    EXPECT_EQ(range->end, 8);
+    EXPECT_EQ(range->step, 1);
+    EXPECT_TRUE(range->upperInclusive);
+    EXPECT_EQ(range->materialize(), (std::vector<std::int64_t>{6, 7, 8}));
+}
+
+TEST(CoreTemplateExpressionTests, EvaluatesExclusiveRangeWithExpressionStep) {
+    drogular::RenderContext context;
+    context.set("start", 1);
+    context.set("count", 10);
+    context.set("stride", 2);
+
+    const auto value = evaluate(
+        "[start..<count step stride]",
+        context
+    );
+    const auto* range = value.range();
+
+    ASSERT_NE(range, nullptr);
+    EXPECT_FALSE(range->upperInclusive);
+    EXPECT_EQ(range->materialize(), (std::vector<std::int64_t>{1, 3, 5, 7, 9}));
+}
+
+TEST(CoreTemplateExpressionTests, InfersDescendingRangeStep) {
+    drogular::RenderContext context;
+    context.set("from", 5);
+    context.set("to", 1);
+
+    const auto value = evaluate("[from..to]", context);
+    const auto* range = value.range();
+
+    ASSERT_NE(range, nullptr);
+    EXPECT_EQ(range->step, -1);
+    EXPECT_EQ(range->materialize(), (std::vector<std::int64_t>{5, 4, 3, 2, 1}));
+}
+
+TEST(CoreTemplateExpressionTests, RejectsInvalidEvaluatedRangeStep) {
+    drogular::RenderContext context;
+    context.set("from", 1);
+    context.set("to", 10);
+    context.set("zero", 0);
+    context.set("backward", -2);
+
+    EXPECT_TRUE(evaluate("[from..to step zero]", context).isNull());
+    EXPECT_TRUE(evaluate("[from..to step backward]", context).isNull());
+}
+
+TEST(CoreTemplateExpressionTests, ParsesRangeSeparatelyFromDottedPaths) {
+    const auto result = parse("[start..user.lastPage]");
+
+    ASSERT_TRUE(result);
+    const auto* range = std::get_if<RangeExpression>(&result.expression->node);
+    ASSERT_NE(range, nullptr);
+
+    const auto* start = std::get_if<VariableExpression>(&range->start->node);
+    const auto* end = std::get_if<VariableExpression>(&range->end->node);
+    ASSERT_NE(start, nullptr);
+    ASSERT_NE(end, nullptr);
+    EXPECT_EQ(start->path, "start");
+    EXPECT_EQ(end->path, "user.lastPage");
 }

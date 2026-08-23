@@ -1,15 +1,47 @@
 #include <drogular/template_expression.hpp>
 #include <drogular/render_context.hpp>
 
+#include <cmath>
+#include <cstdint>
+#include <limits>
 #include <string>
 #include <utility>
 
 namespace drogular::template_expression {
 
+std::vector<std::int64_t> ExpressionRange::materialize() const {
+    std::vector<std::int64_t> result;
+    if (step == 0) {
+        return result;
+    }
+
+    const auto within = [this](std::int64_t value) {
+        if (step > 0) {
+            return upperInclusive ? value <= end : value < end;
+        }
+        return upperInclusive ? value >= end : value > end;
+    };
+
+    for (auto value = start; within(value);) {
+        result.push_back(value);
+
+        if ((step > 0 && value > std::numeric_limits<std::int64_t>::max() - step) ||
+            (step < 0 && value < std::numeric_limits<std::int64_t>::min() - step)
+        ) {
+            break;
+        }
+        value += step;
+    }
+
+    return result;
+}
+
 ExpressionValue::ExpressionValue(bool value) : value_(value) {}
 ExpressionValue::ExpressionValue(double value) : value_(value) {}
 ExpressionValue::ExpressionValue(std::string value) : value_(std::move(value)) {}
 ExpressionValue::ExpressionValue(Json::Value value) : value_(std::move(value)) {}
+ExpressionValue::ExpressionValue(ArrayPtr value) : value_(std::move(value)) {}
+ExpressionValue::ExpressionValue(ExpressionRange value) : value_(std::move(value)) {}
 
 bool ExpressionValue::truthy() const {
     if (const auto value = std::get_if<bool>(&value_)) {
@@ -38,6 +70,19 @@ bool ExpressionValue::truthy() const {
             return !value->empty();
         }
     }
+    if (const auto value = std::get_if<ArrayPtr>(&value_)) {
+        return *value && !(*value)->values.empty();
+    }
+    if (const auto value = std::get_if<ExpressionRange>(&value_)) {
+        if (value->step > 0) {
+            return value->upperInclusive
+                ? value->start <= value->end
+                : value->start < value->end;
+        }
+        return value->upperInclusive
+            ? value->start >= value->end
+            : value->start > value->end;
+    }
 
     return false;
 }
@@ -58,7 +103,8 @@ std::optional<double> ExpressionValue::number() const {
         return *value;
     }
     if (const auto value = std::get_if<Json::Value>(&value_);
-        value && value->isNumeric()) {
+        value && value->isNumeric()
+    ) {
         return value->asDouble();
     }
 
@@ -89,6 +135,18 @@ std::optional<bool> ExpressionValue::boolean() const {
     return std::nullopt;
 }
 
+ExpressionValue::ArrayPtr ExpressionValue::array() const {
+    if (const auto value = std::get_if<ArrayPtr>(&value_)) {
+        return *value;
+    }
+
+    return nullptr;
+}
+
+const ExpressionRange* ExpressionValue::range() const {
+    return std::get_if<ExpressionRange>(&value_);
+}
+
 const ExpressionValue::Storage& ExpressionValue::storage() const noexcept {
     return value_;
 }
@@ -99,7 +157,6 @@ bool equalValues(const ExpressionValue& left, const ExpressionValue& right) {
     if (left.isNull() || right.isNull()) {
         return left.isNull() && right.isNull();
     }
-
     if (const auto lhs = left.number()) {
         if (const auto rhs = right.number()) {
             return *lhs == *rhs;
@@ -120,11 +177,7 @@ bool equalValues(const ExpressionValue& left, const ExpressionValue& right) {
 }
 
 template <typename Predicate>
-bool compareValues(
-    const ExpressionValue& left,
-    const ExpressionValue& right,
-    Predicate predicate
-) {
+bool compareValues(const ExpressionValue& left, const ExpressionValue& right, Predicate predicate) {
     if (const auto lhs = left.number()) {
         if (const auto rhs = right.number()) {
             return predicate(*lhs, *rhs);
@@ -139,10 +192,21 @@ bool compareValues(
     return false;
 }
 
-ExpressionValue evaluateNode(
-    const Expression& expression,
-    const RenderContext& context
-) {
+std::optional<std::int64_t> integerValue(const ExpressionValue& value) {
+    const auto number = value.number();
+    if (!number || !std::isfinite(*number) || std::trunc(*number) != *number) {
+        return std::nullopt;
+    }
+    if (*number < static_cast<double>(std::numeric_limits<std::int64_t>::min()) ||
+        *number > static_cast<double>(std::numeric_limits<std::int64_t>::max())
+    ) {
+        return std::nullopt;
+    }
+
+    return static_cast<std::int64_t>(*number);
+}
+
+ExpressionValue evaluateNode(const Expression& expression, const RenderContext& context) {
     if (const auto* node = std::get_if<LiteralExpression>(&expression.node)) {
         return node->value;
     }
@@ -151,7 +215,49 @@ ExpressionValue evaluateNode(
     }
     if (const auto* node = std::get_if<UnaryExpression>(&expression.node)) {
         const auto value = evaluateNode(*node->operand, context);
-        return ExpressionValue(!value.truthy());
+        if (node->op == UnaryOperator::Not) {
+            return ExpressionValue(!value.truthy());
+        }
+        if (const auto number = value.number()) {
+            return ExpressionValue(-*number);
+        }
+        return ExpressionValue();
+    }
+    if (const auto* node = std::get_if<ListExpression>(&expression.node)) {
+        auto array = std::make_shared<ExpressionArray>();
+        array->values.reserve(node->elements.size());
+        for (const auto& element : node->elements) {
+            array->values.push_back(evaluateNode(*element, context));
+        }
+        return ExpressionValue(std::move(array));
+    }
+    if (const auto* node = std::get_if<RangeExpression>(&expression.node)) {
+        const auto start = integerValue(evaluateNode(*node->start, context));
+        const auto end = integerValue(evaluateNode(*node->end, context));
+        if (!start || !end) {
+            return ExpressionValue();
+        }
+
+        std::int64_t step = *start <= *end ? 1 : -1;
+        if (node->step) {
+            const auto explicitStep =
+                integerValue(evaluateNode(*node->step, context));
+            if (!explicitStep || *explicitStep == 0) {
+                return ExpressionValue();
+            }
+            step = *explicitStep;
+        }
+
+        if ((*start < *end && step < 0) || (*start > *end && step > 0)) {
+            return ExpressionValue();
+        }
+
+        return ExpressionValue(ExpressionRange{
+            .start = *start,
+            .end = *end,
+            .step = step,
+            .upperInclusive = node->upperInclusive
+        });
     }
 
     const auto* node = std::get_if<BinaryExpression>(&expression.node);
@@ -178,6 +284,30 @@ ExpressionValue evaluateNode(
     const auto right = evaluateNode(*node->right, context);
 
     switch (node->op) {
+        case BinaryOperator::Add:
+        case BinaryOperator::Subtract:
+        case BinaryOperator::Multiply:
+        case BinaryOperator::Divide: {
+            const auto lhs = left.number();
+            const auto rhs = right.number();
+            if (!lhs || !rhs) {
+                return ExpressionValue();
+            }
+            if (node->op == BinaryOperator::Add) {
+                return ExpressionValue(*lhs + *rhs);
+            }
+            if (node->op == BinaryOperator::Subtract) {
+                return ExpressionValue(*lhs - *rhs);
+            }
+            if (node->op == BinaryOperator::Multiply) {
+                return ExpressionValue(*lhs * *rhs);
+            }
+            if (*rhs == 0.0) {
+                return ExpressionValue();
+            }
+            return ExpressionValue(*lhs / *rhs);
+        }
+
         case BinaryOperator::Equal:
             return ExpressionValue(equalValues(left, right));
 
@@ -186,57 +316,63 @@ ExpressionValue evaluateNode(
 
         case BinaryOperator::Less:
             return ExpressionValue(compareValues(
-                left, right, [](const auto& lhs, const auto& rhs) { return lhs < rhs; }
+                left,
+                right,
+                [](const auto& lhs, const auto& rhs) {
+                    return lhs < rhs;
+                }
             ));
 
         case BinaryOperator::LessEqual:
             return ExpressionValue(compareValues(
-                left, right, [](const auto& lhs, const auto& rhs) { return lhs <= rhs; }
+                left,
+                right,
+                [](const auto& lhs, const auto& rhs) {
+                    return lhs <= rhs;
+                }
             ));
 
         case BinaryOperator::Greater:
             return ExpressionValue(compareValues(
-                left, right, [](const auto& lhs, const auto& rhs) { return lhs > rhs; }
+                left,
+                right,
+                [](const auto& lhs, const auto& rhs) {
+                    return lhs > rhs;
+                }
             ));
 
         case BinaryOperator::GreaterEqual:
             return ExpressionValue(compareValues(
-                left, right, [](const auto& lhs, const auto& rhs) { return lhs >= rhs; }
+                left,
+                right,
+                [](const auto& lhs, const auto& rhs) {
+                    return lhs >= rhs;
+                }
             ));
 
         case BinaryOperator::And:
         case BinaryOperator::Or:
             break;
     }
-
     return ExpressionValue();
 }
 
 } // namespace
 
-
-ExpressionValue evaluate(
-    const Expression& expression,
-    const RenderContext& context
-) {
+ExpressionValue evaluate(const Expression& expression, const RenderContext& context) {
     return evaluateNode(expression, context);
 }
 
-ExpressionValue evaluate(
-    std::string_view source,
-    const RenderContext& context
-) {
+ExpressionValue evaluate(std::string_view source, const RenderContext& context) {
     const auto result = parse(source);
     if (!result) {
         return ExpressionValue();
     }
+
     return evaluate(*result.expression, context);
 }
 
-ExpressionValue resolve(
-    std::string_view path,
-    const RenderContext& context
-) {
+ExpressionValue resolve(std::string_view path, const RenderContext& context) {
     const auto key = std::string(path);
     if (key.empty()) {
         return ExpressionValue();
@@ -271,10 +407,10 @@ ExpressionValue resolve(
     std::size_t start = separator + 1;
     while (start <= key.size()) {
         const auto end = key.find('.', start);
-        const auto member = key.substr(
-            start,
-            end == std::string::npos ? std::string::npos : end - start
-        );
+        const auto member =
+            key.substr(start, end == std::string::npos
+                ? std::string::npos
+                : end - start);
         if (member.empty() || !current.isObject() || !current.isMember(member)) {
             return ExpressionValue();
         }

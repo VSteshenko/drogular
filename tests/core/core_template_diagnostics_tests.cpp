@@ -129,7 +129,7 @@ TEST(CoreTemplateDiagnosticsTests, DetectsInvalidIfExpression) {
     EXPECT_EQ(diagnostic.code, "DGL-TPL-006");
     EXPECT_EQ(
         diagnostic.message,
-        "Invalid @if expression: Expected value after '>'"
+        "Invalid @if expression: Expected value"
     );
     EXPECT_EQ(diagnostic.location.source, "pages/example.html");
     EXPECT_EQ(diagnostic.location.line, 2);
@@ -176,7 +176,7 @@ TEST(CoreTemplateDiagnosticsTests, DetectsInvalidForeachWhereCondition) {
     EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-008");
     EXPECT_EQ(
         result.diagnostics.errors()[0].message,
-        "Invalid @foreach where condition: Expected value after '>'"
+        "Invalid @foreach where condition: Expected value"
     );
 }
 

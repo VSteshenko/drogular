@@ -188,7 +188,7 @@ TEST(CoreTemplateRuntimeTests, ValidatesConditionExpressionSyntax) {
 
     const auto missingValue = validateConditionExpression("page >");
     ASSERT_TRUE(missingValue.has_value());
-    EXPECT_EQ(missingValue->message, "Expected value after '>'");
+    EXPECT_EQ(missingValue->message, "Expected value");
 
     const auto missingParenthesis =
         validateConditionExpression("(page > 1");

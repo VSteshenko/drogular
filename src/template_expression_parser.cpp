@@ -1,5 +1,6 @@
 #include <drogular/template_expression.hpp>
 
+#include <cctype>
 #include <string>
 #include <utility>
 
@@ -17,6 +18,15 @@ enum class TokenType {
     Null,
     LeftParen,
     RightParen,
+    LeftBracket,
+    RightBracket,
+    Comma,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    DotDot,
+    DotDotLess,
     Not,
     EqualEqual,
     NotEqual,
@@ -52,13 +62,10 @@ public:
         if (ch == '\'' || ch == '"') {
             return stringToken();
         }
-        if (std::isdigit(static_cast<unsigned char>(ch)) ||
-            (ch == '-' && position_ + 1 < source_.size() &&
-             std::isdigit(static_cast<unsigned char>(source_[position_ + 1])))) {
+        if (std::isdigit(static_cast<unsigned char>(ch))) {
             return numberToken();
         }
-
-        if (isIdentifierCharacter(ch)) {
+        if (isIdentifierStart(ch)) {
             return identifierToken();
         }
 
@@ -69,6 +76,36 @@ public:
 
             case ')':
                 return simple(TokenType::RightParen, ")", start);
+
+            case '[':
+                return simple(TokenType::LeftBracket, "[", start);
+
+            case ']':
+                return simple(TokenType::RightBracket, "]", start);
+
+            case ',':
+                return simple(TokenType::Comma, ",", start);
+
+            case '+':
+                return simple(TokenType::Plus, "+", start);
+
+            case '-':
+                return simple(TokenType::Minus, "-", start);
+
+            case '*':
+                return simple(TokenType::Star, "*", start);
+
+            case '/':
+                return simple(TokenType::Slash, "/", start);
+
+            case '.':
+                if (match('.')) {
+                    if (match('<')) {
+                        return simple(TokenType::DotDotLess, "..<", start);
+                    }
+                    return simple(TokenType::DotDot, "..", start);
+                }
+                break;
 
             case '!':
                 if (match('=')) {
@@ -122,9 +159,12 @@ public:
     }
 
 private:
+    static bool isIdentifierStart(char ch) {
+        return std::isalpha(static_cast<unsigned char>(ch)) || ch == '_';
+    }
+
     static bool isIdentifierCharacter(char ch) {
-        return std::isalnum(static_cast<unsigned char>(ch)) ||
-            ch == '_' || ch == '.';
+        return std::isalnum(static_cast<unsigned char>(ch)) || ch == '_';
     }
 
     Token simple(TokenType type, std::string text, std::size_t position) {
@@ -154,10 +194,21 @@ private:
             if (ch == '\\' && position_ < source_.size()) {
                 const auto escaped = source_[position_++];
                 switch (escaped) {
-                    case 'n': result += '\n'; break;
-                    case 'r': result += '\r'; break;
-                    case 't': result += '\t'; break;
-                    default: result += escaped; break;
+                    case 'n':
+                        result += '\n';
+                        break;
+
+                    case 'r':
+                        result += '\r';
+                        break;
+
+                    case 't':
+                        result += '\t';
+                        break;
+
+                    default:
+                        result += escaped;
+                        break;
                 }
             } else {
                 result += ch;
@@ -176,31 +227,23 @@ private:
 
     Token numberToken() {
         const auto start = position_;
-        if (source_[position_] == '-') {
-            ++position_;
-        }
-
         while (position_ < source_.size() &&
-               std::isdigit(static_cast<unsigned char>(source_[position_]))) {
+               std::isdigit(static_cast<unsigned char>(source_[position_]))
+        ) {
             ++position_;
         }
 
-        if (position_ < source_.size() && source_[position_] == '.') {
+        // A decimal point is only part of a number when it is followed by a
+        // digit. This keeps `1..10` and `1..<10` unambiguous.
+        if (position_ + 1 < source_.size() &&
+            source_[position_] == '.' &&
+            source_[position_ + 1] != '.' &&
+            std::isdigit(static_cast<unsigned char>(source_[position_ + 1]))
+        ) {
             ++position_;
-            const auto fractionalStart = position_;
             while (position_ < source_.size() &&
                    std::isdigit(static_cast<unsigned char>(source_[position_]))) {
                 ++position_;
-            }
-            if (fractionalStart == position_) {
-                error_ = ExpressionError{
-                    .message = "Expected digits after decimal point",
-                    .position = position_
-                };
-                return Token{
-                    .type = TokenType::Invalid,
-                    .position = start
-                };
             }
         }
 
@@ -229,6 +272,18 @@ private:
         while (position_ < source_.size() &&
                isIdentifierCharacter(source_[position_])) {
             ++position_;
+        }
+
+        // Dotted member paths are identifiers, but `..` / `..<` belong to
+        // range syntax and must remain separate tokens.
+        while (position_ < source_.size() && source_[position_] == '.' &&
+               position_ + 1 < source_.size() && source_[position_ + 1] != '.' &&
+               isIdentifierStart(source_[position_ + 1])) {
+            ++position_;
+            while (position_ < source_.size() &&
+                   isIdentifierCharacter(source_[position_])) {
+                ++position_;
+            }
         }
 
         auto text = std::string(source_.substr(start, position_ - start));
@@ -304,11 +359,7 @@ ExpressionPtr unary(UnaryOperator op, ExpressionPtr operand) {
     });
 }
 
-ExpressionPtr binary(
-    BinaryOperator op,
-    ExpressionPtr left,
-    ExpressionPtr right
-) {
+ExpressionPtr binary(BinaryOperator op, ExpressionPtr left, ExpressionPtr right) {
     return std::make_shared<Expression>(Expression{
         .node = BinaryExpression{
             .op = op,
@@ -355,90 +406,67 @@ private:
         }
 
         while (current_.type == TokenType::OrOr) {
-            const auto operatorToken = current_;
+            const auto op = current_;
             advance();
             auto right = parseAnd();
             if (!right) {
-                if (!error_.has_value()) {
-                    fail("Expected expression after '||'", operatorToken.position + 2);
+                if (!error_) {
+                    fail("Expected expression after '||'", op.position + 2);
                 }
                 return nullptr;
             }
-            left = binary(BinaryOperator::Or, std::move(left), std::move(right));
+            left = binary(
+                BinaryOperator::Or,
+                std::move(left),
+                std::move(right)
+            );
         }
 
         return left;
     }
 
     ExpressionPtr parseAnd() {
-        auto left = parseUnary();
+        auto left = parseComparison();
         if (!left) {
             return nullptr;
         }
 
         while (current_.type == TokenType::AndAnd) {
-            const auto operatorToken = current_;
+            const auto op = current_;
             advance();
-            auto right = parseUnary();
+            auto right = parseComparison();
             if (!right) {
-                if (!error_.has_value()) {
-                    fail("Expected expression after '&&'", operatorToken.position + 2);
+                if (!error_) {
+                    fail("Expected expression after '&&'", op.position + 2);
                 }
                 return nullptr;
             }
-            left = binary(BinaryOperator::And, std::move(left), std::move(right));
+            left = binary(
+                BinaryOperator::And,
+                std::move(left),
+                std::move(right)
+            );
         }
 
         return left;
     }
 
-    ExpressionPtr parseUnary() {
-        if (current_.type == TokenType::Not) {
-            const auto operatorToken = current_;
-            advance();
-            auto operand = parseUnary();
-            if (!operand) {
-                if (!error_.has_value()) {
-                    fail("Expected expression after '!'", operatorToken.position + 1);
-                }
-                return nullptr;
-            }
-            return unary(UnaryOperator::Not, std::move(operand));
-        }
-
-        if (current_.type == TokenType::LeftParen) {
-            advance();
-            auto expression = parseOr();
-            if (!expression) {
-                return nullptr;
-            }
-            if (current_.type != TokenType::RightParen) {
-                fail("Expected ')'", current_.position);
-                return nullptr;
-            }
-            advance();
-            return expression;
-        }
-
-        return parseComparison();
-    }
-
     ExpressionPtr parseComparison() {
-        auto left = parseValue(true);
+        auto left = parseAdditive();
         if (!left) {
             return nullptr;
         }
 
-        const auto op = binaryOperator(current_.type);
-        if (!op.has_value()) {
+        const auto op = comparisonOperator(current_.type);
+        if (!op) {
             return left;
         }
 
         const auto operatorToken = current_;
         advance();
-        auto right = parseValue(false);
+        auto right = parseAdditive();
         if (!right) {
-            if (!error_.has_value()) {
+            if (!error_) {
                 fail(
                     "Expected value after '" + operatorToken.text + "'",
                     operatorToken.position + operatorToken.text.size()
@@ -447,12 +475,99 @@ private:
             return nullptr;
         }
 
-        return binary(*op, std::move(left), std::move(right));
+        return binary(
+            *op,
+            std::move(left),
+            std::move(right)
+        );
     }
 
-    ExpressionPtr parseValue(bool reportMissing) {
+    ExpressionPtr parseAdditive() {
+        auto left = parseMultiplicative();
+        if (!left) {
+            return nullptr;
+        }
+
+        while (current_.type == TokenType::Plus || current_.type == TokenType::Minus) {
+            const auto type = current_.type;
+            const auto opToken = current_;
+            advance();
+            auto right = parseMultiplicative();
+            if (!right) {
+                if (!error_) {
+                    fail(
+                        "Expected expression after '" + opToken.text + "'",
+                        opToken.position + opToken.text.size()
+                    );
+                }
+                return nullptr;
+            }
+            left = binary(
+                type == TokenType::Plus ? BinaryOperator::Add : BinaryOperator::Subtract,
+                std::move(left),
+                std::move(right)
+            );
+        }
+
+        return left;
+    }
+
+    ExpressionPtr parseMultiplicative() {
+        auto left = parseUnary();
+        if (!left) {
+            return nullptr;
+        }
+
+        while (current_.type == TokenType::Star || current_.type == TokenType::Slash) {
+            const auto type = current_.type;
+            const auto opToken = current_;
+            advance();
+            auto right = parseUnary();
+            if (!right) {
+                if (!error_) {
+                    fail(
+                        "Expected expression after '" + opToken.text + "'",
+                        opToken.position + opToken.text.size()
+                    );
+                }
+                return nullptr;
+            }
+            left = binary(
+                type == TokenType::Star ? BinaryOperator::Multiply : BinaryOperator::Divide,
+                std::move(left),
+                std::move(right)
+            );
+        }
+
+        return left;
+    }
+
+    ExpressionPtr parseUnary() {
+        if (current_.type == TokenType::Not || current_.type == TokenType::Minus) {
+            const auto token = current_;
+            const auto op = current_.type == TokenType::Not
+                ? UnaryOperator::Not
+                : UnaryOperator::Negate;
+            advance();
+            auto operand = parseUnary();
+            if (!operand) {
+                if (!error_) {
+                    fail(
+                        "Expected expression after '" + token.text + "'",
+                        token.position + token.text.size()
+                    );
+                }
+                return nullptr;
+            }
+            return unary(op, std::move(operand));
+        }
+
+        return parsePrimary();
+    }
+
+    ExpressionPtr parsePrimary() {
         if (lexer_.error().has_value()) {
-            if (!error_.has_value()) {
+            if (!error_) {
                 error_ = lexer_.error();
             }
             return nullptr;
@@ -480,15 +595,112 @@ private:
                 return result;
             }
 
-            default:
-                if (reportMissing) {
-                    fail("Expected value", current_.position);
+            case TokenType::LeftParen: {
+                advance();
+                auto expression = parseOr();
+                if (!expression) {
+                    return nullptr;
                 }
+                if (current_.type != TokenType::RightParen) {
+                    fail("Expected ')'", current_.position);
+                    return nullptr;
+                }
+                advance();
+                return expression;
+            }
+
+            case TokenType::LeftBracket:
+                return parseBracketExpression();
+
+            default:
+                fail("Expected value", current_.position);
                 return nullptr;
         }
     }
 
-    static std::optional<BinaryOperator> binaryOperator(TokenType type) {
+    ExpressionPtr parseBracketExpression() {
+        const auto openPosition = current_.position;
+        advance();
+
+        if (current_.type == TokenType::RightBracket) {
+            advance();
+            return std::make_shared<Expression>(Expression{
+                .node = ListExpression{}
+            });
+        }
+
+        auto first = parseOr();
+        if (!first) {
+            return nullptr;
+        }
+
+        if (current_.type == TokenType::DotDot || current_.type == TokenType::DotDotLess) {
+            const bool upperInclusive = current_.type == TokenType::DotDot;
+            advance();
+
+            auto end = parseOr();
+            if (!end) {
+                if (!error_) {
+                    fail("Expected range end expression", current_.position);
+                }
+                return nullptr;
+            }
+
+            ExpressionPtr step;
+            if (current_.type == TokenType::Identifier && current_.text == "step") {
+                const auto stepToken = current_;
+                advance();
+                step = parseOr();
+                if (!step) {
+                    if (!error_) {
+                        fail("Expected expression after 'step'", stepToken.position + 4);
+                    }
+                    return nullptr;
+                }
+            }
+
+            if (current_.type != TokenType::RightBracket) {
+                fail("Expected ']' after range expression", current_.position);
+                return nullptr;
+            }
+            advance();
+
+            return std::make_shared<Expression>(Expression{
+                .node = RangeExpression{
+                    .start = std::move(first),
+                    .end = std::move(end),
+                    .step = std::move(step),
+                    .upperInclusive = upperInclusive
+                }
+            });
+        }
+
+        std::vector<ExpressionPtr> elements;
+        elements.push_back(std::move(first));
+
+        while (current_.type == TokenType::Comma) {
+            advance();
+            if (current_.type == TokenType::RightBracket) {
+                // Trailing comma is accepted.
+                break;
+            }
+            auto element = parseOr();
+            if (!element) return nullptr;
+            elements.push_back(std::move(element));
+        }
+
+        if (current_.type != TokenType::RightBracket) {
+            fail("Expected ',' or ']' in list literal", current_.position);
+            return nullptr;
+        }
+        advance();
+
+        return std::make_shared<Expression>(Expression{
+            .node = ListExpression{ .elements = std::move(elements) }
+        });
+    }
+
+    static std::optional<BinaryOperator> comparisonOperator(TokenType type) {
         switch (type) {
             case TokenType::EqualEqual:
                 return BinaryOperator::Equal;
@@ -515,14 +727,13 @@ private:
 
     void advance() {
         current_ = lexer_.next();
-        if (current_.type == TokenType::Invalid &&
-            lexer_.error().has_value() && !error_.has_value()) {
+        if (current_.type == TokenType::Invalid && lexer_.error().has_value() && !error_) {
             error_ = lexer_.error();
         }
     }
 
     void fail(std::string message, std::size_t position) {
-        if (!error_.has_value()) {
+        if (!error_) {
             error_ = ExpressionError{
                 .message = std::move(message),
                 .position = position
@@ -531,8 +742,12 @@ private:
     }
 
     ParseResult failure(std::string message, std::size_t position) {
-        fail(std::move(message), position);
-        return { .error = error_ };
+        return ParseResult{
+            .error = ExpressionError{
+                .message = std::move(message),
+                .position = position
+            }
+        };
     }
 
     Lexer lexer_;
