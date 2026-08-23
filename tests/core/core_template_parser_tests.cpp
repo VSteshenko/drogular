@@ -185,3 +185,18 @@ TEST(CoreTemplateParserTests, ParsesLetNode) {
     EXPECT_EQ(letNode->name(), "total");
     EXPECT_EQ(letNode->expression(), "projects.count()");
 }
+
+TEST(CoreTemplateParserTests, ParsesConstNode) {
+    const auto nodes = parse(tokenize(
+        "@const(PageSize = 20){{ PageSize }}"
+    ));
+
+    ASSERT_EQ(nodes.size(), 2);
+    ASSERT_EQ(nodes[0]->type(), NodeType::Const);
+
+    const auto constNode =
+        std::dynamic_pointer_cast<ConstNode>(nodes[0]);
+    ASSERT_NE(constNode, nullptr);
+    EXPECT_EQ(constNode->name(), "PageSize");
+    EXPECT_EQ(constNode->expression(), "20");
+}

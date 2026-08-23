@@ -267,7 +267,7 @@ std::optional<std::string> resolveRawVariable(
     );
 }
 
-std::optional<LetExpression> parseLetExpression(
+std::optional<BindingExpression> parseBindingExpression(
     std::string_view expression
 ) {
     std::size_t position = 0;
@@ -321,14 +321,14 @@ std::optional<LetExpression> parseLetExpression(
         return std::nullopt;
     }
 
-    return LetExpression{
+    return BindingExpression{
         .name = name,
         .expression = rhs,
         .expressionPosition = position
     };
 }
 
-std::optional<LetExpressionError> validateLetExpression(
+std::optional<BindingExpressionError> validateBindingExpression(
     std::string_view expression
 ) {
     std::size_t position = 0;
@@ -339,7 +339,7 @@ std::optional<LetExpressionError> validateLetExpression(
     if (position >= expression.size() ||
         !(std::isalpha(static_cast<unsigned char>(expression[position])) ||
           expression[position] == '_')) {
-        return LetExpressionError{
+        return BindingExpressionError{
             .message = "Expected binding identifier",
             .position = position
         };
@@ -356,7 +356,7 @@ std::optional<LetExpressionError> validateLetExpression(
     }
     if (position >= expression.size() || expression[position] != '=' ||
         (position + 1 < expression.size() && expression[position + 1] == '=')) {
-        return LetExpressionError{
+        return BindingExpressionError{
             .message = "Expected '=' after binding identifier",
             .position = position
         };
@@ -367,7 +367,7 @@ std::optional<LetExpressionError> validateLetExpression(
         ++position;
     }
     if (position >= expression.size()) {
-        return LetExpressionError{
+        return BindingExpressionError{
             .message = "Expected expression after '='",
             .position = position
         };
@@ -376,13 +376,25 @@ std::optional<LetExpressionError> validateLetExpression(
     const auto rhs = expression.substr(position);
     const auto parsed = template_expression::parse(rhs);
     if (!parsed) {
-        return LetExpressionError{
+        return BindingExpressionError{
             .message = parsed.error->message,
             .position = position + parsed.error->position
         };
     }
 
     return std::nullopt;
+}
+
+std::optional<LetExpression> parseLetExpression(
+    std::string_view expression
+) {
+    return parseBindingExpression(expression);
+}
+
+std::optional<LetExpressionError> validateLetExpression(
+    std::string_view expression
+) {
+    return validateBindingExpression(expression);
 }
 
 std::optional<ForeachExpressionError> validateForeachExpression(

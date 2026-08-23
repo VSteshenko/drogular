@@ -13,6 +13,7 @@ enum class NodeType {
     If,
     Foreach,
     Let,
+    Const,
     Break,
     Continue,
     Component
@@ -86,6 +87,21 @@ private:
 class LetNode final : public Node {
 public:
     LetNode(std::string name, std::string expression);
+
+    NodeType type() const override;
+
+    const std::string& name() const;
+    const std::string& expression() const;
+
+private:
+    std::string name_;
+    std::string expression_;
+};
+
+
+class ConstNode final : public Node {
+public:
+    ConstNode(std::string name, std::string expression);
 
     NodeType type() const override;
 

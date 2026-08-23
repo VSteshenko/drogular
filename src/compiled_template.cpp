@@ -75,6 +75,15 @@ std::string nodesToTemplate(
                 break;
             }
 
+            case NodeType::Const: {
+                const auto constNode =
+                    std::dynamic_pointer_cast<ConstNode>(node);
+
+                output += "@const(" + constNode->name() + " = " +
+                    constNode->expression() + ")";
+                break;
+            }
+
             case NodeType::Foreach: {
                 const auto foreachNode =
                     std::dynamic_pointer_cast<ForeachNode>(node);
@@ -187,6 +196,23 @@ RenderResult renderNode(
                 letNode->name(),
                 template_expression::evaluate(*parsed.expression, bindings),
                 template_expression::BindingMutability::Mutable
+            );
+            return {};
+        }
+
+        case NodeType::Const: {
+            const auto constNode =
+                std::dynamic_pointer_cast<ConstNode>(node);
+            const auto parsed =
+                template_expression::parse(constNode->expression());
+            if (!parsed) {
+                return {};
+            }
+
+            bindings.define(
+                constNode->name(),
+                template_expression::evaluate(*parsed.expression, bindings),
+                template_expression::BindingMutability::Constant
             );
             return {};
         }

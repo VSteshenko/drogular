@@ -554,11 +554,12 @@ std::string render(
     std::string_view html,
     const RenderContext& context
 ) {
-    // @let requires lexical scope tracking. Route templates that use it
-    // through the compiled renderer so the legacy entry point shares the
-    // same BindingContext semantics instead of maintaining a second scope
-    // implementation.
-    if (html.find("@let(") != std::string_view::npos) {
+    // Lexical bindings require scope tracking. Route templates that use
+    // @let or @const through the compiled renderer so the legacy entry point
+    // shares the same BindingContext semantics instead of maintaining a
+    // second scope implementation.
+    if (html.find("@let(") != std::string_view::npos ||
+        html.find("@const(") != std::string_view::npos) {
         auto renderContext = context.createChild();
         return template_compiler::compile(html).render(renderContext);
     }

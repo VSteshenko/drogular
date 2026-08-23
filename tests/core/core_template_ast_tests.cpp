@@ -87,3 +87,14 @@ TEST(CoreTemplateAstTests, CreatesLetNode) {
     EXPECT_EQ(node.name(), "total");
     EXPECT_EQ(node.expression(), "projects.count()");
 }
+
+TEST(CoreTemplateAstTests, CreatesConstNode) {
+    ConstNode node(
+        "PageSize",
+        "20"
+    );
+
+    EXPECT_EQ(node.type(), NodeType::Const);
+    EXPECT_EQ(node.name(), "PageSize");
+    EXPECT_EQ(node.expression(), "20");
+}

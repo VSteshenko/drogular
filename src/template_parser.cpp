@@ -115,7 +115,8 @@ NodePtr parseNode(
 
         case TokenType::Let: {
             const auto letPosition = token.position;
-            const auto error = validateLetExpression(token.value);
+            const auto error =
+                validateBindingExpression(token.value);
             if (error.has_value()) {
                 const auto code = error->message == "Expected binding identifier"
                     ? "DGL-TPL-022"
@@ -129,7 +130,8 @@ NodePtr parseNode(
                 return std::make_shared<TextNode>("");
             }
 
-            const auto declaration = parseLetExpression(token.value);
+            const auto declaration =
+                parseBindingExpression(token.value);
             if (!declaration.has_value()) {
                 ++position;
                 return std::make_shared<TextNode>("");
@@ -145,6 +147,43 @@ NodePtr parseNode(
 
             ++position;
             return std::make_shared<LetNode>(
+                declaration->name,
+                declaration->expression
+            );
+        }
+
+        case TokenType::Const: {
+            const auto constPosition = token.position;
+            const auto error = validateBindingExpression(token.value);
+            if (error.has_value()) {
+                const auto code = error->message == "Expected binding identifier"
+                    ? "DGL-TPL-024"
+                    : "DGL-TPL-023";
+                diagnostics.error(
+                    code,
+                    "Invalid @const expression: " + error->message,
+                    constPosition + 7 + error->position
+                );
+                ++position;
+                return std::make_shared<TextNode>("");
+            }
+
+            const auto declaration = parseBindingExpression(token.value);
+            if (!declaration.has_value()) {
+                ++position;
+                return std::make_shared<TextNode>("");
+            }
+
+            if (!localBindings.insert(declaration->name).second) {
+                diagnostics.error(
+                    "DGL-TPL-021",
+                    "Duplicate binding '" + declaration->name + "' in the same scope",
+                    constPosition
+                );
+            }
+
+            ++position;
+            return std::make_shared<ConstNode>(
                 declaration->name,
                 declaration->expression
             );

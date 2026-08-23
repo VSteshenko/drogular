@@ -108,3 +108,14 @@ TEST(CoreTemplateTokenizerTests, TokenizesLetExpression) {
     EXPECT_EQ(tokens[0].value, "pages = [0..<count step 2]");
     EXPECT_EQ(tokens[1].type, TokenType::Variable);
 }
+
+TEST(CoreTemplateTokenizerTests, TokenizesConstExpression) {
+    const auto tokens = tokenize(
+        "@const(PageSize = 20){{ PageSize }}"
+    );
+
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::Const);
+    EXPECT_EQ(tokens[0].value, "PageSize = 20");
+    EXPECT_EQ(tokens[1].type, TokenType::Variable);
+}

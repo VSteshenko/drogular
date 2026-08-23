@@ -79,7 +79,7 @@ The API itself does not promise synchronization for concurrent access to a share
 
 ## Local variables
 
-Compiled templates support lexical `@let(name = expression)` bindings. Bindings
+Compiled templates support lexical `@let(name = expression)` and `@const(name = expression)` bindings. Bindings
 are evaluated through the shared Expression Engine, remain visible to later
 nodes in the same block, and may be shadowed in nested `@if` or `@foreach`
 scopes without mutating the underlying `RenderContext`.

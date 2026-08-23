@@ -145,7 +145,7 @@ therefore keep their API while new template directives can pass lexical scopes
 explicitly.
 
 This stage intentionally does not add a template declaration directive yet.
-`@let` and `@const` will consume this scope model in later stages; introducing
+`@let` and `@const` consume this scope model; introducing
 the scope independently keeps binding semantics testable without changing
 template syntax at the same time.
 
@@ -338,7 +338,7 @@ source element is bound and before loop metadata is calculated.
 The expression engine now provides the value and iterable models needed for
 the next language steps:
 
-1. `@let` bindings;
+1. `@let` / `@const` bindings;
 2. compile-time `@const` bindings;
 3. `@switch` / `@case`;
 4. additional collection transformations when their semantics are justified.
@@ -359,3 +359,13 @@ local variables, expression-owned Lists/Ranges, and future constants separate
 from application view data. Component boundaries may materialize visible
 bindings into a temporary child `RenderContext`, but never mutate the base
 context.
+
+
+### Constant bindings
+
+`@const(name = expression)` uses the same lexical `BindingContext` as `@let`
+but stores the binding with `BindingMutability::Constant`. Both directives
+evaluate their expression when execution reaches the declaration. The constant
+metadata is intentionally preserved even though the template language does not
+yet expose assignment; it provides the basis for future mutation checks and
+constant folding without changing the scope model.

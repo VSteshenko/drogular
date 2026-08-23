@@ -17,6 +17,7 @@ enum class TokenType {
     EndIf,
     Foreach,
     Let,
+    Const,
     Empty,
     Break,
     Continue,

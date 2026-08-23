@@ -909,3 +909,15 @@ TEST(CoreTemplateEngineTests, SupportsLetThroughCompiledCompatibilityPath) {
 
     EXPECT_EQ(html, "3:123");
 }
+
+TEST(CoreTemplateEngineTests, SupportsConstThroughCompiledCompatibilityPath) {
+    drogular::RenderContext context;
+
+    const auto html = drogular::template_engine::render(
+        "@const(PageSize = 3){{ PageSize }}:"
+        "@foreach(value in [1..PageSize]){{ value }}@endforeach",
+        context
+    );
+
+    EXPECT_EQ(html, "3:123");
+}

@@ -262,6 +262,40 @@ std::vector<Token> tokenize(
             continue;
         }
 
+        if (startsWith(html, position, "@const(")) {
+            flushText();
+
+            const auto end =
+                findDirectiveExpressionEnd(html, position + 7);
+
+            if (end == std::string_view::npos) {
+                diagnostics.error(
+                    "DGL-TPL-023",
+                    "Invalid @const expression: Missing closing ')'",
+                    position
+                );
+                tokens.push_back({
+                    .type = TokenType::Text,
+                    .value = std::string(html.substr(position)),
+                    .position = position
+                });
+                break;
+            }
+
+            tokens.push_back({
+                .type = TokenType::Const,
+                .value = std::string(
+                    html.substr(position + 7, end - position - 7)
+                ),
+                .position = position
+            });
+
+            position = end + 1;
+            textStart = position;
+
+            continue;
+        }
+
         if (startsWith(html, position, "@foreach(")) {
             flushText();
 

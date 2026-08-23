@@ -87,6 +87,24 @@ const std::string& LetNode::expression() const {
     return expression_;
 }
 
+ConstNode::ConstNode(std::string name, std::string expression)
+    : name_(std::move(name)),
+      expression_(std::move(expression))
+{
+}
+
+NodeType ConstNode::type() const {
+    return NodeType::Const;
+}
+
+const std::string& ConstNode::name() const {
+    return name_;
+}
+
+const std::string& ConstNode::expression() const {
+    return expression_;
+}
+
 ForeachNode::ForeachNode(std::string expression)
     : expression_(std::move(expression)) {
 }

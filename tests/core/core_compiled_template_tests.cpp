@@ -612,3 +612,40 @@ TEST(CoreCompiledTemplateTests, LetDoesNotMutateRenderContext) {
     ASSERT_TRUE(context.get<int>("value").has_value());
     EXPECT_EQ(*context.get<int>("value"), 7);
 }
+
+TEST(CoreCompiledTemplateTests, RendersConstBinding) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@const(PageSize = 3)"
+        "{{ PageSize }}:"
+        "@foreach(i in [1..PageSize]){{ i }}@endforeach"
+    );
+
+    EXPECT_EQ(compiled.render(context), "3:123");
+}
+
+TEST(CoreCompiledTemplateTests, ConstCanUseExpressionFunctions) {
+    drogular::RenderContext context;
+    context.set("count", 5);
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@const(pages = [0..<count])"
+        "{{ pages.count() }}:{{ pages.last() }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "5:4");
+}
+
+TEST(CoreCompiledTemplateTests, ConstCanBeShadowedInNestedScope) {
+    drogular::RenderContext context;
+
+    const auto compiled = drogular::template_compiler::compile(
+        "@const(value = 1)"
+        "{{ value }}"
+        "@if(true)@const(value = 2){{ value }}@endif"
+        "{{ value }}"
+    );
+
+    EXPECT_EQ(compiled.render(context), "121");
+}

@@ -290,3 +290,48 @@ TEST(CoreTemplateDiagnosticsTests, AllowsLetShadowingInNestedScope) {
 
     EXPECT_TRUE(result.valid());
 }
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidConstIdentifier) {
+    const auto result = compileWithDiagnostics(
+        "@const(123 = 5){{ value }}",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-024");
+    EXPECT_EQ(
+        result.diagnostics.errors()[0].message,
+        "Invalid @const expression: Expected binding identifier"
+    );
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsInvalidConstValueExpression) {
+    const auto result = compileWithDiagnostics(
+        "@const(PageSize = 10 +){{ PageSize }}",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-023");
+}
+
+TEST(CoreTemplateDiagnosticsTests, DetectsDuplicateBindingAcrossLetAndConst) {
+    const auto result = compileWithDiagnostics(
+        "@let(value = 1)@const(value = 2){{ value }}",
+        "pages/example.html"
+    );
+
+    ASSERT_FALSE(result.valid());
+    ASSERT_EQ(result.diagnostics.errors().size(), 1);
+    EXPECT_EQ(result.diagnostics.errors()[0].code, "DGL-TPL-021");
+}
+
+TEST(CoreTemplateDiagnosticsTests, AllowsConstShadowingInNestedScope) {
+    const auto result = compileWithDiagnostics(
+        "@const(value = 1)@if(true)@const(value = 2){{ value }}@endif{{ value }}"
+    );
+
+    EXPECT_TRUE(result.valid());
+}

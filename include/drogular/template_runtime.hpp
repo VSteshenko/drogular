@@ -39,21 +39,32 @@ std::optional<std::string> resolveRawVariable(
 
 using ConditionExpressionError = template_expression::ExpressionError;
 
-struct LetExpression {
+struct BindingExpression {
     std::string name;
     std::string expression;
     std::size_t expressionPosition = 0;
 };
 
-struct LetExpressionError {
+struct BindingExpressionError {
     std::string message;
     std::size_t position = 0;
 };
 
-/** Parses a @let declaration in the form `name = expression`. */
-std::optional<LetExpression> parseLetExpression(std::string_view expression);
+/** Parses a binding declaration in the form `name = expression`. */
+std::optional<BindingExpression> parseBindingExpression(
+    std::string_view expression
+);
 
-/** Validates @let declaration syntax and the right-hand expression. */
+/** Validates binding declaration syntax and the right-hand expression. */
+std::optional<BindingExpressionError> validateBindingExpression(
+    std::string_view expression
+);
+
+// Compatibility aliases retained for existing @let consumers.
+using LetExpression = BindingExpression;
+using LetExpressionError = BindingExpressionError;
+
+std::optional<LetExpression> parseLetExpression(std::string_view expression);
 std::optional<LetExpressionError> validateLetExpression(
     std::string_view expression
 );
