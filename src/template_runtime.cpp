@@ -214,10 +214,23 @@ std::optional<std::string> resolveVariable(
     const template_expression::BindingContext& context
 ) {
     const auto key = trim(expression);
-    const auto resolved = context.resolve(key);
     std::optional<std::string> value;
-    if (!resolved.isNull()) {
-        value = expressionValueToString(resolved);
+
+    // Preserve the historical RenderContext formatting contract for direct
+    // values when no lexical binding shadows the root name. This keeps the
+    // compatibility entry point stable while all rendering goes through the
+    // compiled runtime.
+    const auto rootEnd = key.find('.');
+    const auto rootName = key.substr(0, rootEnd);
+    if (!context.contains(rootName)) {
+        value = resolveToString(key, context.renderContext());
+    }
+
+    if (!value.has_value()) {
+        const auto resolved = context.resolve(key);
+        if (!resolved.isNull()) {
+            value = expressionValueToString(resolved);
+        }
     }
 
     if (!value.has_value()) {
@@ -250,6 +263,14 @@ std::optional<std::string> resolveRawVariable(
     const template_expression::BindingContext& context
 ) {
     const auto key = trim(expression);
+    const auto rootEnd = key.find('.');
+    const auto rootName = key.substr(0, rootEnd);
+    if (!context.contains(rootName)) {
+        if (const auto legacy = resolveToString(key, context.renderContext())) {
+            return legacy;
+        }
+    }
+
     const auto direct = context.resolve(key);
     if (!direct.isNull()) {
         if (const auto resolved = expressionValueToString(direct)) {

@@ -118,6 +118,8 @@ std::vector<Token> tokenize(
                     .value = std::string(html.substr(position)),
                     .position = position
                 });
+                position = html.size();
+                textStart = position;
                 break;
             }
 
@@ -147,6 +149,8 @@ std::vector<Token> tokenize(
                     .value = std::string(html.substr(position)),
                     .position = position
                 });
+                position = html.size();
+                textStart = position;
                 break;
             }
 

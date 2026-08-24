@@ -289,6 +289,19 @@ TEST(CoreTemplateEngineTests, RendersIfElseTrueBlock) {
     EXPECT_EQ(html, "<p>Hello</p>");
 }
 
+TEST(CoreTemplateEngineTests, SupportsNestedIfBlocksThroughCompiledRenderer) {
+    drogular::RenderContext context;
+    context.set("outer", true);
+    context.set("inner", false);
+
+    const auto html = drogular::template_engine::render(
+        "@if(outer)A@if(inner)B@elseC@endifD@endif",
+        context
+    );
+
+    EXPECT_EQ(html, "ACD");
+}
+
 TEST(CoreTemplateEngineTests, RendersIfElseFalseBlock) {
     drogular::RenderContext context;
 

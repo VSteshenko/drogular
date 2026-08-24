@@ -92,6 +92,15 @@ Compiled templates support `@switch(expression)`, multiple `@case(...)` values, 
 
 See [Template `@switch`](switch.md).
 
+## Compatibility renderer
+
+`template_engine::render()` is a compatibility facade over the same tokenizer,
+parser, `CompiledTemplate`, and render runtime. Drogular no longer maintains a
+second string-scanning implementation of `@if`, `@foreach`, or loop control.
+Malformed templates detected by the compiler are returned unchanged by the
+compatibility facade, preserving the historical `template_engine::render()`
+contract.
+
 ## Related Types
 
 - [`TemplateRenderable`](template-renderable.md)

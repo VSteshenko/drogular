@@ -384,3 +384,10 @@ The application registry is reachable through `ApplicationServices`, is frozen
 when `App::run()` starts the server, and falls back to the immutable built-in
 registry. Both global `CallExpression` and receiver `MethodCallExpression` use
 this environment.
+
+### Unified render path
+
+The public `template_engine::render()` entry point is retained for source
+compatibility, but it delegates to the compiled template pipeline. Control-flow
+semantics therefore come from one tokenizer/parser/runtime implementation for
+both legacy callers and `TemplateRenderable`.

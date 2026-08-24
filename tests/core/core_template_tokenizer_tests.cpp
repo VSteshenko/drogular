@@ -28,6 +28,26 @@ TEST(CoreTemplateTokenizerTests, TokenizesRawVariable) {
     EXPECT_EQ(tokens[0].value, " html ");
 }
 
+TEST(CoreTemplateTokenizerTests, LeavesUnterminatedVariableAsSingleTextToken) {
+    const auto tokens = tokenize("<h1>{{ title</h1>");
+
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::Text);
+    EXPECT_EQ(tokens[0].value, "<h1>");
+    EXPECT_EQ(tokens[1].type, TokenType::Text);
+    EXPECT_EQ(tokens[1].value, "{{ title</h1>");
+}
+
+TEST(CoreTemplateTokenizerTests, LeavesUnterminatedRawVariableAsSingleTextToken) {
+    const auto tokens = tokenize("<div>{{{ html</div>");
+
+    ASSERT_EQ(tokens.size(), 2);
+    EXPECT_EQ(tokens[0].type, TokenType::Text);
+    EXPECT_EQ(tokens[0].value, "<div>");
+    EXPECT_EQ(tokens[1].type, TokenType::Text);
+    EXPECT_EQ(tokens[1].value, "{{{ html</div>");
+}
+
 TEST(CoreTemplateTokenizerTests, TokenizesIfElseEndIf) {
     const auto tokens =
         tokenize("@if(show)<p>Yes</p>@else<p>No</p>@endif");
