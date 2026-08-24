@@ -57,17 +57,20 @@ NodePtr parseNode(
 
         case TokenType::If: {
             const auto ifPosition = token.position;
+            const auto parsedCondition = template_expression::parse(token.value);
 
-            if (const auto error = validateConditionExpression(token.value)) {
+            if (!parsedCondition) {
                 diagnostics.error(
                     "DGL-TPL-006",
-                    "Invalid @if expression: " + error->message,
-                    ifPosition + 4 + error->position
+                    "Invalid @if expression: " + parsedCondition.error->message,
+                    ifPosition + 4 + parsedCondition.error->position
                 );
             }
 
-            auto ifNode =
-                std::make_shared<IfNode>(token.value);
+            auto ifNode = std::make_shared<IfNode>(
+                token.value,
+                parsedCondition.expression
+            );
 
             ++position;
 
@@ -148,7 +151,8 @@ NodePtr parseNode(
             ++position;
             return std::make_shared<LetNode>(
                 declaration->name,
-                declaration->expression
+                declaration->expression,
+                declaration->compiledExpression
             );
         }
 
@@ -185,21 +189,26 @@ NodePtr parseNode(
             ++position;
             return std::make_shared<ConstNode>(
                 declaration->name,
-                declaration->expression
+                declaration->expression,
+                declaration->compiledExpression
             );
         }
 
         case TokenType::Switch: {
             const auto switchPosition = token.position;
-            if (const auto error = validateConditionExpression(token.value)) {
+            const auto parsedSwitch = template_expression::parse(token.value);
+            if (!parsedSwitch) {
                 diagnostics.error(
                     "DGL-TPL-028",
-                    "Invalid @switch expression: " + error->message,
-                    switchPosition + 8 + error->position
+                    "Invalid @switch expression: " + parsedSwitch.error->message,
+                    switchPosition + 8 + parsedSwitch.error->position
                 );
             }
 
-            auto switchNode = std::make_shared<SwitchNode>(token.value);
+            auto switchNode = std::make_shared<SwitchNode>(
+                token.value,
+                parsedSwitch.expression
+            );
             ++position;
             bool hasDefault = false;
 
@@ -207,6 +216,7 @@ NodePtr parseNode(
                    tokens[position].type != TokenType::EndSwitch) {
                 if (tokens[position].type == TokenType::Case) {
                     const auto caseToken = tokens[position];
+                    template_expression::ExpressionPtr compiledExpressions;
                     if (caseToken.value.empty()) {
                         diagnostics.error(
                             "DGL-TPL-029",
@@ -217,6 +227,7 @@ NodePtr parseNode(
                         const auto parsed = template_expression::parse(
                             "[" + caseToken.value + "]"
                         );
+                        compiledExpressions = parsed.expression;
                         if (!parsed) {
                             diagnostics.error(
                                 "DGL-TPL-029",
@@ -232,10 +243,14 @@ NodePtr parseNode(
                     ++position;
                     SwitchCase switchCase;
                     switchCase.expressions = caseToken.value;
+                    switchCase.compiledExpressions = std::move(compiledExpressions);
                     switchCase.body = parseUntil(
                         tokens,
                         position,
-                        { TokenType::Case, TokenType::Default, TokenType::EndSwitch },
+                        {
+                            TokenType::Case,
+                            TokenType::Default,
+                            TokenType::EndSwitch },
                         diagnostics,
                         loopDepth
                     );
@@ -306,6 +321,9 @@ NodePtr parseNode(
 
         case TokenType::Foreach: {
             const auto foreachPosition = token.position;
+            std::optional<ForeachExpression> expression;
+            template_expression::ExpressionPtr collectionExpression;
+            template_expression::ExpressionPtr conditionExpression;
 
             if (const auto error = validateForeachExpression(token.value)) {
                 diagnostics.error(
@@ -313,22 +331,35 @@ NodePtr parseNode(
                     "Invalid @foreach expression: " + error->message,
                     foreachPosition + 9 + error->position
                 );
-            } else if (const auto expression = parseForeachExpression(token.value);
-                expression.has_value() && expression->condition.has_value()
-            ) {
-                if (const auto error =
-                    validateConditionExpression(*expression->condition)
-                ) {
-                    diagnostics.error(
-                        "DGL-TPL-008",
-                        "Invalid @foreach where condition: " + error->message,
-                        foreachPosition + 9 + expression->conditionPosition + error->position
-                    );
+            } else {
+                expression = parseForeachExpression(token.value);
+                if (expression.has_value()) {
+                    collectionExpression = expression->collectionExpression;
+                    conditionExpression = expression->conditionExpression;
+                    if (expression->condition.has_value() &&
+                        conditionExpression == nullptr
+                    ) {
+                        const auto parsedCondition =
+                            template_expression::parse(*expression->condition);
+                        diagnostics.error(
+                            "DGL-TPL-008",
+                            "Invalid @foreach where condition: " +
+                                parsedCondition.error->message,
+                            foreachPosition + 9 + expression->conditionPosition +
+                                parsedCondition.error->position
+                        );
+                    }
                 }
             }
 
-            auto foreachNode =
-                std::make_shared<ForeachNode>(token.value);
+            auto foreachNode = std::make_shared<ForeachNode>(
+                token.value,
+                expression.has_value() ? expression->variable : std::string{},
+                expression.has_value() ? expression->collection : std::string{},
+                std::move(collectionExpression),
+                expression.has_value() ? expression->condition : std::nullopt,
+                std::move(conditionExpression)
+            );
 
             ++position;
 

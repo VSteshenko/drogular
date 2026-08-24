@@ -1,4 +1,5 @@
 #include <drogular/template_ast.hpp>
+#include <drogular/template_runtime.hpp>
 
 #include <utility>
 
@@ -42,6 +43,17 @@ const std::string& RawVariableNode::expression() const {
 
 IfNode::IfNode(std::string condition)
     : condition_(std::move(condition)) {
+    if (const auto parsed = template_expression::parse(condition_)) {
+        conditionExpression_ = parsed.expression;
+    }
+}
+
+IfNode::IfNode(
+    std::string condition,
+    template_expression::ExpressionPtr conditionExpression
+)
+    : condition_(std::move(condition)),
+      conditionExpression_(std::move(conditionExpression)) {
 }
 
 NodeType IfNode::type() const {
@@ -50,6 +62,10 @@ NodeType IfNode::type() const {
 
 const std::string& IfNode::condition() const {
     return condition_;
+}
+
+const template_expression::ExpressionPtr& IfNode::conditionExpression() const {
+    return conditionExpression_;
 }
 
 std::vector<NodePtr>& IfNode::trueBranch() {
@@ -73,6 +89,20 @@ LetNode::LetNode(std::string name, std::string expression)
     : name_(std::move(name)),
       expression_(std::move(expression))
 {
+    if (const auto parsed = template_expression::parse(expression_)) {
+        compiledExpression_ = parsed.expression;
+    }
+}
+
+LetNode::LetNode(
+    std::string name,
+    std::string expression,
+    template_expression::ExpressionPtr compiledExpression
+)
+    : name_(std::move(name)),
+      expression_(std::move(expression)),
+      compiledExpression_(std::move(compiledExpression))
+{
 }
 
 NodeType LetNode::type() const {
@@ -87,9 +117,27 @@ const std::string& LetNode::expression() const {
     return expression_;
 }
 
+const template_expression::ExpressionPtr& LetNode::compiledExpression() const {
+    return compiledExpression_;
+}
+
 ConstNode::ConstNode(std::string name, std::string expression)
     : name_(std::move(name)),
       expression_(std::move(expression))
+{
+    if (const auto parsed = template_expression::parse(expression_)) {
+        compiledExpression_ = parsed.expression;
+    }
+}
+
+ConstNode::ConstNode(
+    std::string name,
+    std::string expression,
+    template_expression::ExpressionPtr compiledExpression
+)
+    : name_(std::move(name)),
+      expression_(std::move(expression)),
+      compiledExpression_(std::move(compiledExpression))
 {
 }
 
@@ -105,8 +153,23 @@ const std::string& ConstNode::expression() const {
     return expression_;
 }
 
+const template_expression::ExpressionPtr& ConstNode::compiledExpression() const {
+    return compiledExpression_;
+}
+
 SwitchNode::SwitchNode(std::string expression)
     : expression_(std::move(expression)) {
+    if (const auto parsed = template_expression::parse(expression_)) {
+        compiledExpression_ = parsed.expression;
+    }
+}
+
+SwitchNode::SwitchNode(
+    std::string expression,
+    template_expression::ExpressionPtr compiledExpression
+)
+    : expression_(std::move(expression)),
+      compiledExpression_(std::move(compiledExpression)) {
 }
 
 NodeType SwitchNode::type() const {
@@ -115,6 +178,10 @@ NodeType SwitchNode::type() const {
 
 const std::string& SwitchNode::expression() const {
     return expression_;
+}
+
+const template_expression::ExpressionPtr& SwitchNode::compiledExpression() const {
+    return compiledExpression_;
 }
 
 std::vector<SwitchCase>& SwitchNode::cases() {
@@ -134,7 +201,32 @@ const std::vector<NodePtr>& SwitchNode::defaultBranch() const {
 }
 
 ForeachNode::ForeachNode(std::string expression)
-    : expression_(std::move(expression)) {
+    : expression_(std::move(expression))
+{
+    if (const auto parsed = parseForeachExpression(expression_)) {
+        variable_ = parsed->variable;
+        collection_ = parsed->collection;
+        collectionExpression_ = parsed->collectionExpression;
+        condition_ = parsed->condition;
+        conditionExpression_ = parsed->conditionExpression;
+    }
+}
+
+ForeachNode::ForeachNode(
+    std::string expression,
+    std::string variable,
+    std::string collection,
+    template_expression::ExpressionPtr collectionExpression,
+    std::optional<std::string> condition,
+    template_expression::ExpressionPtr conditionExpression
+)
+    : expression_(std::move(expression)),
+      variable_(std::move(variable)),
+      collection_(std::move(collection)),
+      collectionExpression_(std::move(collectionExpression)),
+      condition_(std::move(condition)),
+      conditionExpression_(std::move(conditionExpression))
+{
 }
 
 NodeType ForeachNode::type() const {
@@ -143,6 +235,26 @@ NodeType ForeachNode::type() const {
 
 const std::string& ForeachNode::expression() const {
     return expression_;
+}
+
+const std::string& ForeachNode::variable() const {
+    return variable_;
+}
+
+const std::string& ForeachNode::collection() const {
+    return collection_;
+}
+
+const template_expression::ExpressionPtr& ForeachNode::collectionExpression() const {
+    return collectionExpression_;
+}
+
+const std::optional<std::string>& ForeachNode::condition() const {
+    return condition_;
+}
+
+const template_expression::ExpressionPtr& ForeachNode::conditionExpression() const {
+    return conditionExpression_;
 }
 
 std::vector<NodePtr>& ForeachNode::body() {

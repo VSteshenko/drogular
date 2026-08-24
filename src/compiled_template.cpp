@@ -189,7 +189,11 @@ RenderResult renderNode(
                 std::dynamic_pointer_cast<IfNode>(node);
 
             auto branchBindings = bindings.createChild();
-            if (evaluateCondition(ifNode->condition(), bindings)) {
+            if (ifNode->conditionExpression() != nullptr &&
+                template_expression::evaluate(
+                    *ifNode->conditionExpression(), bindings
+                ).truthy()
+            ) {
                 return renderNodes(
                     ifNode->trueBranch(), context, branchBindings
                 );
@@ -203,15 +207,15 @@ RenderResult renderNode(
         case NodeType::Let: {
             const auto letNode =
                 std::dynamic_pointer_cast<LetNode>(node);
-            const auto parsed =
-                template_expression::parse(letNode->expression());
-            if (!parsed) {
+            if (letNode->compiledExpression() == nullptr) {
                 return {};
             }
 
             bindings.define(
                 letNode->name(),
-                template_expression::evaluate(*parsed.expression, bindings),
+                template_expression::evaluate(
+                    *letNode->compiledExpression(), bindings
+                ),
                 template_expression::BindingMutability::Mutable
             );
             return {};
@@ -220,15 +224,15 @@ RenderResult renderNode(
         case NodeType::Const: {
             const auto constNode =
                 std::dynamic_pointer_cast<ConstNode>(node);
-            const auto parsed =
-                template_expression::parse(constNode->expression());
-            if (!parsed) {
+            if (constNode->compiledExpression() == nullptr) {
                 return {};
             }
 
             bindings.define(
                 constNode->name(),
-                template_expression::evaluate(*parsed.expression, bindings),
+                template_expression::evaluate(
+                    *constNode->compiledExpression(), bindings
+                ),
                 template_expression::BindingMutability::Constant
             );
             return {};
@@ -244,26 +248,21 @@ RenderResult renderNode(
             const auto switchNode =
                 std::dynamic_pointer_cast<SwitchNode>(node);
 
-            const auto switchExpression =
-                template_expression::parse(switchNode->expression());
-            if (!switchExpression) {
+            if (switchNode->compiledExpression() == nullptr) {
                 return {};
             }
 
             const auto switchValue = template_expression::evaluate(
-                *switchExpression.expression, bindings
+                *switchNode->compiledExpression(), bindings
             );
 
             for (const auto& switchCase : switchNode->cases()) {
-                const auto caseExpression = template_expression::parse(
-                    "[" + switchCase.expressions + "]"
-                );
-                if (!caseExpression) {
+                if (switchCase.compiledExpressions == nullptr) {
                     continue;
                 }
 
                 const auto candidates = template_expression::evaluate(
-                    *caseExpression.expression, bindings
+                    *switchCase.compiledExpressions, bindings
                 ).iterable();
                 if (candidates == nullptr) {
                     continue;
@@ -295,14 +294,7 @@ RenderResult renderNode(
             const auto foreachNode =
                 std::dynamic_pointer_cast<ForeachNode>(node);
 
-            const auto expression =
-                parseForeachExpression(foreachNode->expression());
-            if (!expression.has_value()) {
-                return {};
-            }
-
-            const auto source = template_expression::parse(expression->collection);
-            if (!source) {
+            if (foreachNode->collectionExpression() == nullptr) {
                 auto emptyBindings = bindings.createChild();
                 return renderNodes(
                     foreachNode->emptyBranch(), context, emptyBindings
@@ -310,7 +302,7 @@ RenderResult renderNode(
             }
 
             const auto iterable = template_expression::evaluate(
-                *source.expression,
+                *foreachNode->collectionExpression(),
                 bindings
             ).iterable();
             if (iterable == nullptr || iterable->empty()) {
@@ -321,19 +313,20 @@ RenderResult renderNode(
             }
 
             std::vector<template_expression::ExpressionValue> selected;
-            if (expression->condition.has_value()) {
+            if (foreachNode->conditionExpression() != nullptr) {
                 selected.reserve(iterable->size());
                 for (std::size_t index = 0; index < iterable->size(); ++index) {
                     auto value = iterable->at(index);
                     auto conditionBindings = bindings.createChild();
                     conditionBindings.define(
-                        expression->variable,
+                        foreachNode->variable(),
                         value,
                         template_expression::BindingMutability::Mutable
                     );
-                    if (evaluateCondition(
-                            *expression->condition, conditionBindings
-                    )) {
+                    if (template_expression::evaluate(
+                            *foreachNode->conditionExpression(), conditionBindings
+                        ).truthy()
+                    ) {
                         selected.push_back(std::move(value));
                     }
                 }
@@ -346,19 +339,19 @@ RenderResult renderNode(
                 }
             }
 
-            const auto count = expression->condition.has_value()
+            const auto count = foreachNode->conditionExpression() != nullptr
                 ? selected.size()
                 : iterable->size();
             std::string output;
 
             for (std::size_t index = 0; index < count; ++index) {
                 auto childContext = context.createChild();
-                auto value = expression->condition.has_value()
+                auto value = foreachNode->conditionExpression() != nullptr
                     ? selected[index]
                     : iterable->at(index);
                 detail::setExpressionValue(
                     childContext,
-                    expression->variable,
+                    foreachNode->variable(),
                     value
                 );
                 detail::setLoopMetadata(
@@ -370,7 +363,7 @@ RenderResult renderNode(
 
                 auto bodyBindings = bindings.createChild();
                 bodyBindings.define(
-                    expression->variable,
+                    foreachNode->variable(),
                     value,
                     template_expression::BindingMutability::Mutable
                 );

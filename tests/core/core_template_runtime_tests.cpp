@@ -212,7 +212,9 @@ TEST(CoreTemplateRuntimeTests, ParsesForeachExpressionWithWhereCondition) {
     ASSERT_TRUE(expression.has_value());
     EXPECT_EQ(expression->variable, "todo");
     EXPECT_EQ(expression->collection, "todos");
+    EXPECT_NE(expression->collectionExpression, nullptr);
     ASSERT_TRUE(expression->condition.has_value());
+    EXPECT_NE(expression->conditionExpression, nullptr);
     EXPECT_EQ(
         *expression->condition,
         "!todo.completed && todo.priority >= 2"

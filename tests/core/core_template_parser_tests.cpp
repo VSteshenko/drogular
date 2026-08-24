@@ -44,6 +44,7 @@ TEST(CoreTemplateParserTests, ParsesIfNode) {
 
     ASSERT_NE(ifNode, nullptr);
     EXPECT_EQ(ifNode->condition(), "show");
+    EXPECT_NE(ifNode->conditionExpression(), nullptr);
     EXPECT_EQ(ifNode->trueBranch().size(), 1);
 }
 
@@ -59,6 +60,9 @@ TEST(CoreTemplateParserTests, ParsesForeachNode) {
 
     ASSERT_NE(foreachNode, nullptr);
     EXPECT_EQ(foreachNode->expression(), "item in items");
+    EXPECT_EQ(foreachNode->variable(), "item");
+    EXPECT_EQ(foreachNode->collection(), "items");
+    EXPECT_NE(foreachNode->collectionExpression(), nullptr);
     EXPECT_EQ(foreachNode->body().size(), 1);
 }
 
@@ -184,6 +188,7 @@ TEST(CoreTemplateParserTests, ParsesLetNode) {
     ASSERT_NE(letNode, nullptr);
     EXPECT_EQ(letNode->name(), "total");
     EXPECT_EQ(letNode->expression(), "projects.count()");
+    EXPECT_NE(letNode->compiledExpression(), nullptr);
 }
 
 TEST(CoreTemplateParserTests, ParsesConstNode) {
@@ -199,6 +204,7 @@ TEST(CoreTemplateParserTests, ParsesConstNode) {
     ASSERT_NE(constNode, nullptr);
     EXPECT_EQ(constNode->name(), "PageSize");
     EXPECT_EQ(constNode->expression(), "20");
+    EXPECT_NE(constNode->compiledExpression(), nullptr);
 }
 
 TEST(CoreTemplateParserTests, ParsesSwitchNode) {
@@ -217,8 +223,10 @@ TEST(CoreTemplateParserTests, ParsesSwitchNode) {
         std::dynamic_pointer_cast<SwitchNode>(nodes[0]);
     ASSERT_NE(switchNode, nullptr);
     EXPECT_EQ(switchNode->expression(), "status");
+    EXPECT_NE(switchNode->compiledExpression(), nullptr);
     ASSERT_EQ(switchNode->cases().size(), 2);
     EXPECT_EQ(switchNode->cases()[0].expressions, "\"Draft\", \"Pending\"");
+    EXPECT_NE(switchNode->cases()[0].compiledExpressions, nullptr);
     ASSERT_EQ(switchNode->cases()[0].body.size(), 1);
     ASSERT_EQ(switchNode->defaultBranch().size(), 1);
 }

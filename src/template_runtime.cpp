@@ -324,6 +324,7 @@ std::optional<BindingExpression> parseBindingExpression(
     return BindingExpression{
         .name = name,
         .expression = rhs,
+        .compiledExpression = parsed.expression,
         .expressionPosition = position
     };
 }
@@ -582,8 +583,10 @@ std::optional<ForeachExpression> parseForeachExpression(
     ForeachExpression result{
         .variable = variable,
         .collection = collection,
+        .collectionExpression = parsedCollection.expression,
         .collectionPosition = collectionStart,
         .condition = std::nullopt,
+        .conditionExpression = nullptr,
         .conditionPosition = 0
     };
 
@@ -599,6 +602,9 @@ std::optional<ForeachExpression> parseForeachExpression(
         }
         result.condition = trim(expression.substr(conditionStart));
         result.conditionPosition = conditionStart;
+        const auto parsedCondition =
+            template_expression::parse(*result.condition);
+        result.conditionExpression = parsedCondition.expression;
     }
 
     return result;

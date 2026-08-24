@@ -1,6 +1,9 @@
 #pragma once
 
+#include <drogular/template/expression/ast.hpp>
+
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -69,9 +72,15 @@ class IfNode final : public Node {
 public:
     explicit IfNode(std::string condition);
 
+    IfNode(
+        std::string condition,
+        template_expression::ExpressionPtr conditionExpression
+    );
+
     NodeType type() const override;
 
     const std::string& condition() const;
+    const template_expression::ExpressionPtr& conditionExpression() const;
 
     std::vector<NodePtr>& trueBranch();
     std::vector<NodePtr>& falseBranch();
@@ -81,6 +90,7 @@ public:
 
 private:
     std::string condition_;
+    template_expression::ExpressionPtr conditionExpression_;
     std::vector<NodePtr> trueBranch_;
     std::vector<NodePtr> falseBranch_;
 };
@@ -89,33 +99,49 @@ class LetNode final : public Node {
 public:
     LetNode(std::string name, std::string expression);
 
+    LetNode(
+        std::string name,
+        std::string expression,
+        template_expression::ExpressionPtr compiledExpression
+    );
+
     NodeType type() const override;
 
     const std::string& name() const;
     const std::string& expression() const;
+    const template_expression::ExpressionPtr& compiledExpression() const;
 
 private:
     std::string name_;
     std::string expression_;
+    template_expression::ExpressionPtr compiledExpression_;
 };
-
 
 class ConstNode final : public Node {
 public:
     ConstNode(std::string name, std::string expression);
 
+    ConstNode(
+        std::string name,
+        std::string expression,
+        template_expression::ExpressionPtr compiledExpression
+    );
+
     NodeType type() const override;
 
     const std::string& name() const;
     const std::string& expression() const;
+    const template_expression::ExpressionPtr& compiledExpression() const;
 
 private:
     std::string name_;
     std::string expression_;
+    template_expression::ExpressionPtr compiledExpression_;
 };
 
 struct SwitchCase {
     std::string expressions;
+    template_expression::ExpressionPtr compiledExpressions;
     std::vector<NodePtr> body;
 };
 
@@ -123,9 +149,15 @@ class SwitchNode final : public Node {
 public:
     explicit SwitchNode(std::string expression);
 
+    SwitchNode(
+        std::string expression,
+        template_expression::ExpressionPtr compiledExpression
+    );
+
     NodeType type() const override;
 
     const std::string& expression() const;
+    const template_expression::ExpressionPtr& compiledExpression() const;
 
     std::vector<SwitchCase>& cases();
     const std::vector<SwitchCase>& cases() const;
@@ -135,6 +167,7 @@ public:
 
 private:
     std::string expression_;
+    template_expression::ExpressionPtr compiledExpression_;
     std::vector<SwitchCase> cases_;
     std::vector<NodePtr> defaultBranch_;
 };
@@ -143,9 +176,23 @@ class ForeachNode final : public Node {
 public:
     explicit ForeachNode(std::string expression);
 
+    ForeachNode(
+        std::string expression,
+        std::string variable,
+        std::string collection,
+        template_expression::ExpressionPtr collectionExpression,
+        std::optional<std::string> condition,
+        template_expression::ExpressionPtr conditionExpression
+    );
+
     NodeType type() const override;
 
     const std::string& expression() const;
+    const std::string& variable() const;
+    const std::string& collection() const;
+    const template_expression::ExpressionPtr& collectionExpression() const;
+    const std::optional<std::string>& condition() const;
+    const template_expression::ExpressionPtr& conditionExpression() const;
 
     std::vector<NodePtr>& body();
     const std::vector<NodePtr>& body() const;
@@ -155,6 +202,11 @@ public:
 
 private:
     std::string expression_;
+    std::string variable_;
+    std::string collection_;
+    template_expression::ExpressionPtr collectionExpression_;
+    std::optional<std::string> condition_;
+    template_expression::ExpressionPtr conditionExpression_;
     std::vector<NodePtr> body_;
     std::vector<NodePtr> emptyBranch_;
 };

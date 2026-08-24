@@ -28,9 +28,11 @@ BindingContext
 ExpressionValue
 ```
 
-The template parser owns directive structure (`@if`, `@foreach`, and future
-control-flow nodes). It passes expression source to the expression engine and
-uses the resulting value or diagnostic.
+The template parser owns directive structure (`@if`, `@foreach`, bindings, and
+`@switch`). During template compilation it parses directive expressions once
+and stores the resulting immutable Expression AST directly in the Template AST.
+Rendering evaluates those precompiled expressions against the current
+`BindingContext`; it does not reparse directive expression source.
 
 ## Module layout
 
@@ -111,7 +113,10 @@ The evaluator therefore works on parsed semantics and does not need to inspect
 the original expression string.
 
 The AST is immutable after parsing and may be reused for multiple evaluations
-against different `BindingContext` / `RenderContext` instances.
+against different `BindingContext` / `RenderContext` instances. `IfNode`,
+`ForeachNode`, `LetNode`, `ConstNode`, `SwitchNode`, and each switch case retain
+these parsed expression nodes, so a cached `CompiledTemplate` also caches the
+expression parse work.
 
 ## BindingContext
 
@@ -144,10 +149,9 @@ root binding scope and delegate to the same evaluator. Existing callers
 therefore keep their API while new template directives can pass lexical scopes
 explicitly.
 
-This stage intentionally does not add a template declaration directive yet.
-`@let` and `@const` consume this scope model; introducing
-the scope independently keeps binding semantics testable without changing
-template syntax at the same time.
+`@let` and `@const` consume this scope model directly. Their right-hand
+expressions are compiled together with the surrounding template and only
+evaluated at render time.
 
 ## Collection methods
 

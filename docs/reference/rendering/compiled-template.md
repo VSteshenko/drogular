@@ -6,7 +6,7 @@
 
 ## Purpose
 
-`CompiledTemplate` represents template source compiled into Drogular's template AST and ready to render against a `RenderContext`.
+`CompiledTemplate` represents template source compiled into Drogular's template AST, including precompiled Expression AST for control-flow and binding directives, and ready to render against a `RenderContext`.
 
 Most applications do not need to compile templates directly because `TemplateRenderable` performs compilation and caching automatically. The low-level API is useful when integrating directly with the template compiler.
 
@@ -23,7 +23,7 @@ public:
 
 ### `render()`
 
-Evaluates the compiled template against the supplied `RenderContext` and returns the resulting text.
+Evaluates the compiled template against the supplied `RenderContext` and returns the resulting text. Directive expressions are evaluated from the immutable AST produced during compilation; `render()` does not reparse `@if`, `@foreach`, `@let`, `@const`, `@switch`, or `@case` expressions.
 
 ## `compile()`
 
@@ -73,7 +73,7 @@ See [Template `@foreach`](foreach.md) for syntax, semantics, and diagnostics.
 
 ## Lifetime and Thread Safety
 
-A `CompiledTemplate` owns its compiled AST. Rendering reads that AST and uses the supplied `RenderContext` for request-specific values.
+A `CompiledTemplate` owns both the Template AST and the immutable Expression AST referenced by directive nodes. Rendering reads those ASTs and uses the supplied `RenderContext` / lexical bindings for request-specific values.
 
 The API itself does not promise synchronization for concurrent access to a shared `RenderContext`; normal rendering uses request-local contexts.
 
