@@ -120,7 +120,7 @@ if(DROGULAR_BUILD_TOOLS OR DROGULAR_BUILD_TESTS)
     add_subdirectory(tools/project_generator)
 endif()
 
-if(DROGULAR_BUILD_TOOLS)
+if(DROGULAR_BUILD_TOOLS OR DROGULAR_BUILD_TESTS)
     add_subdirectory(tools/drogular)
 endif()
 

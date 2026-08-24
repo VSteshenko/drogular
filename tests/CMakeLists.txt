@@ -175,11 +175,13 @@ add_executable(drogular_project_generator_tests
     project_generator/project_generator_file_renderer_tests.cpp
     project_generator/project_generator_embedded_template_tests.cpp
     project_generator/project_generator_template_registry_tests.cpp
+    project_generator/drogular_cli_options_tests.cpp
 )
 
 target_link_libraries(drogular_project_generator_tests
     PRIVATE
     Drogular::project_generator
+    drogular_cli_support
     GTest::gtest_main
 )
 

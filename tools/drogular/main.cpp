@@ -1,13 +1,16 @@
+#include "cli_options.hpp"
 #include "embedded_template_source.hpp"
 #include "project_generator.hpp"
 #include "template_registry.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #ifndef DROGULAR_CLI_VERSION
 #define DROGULAR_CLI_VERSION "development"
@@ -24,45 +27,12 @@ namespace {
 void printHelp() {
     std::cout << "Drogular CLI\n\n"
               << "Usage:\n"
-              << "  drogular new <project>\n\n"
+              << "  drogular new <path/to/project> [--template <id>]\n"
+              << "  drogular templates\n\n"
               << "Options:\n"
-              << "  --help       Show this help\n"
-              << "  --version    Show version\n";
-}
-
-bool validProjectName(std::string_view name) {
-    if (name.empty()) {
-        return false;
-    }
-
-    for (const char ch : name) {
-        const bool valid =
-            (ch >= 'a' && ch <= 'z') ||
-            (ch >= 'A' && ch <= 'Z') ||
-            (ch >= '0' && ch <= '9') ||
-            ch == '_' || ch == '-';
-
-        if (!valid) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-std::string projectNamespace(const std::string& projectName) {
-    std::string result;
-    result.reserve(projectName.size() + 1);
-
-    if (!projectName.empty() && projectName.front() >= '0' && projectName.front() <= '9') {
-        result.push_back('_');
-    }
-
-    for (const char ch : projectName) {
-        result.push_back(ch == '-' ? '_' : ch);
-    }
-
-    return result;
+              << "  --template <id>  Project template to use (default: minimal)\n"
+              << "  --help           Show this help\n"
+              << "  --version        Show version\n";
 }
 
 std::string currentYear() {
@@ -72,25 +42,66 @@ std::string currentYear() {
     return std::to_string(static_cast<int>(date.year()));
 }
 
-int createProject(const std::string& name) {
-    if (!validProjectName(name)) {
-        std::cerr << "Invalid project name: " << name << '\n';
-        std::cerr << "Use only letters, digits, '-' and '_'.\n";
-        return 1;
-    }
+void loadTemplates(
+    drogular::generation::EmbeddedTemplateSource& source,
+    drogular::generation::TemplateRegistry& registry
+) {
+    registry.load(source);
+}
 
+int listTemplates() {
     try {
         drogular::generation::EmbeddedTemplateSource source;
         drogular::generation::TemplateRegistry registry;
-        registry.load(source);
+        loadTemplates(source, registry);
+
+        auto templates = registry.templates();
+        std::sort(
+            templates.begin(),
+            templates.end(),
+            [](const auto* lhs, const auto* rhs) { return lhs->id < rhs->id; }
+        );
+
+        std::cout << "Available project templates:\n";
+        for (const auto* projectTemplate : templates) {
+            std::cout << "  " << projectTemplate->id;
+            if (!projectTemplate->description.empty()) {
+                std::cout << "  " << projectTemplate->description;
+            }
+            std::cout << '\n';
+        }
+
+        return 0;
+    } catch (const std::exception& error) {
+        std::cerr << error.what() << '\n';
+        return 1;
+    }
+}
+
+int createProject(
+    const std::string& path,
+    const std::string& name,
+    const std::string& templateId
+) {
+    try {
+        drogular::generation::EmbeddedTemplateSource source;
+        drogular::generation::TemplateRegistry registry;
+        loadTemplates(source, registry);
+
+        if (registry.find(templateId) == nullptr) {
+            std::cerr << "Unknown project template: " << templateId << '\n';
+            std::cerr << "Run 'drogular templates' to list available templates.\n";
+
+            return 1;
+        }
 
         drogular::generation::ProjectGenerator generator(registry, source);
         generator.generate({
-            .templateId = "minimal",
-            .destination = fs::path{name},
+            .templateId = templateId,
+            .destination = fs::path{path},
             .variables = {
                 {"PROJECT_NAME", name},
-                {"PROJECT_NAMESPACE", projectNamespace(name)},
+                {"PROJECT_NAMESPACE", drogular::cli::projectNamespace(name)},
                 {"DROGULAR_VERSION", DROGULAR_CLI_VERSION},
                 {"DROGULAR_GIT_REF", DROGULAR_CLI_GIT_REF},
                 {"YEAR", currentYear()},
@@ -101,9 +112,10 @@ int createProject(const std::string& name) {
         return 1;
     }
 
-    std::cout << "Created Drogular project: " << name << "\n\n"
+    std::cout << "Created Drogular project: " << name
+              << " (template: " << templateId << ")\n\n"
               << "Next steps:\n"
-              << "  cd " << name << '\n'
+              << "  cd " << path << '\n'
               << "  cmake -S . -B build\n"
               << "  cmake --build build\n"
               << "  ./build/" << name << '\n';
@@ -114,24 +126,35 @@ int createProject(const std::string& name) {
 } // namespace
 
 int main(int argc, char* argv[]) {
-    if (argc == 2) {
-        const std::string_view argument{argv[1]};
-
-        if (argument == "--help" || argument == "-h") {
-            printHelp();
-            return 0;
-        }
-
-        if (argument == "--version" || argument == "-v") {
-            std::cout << "Drogular CLI " << DROGULAR_CLI_VERSION << '\n';
-            return 0;
-        }
+    std::vector<std::string_view> arguments;
+    arguments.reserve(argc > 1 ? static_cast<std::size_t>(argc - 1) : 0);
+    for (int index = 1; index < argc; ++index) {
+        arguments.emplace_back(argv[index]);
     }
 
-    if (argc == 3 && std::string_view(argv[1]) == "new") {
-        return createProject(argv[2]);
+    const drogular::cli::Options options = drogular::cli::parseArguments(arguments);
+    switch (options.command) {
+    case drogular::cli::Command::Help:
+        printHelp();
+        return 0;
+
+    case drogular::cli::Command::Version:
+        std::cout << "Drogular CLI " << DROGULAR_CLI_VERSION << '\n';
+        return 0;
+
+    case drogular::cli::Command::ListTemplates:
+        return listTemplates();
+
+    case drogular::cli::Command::NewProject:
+        return createProject(options.projectPath, options.projectName, options.templateId);
+
+    case drogular::cli::Command::Invalid:
+        if (!options.error.empty()) {
+            std::cerr << options.error << "\n\n";
+        }
+        printHelp();
+        return 1;
     }
 
-    printHelp();
-    return argc == 1 ? 0 : 1;
+    return 1;
 }
