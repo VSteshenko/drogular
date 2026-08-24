@@ -42,6 +42,7 @@ using ConditionExpressionError = template_expression::ExpressionError;
 struct BindingExpression {
     std::string name;
     std::string expression;
+    template_expression::ExpressionPtr compiledExpression;
     std::size_t expressionPosition = 0;
 };
 
@@ -73,8 +74,10 @@ std::optional<LetExpressionError> validateLetExpression(
 struct ForeachExpression {
     std::string variable;
     std::string collection;
+    template_expression::ExpressionPtr collectionExpression;
     std::size_t collectionPosition = 0;
     std::optional<std::string> condition;
+    template_expression::ExpressionPtr conditionExpression;
     std::size_t conditionPosition = 0;
 };
 
