@@ -1,5 +1,6 @@
 #pragma once
 
+#include <drogular/template/binding.hpp>
 #include <drogular/template/expression/ast.hpp>
 
 #include <memory>
@@ -95,48 +96,56 @@ private:
     std::vector<NodePtr> falseBranch_;
 };
 
-class LetNode final : public Node {
+class BindingNode : public Node {
+public:
+    BindingNode(
+        NodeType nodeType,
+        std::string name,
+        std::string expression,
+        template_engine::BindingMutability mutability
+    );
+
+    BindingNode(
+        NodeType nodeType,
+        std::string name,
+        std::string expression,
+        template_expression::ExpressionPtr compiledExpression,
+        template_engine::BindingMutability mutability
+    );
+
+    NodeType type() const override;
+
+    const std::string& name() const;
+    const std::string& expression() const;
+    const template_expression::ExpressionPtr& compiledExpression() const;
+    template_engine::BindingMutability mutability() const;
+
+private:
+    NodeType nodeType_;
+    std::string name_;
+    std::string expression_;
+    template_expression::ExpressionPtr compiledExpression_;
+    template_engine::BindingMutability mutability_;
+};
+
+class LetNode final : public BindingNode {
 public:
     LetNode(std::string name, std::string expression);
-
     LetNode(
         std::string name,
         std::string expression,
         template_expression::ExpressionPtr compiledExpression
     );
-
-    NodeType type() const override;
-
-    const std::string& name() const;
-    const std::string& expression() const;
-    const template_expression::ExpressionPtr& compiledExpression() const;
-
-private:
-    std::string name_;
-    std::string expression_;
-    template_expression::ExpressionPtr compiledExpression_;
 };
 
-class ConstNode final : public Node {
+class ConstNode final : public BindingNode {
 public:
     ConstNode(std::string name, std::string expression);
-
     ConstNode(
         std::string name,
         std::string expression,
         template_expression::ExpressionPtr compiledExpression
     );
-
-    NodeType type() const override;
-
-    const std::string& name() const;
-    const std::string& expression() const;
-    const template_expression::ExpressionPtr& compiledExpression() const;
-
-private:
-    std::string name_;
-    std::string expression_;
-    template_expression::ExpressionPtr compiledExpression_;
 };
 
 struct SwitchCase {

@@ -407,18 +407,6 @@ std::optional<BindingExpressionError> validateBindingExpression(
     return std::nullopt;
 }
 
-std::optional<LetExpression> parseLetExpression(
-    std::string_view expression
-) {
-    return parseBindingExpression(expression);
-}
-
-std::optional<LetExpressionError> validateLetExpression(
-    std::string_view expression
-) {
-    return validateBindingExpression(expression);
-}
-
 std::optional<ForeachExpressionError> validateForeachExpression(
     std::string_view expression
 ) {

@@ -525,12 +525,12 @@ TEST(CoreTemplateExpressionTests, BindingContextPreservesMutabilityMetadata) {
     ASSERT_TRUE(bindings.define(
         "PageSize",
         ExpressionValue(20.0),
-        BindingMutability::Constant
+        drogular::template_engine::BindingMutability::Constant
     ));
 
     const auto* binding = bindings.find("PageSize");
     ASSERT_NE(binding, nullptr);
-    EXPECT_EQ(binding->mutability, BindingMutability::Constant);
+    EXPECT_EQ(binding->mutability, drogular::template_engine::BindingMutability::Constant);
 }
 
 TEST(CoreTemplateExpressionTests, BindingContextKeepsExpressionOwnedValues) {

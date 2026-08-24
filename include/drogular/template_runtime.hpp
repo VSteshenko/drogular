@@ -61,15 +61,6 @@ std::optional<BindingExpressionError> validateBindingExpression(
     std::string_view expression
 );
 
-// Compatibility aliases retained for existing @let consumers.
-using LetExpression = BindingExpression;
-using LetExpressionError = BindingExpressionError;
-
-std::optional<LetExpression> parseLetExpression(std::string_view expression);
-std::optional<LetExpressionError> validateLetExpression(
-    std::string_view expression
-);
-
 
 struct ForeachExpression {
     std::string variable;

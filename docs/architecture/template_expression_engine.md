@@ -367,7 +367,7 @@ context.
 ### Constant bindings
 
 `@const(name = expression)` uses the same lexical `BindingContext` as `@let`
-but stores the binding with `BindingMutability::Constant`. Both directives
+but stores the binding with template-level `BindingMutability::Constant`. Both directives
 evaluate their expression when execution reaches the declaration. The constant
 metadata is intentionally preserved even though the template language does not
 yet expose assignment; it provides the basis for future mutation checks and

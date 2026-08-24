@@ -86,6 +86,10 @@ TEST(CoreTemplateAstTests, CreatesLetNode) {
     EXPECT_EQ(node.type(), NodeType::Let);
     EXPECT_EQ(node.name(), "total");
     EXPECT_EQ(node.expression(), "projects.count()");
+    EXPECT_EQ(
+        node.mutability(),
+        drogular::template_engine::BindingMutability::Mutable
+    );
 }
 
 TEST(CoreTemplateAstTests, CreatesConstNode) {
@@ -97,6 +101,10 @@ TEST(CoreTemplateAstTests, CreatesConstNode) {
     EXPECT_EQ(node.type(), NodeType::Const);
     EXPECT_EQ(node.name(), "PageSize");
     EXPECT_EQ(node.expression(), "20");
+    EXPECT_EQ(
+        node.mutability(),
+        drogular::template_engine::BindingMutability::Constant
+    );
 }
 
 TEST(CoreTemplateAstTests, CreatesSwitchNode) {

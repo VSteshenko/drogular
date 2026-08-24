@@ -100,7 +100,7 @@ BindingContext BindingContext::createChild() const {
 bool BindingContext::define(
     std::string name,
     ExpressionValue value,
-    BindingMutability mutability
+    template_engine::BindingMutability mutability
 ) {
     if (name.empty() || bindings_.contains(name)) {
         return false;

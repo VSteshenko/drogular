@@ -66,21 +66,14 @@ std::string nodesToTemplate(
                 break;
             }
 
-            case NodeType::Let: {
-                const auto letNode =
-                    std::dynamic_pointer_cast<LetNode>(node);
-
-                output += "@let(" + letNode->name() + " = " +
-                    letNode->expression() + ")";
-                break;
-            }
-
+            case NodeType::Let:
             case NodeType::Const: {
-                const auto constNode =
-                    std::dynamic_pointer_cast<ConstNode>(node);
+                const auto bindingNode =
+                    std::dynamic_pointer_cast<BindingNode>(node);
 
-                output += "@const(" + constNode->name() + " = " +
-                    constNode->expression() + ")";
+                output += node->type() == NodeType::Let ? "@let(" : "@const(";
+                output += bindingNode->name() + " = " +
+                    bindingNode->expression() + ")";
                 break;
             }
 
@@ -204,36 +197,20 @@ RenderResult renderNode(
             );
         }
 
-        case NodeType::Let: {
-            const auto letNode =
-                std::dynamic_pointer_cast<LetNode>(node);
-            if (letNode->compiledExpression() == nullptr) {
-                return {};
-            }
-
-            bindings.define(
-                letNode->name(),
-                template_expression::evaluate(
-                    *letNode->compiledExpression(), bindings
-                ),
-                template_expression::BindingMutability::Mutable
-            );
-            return {};
-        }
-
+        case NodeType::Let:
         case NodeType::Const: {
-            const auto constNode =
-                std::dynamic_pointer_cast<ConstNode>(node);
-            if (constNode->compiledExpression() == nullptr) {
+            const auto bindingNode =
+                std::dynamic_pointer_cast<BindingNode>(node);
+            if (bindingNode->compiledExpression() == nullptr) {
                 return {};
             }
 
             bindings.define(
-                constNode->name(),
+                bindingNode->name(),
                 template_expression::evaluate(
-                    *constNode->compiledExpression(), bindings
+                    *bindingNode->compiledExpression(), bindings
                 ),
-                template_expression::BindingMutability::Constant
+                bindingNode->mutability()
             );
             return {};
         }
@@ -321,7 +298,7 @@ RenderResult renderNode(
                     conditionBindings.define(
                         foreachNode->variable(),
                         value,
-                        template_expression::BindingMutability::Mutable
+                        template_engine::BindingMutability::Mutable
                     );
                     if (template_expression::evaluate(
                             *foreachNode->conditionExpression(), conditionBindings
@@ -365,13 +342,13 @@ RenderResult renderNode(
                 bodyBindings.define(
                     foreachNode->variable(),
                     value,
-                    template_expression::BindingMutability::Mutable
+                    template_engine::BindingMutability::Mutable
                 );
                 if (const auto loop = childContext.get<Json::Value>("loop")) {
                     bodyBindings.define(
                         "loop",
                         template_expression::ExpressionValue(*loop),
-                        template_expression::BindingMutability::Constant
+                        template_engine::BindingMutability::Constant
                     );
                 }
 

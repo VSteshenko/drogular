@@ -1,5 +1,6 @@
 #pragma once
 
+#include <drogular/template/binding.hpp>
 #include <drogular/template/expression/value.hpp>
 
 #include <string>
@@ -12,14 +13,10 @@ class RenderContext;
 
 namespace template_expression {
 
-enum class BindingMutability {
-    Mutable,
-    Constant
-};
-
 struct Binding {
     ExpressionValue value;
-    BindingMutability mutability = BindingMutability::Mutable;
+    template_engine::BindingMutability mutability =
+        template_engine::BindingMutability::Mutable;
 };
 
 /**
@@ -45,7 +42,8 @@ public:
     bool define(
         std::string name,
         ExpressionValue value,
-        BindingMutability mutability = BindingMutability::Mutable
+        template_engine::BindingMutability mutability =
+            template_engine::BindingMutability::Mutable
     );
 
     [[nodiscard]] bool containsLocal(std::string_view name) const;

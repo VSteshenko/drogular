@@ -85,13 +85,64 @@ const std::vector<NodePtr>& IfNode::falseBranch() const {
 }
 
 
-LetNode::LetNode(std::string name, std::string expression)
-    : name_(std::move(name)),
-      expression_(std::move(expression))
+BindingNode::BindingNode(
+    NodeType nodeType,
+    std::string name,
+    std::string expression,
+    template_engine::BindingMutability mutability
+)
+    : nodeType_(nodeType),
+      name_(std::move(name)),
+      expression_(std::move(expression)),
+      mutability_(mutability)
 {
     if (const auto parsed = template_expression::parse(expression_)) {
         compiledExpression_ = parsed.expression;
     }
+}
+
+BindingNode::BindingNode(
+    NodeType nodeType,
+    std::string name,
+    std::string expression,
+    template_expression::ExpressionPtr compiledExpression,
+    template_engine::BindingMutability mutability
+)
+    : nodeType_(nodeType),
+      name_(std::move(name)),
+      expression_(std::move(expression)),
+      compiledExpression_(std::move(compiledExpression)),
+      mutability_(mutability)
+{
+}
+
+NodeType BindingNode::type() const {
+    return nodeType_;
+}
+
+const std::string& BindingNode::name() const {
+    return name_;
+}
+
+const std::string& BindingNode::expression() const {
+    return expression_;
+}
+
+const template_expression::ExpressionPtr& BindingNode::compiledExpression() const {
+    return compiledExpression_;
+}
+
+template_engine::BindingMutability BindingNode::mutability() const {
+    return mutability_;
+}
+
+LetNode::LetNode(std::string name, std::string expression)
+    : BindingNode(
+        NodeType::Let,
+        std::move(name),
+        std::move(expression),
+        template_engine::BindingMutability::Mutable)
+{
 }
 
 LetNode::LetNode(
@@ -99,35 +150,22 @@ LetNode::LetNode(
     std::string expression,
     template_expression::ExpressionPtr compiledExpression
 )
-    : name_(std::move(name)),
-      expression_(std::move(expression)),
-      compiledExpression_(std::move(compiledExpression))
+    : BindingNode(
+        NodeType::Let,
+        std::move(name),
+        std::move(expression),
+        std::move(compiledExpression),
+        template_engine::BindingMutability::Mutable)
 {
-}
-
-NodeType LetNode::type() const {
-    return NodeType::Let;
-}
-
-const std::string& LetNode::name() const {
-    return name_;
-}
-
-const std::string& LetNode::expression() const {
-    return expression_;
-}
-
-const template_expression::ExpressionPtr& LetNode::compiledExpression() const {
-    return compiledExpression_;
 }
 
 ConstNode::ConstNode(std::string name, std::string expression)
-    : name_(std::move(name)),
-      expression_(std::move(expression))
+    : BindingNode(
+        NodeType::Const,
+        std::move(name),
+        std::move(expression),
+        template_engine::BindingMutability::Constant)
 {
-    if (const auto parsed = template_expression::parse(expression_)) {
-        compiledExpression_ = parsed.expression;
-    }
 }
 
 ConstNode::ConstNode(
@@ -135,26 +173,13 @@ ConstNode::ConstNode(
     std::string expression,
     template_expression::ExpressionPtr compiledExpression
 )
-    : name_(std::move(name)),
-      expression_(std::move(expression)),
-      compiledExpression_(std::move(compiledExpression))
+    : BindingNode(
+        NodeType::Const,
+        std::move(name),
+        std::move(expression),
+        std::move(compiledExpression),
+        template_engine::BindingMutability::Constant)
 {
-}
-
-NodeType ConstNode::type() const {
-    return NodeType::Const;
-}
-
-const std::string& ConstNode::name() const {
-    return name_;
-}
-
-const std::string& ConstNode::expression() const {
-    return expression_;
-}
-
-const template_expression::ExpressionPtr& ConstNode::compiledExpression() const {
-    return compiledExpression_;
 }
 
 SwitchNode::SwitchNode(std::string expression)
