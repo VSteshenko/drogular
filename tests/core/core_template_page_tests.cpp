@@ -712,3 +712,25 @@ TEST(CoreTemplatePageTests, ProcessesIncludesInsideLayout) {
     std::filesystem::remove(partial);
     std::filesystem::remove(layout);
 }
+
+class CoreLexicalComponentInputPage final : public drogular::TemplatePage {
+public:
+    std::string templateHtml() const override {
+        return R"(@let(cardTitle = "Lexical title")<CoreCardWithInput title="{{ cardTitle }}" />)";
+    }
+};
+
+TEST(CoreTemplatePageTests, ComponentAttributesResolveLexicalBindingsWithoutRenderContextMutation) {
+    drogular::ApplicationServices services;
+    services.components().registerComponent<CoreTemplatePageCardWithInput>();
+
+    CoreLexicalComponentInputPage page;
+    drogular::RenderContext context;
+    context.setServices(&services);
+
+    EXPECT_EQ(
+        page.render(context),
+        "<article>Lexical title</article>"
+    );
+    EXPECT_FALSE(context.contains("cardTitle"));
+}

@@ -3,6 +3,7 @@
 #include <drogular/compiled_template.hpp>
 
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -32,6 +33,7 @@ public:
     void clear();
 
 private:
+    mutable std::shared_mutex mutex_;
     std::unordered_map<
         std::string,
         std::shared_ptr<CompiledTemplate>

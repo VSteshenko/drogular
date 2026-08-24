@@ -1,9 +1,9 @@
 #include <drogular/component_renderer.hpp>
 #include <drogular/template_engine.hpp>
+#include <drogular/compiled_template.hpp>
+#include <drogular/template/expression/binding_context.hpp>
 #include <drogular/render_context.hpp>
 
-#include <cctype>
-#include <cstring>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -86,6 +86,24 @@ std::unordered_map<std::string, std::string> parseAttributes(std::string_view va
     return attributes;
 }
 
+std::string renderAttributeValue(
+    std::string_view value,
+    RenderContext& context,
+    const template_expression::BindingContext* bindings
+) {
+    if (bindings == nullptr) {
+        return template_engine::render(value, context);
+    }
+
+    auto result = template_compiler::compileWithDiagnostics(value);
+    if (result.diagnostics.hasErrors()) {
+        return std::string(value);
+    }
+
+    auto localBindings = bindings->createChild();
+    return result.compiledTemplate.render(context, localBindings);
+}
+
 } // namespace
 
 std::string renderComponentTree(
@@ -143,6 +161,7 @@ std::string renderImpl(
     std::string_view html,
     const ComponentRegistry& registry,
     RenderContext& context,
+    const template_expression::BindingContext* bindings,
     ComponentDiagnostics* diagnostics,
     std::size_t sourceOffset
 ) {
@@ -236,7 +255,7 @@ std::string renderImpl(
 
                 for (const auto& [name, value] : attributes) {
                     const auto renderedValue =
-                        template_engine::render(value, context);
+                        renderAttributeValue(value, context, bindings);
 
                     component->setInput(name, renderedValue);
                 }
@@ -253,6 +272,7 @@ std::string renderImpl(
                     componentHtml,
                     registry,
                     childContext,
+                    nullptr,
                     nullptr,
                     0
                 );
@@ -292,7 +312,7 @@ std::string renderImpl(
 
             for (const auto& [name, value] : attributes) {
                 const auto renderedValue =
-                    template_engine::render(value, context);
+                    renderAttributeValue(value, context, bindings);
 
                 component->setInput(name, renderedValue);
             }
@@ -305,6 +325,7 @@ std::string renderImpl(
                 innerHtml,
                 registry,
                 context,
+                bindings,
                 diagnostics,
                 sourceOffset + tagEnd
             );
@@ -330,7 +351,16 @@ std::string render(
     const ComponentRegistry& registry,
     RenderContext& context
 ) {
-    return renderImpl(html, registry, context, nullptr, 0);
+    return renderImpl(html, registry, context, nullptr, nullptr, 0);
+}
+
+std::string render(
+    std::string_view html,
+    const ComponentRegistry& registry,
+    RenderContext& context,
+    const template_expression::BindingContext& bindings
+) {
+    return renderImpl(html, registry, context, &bindings, nullptr, 0);
 }
 
 RenderResult renderWithDiagnostics(
@@ -345,6 +375,7 @@ RenderResult renderWithDiagnostics(
         html,
         registry,
         context,
+        nullptr,
         &diagnostics,
         0
     );

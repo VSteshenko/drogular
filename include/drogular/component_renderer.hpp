@@ -7,6 +7,10 @@
 #include <string>
 #include <string_view>
 
+namespace drogular::template_expression {
+    class BindingContext;
+}
+
 namespace drogular::component_renderer {
 
 struct RenderResult {
@@ -39,6 +43,20 @@ std::string render(
     std::string_view html,
     const ComponentRegistry& registry,
     RenderContext& context
+);
+
+/**
+ * Renders component tags while preserving an existing lexical binding scope
+ * for component attribute expressions.
+ *
+ * Component instances still receive a RenderContext; lexical bindings needed
+ * by the component body are bridged explicitly at that boundary.
+ */
+std::string render(
+    std::string_view html,
+    const ComponentRegistry& registry,
+    RenderContext& context,
+    const template_expression::BindingContext& bindings
 );
 
 /**

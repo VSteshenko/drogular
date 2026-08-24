@@ -391,3 +391,11 @@ The public `template_engine::render()` entry point is retained for source
 compatibility, but it delegates to the compiled template pipeline. Control-flow
 semantics therefore come from one tokenizer/parser/runtime implementation for
 both legacy callers and `TemplateRenderable`.
+
+## Template cache concurrency
+
+`TemplateCache` is safe for concurrent rendering. Cache hits use shared locking; a miss compiles outside the write lock and uses double-checked insertion so only one compiled instance becomes canonical for a template source.
+
+## Component boundary
+
+Component attribute templates are evaluated directly against the active `BindingContext`. This preserves lexical `@let`/`@const` values without first copying them into `RenderContext`. Component instances still use the public `RenderContext` API, so visible lexical bindings are materialized only at the component-body compatibility boundary. This keeps `BindingContext::materialize()` localized instead of making it part of ordinary expression evaluation.

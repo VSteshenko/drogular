@@ -406,7 +406,8 @@ RenderResult renderNode(
                 .output = component_renderer::render(
                     componentNode->tagHtml(),
                     context.services()->components(),
-                    componentContext
+                    componentContext,
+                    bindings
                 )
             };
         }
@@ -443,6 +444,13 @@ CompiledTemplate::CompiledTemplate(std::vector<NodePtr> nodes)
 
 std::string CompiledTemplate::render(RenderContext& context) const {
     template_expression::BindingContext bindings(context);
+    return render(context, bindings);
+}
+
+std::string CompiledTemplate::render(
+    RenderContext& context,
+    template_expression::BindingContext& bindings
+) const {
     return renderNodes(nodes_, context, bindings).output;
 }
 

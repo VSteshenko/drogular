@@ -1,5 +1,8 @@
 #include <drogular/template_cache.hpp>
 
+#include <mutex>
+#include <shared_mutex>
+
 namespace drogular::template_compiler {
 
 std::shared_ptr<CompiledTemplate> TemplateCache::getOrCompile(
@@ -7,10 +10,12 @@ std::shared_ptr<CompiledTemplate> TemplateCache::getOrCompile(
 ) {
     const auto key = std::string(html);
 
-    const auto it = templates_.find(key);
-
-    if (it != templates_.end()) {
-        return it->second;
+    {
+        std::shared_lock lock(mutex_);
+        const auto it = templates_.find(key);
+        if (it != templates_.end()) {
+            return it->second;
+        }
     }
 
     auto compiled =
@@ -18,16 +23,18 @@ std::shared_ptr<CompiledTemplate> TemplateCache::getOrCompile(
             compile(html)
         );
 
-    templates_[key] = compiled;
-
-    return compiled;
+    std::unique_lock lock(mutex_);
+    const auto [it, inserted] = templates_.emplace(key, compiled);
+    return inserted ? compiled : it->second;
 }
 
 bool TemplateCache::contains(std::string_view html) const {
+    std::shared_lock lock(mutex_);
     return templates_.contains(std::string(html));
 }
 
 void TemplateCache::clear() {
+    std::unique_lock lock(mutex_);
     templates_.clear();
 }
 
