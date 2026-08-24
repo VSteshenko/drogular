@@ -221,6 +221,15 @@ See [RELEASE_NOTES_0.21.md](RELEASE_NOTES_0.21.md) for the complete release note
 - PortalDemo expansion
 - Architecture, Best Practices, and CLI documentation
 
+### 0.23 — Template Engine — future cleanup
+
+- Precompile interpolation expressions
+- Compile component tags/attributes into semantic AST
+- Split template_runtime.cpp
+- Split Expression parser/lexer
+- Integer ExpressionValue
+- Runtime diagnostics for custom functions
+
 ### 1.0
 
 - Stable Public API
