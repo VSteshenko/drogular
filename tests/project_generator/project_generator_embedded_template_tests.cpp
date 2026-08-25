@@ -102,3 +102,63 @@ TEST(ProjectGeneratorEmbeddedTemplateTests, GeneratesMinimalDrogularProject) {
         readFile(destination / "templates/home.html").find("<title>hello_drogular</title>"),
         std::string::npos);
 }
+
+TEST(ProjectGeneratorEmbeddedTemplateTests, RegistersPwaTemplateFromEmbeddedSource) {
+    EmbeddedTemplateSource source;
+    TemplateRegistry registry;
+
+    registry.load(source);
+
+    const auto* projectTemplate = registry.find("pwa");
+    ASSERT_NE(projectTemplate, nullptr);
+    EXPECT_EQ(projectTemplate->name, "PWA Starter");
+    EXPECT_EQ(projectTemplate->description, "Installable Drogular PWA with offline support");
+    EXPECT_EQ(projectTemplate->files.size(), 16u);
+}
+
+TEST(ProjectGeneratorEmbeddedTemplateTests, GeneratesPwaDrogularProject) {
+    TemporaryDirectory temporary;
+    EmbeddedTemplateSource source;
+    TemplateRegistry registry;
+    registry.load(source);
+    ProjectGenerator generator(registry, source);
+    const fs::path destination = temporary.path() / "my_pwa";
+
+    generator.generate({
+        .templateId = "pwa",
+        .destination = destination,
+        .variables = {
+            {"PROJECT_NAME", "my_pwa"},
+            {"DROGULAR_VERSION", "0.22-test"},
+            {"DROGULAR_GIT_REF", "main"},
+        },
+    });
+
+    EXPECT_TRUE(fs::exists(destination / "CMakeLists.txt"));
+    EXPECT_TRUE(fs::exists(destination / "src/main.cpp"));
+    EXPECT_TRUE(fs::exists(destination / "src/home_page.hpp"));
+    EXPECT_TRUE(fs::exists(destination / "src/offline_page.hpp"));
+    EXPECT_TRUE(fs::exists(destination / "src/components/app_shell.hpp"));
+    EXPECT_TRUE(fs::exists(destination / "templates/layouts/app.html"));
+    EXPECT_TRUE(fs::exists(destination / "templates/components/app_shell.html"));
+    EXPECT_TRUE(fs::exists(destination / "public/manifest.webmanifest"));
+    EXPECT_TRUE(fs::exists(destination / "public/service-worker.js"));
+    EXPECT_TRUE(fs::exists(destination / "public/app-icon-192.svg"));
+    EXPECT_TRUE(fs::exists(destination / "public/app-icon-512.svg"));
+
+    EXPECT_NE(
+        readFile(destination / "src/main.cpp").find("app.serviceWorker(\"public/service-worker.js\")"),
+        std::string::npos);
+    EXPECT_NE(
+        readFile(destination / "src/main.cpp").find("app.offlinePage<OfflinePage>()"),
+        std::string::npos);
+    EXPECT_NE(
+        readFile(destination / "public/manifest.webmanifest").find("\"name\": \"my_pwa\""),
+        std::string::npos);
+    EXPECT_NE(
+        readFile(destination / "public/service-worker.js").find("my_pwa-pwa-v1"),
+        std::string::npos);
+    EXPECT_NE(
+        readFile(destination / "README.md").find("Drogular 0.22-test"),
+        std::string::npos);
+}
