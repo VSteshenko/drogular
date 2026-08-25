@@ -5,6 +5,8 @@
 
 int main()
 {
+    // Tip:
+    // Register global application configuration, components, and pages here.
     drogular::App app;
 
     app.templateRoot("templates");

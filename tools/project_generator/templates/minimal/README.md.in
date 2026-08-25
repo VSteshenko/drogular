@@ -16,3 +16,12 @@ cmake --build build
 ```
 
 Then open http://localhost:8080/.
+
+## Next Steps
+
+- Edit `templates/home.html` to change the page layout.
+- Add reusable UI under `src/components/` and `templates/components/`.
+- Add another `TemplatePage` and register its route in `src/main.cpp`.
+- Put static assets in `public/`; they are served under `/assets`.
+
+Tip: keep pages focused on routing and composition, and move reusable UI into Components.

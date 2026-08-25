@@ -4,6 +4,8 @@
 
 #include <string>
 
+// Tip:
+// Components keep reusable UI separate from page-level routing.
 class HomeComponent final : public drogular::TemplateComponent
 {
 public:

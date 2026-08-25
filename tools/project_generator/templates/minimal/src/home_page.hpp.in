@@ -4,6 +4,8 @@
 
 #include <string>
 
+// Tip:
+// Pages define routes and compose reusable Components.
 class HomePage final : public drogular::TemplatePage
 {
 public:
