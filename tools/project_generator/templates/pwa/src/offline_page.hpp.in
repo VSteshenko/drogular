@@ -1,0 +1,30 @@
+#pragma once
+
+#include <drogular/page.hpp>
+#include <drogular/pwa_options.hpp>
+#include <drogular/pwa_page_support.hpp>
+
+#include <string>
+
+class OfflinePage final : public drogular::TemplatePage
+{
+public:
+    void onInit(drogular::RenderContext& context) override
+    {
+        drogular::PwaOptions options;
+        options.faviconPath = "/assets/favicon.svg";
+        options.faviconType = "image/svg+xml";
+        options.themeColor = "#111827";
+        drogular::PwaPageSupport::apply(context, options);
+    }
+
+    std::string templatePath() const override
+    {
+        return "offline.html";
+    }
+
+    std::string layoutPath() const override
+    {
+        return "layouts/app.html";
+    }
+};

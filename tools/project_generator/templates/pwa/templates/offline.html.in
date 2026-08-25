@@ -1,0 +1,13 @@
+<section class="hero offline">
+    <p class="eyebrow">Offline</p>
+    <h1>You are offline.</h1>
+    <p class="lead">
+        {{PROJECT_NAME}} is still available, but this page could not be loaded from the network.
+        Reconnect and refresh to continue.
+    </p>
+
+    <div class="tip">
+        <strong>Tip:</strong>
+        Customize this fallback in <code>templates/offline.html</code>.
+    </div>
+</section>

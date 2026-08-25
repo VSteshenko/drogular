@@ -1,0 +1,24 @@
+#include "components/app_shell.hpp"
+#include "home_page.hpp"
+#include "offline_page.hpp"
+
+#include <drogular/app.hpp>
+
+int main()
+{
+    drogular::App app;
+
+    // Tip:
+    // PWA assets are served under /assets; the service worker is served at the root scope.
+    app.templateRoot("templates");
+    app.staticFiles("/assets", "public");
+    app.serviceWorker("public/service-worker.js");
+
+    app.component<AppShell>();
+    app.page<HomePage>("/");
+    app.offlinePage<OfflinePage>();
+
+    app.run(8080);
+
+    return 0;
+}

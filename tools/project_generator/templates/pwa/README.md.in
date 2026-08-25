@@ -1,0 +1,48 @@
+# {{PROJECT_NAME}}
+
+A production-shaped Drogular PWA starter generated with Drogular {{DROGULAR_VERSION}}.
+
+It already includes:
+
+- a web app manifest;
+- a root-scoped service worker;
+- offline navigation fallback;
+- installable app metadata and icons;
+- a responsive starter UI built with a reusable Component.
+
+## Build
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+## Run
+
+```bash
+./build/{{PROJECT_NAME}}
+```
+
+Open http://localhost:8080/.
+
+For PWA installation and service workers, use a browser context that allows them (localhost is suitable for development).
+
+## Project Structure
+
+- `src/main.cpp` — application setup and PWA registration.
+- `src/home_page.hpp` — the home route and PWA page metadata.
+- `src/offline_page.hpp` — dynamic offline fallback page.
+- `src/components/` — reusable UI components.
+- `templates/` — layouts, pages, and component templates.
+- `public/manifest.webmanifest` — installable app metadata.
+- `public/service-worker.js` — app-shell cache and offline navigation fallback.
+- `public/*.svg` — starter app icons.
+
+## Next Steps
+
+- Replace the starter content in `templates/components/app_shell.html`.
+- Update the app name, colors, and icon artwork in `public/` before publishing.
+- Add pages and reusable Components as the application grows.
+- Bump `CACHE_NAME` in `public/service-worker.js` when changing cached app-shell assets.
+
+Tip: keep the service worker small and explicit; cache only assets your application really needs offline.

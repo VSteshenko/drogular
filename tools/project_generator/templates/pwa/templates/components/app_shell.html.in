@@ -1,0 +1,21 @@
+<section class="hero">
+    <p class="eyebrow">Drogular PWA Starter</p>
+    <h1>{{PROJECT_NAME}}</h1>
+    <p class="lead">
+        Your installable Drogular application is running. The starter already includes
+        a web app manifest, root-scoped service worker, offline fallback, and responsive UI.
+    </p>
+
+    <ul class="features">
+        <li>✓ PWA ready</li>
+        <li>✓ Installable</li>
+        <li>✓ Offline fallback</li>
+        <li>✓ Component based</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Tip:</strong>
+        Start with <code>src/home_page.hpp</code> and <code>src/components/app_shell.hpp</code>,
+        then replace the starter UI with your application.
+    </div>
+</section>

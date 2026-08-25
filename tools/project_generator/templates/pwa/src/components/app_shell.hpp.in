@@ -1,0 +1,18 @@
+#pragma once
+
+#include <drogular/component.hpp>
+
+#include <string>
+
+// Tip:
+// Keep reusable UI in Components so pages stay focused on routing and page data.
+class AppShell final : public drogular::TemplateComponent
+{
+public:
+    static constexpr auto tag = "AppShell";
+
+    std::string templatePath() const override
+    {
+        return "components/app_shell.html";
+    }
+};

@@ -1,0 +1,32 @@
+#pragma once
+
+#include <drogular/page.hpp>
+#include <drogular/pwa_options.hpp>
+#include <drogular/pwa_page_support.hpp>
+
+#include <string>
+
+class HomePage final : public drogular::TemplatePage
+{
+public:
+    void onInit(drogular::RenderContext& context) override
+    {
+        // Tip:
+        // PwaPageSupport injects manifest, favicon, theme color, and service-worker markup.
+        drogular::PwaOptions options;
+        options.faviconPath = "/assets/favicon.svg";
+        options.faviconType = "image/svg+xml";
+        options.themeColor = "#111827";
+        drogular::PwaPageSupport::apply(context, options);
+    }
+
+    std::string templatePath() const override
+    {
+        return "home.html";
+    }
+
+    std::string layoutPath() const override
+    {
+        return "layouts/app.html";
+    }
+};

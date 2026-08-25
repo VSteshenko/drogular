@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="{{PROJECT_NAME}} — a Drogular PWA" />
+    <title>{{PROJECT_NAME}}</title>
+
+    {{{ manifestLink }}}
+    {{{ faviconLink }}}
+    {{{ themeColorMeta }}}
+
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #0b1020;
+            color: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, #1d4ed8 0, transparent 34rem),
+                linear-gradient(160deg, #0b1020 0%, #111827 55%, #172033 100%);
+        }
+
+        a { color: inherit; }
+
+        .shell {
+            width: min(1080px, calc(100% - 2rem));
+            margin: 0 auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .brand img { width: 2rem; height: 2rem; }
+
+        main { padding: 4rem 0 6rem; }
+
+        .hero {
+            max-width: 760px;
+            padding: 3rem;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 1.5rem;
+            background: rgba(17,24,39,.72);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 24px 70px rgba(0,0,0,.28);
+        }
+
+        .eyebrow {
+            margin: 0 0 1rem;
+            color: #93c5fd;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-size: .78rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 7vw, 5rem);
+            line-height: .98;
+            letter-spacing: -.045em;
+        }
+
+        .lead {
+            max-width: 620px;
+            margin: 1.5rem 0 0;
+            color: #cbd5e1;
+            font-size: 1.08rem;
+            line-height: 1.7;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: .75rem;
+            margin: 2rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .features li {
+            padding: .9rem 1rem;
+            border-radius: .9rem;
+            background: rgba(255,255,255,.055);
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .tip {
+            margin-top: 2rem;
+            padding: 1rem 1.1rem;
+            border-left: 3px solid #60a5fa;
+            background: rgba(37,99,235,.11);
+            color: #dbeafe;
+            line-height: 1.55;
+        }
+
+        .offline {
+            max-width: 620px;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            color: #bfdbfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="topbar">
+            <a class="brand" href="/">
+                <img src="/assets/favicon.svg" alt="" />
+                <span>{{PROJECT_NAME}}</span>
+            </a>
+        </header>
+
+        <main>
+            @content
+        </main>
+    </div>
+
+    {{{ serviceWorkerRegistration }}}
+</body>
+</html>

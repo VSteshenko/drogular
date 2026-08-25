@@ -1,0 +1,23 @@
+{
+  "id": "pwa",
+  "name": "PWA Starter",
+  "description": "Installable Drogular PWA with offline support",
+  "files": [
+    { "source": "CMakeLists.txt.in", "destination": "CMakeLists.txt" },
+    { "source": ".gitignore.in", "destination": ".gitignore" },
+    { "source": "README.md.in", "destination": "README.md" },
+    { "source": "src/main.cpp.in", "destination": "src/main.cpp" },
+    { "source": "src/home_page.hpp.in", "destination": "src/home_page.hpp" },
+    { "source": "src/offline_page.hpp.in", "destination": "src/offline_page.hpp" },
+    { "source": "src/components/app_shell.hpp.in", "destination": "src/components/app_shell.hpp" },
+    { "source": "templates/layouts/app.html.in", "destination": "templates/layouts/app.html" },
+    { "source": "templates/home.html.in", "destination": "templates/home.html" },
+    { "source": "templates/offline.html.in", "destination": "templates/offline.html" },
+    { "source": "templates/components/app_shell.html.in", "destination": "templates/components/app_shell.html" },
+    { "source": "public/manifest.webmanifest.in", "destination": "public/manifest.webmanifest" },
+    { "source": "public/service-worker.js.in", "destination": "public/service-worker.js" },
+    { "source": "public/favicon.svg.in", "destination": "public/favicon.svg" },
+    { "source": "public/app-icon-192.svg.in", "destination": "public/app-icon-192.svg" },
+    { "source": "public/app-icon-512.svg.in", "destination": "public/app-icon-512.svg" }
+  ]
+}
