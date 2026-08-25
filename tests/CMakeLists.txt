@@ -77,6 +77,7 @@ add_executable(drogular_tests
     support/html_test_support_tests.cpp
     # system_monitor_pwa
     system_monitor_pwa/system_monitor_model_tests.cpp
+    system_monitor_pwa/macos_system_metrics_provider_tests.cpp
     # todo_pwa
     ../examples/todo_pwa/todo_page.cpp
     todo_pwa/todo_pwa_todo_page_tests.cpp
@@ -104,6 +105,7 @@ target_link_libraries(drogular_tests
     PRIVATE
     Drogular::drogular
     GTest::gtest_main
+    system_monitor_core
 )
 
 target_include_directories(drogular_tests

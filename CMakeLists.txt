@@ -114,6 +114,9 @@ if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/repository_sample)
     add_subdirectory(examples/portal_demo)
     add_subdirectory(examples/developer_tools)
+endif()
+
+if(DROGULAR_BUILD_EXAMPLES OR DROGULAR_BUILD_TESTS)
     add_subdirectory(examples/system_monitor_pwa)
 endif()
 
