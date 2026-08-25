@@ -9,7 +9,6 @@
 #include <drogular/application_profile.hpp>
 #include <drogular/developer_tools/application_inspection.hpp>
 #include <drogular/developer_tools/application_inspection_controller.hpp>
-#include <drogular/developer_tools/component_registry.hpp>
 #include <drogular/template/expression/functions.hpp>
 
 #include <memory>
@@ -44,6 +43,9 @@ public:
     ) {
         options_.setTemplateRoot(
             std::move(root)
+        );
+        services_.templateSourceCache().setLoader(
+            TemplateLoader(options_.templateRoot())
         );
 
         return *this;

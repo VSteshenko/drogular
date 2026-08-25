@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <stdexcept>
 
@@ -104,4 +106,28 @@ TEST(CoreAppTests, RejectsDuplicateAndBuiltinExpressionNames) {
     EXPECT_NO_THROW(app.expressionFunction("custom", callback));
     EXPECT_THROW(app.expressionFunction("custom", callback), std::invalid_argument);
     EXPECT_THROW(app.expressionFunction("count", callback), std::invalid_argument);
+}
+
+TEST(CoreAppTests, TemplateRootUpdatesTemplateSourceCacheLoader) {
+    namespace fs = std::filesystem;
+
+    const auto root = fs::temp_directory_path() /
+        "drogular-core-app-template-root-test";
+    fs::remove_all(root);
+    fs::create_directories(root);
+
+    {
+        std::ofstream file(root / "sample.html");
+        file << "template-root-ok";
+    }
+
+    drogular::App app;
+    app.templateRoot(root);
+
+    EXPECT_EQ(
+        app.services().templateSourceCache().load("sample.html"),
+        "template-root-ok"
+    );
+
+    fs::remove_all(root);
 }
