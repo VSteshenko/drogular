@@ -75,6 +75,8 @@ add_executable(drogular_tests
     core/core_route_pattern_tests.cpp
     core/core_json_conversion_tests.cpp
     support/html_test_support_tests.cpp
+    # system_monitor_pwa
+    system_monitor_pwa/system_monitor_model_tests.cpp
     # todo_pwa
     ../examples/todo_pwa/todo_page.cpp
     todo_pwa/todo_pwa_todo_page_tests.cpp
@@ -111,6 +113,7 @@ target_include_directories(drogular_tests
     ${CMAKE_SOURCE_DIR}/examples/auth_sample
     ${CMAKE_SOURCE_DIR}/examples/repository_sample
     ${CMAKE_SOURCE_DIR}/examples/portal_demo
+    ${CMAKE_SOURCE_DIR}/examples/system_monitor_pwa
 )
 
 add_executable(drogular_portal_demo_tests
