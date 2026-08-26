@@ -1,3 +1,4 @@
+#include "actions/system_status_action.hpp"
 #include "pages/dashboard_page.hpp"
 #include "platform/macos_system_metrics_provider.hpp"
 #include "services/system_monitor.hpp"
@@ -24,5 +25,6 @@ int main() {
     app.services().add<system_monitor::SystemMonitor>(provider);
 
     app.page<system_monitor::DashboardPage>("/");
+    app.get<system_monitor::SystemStatusAction>("/api/system");
     app.run(8080);
 }

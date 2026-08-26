@@ -165,11 +165,33 @@ TEST(ApplicationInspectionTests, CollectsExtensionSectionsFromDiContributors) {
 
 TEST(ApplicationInspectionTests, ReplacesSectionWithSameId) {
     drogular::ApplicationInspection inspection;
-    inspection.addSection({"custom", "First", "example.first", Json::Value(1)});
-    inspection.addSection({"custom", "Second", "example.second", Json::Value(2)});
+    inspection.addSection({
+        "custom",
+        "First",
+        "example.first",
+        Json::Value(1)
+    });
+    inspection.addSection({
+        "custom",
+        "Second",
+        "example.second",
+        Json::Value(2)
+    });
 
     ASSERT_EQ(inspection.sections.size(), 1u);
     EXPECT_EQ(inspection.sections.front().title, "Second");
     EXPECT_EQ(inspection.sections.front().component, "example.second");
     EXPECT_EQ(inspection.sections.front().data.asInt(), 2);
+}
+
+TEST(ApplicationInspectionTests, ReportsGetActionMethod) {
+    drogular::App app;
+    app.get<InspectionAction>("/api/status");
+
+    const auto inspection = app.inspect();
+
+    ASSERT_EQ(inspection.routes.size(), 1u);
+    EXPECT_EQ(inspection.routes.front().kind, drogular::RouteKind::Action);
+    EXPECT_EQ(inspection.routes.front().method, "GET");
+    EXPECT_EQ(inspection.routes.front().path, "/api/status");
 }

@@ -6,7 +6,7 @@
     </div>
     <div class="uptime">
         <span class="muted">Uptime</span>
-        <strong>{{ uptime }}</strong>
+        <strong data-monitor-field="uptime-hero">{{ uptime }}</strong>
     </div>
 </section>
 
@@ -14,25 +14,25 @@
     <article class="metric-card">
         <div class="metric-heading">
             <span>CPU</span>
-            <strong>{{ cpuUsage }}</strong>
+            <strong data-monitor-field="cpu-usage">{{ cpuUsage }}</strong>
         </div>
-        <progress max="100" value="{{ cpuUsageValue }}">{{ cpuUsage }}</progress>
+        <progress data-monitor-field="cpu-progress" max="100" value="{{ cpuUsageValue }}">{{ cpuUsage }}</progress>
         <p class="metric-detail">{{ cpuCores }} logical cores</p>
         <div class="load-grid">
-            <span><small>1 min</small>{{ load1 }}</span>
-            <span><small>5 min</small>{{ load5 }}</span>
-            <span><small>15 min</small>{{ load15 }}</span>
+            <span><small>1 min</small><span data-monitor-field="load-1">{{ load1 }}</span></span>
+            <span><small>5 min</small><span data-monitor-field="load-5">{{ load5 }}</span></span>
+            <span><small>15 min</small><span data-monitor-field="load-15">{{ load15 }}</span></span>
         </div>
     </article>
 
     <article class="metric-card">
         <div class="metric-heading">
             <span>Memory</span>
-            <strong>{{ memoryUsage }}</strong>
+            <strong data-monitor-field="memory-usage">{{ memoryUsage }}</strong>
         </div>
-        <progress max="100" value="{{ memoryUsageValue }}">{{ memoryUsage }}</progress>
-        <p class="metric-detail">{{ memoryUsed }} of {{ memoryTotal }} used</p>
-        <p class="muted">{{ memoryAvailable }} available</p>
+        <progress data-monitor-field="memory-progress" max="100" value="{{ memoryUsageValue }}">{{ memoryUsage }}</progress>
+        <p class="metric-detail" data-monitor-field="memory-summary">{{ memoryUsed }} of {{ memoryTotal }} used</p>
+        <p class="muted" data-monitor-field="memory-available">{{ memoryAvailable }} available</p>
     </article>
 </section>
 
@@ -47,17 +47,17 @@
     @if(hasDisks)
     <div class="disk-list">
         @foreach(disk in disks)
-        <article class="disk-row">
+        <article class="disk-row" data-monitor-disk="{{ disk.mountPoint }}">
             <div class="disk-title">
                 <strong>{{ disk.mountPoint }}</strong>
                 <span class="muted">{{ disk.device }} · {{ disk.fileSystem }}</span>
             </div>
             <div class="disk-usage">
                 <div>
-                    <strong>{{ disk.usage }}</strong>
-                    <span class="muted">{{ disk.used }} / {{ disk.total }}</span>
+                    <strong data-disk-field="usage">{{ disk.usage }}</strong>
+                    <span class="muted" data-disk-field="summary">{{ disk.used }} / {{ disk.total }}</span>
                 </div>
-                <progress max="100" value="{{ disk.usageValue }}">{{ disk.usage }}</progress>
+                <progress data-disk-field="progress" max="100" value="{{ disk.usageValue }}">{{ disk.usage }}</progress>
             </div>
         </article>
         @endforeach
@@ -77,8 +77,8 @@
         <div><dt>Operating system</dt><dd>{{ operatingSystem }}</dd></div>
         <div><dt>Kernel</dt><dd>{{ kernel }}</dd></div>
         <div><dt>Architecture</dt><dd>{{ architecture }}</dd></div>
-        <div><dt>Uptime</dt><dd>{{ uptime }}</dd></div>
+        <div><dt>Uptime</dt><dd data-monitor-field="uptime-system">{{ uptime }}</dd></div>
     </dl>
 </section>
 
-<p class="refresh-note">Refresh the page to capture a new system snapshot.</p>
+<p class="refresh-note">Last live update: <span data-monitor-field="last-update">waiting for first refresh</span></p>

@@ -13,6 +13,11 @@ namespace drogular {
 
 class Page;
 
+enum class ActionMethod {
+    Get,
+    Post
+};
+
 /**
  * Router connects Drogular pages to Drogon routes.
  */
@@ -41,7 +46,8 @@ public:
     void action(
         const std::string& path,
         ActionFactory factory,
-        std::string target
+        std::string target,
+        ActionMethod method = ActionMethod::Post
     );
 
     /**

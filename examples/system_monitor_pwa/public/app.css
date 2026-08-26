@@ -50,6 +50,13 @@ h2 { margin-bottom: .25rem; }
     border-radius: 999px;
     color: #b9c9e8;
 }
+.status.status-offline {
+    color: #f0b7b7;
+}
+.status.status-offline .status-dot {
+    background: #f06f6f;
+    box-shadow: 0 0 14px #f06f6f;
+}
 .status-dot {
     width: .55rem;
     height: .55rem;

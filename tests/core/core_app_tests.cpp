@@ -72,6 +72,14 @@ TEST(CoreAppTests, AppCanRegisterAction) {
     });
 }
 
+TEST(CoreAppTests, AppCanRegisterGetAction) {
+    drogular::App app;
+
+    EXPECT_NO_THROW({
+        app.get<CoreAppTestAction>("/test-get-action");
+    });
+}
+
 TEST(CoreAppTests, RegistersExpressionFunctionAndMethod) {
     drogular::App app;
 

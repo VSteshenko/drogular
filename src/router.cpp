@@ -103,12 +103,18 @@ void Router::page(
 void Router::action(
     const std::string& path,
     ActionFactory factory,
-    std::string target
+    std::string target,
+    ActionMethod method
 ) {
+    const auto methodName =
+        method == ActionMethod::Get ? "GET" : "POST";
+    const auto drogonMethod =
+        method == ActionMethod::Get ? drogon::Get : drogon::Post;
+
     routes_.push_back({
         path,
         RouteKind::Action,
-        "POST",
+        methodName,
         std::move(target)
     });
 
@@ -163,7 +169,7 @@ void Router::action(
                 callback(toHttpErrorResponse());
             }
         },
-        {drogon::Post}
+        {drogonMethod}
     );
 }
 

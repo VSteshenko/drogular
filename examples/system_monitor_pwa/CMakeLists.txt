@@ -27,6 +27,7 @@ if(APPLE AND DROGULAR_BUILD_EXAMPLES)
     add_executable(system_monitor_pwa
         main.cpp
         pages/dashboard_page.cpp
+        actions/system_status_action.cpp
     )
 
     target_link_libraries(system_monitor_pwa

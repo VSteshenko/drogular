@@ -124,6 +124,31 @@ public:
     }
 
     /**
+     * Registers an action type for the given GET path.
+     *
+     * This is intended for read-only endpoints that return an
+     * ActionResult, such as JSON API responses.
+     */
+    template <typename ActionType>
+    App& get(const std::string& path) {
+        static_assert(
+            std::is_base_of_v<ActionHandler, ActionType>,
+            "ActionType must inherit from drogular::ActionHandler"
+        );
+
+        router_.action(
+            path,
+            [] {
+                return std::make_shared<ActionType>();
+            },
+            typeid(ActionType).name(),
+            ActionMethod::Get
+        );
+
+        return *this;
+    }
+
+    /**
      * Registers a static file mapping.
      *
      * Requests matching the specified route prefix are served

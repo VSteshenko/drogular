@@ -70,4 +70,7 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "/dev/test"));
     EXPECT_TRUE(drogular::test::contains(result.html, "apfs"));
     EXPECT_TRUE(drogular::test::contains(result.html, "Darwin test"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"cpu-usage\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"memory-usage\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-disk=\"/\""));
 }
