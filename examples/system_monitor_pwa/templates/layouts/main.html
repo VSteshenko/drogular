@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell header-content">
+            <div>
+                <p class="eyebrow">Drogular example</p>
+                <h1>{{ title }}</h1>
+            </div>
+            <span class="status"><span class="status-dot"></span>Local</span>
+        </div>
+    </header>
+
+    <main class="shell">
+        @content
+    </main>
+</body>
+</html>

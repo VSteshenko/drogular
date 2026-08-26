@@ -78,6 +78,10 @@ add_executable(drogular_tests
     # system_monitor_pwa
     system_monitor_pwa/system_monitor_model_tests.cpp
     system_monitor_pwa/macos_system_metrics_provider_tests.cpp
+    system_monitor_pwa/system_monitor_service_tests.cpp
+    system_monitor_pwa/system_monitor_formatters_tests.cpp
+    ../examples/system_monitor_pwa/pages/dashboard_page.cpp
+    system_monitor_pwa/system_monitor_dashboard_page_tests.cpp
     # todo_pwa
     ../examples/todo_pwa/todo_page.cpp
     todo_pwa/todo_pwa_todo_page_tests.cpp

@@ -1,0 +1,84 @@
+<section class="hero">
+    <div>
+        <p class="eyebrow">Monitoring target</p>
+        <h2>{{ hostname }}</h2>
+        <p class="muted">{{ operatingSystem }} · {{ architecture }}</p>
+    </div>
+    <div class="uptime">
+        <span class="muted">Uptime</span>
+        <strong>{{ uptime }}</strong>
+    </div>
+</section>
+
+<section class="metric-grid" aria-label="System metrics">
+    <article class="metric-card">
+        <div class="metric-heading">
+            <span>CPU</span>
+            <strong>{{ cpuUsage }}</strong>
+        </div>
+        <progress max="100" value="{{ cpuUsageValue }}">{{ cpuUsage }}</progress>
+        <p class="metric-detail">{{ cpuCores }} logical cores</p>
+        <div class="load-grid">
+            <span><small>1 min</small>{{ load1 }}</span>
+            <span><small>5 min</small>{{ load5 }}</span>
+            <span><small>15 min</small>{{ load15 }}</span>
+        </div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-heading">
+            <span>Memory</span>
+            <strong>{{ memoryUsage }}</strong>
+        </div>
+        <progress max="100" value="{{ memoryUsageValue }}">{{ memoryUsage }}</progress>
+        <p class="metric-detail">{{ memoryUsed }} of {{ memoryTotal }} used</p>
+        <p class="muted">{{ memoryAvailable }} available</p>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <p class="eyebrow">Storage</p>
+            <h2>Disks</h2>
+        </div>
+    </div>
+
+    @if(hasDisks)
+    <div class="disk-list">
+        @foreach(disk in disks)
+        <article class="disk-row">
+            <div class="disk-title">
+                <strong>{{ disk.mountPoint }}</strong>
+                <span class="muted">{{ disk.device }} · {{ disk.fileSystem }}</span>
+            </div>
+            <div class="disk-usage">
+                <div>
+                    <strong>{{ disk.usage }}</strong>
+                    <span class="muted">{{ disk.used }} / {{ disk.total }}</span>
+                </div>
+                <progress max="100" value="{{ disk.usageValue }}">{{ disk.usage }}</progress>
+            </div>
+        </article>
+        @endforeach
+    </div>
+    @else
+    <p class="muted">No disk information is available.</p>
+    @endif
+</section>
+
+<section class="panel system-panel">
+    <div>
+        <p class="eyebrow">System</p>
+        <h2>Host information</h2>
+    </div>
+    <dl class="system-info">
+        <div><dt>Hostname</dt><dd>{{ hostname }}</dd></div>
+        <div><dt>Operating system</dt><dd>{{ operatingSystem }}</dd></div>
+        <div><dt>Kernel</dt><dd>{{ kernel }}</dd></div>
+        <div><dt>Architecture</dt><dd>{{ architecture }}</dd></div>
+        <div><dt>Uptime</dt><dd>{{ uptime }}</dd></div>
+    </dl>
+</section>
+
+<p class="refresh-note">Refresh the page to capture a new system snapshot.</p>
