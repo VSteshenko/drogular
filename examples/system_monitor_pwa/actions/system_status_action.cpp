@@ -11,7 +11,10 @@
 namespace system_monitor {
 namespace {
 
-Json::Value toJson(const SystemSnapshot& snapshot) {
+Json::Value toJson(
+    const SystemSnapshot& snapshot,
+    const MonitorStatistics& statistics
+) {
     Json::Value root(Json::objectValue);
 
     const auto now = std::chrono::duration_cast<std::chrono::seconds>(
@@ -58,6 +61,26 @@ Json::Value toJson(const SystemSnapshot& snapshot) {
     system["uptimeSeconds"] = Json::UInt64(snapshot.system.uptimeSeconds);
     root["system"] = std::move(system);
 
+    Json::Value monitor(Json::objectValue);
+    monitor["updates"] = Json::UInt64(statistics.updates);
+    monitor["cacheHits"] = Json::UInt64(statistics.cacheHits);
+    monitor["failedUpdates"] = Json::UInt64(statistics.failedUpdates);
+    monitor["lastUpdateDurationMs"] = Json::Int64(statistics.lastUpdateDuration.count());
+    monitor["snapshotAgeMs"] = Json::Int64(statistics.snapshotAge.count());
+    monitor["refreshIntervalMs"] = Json::Int64(statistics.refreshInterval.count());
+    monitor["healthy"] = statistics.healthy;
+
+    if (statistics.lastSuccessfulUpdate.time_since_epoch() !=
+        std::chrono::system_clock::duration::zero()) {
+        const auto lastSuccessfulUpdate = std::chrono::duration_cast<std::chrono::seconds>(
+            statistics.lastSuccessfulUpdate.time_since_epoch());
+        monitor["lastSuccessfulUpdate"] = Json::Int64(lastSuccessfulUpdate.count());
+    } else {
+        monitor["lastSuccessfulUpdate"] = Json::nullValue;
+    }
+
+    root["monitor"] = std::move(monitor);
+
     return root;
 }
 
@@ -67,7 +90,8 @@ drogular::ActionResult SystemStatusAction::handle(
     drogular::ActionContext& context
 ) {
     const auto monitor = context.requireService<SystemMonitor>();
-    return drogular::ActionResult::json(toJson(monitor->snapshot()));
+    const auto snapshot = monitor->snapshot();
+    return drogular::ActionResult::json(toJson(snapshot, monitor->statistics()));
 }
 
 } // namespace system_monitor

@@ -71,4 +71,12 @@ TEST(SystemMonitorStatusActionTests, ReturnsCurrentSnapshotAsJson) {
     ASSERT_EQ(json["disks"].size(), 1U);
     EXPECT_EQ(json["disks"][0]["mountPoint"].asString(), "/");
     EXPECT_DOUBLE_EQ(json["disks"][0]["usagePercent"].asDouble(), 25.0);
+
+    ASSERT_TRUE(json.isMember("monitor"));
+    EXPECT_EQ(json["monitor"]["updates"].asUInt64(), 1U);
+    EXPECT_EQ(json["monitor"]["cacheHits"].asUInt64(), 0U);
+    EXPECT_EQ(json["monitor"]["failedUpdates"].asUInt64(), 0U);
+    EXPECT_EQ(json["monitor"]["refreshIntervalMs"].asInt64(), 1000);
+    EXPECT_TRUE(json["monitor"]["healthy"].asBool());
+    EXPECT_GT(json["monitor"]["lastSuccessfulUpdate"].asInt64(), 0);
 }

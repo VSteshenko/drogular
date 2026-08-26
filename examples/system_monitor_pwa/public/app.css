@@ -170,7 +170,7 @@ progress::-moz-progress-bar {
 }
 .load-grid small {
     display: block;
-    margin-bottom: .2rem;
+    margin-bottom: .6rem;
     color: #8293b5;
 }
 
