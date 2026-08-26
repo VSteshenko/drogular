@@ -1,5 +1,10 @@
 (() => {
     const POLL_INTERVAL_MS = 2000;
+    const MAX_RECONNECT_ATTEMPTS = 3;
+
+    let reconnectAttempts = 0;
+    let pollTimer = null;
+    let pollingStopped = false;
 
     const field = (name) => document.querySelector(`[data-monitor-field="${name}"]`);
     const setText = (name, value) => {
@@ -39,13 +44,39 @@
         return `${minutes}m`;
     };
 
-    const setConnectionState = (live) => {
+    const setConnectionState = (state) => {
         const status = document.querySelector('[data-monitor-status]');
+        const retry = document.querySelector('[data-monitor-retry]');
         if (!status) {
             return;
         }
-        status.classList.toggle('status-offline', !live);
-        status.querySelector('[data-monitor-status-label]').textContent = live ? 'Live' : 'Reconnecting';
+
+        status.classList.toggle('status-reconnecting', state === 'connecting' || state === 'reconnecting');
+        status.classList.toggle('status-offline', state === 'offline');
+
+        const label = status.querySelector('[data-monitor-status-label]');
+        if (label) {
+            if (state === 'live') {
+                label.textContent = 'Live';
+            } else if (state === 'connecting') {
+                label.textContent = 'Connecting';
+            } else if (state === 'reconnecting') {
+                label.textContent = `Reconnecting ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`;
+            } else {
+                label.textContent = 'Offline';
+            }
+        }
+
+        if (retry) {
+            retry.hidden = state !== 'offline';
+        }
+    };
+
+    const schedulePoll = () => {
+        if (pollingStopped) {
+            return;
+        }
+        pollTimer = window.setTimeout(poll, POLL_INTERVAL_MS);
     };
 
     const updateDisk = (disk) => {
@@ -90,6 +121,8 @@
     };
 
     const poll = async () => {
+        pollTimer = null;
+
         try {
             const response = await fetch('/api/system', {
                 headers: { 'Accept': 'application/json' },
@@ -98,14 +131,40 @@
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
+
             applySnapshot(await response.json());
-            setConnectionState(true);
+            reconnectAttempts = 0;
+            pollingStopped = false;
+            setConnectionState('live');
+            schedulePoll();
         } catch (_) {
-            setConnectionState(false);
-        } finally {
-            window.setTimeout(poll, POLL_INTERVAL_MS);
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                pollingStopped = true;
+                setConnectionState('offline');
+                return;
+            }
+
+            reconnectAttempts += 1;
+            setConnectionState('reconnecting');
+            schedulePoll();
         }
     };
 
-    window.setTimeout(poll, POLL_INTERVAL_MS);
+    const retry = document.querySelector('[data-monitor-retry]');
+    if (retry) {
+        retry.addEventListener('click', () => {
+            reconnectAttempts = 0;
+            pollingStopped = false;
+
+            if (pollTimer !== null) {
+                window.clearTimeout(pollTimer);
+                pollTimer = null;
+            }
+
+            setConnectionState('connecting');
+            poll();
+        });
+    }
+
+    schedulePoll();
 })();

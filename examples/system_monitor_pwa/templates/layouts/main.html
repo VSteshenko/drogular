@@ -13,7 +13,10 @@
                 <p class="eyebrow">Drogular example</p>
                 <h1>{{ title }}</h1>
             </div>
-            <span class="status" data-monitor-status><span class="status-dot"></span><span data-monitor-status-label>Live</span></span>
+            <div class="connection-status">
+                <span class="status" data-monitor-status><span class="status-dot"></span><span data-monitor-status-label>Live</span></span>
+                <button class="retry-button" type="button" data-monitor-retry hidden>Retry</button>
+            </div>
         </div>
     </header>
 

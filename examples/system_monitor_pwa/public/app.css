@@ -41,6 +41,11 @@ h2 { margin-bottom: .25rem; }
     font-weight: 700;
 }
 .muted { color: #9aa8c3; }
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
 .status {
     display: inline-flex;
     gap: .45rem;
@@ -50,12 +55,35 @@ h2 { margin-bottom: .25rem; }
     border-radius: 999px;
     color: #b9c9e8;
 }
+.status.status-reconnecting {
+    color: #f6cf84;
+}
+.status.status-reconnecting .status-dot {
+    background: #f0b95f;
+    box-shadow: 0 0 14px #f0b95f;
+}
 .status.status-offline {
     color: #f0b7b7;
 }
 .status.status-offline .status-dot {
     background: #f06f6f;
     box-shadow: 0 0 14px #f06f6f;
+}
+.retry-button {
+    padding: .45rem .75rem;
+    border: 1px solid #40557d;
+    border-radius: .65rem;
+    background: #18243e;
+    color: #dce7ff;
+    font: inherit;
+    cursor: pointer;
+}
+.retry-button:hover {
+    background: #213153;
+}
+.retry-button:focus-visible {
+    outline: 2px solid #8fb3ff;
+    outline-offset: 2px;
 }
 .status-dot {
     width: .55rem;

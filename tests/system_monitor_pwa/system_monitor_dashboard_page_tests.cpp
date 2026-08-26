@@ -73,4 +73,7 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"cpu-usage\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"memory-usage\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-disk=\"/\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-status"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-retry"));
+    EXPECT_TRUE(drogular::test::contains(result.html, ">Retry</button>"));
 }
