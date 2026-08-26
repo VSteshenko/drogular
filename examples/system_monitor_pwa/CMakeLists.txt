@@ -1,11 +1,16 @@
 set(SYSTEM_MONITOR_CORE_SOURCES
     services/system_monitor.cpp
     ui/system_formatters.cpp
+    platform/linux_system_metrics_provider.cpp
 )
 
 if(APPLE)
     list(APPEND SYSTEM_MONITOR_CORE_SOURCES
         platform/macos_system_metrics_provider.cpp
+    )
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND SYSTEM_MONITOR_CORE_SOURCES
+        platform/local_linux_system_reader.cpp
     )
 endif()
 
@@ -23,7 +28,7 @@ target_compile_features(system_monitor_core
         cxx_std_20
 )
 
-if(APPLE AND DROGULAR_BUILD_EXAMPLES)
+if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
     add_executable(system_monitor_pwa
         main.cpp
         pages/dashboard_page.cpp
