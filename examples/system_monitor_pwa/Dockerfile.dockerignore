@@ -1,0 +1,10 @@
+.git
+.github
+.idea
+.vscode
+cmake-build-*
+build
+out
+.DS_Store
+*.zip
+*.patch

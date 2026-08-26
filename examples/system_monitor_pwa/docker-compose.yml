@@ -1,0 +1,8 @@
+services:
+  system-monitor:
+    build:
+      context: ../..
+      dockerfile: examples/system_monitor_pwa/Dockerfile
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
