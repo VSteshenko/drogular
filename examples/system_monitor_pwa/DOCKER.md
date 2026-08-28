@@ -1,5 +1,7 @@
 # System Monitor PWA in Docker
 
+For native local/SSH operation and Raspberry Pi setup, see [README.md](README.md).
+
 The normal Docker setup runs the Linux version of `system_monitor_pwa` and
 reports metrics for the application container itself, not for the macOS host.
 
