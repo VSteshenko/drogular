@@ -46,6 +46,18 @@ h2 { margin-bottom: .25rem; }
     align-items: center;
     gap: .6rem;
 }
+.connection-status-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .35rem;
+}
+.status-detail {
+    max-width: 360px;
+    color: #9aa8c3;
+    font-size: .78rem;
+    text-align: right;
+}
 .status {
     display: inline-flex;
     gap: .45rem;
@@ -54,6 +66,13 @@ h2 { margin-bottom: .25rem; }
     border: 1px solid #30405f;
     border-radius: 999px;
     color: #b9c9e8;
+}
+.status.status-stale {
+    color: #f6cf84;
+}
+.status.status-stale .status-dot {
+    background: #f0b95f;
+    box-shadow: 0 0 14px #f0b95f;
 }
 .status.status-reconnecting {
     color: #f6cf84;
@@ -233,6 +252,9 @@ dd {
 }
 
 @media (max-width: 720px) {
+    .header-content { align-items: flex-start; padding: 1rem 0; }
+    .connection-status { align-items: flex-end; }
+    .status-detail { max-width: 220px; }
     .hero { align-items: start; }
     .metric-grid, .system-panel, .disk-row { grid-template-columns: 1fr; }
     .disk-usage > div { align-items: baseline; }

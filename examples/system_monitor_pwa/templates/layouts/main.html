@@ -14,7 +14,13 @@
                 <h1>{{ title }}</h1>
             </div>
             <div class="connection-status">
-                <span class="status" data-monitor-status><span class="status-dot"></span><span data-monitor-status-label>Live</span></span>
+                <div class="connection-status-content">
+                    <span class="status" data-monitor-status>
+                        <span class="status-dot"></span>
+                        <span data-monitor-status-label>Live</span>
+                    </span>
+                    <span class="status-detail" data-monitor-status-detail hidden></span>
+                </div>
                 <button class="retry-button" type="button" data-monitor-retry hidden>Retry</button>
             </div>
         </div>

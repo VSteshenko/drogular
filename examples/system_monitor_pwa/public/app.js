@@ -44,13 +44,30 @@
         return `${minutes}m`;
     };
 
-    const setConnectionState = (state) => {
+    const formatAge = (milliseconds) => {
+        const seconds = Math.max(0, Math.floor(Number(milliseconds) / 1000));
+        if (seconds < 60) {
+            return `${seconds}s`;
+        }
+
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) {
+            return `${minutes}m`;
+        }
+
+        const hours = Math.floor(minutes / 60);
+        return `${hours}h`;
+    };
+
+    const setConnectionState = (state, monitor = null) => {
         const status = document.querySelector('[data-monitor-status]');
         const retry = document.querySelector('[data-monitor-retry]');
+        const detail = document.querySelector('[data-monitor-status-detail]');
         if (!status) {
             return;
         }
 
+        status.classList.toggle('status-stale', state === 'stale');
         status.classList.toggle('status-reconnecting', state === 'connecting' || state === 'reconnecting');
         status.classList.toggle('status-offline', state === 'offline');
 
@@ -58,12 +75,24 @@
         if (label) {
             if (state === 'live') {
                 label.textContent = 'Live';
+            } else if (state === 'stale') {
+                label.textContent = `Stale · ${formatAge(monitor?.snapshotAgeMs ?? 0)} old`;
             } else if (state === 'connecting') {
                 label.textContent = 'Connecting';
             } else if (state === 'reconnecting') {
                 label.textContent = `Reconnecting ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`;
             } else {
                 label.textContent = 'Offline';
+            }
+        }
+
+        if (detail) {
+            if (state === 'stale') {
+                detail.hidden = false;
+                detail.textContent = 'Monitoring target unavailable; showing the last successful snapshot.';
+            } else {
+                detail.hidden = true;
+                detail.textContent = '';
             }
         }
 
@@ -115,7 +144,8 @@
         const uptime = formatDuration(data.system.uptimeSeconds);
         setText('uptime-hero', uptime);
         setText('uptime-system', uptime);
-        setText('last-update', new Date(data.timestamp * 1000).toLocaleTimeString());
+        const lastSuccessfulUpdate = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
+        setText('last-update', new Date(lastSuccessfulUpdate * 1000).toLocaleTimeString());
 
         data.disks.forEach(updateDisk);
     };
@@ -132,10 +162,17 @@
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            applySnapshot(await response.json());
+            const data = await response.json();
+            applySnapshot(data);
             reconnectAttempts = 0;
             pollingStopped = false;
-            setConnectionState('live');
+
+            if (data.monitor?.healthy === false) {
+                setConnectionState('stale', data.monitor);
+            } else {
+                setConnectionState('live');
+            }
+
             schedulePoll();
         } catch (_) {
             if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
