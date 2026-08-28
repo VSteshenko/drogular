@@ -1,0 +1,20 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        openssh-client \
+        openssh-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --shell /bin/bash monitor
+
+COPY examples/system_monitor_pwa/docker/ssh-fixture.sh /usr/local/bin/ssh-fixture
+COPY examples/system_monitor_pwa/docker/ssh-target-entrypoint.sh /usr/local/bin/ssh-target-entrypoint
+
+RUN chmod 0755 /usr/local/bin/ssh-fixture /usr/local/bin/ssh-target-entrypoint
+
+EXPOSE 22
+
+ENTRYPOINT ["/usr/local/bin/ssh-target-entrypoint"]

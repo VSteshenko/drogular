@@ -6,3 +6,58 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+
+  ssh-fixture:
+    profiles: ["ssh-test"]
+    build:
+      context: ../..
+      dockerfile: examples/system_monitor_pwa/docker/Dockerfile.ssh-target
+    entrypoint: ["/usr/local/bin/ssh-fixture"]
+    volumes:
+      - ssh-test-keys:/ssh-fixture
+    restart: "no"
+
+  ssh-target:
+    profiles: ["ssh-test"]
+    build:
+      context: ../..
+      dockerfile: examples/system_monitor_pwa/docker/Dockerfile.ssh-target
+    hostname: ssh-target
+    depends_on:
+      ssh-fixture:
+        condition: service_completed_successfully
+    volumes:
+      - ssh-test-keys:/ssh-fixture:ro
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/22'"]
+      interval: 2s
+      timeout: 1s
+      retries: 15
+      start_period: 2s
+    restart: unless-stopped
+
+  system-monitor-ssh:
+    profiles: ["ssh-test"]
+    build:
+      context: ../..
+      dockerfile: examples/system_monitor_pwa/Dockerfile
+    depends_on:
+      ssh-fixture:
+        condition: service_completed_successfully
+      ssh-target:
+        condition: service_healthy
+    environment:
+      SYSTEM_MONITOR_TARGET: ssh
+      SYSTEM_MONITOR_SSH_HOST: ssh-target
+      SYSTEM_MONITOR_SSH_PORT: "22"
+      SYSTEM_MONITOR_SSH_USER: monitor
+      SYSTEM_MONITOR_SSH_IDENTITY_FILE: /ssh-fixture/client_ed25519
+      SYSTEM_MONITOR_SSH_KNOWN_HOSTS_FILE: /ssh-fixture/known_hosts
+    volumes:
+      - ssh-test-keys:/ssh-fixture:ro
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+volumes:
+  ssh-test-keys:
