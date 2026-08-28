@@ -77,6 +77,11 @@
         <div><dt>Revision</dt><dd data-monitor-field="pi-revision">{{ raspberryPiRevision }}</dd></div>
         <div><dt>Serial</dt><dd data-monitor-field="pi-serial">{{ raspberryPiSerial }}</dd></div>
         <div><dt>CPU temperature</dt><dd data-monitor-field="pi-temperature">{{ raspberryPiTemperature }}</dd></div>
+        <div><dt>CPU frequency</dt><dd data-monitor-field="pi-frequency">{{ raspberryPiFrequency }}</dd></div>
+        @if(hasRaspberryPiHealth)
+        <div><dt>Current health</dt><dd data-monitor-field="pi-health-current">{{ raspberryPiHealthCurrent }}</dd></div>
+        <div><dt>Health history</dt><dd data-monitor-field="pi-health-history">{{ raspberryPiHealthHistory }}</dd></div>
+        @endif
     </dl>
 </section>
 @endif

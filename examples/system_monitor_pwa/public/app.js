@@ -145,6 +145,29 @@
                 data.raspberryPi.temperatureCelsius == null
                     ? 'Unavailable'
                     : `${Number(data.raspberryPi.temperatureCelsius).toFixed(1)} °C`);
+            setText(
+                'pi-frequency',
+                data.raspberryPi.cpuFrequencyHz == null
+                    ? 'Unavailable'
+                    : `${Math.round(Number(data.raspberryPi.cpuFrequencyHz) / 1000000)} MHz`);
+
+            if (data.raspberryPi.health) {
+                const health = data.raspberryPi.health;
+                const currentWarning =
+                    health.underVoltage ||
+                    health.frequencyCapped ||
+                    health.throttled ||
+                    health.softTemperatureLimit;
+                const historicalWarning =
+                    health.underVoltageOccurred ||
+                    health.frequencyCappingOccurred ||
+                    health.throttlingOccurred ||
+                    health.softTemperatureLimitOccurred;
+                setText('pi-health-current', currentWarning ? 'Warning' : 'Normal');
+                setText(
+                    'pi-health-history',
+                    historicalWarning ? 'Events recorded' : 'No events recorded');
+            }
         }
 
         setText('memory-usage', formatPercent(data.memory.usagePercent));

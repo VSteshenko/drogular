@@ -62,6 +62,14 @@ std::string formatTemperature(double celsius) {
     return stream.str();
 }
 
+std::string formatFrequency(std::uint64_t hertz) {
+    constexpr double megaHertz = 1000000.0;
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(0)
+           << static_cast<double>(hertz) / megaHertz << " MHz";
+    return stream.str();
+}
+
 double percentOf(std::uint64_t used, std::uint64_t total) {
     if (total == 0) {
         return 0.0;

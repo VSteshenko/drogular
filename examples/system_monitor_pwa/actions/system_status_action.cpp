@@ -76,6 +76,31 @@ Json::Value toJson(
         } else {
             raspberryPi["temperatureCelsius"] = Json::nullValue;
         }
+
+        if (snapshot.raspberryPi->cpuFrequencyHz) {
+            raspberryPi["cpuFrequencyHz"] =
+                Json::UInt64(*snapshot.raspberryPi->cpuFrequencyHz);
+        } else {
+            raspberryPi["cpuFrequencyHz"] = Json::nullValue;
+        }
+
+        if (snapshot.raspberryPi->health) {
+            const auto& source = *snapshot.raspberryPi->health;
+            Json::Value health(Json::objectValue);
+            health["underVoltage"] = source.underVoltage;
+            health["frequencyCapped"] = source.frequencyCapped;
+            health["throttled"] = source.throttled;
+            health["softTemperatureLimit"] = source.softTemperatureLimit;
+            health["underVoltageOccurred"] = source.underVoltageOccurred;
+            health["frequencyCappingOccurred"] = source.frequencyCappingOccurred;
+            health["throttlingOccurred"] = source.throttlingOccurred;
+            health["softTemperatureLimitOccurred"] =
+                source.softTemperatureLimitOccurred;
+            raspberryPi["health"] = std::move(health);
+        } else {
+            raspberryPi["health"] = Json::nullValue;
+        }
+
         root["raspberryPi"] = std::move(raspberryPi);
     } else {
         root["raspberryPi"] = Json::nullValue;

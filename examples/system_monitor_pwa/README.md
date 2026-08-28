@@ -57,6 +57,72 @@ uname -r
 uname -m
 ```
 
+Raspberry Pi health monitoring also uses `vcgencmd get_throttled`. A dedicated
+unprivileged account may not have access to the firmware device by default. If
+
+```bash
+su - monitor
+vcgencmd get_throttled
+```
+
+fails with an error such as:
+
+```text
+Can't open device file: /dev/vcio_gencmd
+```
+
+grant the `monitor` account access through the `video` group. First make sure
+the group exists:
+
+```bash
+getent group video
+sudo usermod -aG video monitor
+```
+
+Do not add `monitor` to `sudo`. Grant access only to the firmware device nodes.
+To make the device permissions persistent across reboots, create
+`/etc/udev/rules.d/99-vcio.rules`:
+
+```text
+KERNEL=="vcio", GROUP="video", MODE="0660"
+KERNEL=="vcio_gencmd", GROUP="video", MODE="0660"
+```
+
+Reload the udev rules and apply them:
+
+```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+Start a new login or SSH session for `monitor` so that its new group membership
+takes effect, then verify the setup:
+
+```bash
+groups
+ls -l /dev/vcio /dev/vcio_gencmd
+vcgencmd get_throttled
+```
+
+A healthy Raspberry Pi normally reports:
+
+```text
+throttled=0x0
+```
+
+If `vcgencmd` is unavailable or the firmware status cannot be read, System
+Monitor keeps Raspberry Pi health optional: the rest of the snapshot remains
+available and the API reports `raspberryPi.health` as `null`.
+
+CPU frequency is read independently from Linux cpufreq and does not require
+firmware access:
+
+```bash
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+```
+
+The value is reported in kHz by Linux and converted to Hz by System Monitor.
+
 ### 2. Create a host-side SSH key
 
 On the machine running System Monitor:

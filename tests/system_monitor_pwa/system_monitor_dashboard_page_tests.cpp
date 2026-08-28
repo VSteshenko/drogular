@@ -29,6 +29,17 @@ public:
         value.system.architecture = "arm64";
         value.system.uptimeSeconds = 90060;
 
+        system_monitor::RaspberryPiHealth health;
+        health.underVoltageOccurred = true;
+        value.raspberryPi = system_monitor::RaspberryPiInfo{
+            .model = "Raspberry Pi 4 Model B Rev 1.4",
+            .revision = "c03114",
+            .serial = "10000000a5bd2dd2",
+            .temperatureCelsius = 38.946,
+            .cpuFrequencyHz = 1500000000ULL,
+            .health = health
+        };
+
         system_monitor::DiskInfo disk;
         disk.device = "/dev/test";
         disk.mountPoint = "/";
@@ -70,6 +81,10 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "/dev/test"));
     EXPECT_TRUE(drogular::test::contains(result.html, "apfs"));
     EXPECT_TRUE(drogular::test::contains(result.html, "Darwin test"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "Raspberry Pi 4 Model B Rev 1.4"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "1500 MHz"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "38.9 °C"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "Events recorded"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"cpu-usage\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"memory-usage\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-disk=\"/\""));

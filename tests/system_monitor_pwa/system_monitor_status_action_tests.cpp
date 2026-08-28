@@ -29,6 +29,18 @@ public:
         value.system.architecture = "arm64";
         value.system.uptimeSeconds = 3600;
 
+        system_monitor::RaspberryPiHealth health;
+        health.underVoltage = true;
+        health.throttlingOccurred = true;
+        value.raspberryPi = system_monitor::RaspberryPiInfo{
+            .model = "Raspberry Pi 4 Model B Rev 1.4",
+            .revision = "c03114",
+            .serial = "10000000a5bd2dd2",
+            .temperatureCelsius = 38.946,
+            .cpuFrequencyHz = 1500000000ULL,
+            .health = health
+        };
+
         system_monitor::DiskInfo disk;
         disk.device = "/dev/test";
         disk.mountPoint = "/";
@@ -68,6 +80,14 @@ TEST(SystemMonitorStatusActionTests, ReturnsCurrentSnapshotAsJson) {
     EXPECT_DOUBLE_EQ(json["memory"]["usagePercent"].asDouble(), 25.0);
     EXPECT_EQ(json["system"]["hostname"].asString(), "api-test");
     EXPECT_EQ(json["system"]["uptimeSeconds"].asUInt64(), 3600U);
+    ASSERT_TRUE(json["raspberryPi"].isObject());
+    EXPECT_EQ(
+        json["raspberryPi"]["model"].asString(),
+        "Raspberry Pi 4 Model B Rev 1.4");
+    EXPECT_EQ(json["raspberryPi"]["cpuFrequencyHz"].asUInt64(), 1500000000ULL);
+    EXPECT_TRUE(json["raspberryPi"]["health"]["underVoltage"].asBool());
+    EXPECT_TRUE(json["raspberryPi"]["health"]["throttlingOccurred"].asBool());
+    EXPECT_FALSE(json["raspberryPi"]["health"]["throttled"].asBool());
     ASSERT_EQ(json["disks"].size(), 1U);
     EXPECT_EQ(json["disks"][0]["mountPoint"].asString(), "/");
     EXPECT_DOUBLE_EQ(json["disks"][0]["usagePercent"].asDouble(), 25.0);

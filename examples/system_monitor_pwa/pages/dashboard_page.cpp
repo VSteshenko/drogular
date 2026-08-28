@@ -70,6 +70,30 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
             snapshot.raspberryPi->temperatureCelsius
                 ? ui::formatTemperature(*snapshot.raspberryPi->temperatureCelsius)
                 : std::string("Unavailable"));
+        context.set(
+            "raspberryPiFrequency",
+            snapshot.raspberryPi->cpuFrequencyHz
+                ? ui::formatFrequency(*snapshot.raspberryPi->cpuFrequencyHz)
+                : std::string("Unavailable"));
+
+        context.set("hasRaspberryPiHealth", snapshot.raspberryPi->health.has_value());
+        if (snapshot.raspberryPi->health) {
+            const auto& health = *snapshot.raspberryPi->health;
+            context.set(
+                "raspberryPiHealthCurrent",
+                health.underVoltage || health.frequencyCapped ||
+                        health.throttled || health.softTemperatureLimit
+                    ? std::string("Warning")
+                    : std::string("Normal"));
+            context.set(
+                "raspberryPiHealthHistory",
+                health.underVoltageOccurred ||
+                        health.frequencyCappingOccurred ||
+                        health.throttlingOccurred ||
+                        health.softTemperatureLimitOccurred
+                    ? std::string("Events recorded")
+                    : std::string("No events recorded"));
+        }
     }
 
     context.set("hasDisks", !snapshot.disks.empty());

@@ -39,11 +39,25 @@ struct SystemInfo {
     std::uint64_t uptimeSeconds{0};
 };
 
+struct RaspberryPiHealth {
+    bool underVoltage{false};
+    bool frequencyCapped{false};
+    bool throttled{false};
+    bool softTemperatureLimit{false};
+
+    bool underVoltageOccurred{false};
+    bool frequencyCappingOccurred{false};
+    bool throttlingOccurred{false};
+    bool softTemperatureLimitOccurred{false};
+};
+
 struct RaspberryPiInfo {
     std::string model;
     std::string revision;
     std::string serial;
     std::optional<double> temperatureCelsius;
+    std::optional<std::uint64_t> cpuFrequencyHz;
+    std::optional<RaspberryPiHealth> health;
 };
 
 struct ProcessInfo {

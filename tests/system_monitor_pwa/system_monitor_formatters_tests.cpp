@@ -24,6 +24,10 @@ TEST(SystemMonitorFormattersTests, FormatsTemperature) {
     EXPECT_EQ(system_monitor::ui::formatTemperature(48.725), "48.7 °C");
 }
 
+TEST(SystemMonitorFormattersTests, FormatsFrequency) {
+    EXPECT_EQ(system_monitor::ui::formatFrequency(1500000000ULL), "1500 MHz");
+}
+
 TEST(SystemMonitorFormattersTests, CalculatesPercentSafely) {
     EXPECT_DOUBLE_EQ(system_monitor::ui::percentOf(50, 200), 25.0);
     EXPECT_DOUBLE_EQ(system_monitor::ui::percentOf(1, 0), 0.0);
