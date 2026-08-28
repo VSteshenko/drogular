@@ -2,6 +2,7 @@ set(SYSTEM_MONITOR_CORE_SOURCES
     services/system_monitor.cpp
     ui/system_formatters.cpp
     platform/linux_system_metrics_provider.cpp
+    platform/raspberry_pi_probe.cpp
     ssh/ssh_system_reader.cpp
 )
 

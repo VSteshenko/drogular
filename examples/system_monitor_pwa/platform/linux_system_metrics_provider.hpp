@@ -1,5 +1,6 @@
 #pragma once
 
+#include "platform/raspberry_pi_probe.hpp"
 #include "system/system_metrics_provider.hpp"
 #include "system/system_reader.hpp"
 
@@ -23,13 +24,13 @@ private:
     };
 
     [[nodiscard]] CpuInfo readCpu();
-    [[nodiscard]] std::optional<RaspberryPiInfo> readRaspberryPi() const;
     [[nodiscard]] MemoryInfo readMemory() const;
     [[nodiscard]] std::vector<DiskInfo> readDisks() const;
     [[nodiscard]] SystemInfo readSystem() const;
     [[nodiscard]] CpuTicks readCpuTicks() const;
 
     std::shared_ptr<SystemReader> reader_;
+    RaspberryPiProbe raspberryPiProbe_;
     std::mutex cpuMutex_;
     std::optional<CpuTicks> previousCpuTicks_;
 };
