@@ -4,6 +4,7 @@
 
 #include <array>
 #include <chrono>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -140,19 +141,59 @@ void appendAvailable(ssh_session session,
 class LibsshClient::Impl final {
 public:
     ~Impl() {
-        disconnect();
+        closeSession();
     }
 
     void connect(const SshTargetOptions& options) {
-        disconnect();
+        validateOptions(options);
 
+        closeSession();
+        reconnectOptions_.reset();
+
+        try {
+            establishConnection(options);
+            reconnectOptions_ = options;
+        } catch (...) {
+            closeSession();
+            throw;
+        }
+    }
+
+    void disconnect() noexcept {
+        reconnectOptions_.reset();
+        closeSession();
+    }
+
+    [[nodiscard]] SshConnectionState state() const noexcept {
+        return state_;
+    }
+
+    [[nodiscard]] CommandResult execute(std::string_view command) {
+        ensureConnected();
+
+        try {
+            return executeConnected(command);
+        } catch (const SshError& error) {
+            if (error.code() == SshErrorCode::TransportError ||
+                error.code() == SshErrorCode::NotConnected
+            ) {
+                closeSession();
+            }
+            throw;
+        }
+    }
+
+private:
+    static void validateOptions(const SshTargetOptions& options) {
         if (options.host.empty()) {
             throw std::invalid_argument("SSH host must not be empty");
         }
         if (options.user.empty()) {
             throw std::invalid_argument("SSH user must not be empty");
         }
+    }
 
+    void establishConnection(const SshTargetOptions& options) {
         state_ = SshConnectionState::Connecting;
         session_ = ssh_new();
         if (session_ == nullptr) {
@@ -199,29 +240,31 @@ public:
 
             state_ = SshConnectionState::Connected;
         } catch (...) {
-            disconnect();
+            closeSession();
             throw;
         }
     }
 
-    void disconnect() noexcept {
-        if (session_ != nullptr) {
-            if (ssh_is_connected(session_)) {
-                ssh_disconnect(session_);
-            }
-            ssh_free(session_);
-            session_ = nullptr;
+    void ensureConnected() {
+        if (state_ == SshConnectionState::Connected &&
+            session_ != nullptr &&
+            ssh_is_connected(session_)) {
+            return;
         }
-        state_ = SshConnectionState::Disconnected;
+
+        closeSession();
+
+        if (!reconnectOptions_) {
+            throw SshError(SshErrorCode::NotConnected, "SSH client is not connected");
+        }
+
+        establishConnection(*reconnectOptions_);
     }
 
-    [[nodiscard]] SshConnectionState state() const noexcept {
-        return state_;
-    }
-
-    [[nodiscard]] CommandResult execute(std::string_view command) {
-        if (state_ != SshConnectionState::Connected || session_ == nullptr || !ssh_is_connected(session_)) {
-            state_ = SshConnectionState::Disconnected;
+    [[nodiscard]] CommandResult executeConnected(std::string_view command) {
+        if (state_ != SshConnectionState::Connected ||
+            session_ == nullptr ||
+            !ssh_is_connected(session_)) {
             throw SshError(SshErrorCode::NotConnected, "SSH client is not connected");
         }
 
@@ -265,9 +308,20 @@ public:
         return result;
     }
 
-private:
+    void closeSession() noexcept {
+        if (session_ != nullptr) {
+            if (ssh_is_connected(session_)) {
+                ssh_disconnect(session_);
+            }
+            ssh_free(session_);
+            session_ = nullptr;
+        }
+        state_ = SshConnectionState::Disconnected;
+    }
+
     ssh_session session_{nullptr};
     SshConnectionState state_{SshConnectionState::Disconnected};
+    std::optional<SshTargetOptions> reconnectOptions_;
 };
 
 LibsshClient::LibsshClient()

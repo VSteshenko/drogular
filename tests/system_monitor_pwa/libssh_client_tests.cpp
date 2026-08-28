@@ -20,7 +20,7 @@ TEST(LibsshClientTests, DisconnectIsIdempotent) {
     EXPECT_EQ(client.state(), system_monitor::SshConnectionState::Disconnected);
 }
 
-TEST(LibsshClientTests, ExecuteRequiresConnection) {
+TEST(LibsshClientTests, ExecuteRequiresInitialConnection) {
     system_monitor::LibsshClient client;
 
     try {

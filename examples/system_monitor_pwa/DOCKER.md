@@ -50,6 +50,30 @@ docker compose -f examples/system_monitor_pwa/docker-compose.yml \
     --profile ssh-test up --build system-monitor-ssh
 ```
 
+
+### SSH recovery test
+
+With the `ssh-test` profile running, stop only the monitored target:
+
+```bash
+docker compose -f examples/system_monitor_pwa/docker-compose.yml \
+    --profile ssh-test stop ssh-target
+```
+
+The remote dashboard on <http://localhost:8081> should switch to `Stale` and
+continue showing the last successful snapshot.
+
+Start the target again:
+
+```bash
+docker compose -f examples/system_monitor_pwa/docker-compose.yml \
+    --profile ssh-test start ssh-target
+```
+
+The next refresh after SSH becomes available should reconnect automatically,
+produce a fresh snapshot, and return the dashboard to `Live`. Restarting
+`system-monitor-ssh` should not be necessary.
+
 Remove the containers and generated SSH fixture volume with:
 
 ```bash
