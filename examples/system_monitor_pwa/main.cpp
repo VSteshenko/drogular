@@ -1,16 +1,16 @@
 #include "actions/system_status_action.hpp"
 #include "pages/dashboard_page.hpp"
+#include "platform/linux_system_metrics_provider.hpp"
 #if defined(__APPLE__)
 #include "platform/macos_system_metrics_provider.hpp"
 #elif defined(__linux__)
-#include "platform/linux_system_metrics_provider.hpp"
 #include "platform/local_linux_system_reader.hpp"
+#else
+#error "system_monitor_pwa currently supports macOS and Linux"
+#endif
 #if SYSTEM_MONITOR_HAS_LIBSSH
 #include "ssh/libssh_client.hpp"
 #include "ssh/ssh_system_reader.hpp"
-#endif
-#else
-#error "system_monitor_pwa currently supports macOS and Linux"
 #endif
 #include "services/system_monitor.hpp"
 #include "system/system_metrics_provider.hpp"
@@ -48,18 +48,7 @@ namespace {
     return static_cast<std::uint16_t>(port);
 }
 
-#if defined(__linux__)
-[[nodiscard]] std::shared_ptr<system_monitor::SystemMetricsProvider> makeLinuxProvider() {
-    const char* target = environmentValue("SYSTEM_MONITOR_TARGET");
-    if (target == nullptr || std::string_view(target) == "local") {
-        auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
-        return std::make_shared<system_monitor::LinuxSystemMetricsProvider>(reader);
-    }
-
-    if (std::string_view(target) != "ssh") {
-        throw std::invalid_argument("SYSTEM_MONITOR_TARGET must be 'local' or 'ssh'");
-    }
-
+[[nodiscard]] std::shared_ptr<system_monitor::SystemMetricsProvider> makeSshProvider() {
 #if SYSTEM_MONITOR_HAS_LIBSSH
     system_monitor::SshTargetOptions options;
 
@@ -88,7 +77,28 @@ namespace {
         "SYSTEM_MONITOR_TARGET=ssh requested, but system_monitor_pwa was built without libssh");
 #endif
 }
+
+[[nodiscard]] std::shared_ptr<system_monitor::SystemMetricsProvider> makeLocalProvider() {
+#if defined(__APPLE__)
+    return std::make_shared<system_monitor::MacOsSystemMetricsProvider>();
+#elif defined(__linux__)
+    auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
+    return std::make_shared<system_monitor::LinuxSystemMetricsProvider>(reader);
 #endif
+}
+
+[[nodiscard]] std::shared_ptr<system_monitor::SystemMetricsProvider> makeProvider() {
+    const char* target = environmentValue("SYSTEM_MONITOR_TARGET");
+    if (target == nullptr || std::string_view(target) == "local") {
+        return makeLocalProvider();
+    }
+
+    if (std::string_view(target) == "ssh") {
+        return makeSshProvider();
+    }
+
+    throw std::invalid_argument("SYSTEM_MONITOR_TARGET must be 'local' or 'ssh'");
+}
 
 } // namespace
 
@@ -103,11 +113,7 @@ int main() {
        .staticFileCacheProfile(drogular::StaticFileCacheProfile::Development)
        .profile(drogular::ApplicationProfile::Development);
 
-#if defined(__APPLE__)
-    auto provider = std::make_shared<system_monitor::MacOsSystemMetricsProvider>();
-#elif defined(__linux__)
-    auto provider = makeLinuxProvider();
-#endif
+    auto provider = makeProvider();
     app.services().registerService<system_monitor::SystemMetricsProvider>(provider);
     app.services().add<system_monitor::SystemMonitor>(provider);
 
