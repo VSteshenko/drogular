@@ -67,6 +67,20 @@
     @endif
 </section>
 
+@if(hasRaspberryPi)
+<section class="panel system-panel">
+    <div>
+        <p class="eyebrow">Raspberry Pi</p>
+        <h2 data-monitor-field="pi-model">{{ raspberryPiModel }}</h2>
+    </div>
+    <dl class="system-info">
+        <div><dt>Revision</dt><dd data-monitor-field="pi-revision">{{ raspberryPiRevision }}</dd></div>
+        <div><dt>Serial</dt><dd data-monitor-field="pi-serial">{{ raspberryPiSerial }}</dd></div>
+        <div><dt>CPU temperature</dt><dd data-monitor-field="pi-temperature">{{ raspberryPiTemperature }}</dd></div>
+    </dl>
+</section>
+@endif
+
 <section class="panel system-panel">
     <div>
         <p class="eyebrow">System</p>

@@ -23,6 +23,7 @@ private:
     };
 
     [[nodiscard]] CpuInfo readCpu();
+    [[nodiscard]] std::optional<RaspberryPiInfo> readRaspberryPi() const;
     [[nodiscard]] MemoryInfo readMemory() const;
     [[nodiscard]] std::vector<DiskInfo> readDisks() const;
     [[nodiscard]] SystemInfo readSystem() const;

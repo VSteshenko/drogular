@@ -136,6 +136,17 @@
         setText('load-5', Number(data.cpu.load5).toFixed(2));
         setText('load-15', Number(data.cpu.load15).toFixed(2));
 
+        if (data.raspberryPi) {
+            setText('pi-model', data.raspberryPi.model);
+            setText('pi-revision', data.raspberryPi.revision);
+            setText('pi-serial', data.raspberryPi.serial);
+            setText(
+                'pi-temperature',
+                data.raspberryPi.temperatureCelsius == null
+                    ? 'Unavailable'
+                    : `${Number(data.raspberryPi.temperatureCelsius).toFixed(1)} °C`);
+        }
+
         setText('memory-usage', formatPercent(data.memory.usagePercent));
         setProgress('memory-progress', data.memory.usagePercent);
         setText('memory-summary', `${formatBytes(data.memory.usedBytes)} of ${formatBytes(data.memory.totalBytes)} used`);

@@ -27,6 +27,11 @@ Json::Value toJson(
     cpu["load1"] = snapshot.cpu.load1;
     cpu["load5"] = snapshot.cpu.load5;
     cpu["load15"] = snapshot.cpu.load15;
+    if (snapshot.cpu.temperatureCelsius) {
+        cpu["temperatureCelsius"] = *snapshot.cpu.temperatureCelsius;
+    } else {
+        cpu["temperatureCelsius"] = Json::nullValue;
+    }
     root["cpu"] = std::move(cpu);
 
     const auto memoryPercent = ui::percentOf(
@@ -60,6 +65,21 @@ Json::Value toJson(
     system["architecture"] = snapshot.system.architecture;
     system["uptimeSeconds"] = Json::UInt64(snapshot.system.uptimeSeconds);
     root["system"] = std::move(system);
+
+    if (snapshot.raspberryPi) {
+        Json::Value raspberryPi(Json::objectValue);
+        raspberryPi["model"] = snapshot.raspberryPi->model;
+        raspberryPi["revision"] = snapshot.raspberryPi->revision;
+        raspberryPi["serial"] = snapshot.raspberryPi->serial;
+        if (snapshot.raspberryPi->temperatureCelsius) {
+            raspberryPi["temperatureCelsius"] = *snapshot.raspberryPi->temperatureCelsius;
+        } else {
+            raspberryPi["temperatureCelsius"] = Json::nullValue;
+        }
+        root["raspberryPi"] = std::move(raspberryPi);
+    } else {
+        root["raspberryPi"] = Json::nullValue;
+    }
 
     Json::Value monitor(Json::objectValue);
     monitor["updates"] = Json::UInt64(statistics.updates);

@@ -20,6 +20,10 @@ TEST(SystemMonitorFormattersTests, FormatsAndClampsPercent) {
     EXPECT_EQ(system_monitor::ui::formatPercent(120.0), "100.0%");
 }
 
+TEST(SystemMonitorFormattersTests, FormatsTemperature) {
+    EXPECT_EQ(system_monitor::ui::formatTemperature(48.725), "48.7 °C");
+}
+
 TEST(SystemMonitorFormattersTests, CalculatesPercentSafely) {
     EXPECT_DOUBLE_EQ(system_monitor::ui::percentOf(50, 200), 25.0);
     EXPECT_DOUBLE_EQ(system_monitor::ui::percentOf(1, 0), 0.0);

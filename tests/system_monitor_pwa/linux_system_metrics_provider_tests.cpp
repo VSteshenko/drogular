@@ -87,6 +87,49 @@ TEST(LinuxSystemMetricsProviderTests, SnapshotParsesLinuxReaderData) {
     EXPECT_FALSE(snapshot.raspberryPi.has_value());
 }
 
+TEST(LinuxSystemMetricsProviderTests, DetectsRaspberryPiAndReadsBoardInformation) {
+    auto reader = makeReader();
+    reader->files["/proc/cpuinfo"] =
+        "processor : 0\n"
+        "processor : 1\n"
+        "processor : 2\n"
+        "processor : 3\n"
+        "Model : Raspberry Pi 4 Model B Rev 1.5\n"
+        "Revision : c03115\n"
+        "Serial : 1000000012345678\n";
+    reader->commands["cat /sys/class/thermal/thermal_zone0/temp"] =
+        {0, "48725\n", {}};
+
+    system_monitor::LinuxSystemMetricsProvider provider(reader);
+    const auto snapshot = provider.snapshot();
+
+    ASSERT_TRUE(snapshot.raspberryPi.has_value());
+    EXPECT_EQ(snapshot.raspberryPi->model, "Raspberry Pi 4 Model B Rev 1.5");
+    EXPECT_EQ(snapshot.raspberryPi->revision, "c03115");
+    EXPECT_EQ(snapshot.raspberryPi->serial, "1000000012345678");
+    ASSERT_TRUE(snapshot.raspberryPi->temperatureCelsius.has_value());
+    EXPECT_DOUBLE_EQ(*snapshot.raspberryPi->temperatureCelsius, 48.725);
+    ASSERT_TRUE(snapshot.cpu.temperatureCelsius.has_value());
+    EXPECT_DOUBLE_EQ(*snapshot.cpu.temperatureCelsius, 48.725);
+}
+
+TEST(LinuxSystemMetricsProviderTests, RaspberryPiTemperatureIsOptional) {
+    auto reader = makeReader();
+    reader->files["/proc/cpuinfo"] +=
+        "Model : Raspberry Pi 4 Model B Rev 1.5\n"
+        "Revision : c03115\n"
+        "Serial : 1000000012345678\n";
+    reader->commands["cat /sys/class/thermal/thermal_zone0/temp"] =
+        {1, {}, "not available"};
+
+    system_monitor::LinuxSystemMetricsProvider provider(reader);
+    const auto snapshot = provider.snapshot();
+
+    ASSERT_TRUE(snapshot.raspberryPi.has_value());
+    EXPECT_FALSE(snapshot.raspberryPi->temperatureCelsius.has_value());
+    EXPECT_FALSE(snapshot.cpu.temperatureCelsius.has_value());
+}
+
 TEST(LinuxSystemMetricsProviderTests, CpuUsageUsesDeltaBetweenSnapshots) {
     auto reader = makeReader();
     system_monitor::LinuxSystemMetricsProvider provider(reader);

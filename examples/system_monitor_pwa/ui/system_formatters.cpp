@@ -55,6 +55,13 @@ std::string formatPercent(double value) {
     return stream.str();
 }
 
+std::string formatTemperature(double celsius) {
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(1)
+           << celsius << " °C";
+    return stream.str();
+}
+
 double percentOf(std::uint64_t used, std::uint64_t total) {
     if (total == 0) {
         return 0.0;

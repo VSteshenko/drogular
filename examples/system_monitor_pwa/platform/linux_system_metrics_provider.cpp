@@ -97,6 +97,10 @@ SystemSnapshot LinuxSystemMetricsProvider::snapshot() {
     result.memory = readMemory();
     result.disks = readDisks();
     result.system = readSystem();
+    result.raspberryPi = readRaspberryPi();
+    if (result.raspberryPi && result.raspberryPi->temperatureCelsius) {
+        result.cpu.temperatureCelsius = result.raspberryPi->temperatureCelsius;
+    }
     return result;
 }
 
@@ -146,6 +150,50 @@ CpuInfo LinuxSystemMetricsProvider::readCpu() {
     }
     previousCpuTicks_ = current;
     info.usagePercent = std::clamp(info.usagePercent, 0.0, 100.0);
+
+    return info;
+}
+
+
+std::optional<RaspberryPiInfo> LinuxSystemMetricsProvider::readRaspberryPi() const {
+    const auto cpuInfoText = reader_->readFile("/proc/cpuinfo");
+    std::istringstream cpuInfo(cpuInfoText);
+    std::string line;
+    RaspberryPiInfo info;
+
+    while (std::getline(cpuInfo, line)) {
+        const auto colon = line.find(':');
+        if (colon == std::string::npos) {
+            continue;
+        }
+
+        const auto key = trim(line.substr(0, colon));
+        const auto value = trim(line.substr(colon + 1));
+        if (key == "Model") {
+            info.model = value;
+        } else if (key == "Revision") {
+            info.revision = value;
+        } else if (key == "Serial") {
+            info.serial = value;
+        }
+    }
+
+    if (info.model.rfind("Raspberry Pi", 0) != 0) {
+        return std::nullopt;
+    }
+
+    const auto temperature = reader_->execute("cat /sys/class/thermal/thermal_zone0/temp");
+    if (temperature.succeeded()) {
+        const auto text = trim(temperature.standardOutput);
+        std::uint64_t milliCelsius = 0;
+        const auto parsed = std::from_chars(
+            text.data(),
+            text.data() + text.size(),
+            milliCelsius);
+        if (parsed.ec == std::errc{} && parsed.ptr == text.data() + text.size()) {
+            info.temperatureCelsius = static_cast<double>(milliCelsius) / 1000.0;
+        }
+    }
 
     return info;
 }

@@ -60,6 +60,18 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
         disks.append(std::move(disk));
     }
 
+    context.set("hasRaspberryPi", snapshot.raspberryPi.has_value());
+    if (snapshot.raspberryPi) {
+        context.set("raspberryPiModel", snapshot.raspberryPi->model);
+        context.set("raspberryPiRevision", snapshot.raspberryPi->revision);
+        context.set("raspberryPiSerial", snapshot.raspberryPi->serial);
+        context.set(
+            "raspberryPiTemperature",
+            snapshot.raspberryPi->temperatureCelsius
+                ? ui::formatTemperature(*snapshot.raspberryPi->temperatureCelsius)
+                : std::string("Unavailable"));
+    }
+
     context.set("hasDisks", !snapshot.disks.empty());
     context.set("disks", std::move(disks));
 }
