@@ -75,17 +75,6 @@ add_executable(drogular_tests
     core/core_route_pattern_tests.cpp
     core/core_json_conversion_tests.cpp
     support/html_test_support_tests.cpp
-    # system_monitor_pwa
-    system_monitor_pwa/system_monitor_model_tests.cpp
-    system_monitor_pwa/macos_system_metrics_provider_tests.cpp
-    system_monitor_pwa/linux_system_metrics_provider_tests.cpp
-    system_monitor_pwa/ssh_client_tests.cpp
-    system_monitor_pwa/system_monitor_service_tests.cpp
-    system_monitor_pwa/system_monitor_formatters_tests.cpp
-    ../examples/system_monitor_pwa/pages/dashboard_page.cpp
-    ../examples/system_monitor_pwa/actions/system_status_action.cpp
-    system_monitor_pwa/system_monitor_dashboard_page_tests.cpp
-    system_monitor_pwa/system_monitor_status_action_tests.cpp
     # todo_pwa
     ../examples/todo_pwa/todo_page.cpp
     todo_pwa/todo_pwa_todo_page_tests.cpp
@@ -113,7 +102,6 @@ target_link_libraries(drogular_tests
     PRIVATE
     Drogular::drogular
     GTest::gtest_main
-    system_monitor_core
 )
 
 target_include_directories(drogular_tests
@@ -183,6 +171,38 @@ target_link_libraries(drogular_portal_demo_tests
     GTest::gtest_main
 )
 
+add_executable(drogular_system_monitor_pwa_tests
+    ../examples/system_monitor_pwa/pages/dashboard_page.cpp
+    ../examples/system_monitor_pwa/actions/system_status_action.cpp
+    system_monitor_pwa/system_monitor_model_tests.cpp
+    system_monitor_pwa/macos_system_metrics_provider_tests.cpp
+    system_monitor_pwa/linux_system_metrics_provider_tests.cpp
+    system_monitor_pwa/ssh_client_tests.cpp
+    system_monitor_pwa/ssh_system_reader_tests.cpp
+    system_monitor_pwa/system_monitor_service_tests.cpp
+    system_monitor_pwa/system_monitor_formatters_tests.cpp
+    system_monitor_pwa/system_monitor_dashboard_page_tests.cpp
+    system_monitor_pwa/system_monitor_status_action_tests.cpp
+)
+
+target_compile_definitions(drogular_system_monitor_pwa_tests
+    PRIVATE
+    DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+target_include_directories(drogular_system_monitor_pwa_tests
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests
+    ${CMAKE_SOURCE_DIR}/examples/system_monitor_pwa
+)
+
+target_link_libraries(drogular_system_monitor_pwa_tests
+    PRIVATE
+    Drogular::drogular
+    GTest::gtest_main
+    system_monitor_core
+)
+
 add_executable(drogular_project_generator_tests
     project_generator/project_generator_generation_tests.cpp
     project_generator/project_generator_file_renderer_tests.cpp
@@ -203,3 +223,4 @@ include(GoogleTest)
 gtest_discover_tests(drogular_tests)
 gtest_discover_tests(drogular_portal_demo_tests)
 gtest_discover_tests(drogular_project_generator_tests)
+gtest_discover_tests(drogular_system_monitor_pwa_tests)

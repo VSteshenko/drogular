@@ -140,7 +140,9 @@ TEST(SystemMonitorServiceTests, PropagatesInitialRefreshFailure) {
 
     system_monitor::SystemMonitor monitor(provider);
 
-    EXPECT_THROW(monitor.snapshot(), std::runtime_error);
+    EXPECT_THROW(
+        static_cast<void>(monitor.snapshot()),
+        std::runtime_error);
     const auto statistics = monitor.statistics();
     EXPECT_EQ(statistics.updates, 0U);
     EXPECT_EQ(statistics.failedUpdates, 1U);
