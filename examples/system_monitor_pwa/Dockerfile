@@ -14,6 +14,7 @@ RUN apt-get update \
         uuid-dev \
         zlib1g-dev \
         libssl-dev \
+        libssh-dev \
         libpq-dev \
         libsqlite3-dev \
         libmariadb-dev \
@@ -40,6 +41,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         libdrogon1t64 \
+        libssh-4 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

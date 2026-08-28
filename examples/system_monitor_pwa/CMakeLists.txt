@@ -5,6 +5,23 @@ set(SYSTEM_MONITOR_CORE_SOURCES
     ssh/ssh_system_reader.cpp
 )
 
+
+find_path(SYSTEM_MONITOR_LIBSSH_INCLUDE_DIR
+    NAMES libssh/libssh.h
+)
+
+find_library(SYSTEM_MONITOR_LIBSSH_LIBRARY
+    NAMES ssh libssh
+)
+
+set(SYSTEM_MONITOR_HAS_LIBSSH OFF)
+if(SYSTEM_MONITOR_LIBSSH_INCLUDE_DIR AND SYSTEM_MONITOR_LIBSSH_LIBRARY)
+    set(SYSTEM_MONITOR_HAS_LIBSSH ON)
+    list(APPEND SYSTEM_MONITOR_CORE_SOURCES
+        ssh/libssh_client.cpp
+    )
+endif()
+
 if(APPLE)
     list(APPEND SYSTEM_MONITOR_CORE_SOURCES
         platform/macos_system_metrics_provider.cpp
@@ -28,6 +45,28 @@ target_compile_features(system_monitor_core
     PUBLIC
         cxx_std_20
 )
+
+if(SYSTEM_MONITOR_HAS_LIBSSH)
+    target_include_directories(system_monitor_core
+        PRIVATE
+            ${SYSTEM_MONITOR_LIBSSH_INCLUDE_DIR}
+    )
+
+    target_link_libraries(system_monitor_core
+        PUBLIC
+            ${SYSTEM_MONITOR_LIBSSH_LIBRARY}
+    )
+
+    target_compile_definitions(system_monitor_core
+        PUBLIC
+            SYSTEM_MONITOR_HAS_LIBSSH=1
+    )
+else()
+    target_compile_definitions(system_monitor_core
+        PUBLIC
+            SYSTEM_MONITOR_HAS_LIBSSH=0
+    )
+endif()
 
 if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
     add_executable(system_monitor_pwa

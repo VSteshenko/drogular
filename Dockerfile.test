@@ -17,6 +17,7 @@ RUN apt-get update \
         uuid-dev \
         zlib1g-dev \
         libssl-dev \
+        libssh-dev \
         libpq-dev \
         libsqlite3-dev \
         libmariadb-dev \
