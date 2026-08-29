@@ -182,6 +182,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/gpiod_gpio_provider_tests.cpp
     system_monitor_pwa/gpio_service_tests.cpp
     system_monitor_pwa/gpio_status_action_tests.cpp
+    system_monitor_pwa/gpio_dashboard_assets_tests.cpp
     system_monitor_pwa/ssh_client_tests.cpp
     system_monitor_pwa/libssh_client_tests.cpp
     system_monitor_pwa/ssh_system_reader_tests.cpp

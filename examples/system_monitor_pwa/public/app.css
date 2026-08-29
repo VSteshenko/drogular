@@ -251,6 +251,126 @@ dd {
     font-size: .9rem;
 }
 
+.gpio-panel-heading {
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.gpio-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .25rem;
+    text-align: right;
+}
+.gpio-chip-list {
+    display: grid;
+    gap: .75rem;
+}
+.gpio-chip {
+    overflow: hidden;
+    border: 1px solid #263451;
+    border-radius: .8rem;
+    background: #0c1427;
+}
+.gpio-chip > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .9rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+.gpio-chip > summary::-webkit-details-marker {
+    display: none;
+}
+.gpio-chip > summary::after {
+    content: "▸";
+    color: #8fa8d8;
+    font-size: 1.05rem;
+    transition: transform .15s ease;
+}
+.gpio-chip[open] > summary::after {
+    transform: rotate(90deg);
+}
+.gpio-chip[open] > summary {
+    border-bottom: 1px solid #263451;
+}
+.gpio-chip-identity {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    min-width: 0;
+}
+.gpio-chip-identity strong,
+.gpio-chip-identity span {
+    overflow-wrap: anywhere;
+}
+.gpio-chip-stats {
+    margin-left: auto;
+    color: #aebddd;
+    white-space: nowrap;
+}
+.gpio-table-scroll {
+    overflow-x: auto;
+}
+.gpio-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+}
+.gpio-table th,
+.gpio-table td {
+    padding: .65rem .8rem;
+    border-bottom: 1px solid #1f2b45;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.gpio-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+.gpio-table th {
+    color: #8797b8;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.gpio-table tbody tr:hover {
+    background: #101a30;
+}
+.gpio-offset {
+    color: #8fa8d8;
+    font-variant-numeric: tabular-nums;
+}
+.gpio-badge {
+    display: inline-flex;
+    align-items: center;
+    min-width: 3.7rem;
+    justify-content: center;
+    padding: .22rem .45rem;
+    border: 1px solid #31415f;
+    border-radius: 999px;
+    background: #141f37;
+    color: #c7d4ed;
+    font-size: .76rem;
+    text-transform: capitalize;
+}
+.gpio-direction-output {
+    color: #f6cf84;
+}
+.gpio-direction-input {
+    color: #9fc5ff;
+}
+.gpio-used {
+    color: #f6cf84;
+}
+.gpio-free {
+    color: #8eddb7;
+}
+
 @media (max-width: 720px) {
     .header-content { align-items: flex-start; padding: 1rem 0; }
     .connection-status { align-items: flex-end; }
@@ -258,4 +378,8 @@ dd {
     .hero { align-items: start; }
     .metric-grid, .system-panel, .disk-row { grid-template-columns: 1fr; }
     .disk-usage > div { align-items: baseline; }
+    .gpio-panel-heading { align-items: flex-start; }
+    .gpio-overview { align-items: flex-end; }
+    .gpio-chip > summary { align-items: flex-start; }
+    .gpio-chip-stats { white-space: normal; text-align: right; }
 }

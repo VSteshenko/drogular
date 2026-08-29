@@ -1,9 +1,11 @@
 (() => {
     const POLL_INTERVAL_MS = 2000;
+    const GPIO_POLL_INTERVAL_MS = 30000;
     const MAX_RECONNECT_ATTEMPTS = 3;
 
     let reconnectAttempts = 0;
     let pollTimer = null;
+    let gpioPollTimer = null;
     let pollingStopped = false;
 
     const field = (name) => document.querySelector(`[data-monitor-field="${name}"]`);
@@ -221,6 +223,204 @@
         }
     };
 
+    const gpioPanel = document.querySelector('[data-gpio-panel]');
+    const gpioSummary = document.querySelector('[data-gpio-summary]');
+    const gpioStatus = document.querySelector('[data-gpio-status]');
+    const gpioChips = document.querySelector('[data-gpio-chips]');
+
+    const setGpioText = (element, value) => {
+        if (element) {
+            element.textContent = value;
+        }
+    };
+
+    const gpioFlags = (line) => {
+        const flags = [];
+        if (line.activeLow) {
+            flags.push('active-low');
+        }
+        if (line.drive && line.drive !== 'push-pull') {
+            flags.push(line.drive);
+        }
+        return flags.length > 0 ? flags.join(', ') : '—';
+    };
+
+    const createGpioLine = (line) => {
+        const row = document.createElement('tr');
+
+        const offset = document.createElement('td');
+        offset.className = 'gpio-offset';
+        offset.textContent = String(line.offset);
+
+        const name = document.createElement('td');
+        const nameValue = document.createElement('strong');
+        nameValue.textContent = line.name || 'Unnamed';
+        name.appendChild(nameValue);
+
+        const direction = document.createElement('td');
+        const directionBadge = document.createElement('span');
+        directionBadge.className = `gpio-badge gpio-direction gpio-direction-${line.direction || 'unknown'}`;
+        directionBadge.textContent = line.direction || 'unknown';
+        direction.appendChild(directionBadge);
+
+        const consumer = document.createElement('td');
+        consumer.textContent = line.consumer || '—';
+        if (!line.consumer) {
+            consumer.className = 'muted';
+        }
+
+        const flags = document.createElement('td');
+        flags.textContent = gpioFlags(line);
+        if (flags.textContent === '—') {
+            flags.className = 'muted';
+        }
+
+        const state = document.createElement('td');
+        const stateBadge = document.createElement('span');
+        stateBadge.className = `gpio-badge ${line.used ? 'gpio-used' : 'gpio-free'}`;
+        stateBadge.textContent = line.used ? 'Used' : 'Free';
+        state.appendChild(stateBadge);
+
+        row.append(offset, name, direction, consumer, flags, state);
+        return row;
+    };
+
+    const renderGpio = (data) => {
+        if (!gpioPanel || !gpioChips) {
+            return;
+        }
+
+        if (!data.available) {
+            gpioPanel.hidden = true;
+            return;
+        }
+
+        gpioPanel.hidden = false;
+
+        const chips = Array.isArray(data.chips) ? data.chips : [];
+        const totalLines = chips.reduce(
+            (sum, chip) => sum + (Array.isArray(chip.lines) ? chip.lines.length : 0),
+            0);
+        const usedLines = chips.reduce(
+            (sum, chip) => sum + (Array.isArray(chip.lines)
+                ? chip.lines.filter((line) => line.used).length
+                : 0),
+            0);
+
+        setGpioText(
+            gpioSummary,
+            `${chips.length} ${chips.length === 1 ? 'chip' : 'chips'} · ${totalLines} lines · ${usedLines} used`);
+
+        if (data.monitor?.healthy === false) {
+            setGpioText(
+                gpioStatus,
+                `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`);
+        } else {
+            const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
+            setGpioText(
+                gpioStatus,
+                updatedAt
+                    ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}`
+                    : 'GPIO inventory available');
+        }
+
+        const openChips = new Set(
+            Array.from(gpioChips.querySelectorAll('details[open][data-gpio-chip]'))
+                .map((details) => details.dataset.gpioChip));
+        const hadRenderedChips =
+            gpioChips.querySelector('details[data-gpio-chip]') !== null;
+
+        gpioChips.replaceChildren();
+
+        if (chips.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'muted';
+            empty.textContent = 'No GPIO chips detected.';
+            gpioChips.appendChild(empty);
+            return;
+        }
+
+        chips.forEach((chip, index) => {
+            const details = document.createElement('details');
+            details.className = 'gpio-chip';
+            details.dataset.gpioChip = chip.name;
+            details.open = hadRenderedChips
+                ? openChips.has(chip.name)
+                : index === 0;
+
+            const lines = Array.isArray(chip.lines) ? chip.lines : [];
+            const used = lines.filter((line) => line.used).length;
+
+            const summary = document.createElement('summary');
+            const identity = document.createElement('span');
+            identity.className = 'gpio-chip-identity';
+
+            const title = document.createElement('strong');
+            title.textContent = chip.name;
+            const label = document.createElement('span');
+            label.className = 'muted';
+            label.textContent = chip.label || 'Unlabelled GPIO chip';
+            identity.append(title, label);
+
+            const stats = document.createElement('span');
+            stats.className = 'gpio-chip-stats';
+            stats.textContent = `${chip.lineCount ?? lines.length} lines · ${used} used`;
+
+            summary.append(identity, stats);
+
+            const scroll = document.createElement('div');
+            scroll.className = 'gpio-table-scroll';
+
+            const table = document.createElement('table');
+            table.className = 'gpio-table';
+
+            const head = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            for (const titleText of ['Line', 'Name', 'Direction', 'Consumer', 'Flags', 'State']) {
+                const cell = document.createElement('th');
+                cell.scope = 'col';
+                cell.textContent = titleText;
+                headerRow.appendChild(cell);
+            }
+            head.appendChild(headerRow);
+
+            const body = document.createElement('tbody');
+            for (const line of lines) {
+                body.appendChild(createGpioLine(line));
+            }
+
+            table.append(head, body);
+            scroll.appendChild(table);
+            details.append(summary, scroll);
+            gpioChips.appendChild(details);
+        });
+    };
+
+    const pollGpio = async () => {
+        gpioPollTimer = null;
+
+        if (!gpioPanel) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/gpio', {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            renderGpio(data);
+        } catch (_) {
+            setGpioText(gpioStatus, 'GPIO inventory unavailable');
+        }
+
+        gpioPollTimer = window.setTimeout(pollGpio, GPIO_POLL_INTERVAL_MS);
+    };
+
     const retry = document.querySelector('[data-monitor-retry]');
     if (retry) {
         retry.addEventListener('click', () => {
@@ -238,4 +438,5 @@
     }
 
     schedulePoll();
+    pollGpio();
 })();
