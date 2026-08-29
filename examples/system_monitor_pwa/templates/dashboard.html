@@ -98,6 +98,15 @@
         </div>
     </div>
 
+    <div class="gpio-toolbar" aria-label="GPIO line filter">
+        <span class="muted">Show</span>
+        <div class="gpio-filter-group" data-gpio-filters>
+            <button type="button" class="gpio-filter" data-gpio-filter="all" aria-pressed="false">All</button>
+            <button type="button" class="gpio-filter is-active" data-gpio-filter="used" aria-pressed="true">Used</button>
+            <button type="button" class="gpio-filter" data-gpio-filter="free" aria-pressed="false">Free</button>
+        </div>
+    </div>
+
     <div class="gpio-chip-list" data-gpio-chips>
         <p class="muted">Loading GPIO chips…</p>
     </div>

@@ -94,5 +94,8 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-panel"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-summary"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-chips"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-filters"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-filter=\"used\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "aria-pressed=\"true\">Used</button>"));
     EXPECT_TRUE(drogular::test::contains(result.html, ">GPIO</h2>"));
 }

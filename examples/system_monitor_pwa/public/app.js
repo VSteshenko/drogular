@@ -227,6 +227,9 @@
     const gpioSummary = document.querySelector('[data-gpio-summary]');
     const gpioStatus = document.querySelector('[data-gpio-status]');
     const gpioChips = document.querySelector('[data-gpio-chips]');
+    const gpioFilters = document.querySelector('[data-gpio-filters]');
+    let gpioFilter = 'used';
+    let gpioData = null;
 
     const setGpioText = (element, value) => {
         if (element) {
@@ -285,7 +288,31 @@
         return row;
     };
 
+    const gpioLineMatchesFilter = (line) => {
+        if (gpioFilter === 'used') {
+            return line.used;
+        }
+        if (gpioFilter === 'free') {
+            return !line.used;
+        }
+        return true;
+    };
+
+    const updateGpioFilterButtons = () => {
+        if (!gpioFilters) {
+            return;
+        }
+
+        for (const button of gpioFilters.querySelectorAll('[data-gpio-filter]')) {
+            const active = button.dataset.gpioFilter === gpioFilter;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
+    };
+
     const renderGpio = (data) => {
+        gpioData = data;
+
         if (!gpioPanel || !gpioChips) {
             return;
         }
@@ -349,6 +376,7 @@
                 : index === 0;
 
             const lines = Array.isArray(chip.lines) ? chip.lines : [];
+            const visibleLines = lines.filter(gpioLineMatchesFilter);
             const used = lines.filter((line) => line.used).length;
 
             const summary = document.createElement('summary');
@@ -364,7 +392,10 @@
 
             const stats = document.createElement('span');
             stats.className = 'gpio-chip-stats';
-            stats.textContent = `${chip.lineCount ?? lines.length} lines · ${used} used`;
+            const lineCount = chip.lineCount ?? lines.length;
+            stats.textContent = gpioFilter === 'all'
+                ? `${lineCount} lines · ${used} used`
+                : `${visibleLines.length} of ${lineCount} shown`;
 
             summary.append(identity, stats);
 
@@ -385,8 +416,23 @@
             head.appendChild(headerRow);
 
             const body = document.createElement('tbody');
-            for (const line of lines) {
+            for (const line of visibleLines) {
                 body.appendChild(createGpioLine(line));
+            }
+
+            if (visibleLines.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.className = 'gpio-empty-row';
+                const emptyCell = document.createElement('td');
+                emptyCell.colSpan = 6;
+                emptyCell.textContent =
+                    gpioFilter === 'used'
+                        ? 'No used lines on this chip.'
+                        : gpioFilter === 'free'
+                            ? 'No free lines on this chip.'
+                            : 'No GPIO lines reported.';
+                emptyRow.appendChild(emptyCell);
+                body.appendChild(emptyRow);
             }
 
             table.append(head, body);
@@ -395,6 +441,28 @@
             gpioChips.appendChild(details);
         });
     };
+
+    if (gpioFilters) {
+        gpioFilters.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-gpio-filter]');
+            if (!button || !gpioFilters.contains(button)) {
+                return;
+            }
+
+            const nextFilter = button.dataset.gpioFilter;
+            if (!['all', 'used', 'free'].includes(nextFilter) ||
+                nextFilter === gpioFilter) {
+                return;
+            }
+
+            gpioFilter = nextFilter;
+            updateGpioFilterButtons();
+            if (gpioData) {
+                renderGpio(gpioData);
+            }
+        });
+        updateGpioFilterButtons();
+    }
 
     const pollGpio = async () => {
         gpioPollTimer = null;

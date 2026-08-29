@@ -262,6 +262,41 @@ dd {
     gap: .25rem;
     text-align: right;
 }
+.gpio-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .65rem;
+    margin-bottom: .85rem;
+}
+.gpio-filter-group {
+    display: inline-flex;
+    padding: .2rem;
+    border: 1px solid #263451;
+    border-radius: .7rem;
+    background: #0c1427;
+}
+.gpio-filter {
+    padding: .35rem .65rem;
+    border: 0;
+    border-radius: .5rem;
+    background: transparent;
+    color: #9aa8c3;
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+}
+.gpio-filter:hover {
+    color: #dce7ff;
+}
+.gpio-filter.is-active {
+    background: #213153;
+    color: #eef2ff;
+}
+.gpio-filter:focus-visible {
+    outline: 2px solid #8fb3ff;
+    outline-offset: 1px;
+}
 .gpio-chip-list {
     display: grid;
     gap: .75rem;
@@ -341,6 +376,14 @@ dd {
 .gpio-table tbody tr:hover {
     background: #101a30;
 }
+.gpio-table .gpio-empty-row:hover {
+    background: transparent;
+}
+.gpio-empty-row td {
+    color: #7182a5;
+    text-align: center;
+    font-style: italic;
+}
 .gpio-offset {
     color: #8fa8d8;
     font-variant-numeric: tabular-nums;
@@ -380,6 +423,7 @@ dd {
     .disk-usage > div { align-items: baseline; }
     .gpio-panel-heading { align-items: flex-start; }
     .gpio-overview { align-items: flex-end; }
+    .gpio-toolbar { justify-content: space-between; }
     .gpio-chip > summary { align-items: flex-start; }
     .gpio-chip-stats { white-space: normal; text-align: right; }
 }
