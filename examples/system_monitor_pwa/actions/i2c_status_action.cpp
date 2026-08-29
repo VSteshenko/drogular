@@ -1,4 +1,6 @@
 #include "i2c_status_action.hpp"
+#include "hardware/i2c_gpio_correlator.hpp"
+#include "services/gpio_service.hpp"
 #include "services/i2c_service.hpp"
 
 #include <json/json.h>
@@ -22,7 +24,8 @@ std::string addressText(std::uint8_t address) {
 
 Json::Value toJson(
     const I2cSnapshot& snapshot,
-    const I2cServiceStatistics& statistics
+    const I2cServiceStatistics& statistics,
+    const GpioSnapshot* gpioSnapshot
 ) {
     Json::Value root(Json::objectValue);
     const auto now = std::chrono::duration_cast<std::chrono::seconds>(
@@ -39,6 +42,21 @@ Json::Value toJson(
         bus["description"] = source.bus.description;
         bus["algorithm"] = source.bus.algorithm;
         bus["scanned"] = source.scanned;
+
+        Json::Value gpioPins(Json::arrayValue);
+        if (gpioSnapshot != nullptr) {
+            for (const auto& sourcePin :
+                 I2cGpioCorrelator::pinsForBus(source.bus.number, *gpioSnapshot)) {
+                Json::Value pin(Json::objectValue);
+                pin["role"] = sourcePin.role == I2cGpioRole::Sda ? "sda" : "scl";
+                pin["chip"] = sourcePin.chip;
+                pin["offset"] = sourcePin.offset;
+                pin["name"] = sourcePin.name;
+                pin["function"] = sourcePin.function;
+                gpioPins.append(std::move(pin));
+            }
+        }
+        bus["gpioPins"] = std::move(gpioPins);
 
         Json::Value devices(Json::arrayValue);
         for (const auto& sourceDevice : source.devices) {
@@ -86,7 +104,22 @@ drogular::ActionResult I2cStatusAction::handle(
 ) {
     const auto service = context.requireService<I2cService>();
     const auto snapshot = service->snapshot();
-    return drogular::ActionResult::json(toJson(snapshot, service->statistics()));
+
+    GpioSnapshot gpioSnapshot;
+    const GpioSnapshot* gpioSnapshotPtr = nullptr;
+    if (const auto gpioService = context.service<GpioService>();
+        gpioService && gpioService->available()) {
+        try {
+            gpioSnapshot = gpioService->snapshot();
+            gpioSnapshotPtr = &gpioSnapshot;
+        } catch (...) {
+            // GPIO correlation is optional enrichment. I²C inventory must
+            // remain available even when GPIO probing is temporarily unavailable.
+        }
+    }
+
+    return drogular::ActionResult::json(
+        toJson(snapshot, service->statistics(), gpioSnapshotPtr));
 }
 
 } // namespace system_monitor

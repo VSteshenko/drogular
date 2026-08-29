@@ -321,6 +321,22 @@ I²C response contains data similar to:
       "number": 1,
       "name": "i2c-1",
       "scanned": true,
+      "gpioPins": [
+        {
+          "role": "sda",
+          "chip": "gpiochip0",
+          "offset": 2,
+          "name": "GPIO2",
+          "function": "SDA1"
+        },
+        {
+          "role": "scl",
+          "chip": "gpiochip0",
+          "offset": 3,
+          "name": "GPIO3",
+          "function": "SCL1"
+        }
+      ],
       "devices": [
         {
           "address": 60,
@@ -332,6 +348,12 @@ I²C response contains data similar to:
   ]
 }
 ```
+
+When GPIO pin-mux information is available, `/api/i2c` also correlates a bus
+with matching `SDA<N>` and `SCL<N>` functions from `/api/gpio`. For example,
+Raspberry Pi bus `i2c-1` is enriched with GPIO2 / `SDA1` and GPIO3 / `SCL1`.
+This is optional enrichment: I²C inventory remains available when GPIO or
+`pinctrl` information is unavailable.
 
 If a bus is present but not selected for scanning, it is still returned with
 `"scanned": false` and an empty `devices` array. If `i2cdetect` reports

@@ -1,4 +1,5 @@
 #include "actions/i2c_status_action.hpp"
+#include "services/gpio_service.hpp"
 #include "services/i2c_service.hpp"
 
 #include <drogular/action_context.hpp>
@@ -34,11 +35,41 @@ public:
     }
 };
 
+class I2cActionFakeGpioProvider final : public system_monitor::GpioProvider {
+public:
+    std::vector<system_monitor::GpioChipInfo> chips() override {
+        return {{.name = "gpiochip0", .label = "pinctrl-bcm2711", .lineCount = 58}};
+    }
+
+    std::vector<system_monitor::GpioLineInfo> lines(
+        std::string_view
+    ) override {
+        return {
+            {
+                .offset = 2,
+                .name = "GPIO2",
+                .function = "SDA1",
+                .alternateFunction = true
+            },
+            {
+                .offset = 3,
+                .name = "GPIO3",
+                .function = "SCL1",
+                .alternateFunction = true
+            }
+        };
+    }
+};
+
 drogular::ActionResult runAction(
-    const std::shared_ptr<system_monitor::I2cService>& service
+    const std::shared_ptr<system_monitor::I2cService>& service,
+    const std::shared_ptr<system_monitor::GpioService>& gpioService = nullptr
 ) {
     drogular::ApplicationServices services;
     services.registerService<system_monitor::I2cService>(service);
+    if (gpioService) {
+        services.registerService<system_monitor::GpioService>(gpioService);
+    }
 
     auto request = drogon::HttpRequest::newHttpRequest();
     drogular::ActionContext context(request, &services);
@@ -67,6 +98,7 @@ TEST(I2cStatusActionTests, ReturnsI2cInventoryAsJson) {
     EXPECT_EQ(json["buses"][0]["devices"][0]["addressHex"].asString(), "0x3c");
     EXPECT_FALSE(json["buses"][0]["devices"][0]["claimedByKernel"].asBool());
     EXPECT_TRUE(json["buses"][0]["devices"][1]["claimedByKernel"].asBool());
+    EXPECT_TRUE(json["buses"][0]["gpioPins"].empty());
     EXPECT_EQ(json["monitor"]["refreshIntervalMs"].asInt64(), 300000);
     EXPECT_TRUE(json["monitor"]["healthy"].asBool());
 }
@@ -79,4 +111,23 @@ TEST(I2cStatusActionTests, ReportsUnavailablePlatform) {
     EXPECT_FALSE(json["available"].asBool());
     EXPECT_TRUE(json["buses"].empty());
     EXPECT_FALSE(json["monitor"]["healthy"].asBool());
+}
+
+TEST(I2cStatusActionTests, EnrichesBusWithCorrelatedGpioPins) {
+    const auto result = runAction(
+        std::make_shared<system_monitor::I2cService>(
+            std::make_shared<I2cActionFakeProvider>()),
+        std::make_shared<system_monitor::GpioService>(
+            std::make_shared<I2cActionFakeGpioProvider>()));
+
+    const auto& pins = result.json()["buses"][0]["gpioPins"];
+    ASSERT_EQ(pins.size(), 2U);
+    EXPECT_EQ(pins[0]["role"].asString(), "sda");
+    EXPECT_EQ(pins[0]["chip"].asString(), "gpiochip0");
+    EXPECT_EQ(pins[0]["offset"].asUInt(), 2U);
+    EXPECT_EQ(pins[0]["name"].asString(), "GPIO2");
+    EXPECT_EQ(pins[0]["function"].asString(), "SDA1");
+    EXPECT_EQ(pins[1]["role"].asString(), "scl");
+    EXPECT_EQ(pins[1]["offset"].asUInt(), 3U);
+    EXPECT_EQ(pins[1]["function"].asString(), "SCL1");
 }

@@ -589,6 +589,31 @@
             metadata.textContent = [bus.type, bus.algorithm].filter(Boolean).join(' · ') || 'Adapter details unavailable';
             card.appendChild(metadata);
 
+            const gpioPins = Array.isArray(bus.gpioPins) ? bus.gpioPins : [];
+            if (gpioPins.length > 0) {
+                const mapping = document.createElement('div');
+                mapping.className = 'i2c-gpio-mapping';
+
+                const mappingLabel = document.createElement('span');
+                mappingLabel.className = 'muted';
+                mappingLabel.textContent = 'GPIO';
+                mapping.appendChild(mappingLabel);
+
+                for (const pin of gpioPins) {
+                    const badge = document.createElement('span');
+                    badge.className = 'i2c-gpio-pin';
+                    const role = String(pin.role || '').toUpperCase();
+                    const pinName = pin.name || `${pin.chip || 'gpio'}:${pin.offset}`;
+                    badge.textContent = `${role || pin.function} · ${pinName}`;
+                    badge.title = pin.function
+                        ? `${pin.function} on ${pin.chip || 'GPIO chip'} line ${pin.offset}`
+                        : `${pin.chip || 'GPIO chip'} line ${pin.offset}`;
+                    mapping.appendChild(badge);
+                }
+
+                card.appendChild(mapping);
+            }
+
             const addressList = document.createElement('div');
             addressList.className = 'i2c-address-list';
             if (!bus.scanned) {

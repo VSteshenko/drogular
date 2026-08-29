@@ -184,6 +184,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/gpio_service_tests.cpp
     system_monitor_pwa/gpio_status_action_tests.cpp
     system_monitor_pwa/i2c_tools_provider_tests.cpp
+    system_monitor_pwa/i2c_gpio_correlator_tests.cpp
     system_monitor_pwa/i2c_service_tests.cpp
     system_monitor_pwa/i2c_status_action_tests.cpp
     system_monitor_pwa/i2c_dashboard_assets_tests.cpp

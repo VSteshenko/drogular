@@ -33,4 +33,6 @@ TEST(I2cDashboardAssetsTests, JavaScriptPollsIndependentI2cEndpoint) {
     EXPECT_NE(script.find("I2C_POLL_INTERVAL_MS = 60000"), std::string::npos);
     EXPECT_NE(script.find("pollI2c();"), std::string::npos);
     EXPECT_NE(script.find("claimedByKernel"), std::string::npos);
+    EXPECT_NE(script.find("bus.gpioPins"), std::string::npos);
+    EXPECT_NE(script.find("i2c-gpio-pin"), std::string::npos);
 }

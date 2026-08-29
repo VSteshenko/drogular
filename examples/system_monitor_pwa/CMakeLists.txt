@@ -1,4 +1,5 @@
 set(SYSTEM_MONITOR_CORE_SOURCES
+    hardware/i2c_gpio_correlator.cpp
     services/gpio_service.cpp
     services/i2c_service.cpp
     services/system_monitor.cpp
