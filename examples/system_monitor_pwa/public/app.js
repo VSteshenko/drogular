@@ -511,6 +511,132 @@
         });
     }
 
+    const I2C_POLL_INTERVAL_MS = 60000;
+    const i2cPanel = document.querySelector('[data-i2c-panel]');
+    const i2cSummary = document.querySelector('[data-i2c-summary]');
+    const i2cStatus = document.querySelector('[data-i2c-status]');
+    const i2cBuses = document.querySelector('[data-i2c-buses]');
+
+    const renderI2c = (data) => {
+        if (!i2cPanel || !i2cBuses) {
+            return;
+        }
+
+        if (!data.available) {
+            i2cPanel.hidden = true;
+            return;
+        }
+
+        i2cPanel.hidden = false;
+        const buses = Array.isArray(data.buses) ? data.buses : [];
+        const deviceCount = buses.reduce(
+            (sum, bus) => sum + (Array.isArray(bus.devices) ? bus.devices.length : 0),
+            0);
+
+        if (i2cSummary) {
+            i2cSummary.textContent =
+                `${buses.length} ${buses.length === 1 ? 'bus' : 'buses'} · ` +
+                `${deviceCount} ${deviceCount === 1 ? 'device' : 'devices'}`;
+        }
+
+        if (i2cStatus) {
+            if (data.monitor?.healthy === false) {
+                i2cStatus.textContent =
+                    `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+            } else {
+                const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
+                i2cStatus.textContent = updatedAt
+                    ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}`
+                    : 'I²C inventory available';
+            }
+        }
+
+        i2cBuses.replaceChildren();
+        if (buses.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'muted';
+            empty.textContent = 'No I²C buses detected.';
+            i2cBuses.appendChild(empty);
+            return;
+        }
+
+        for (const bus of buses) {
+            const card = document.createElement('article');
+            card.className = 'i2c-bus';
+
+            const heading = document.createElement('div');
+            heading.className = 'i2c-bus-heading';
+
+            const identity = document.createElement('div');
+            const name = document.createElement('strong');
+            name.textContent = bus.name || `i2c-${bus.number}`;
+            const description = document.createElement('span');
+            description.className = 'muted';
+            description.textContent = bus.description || 'I²C adapter';
+            identity.append(name, description);
+
+            const devices = Array.isArray(bus.devices) ? bus.devices : [];
+            const count = document.createElement('span');
+            count.className = 'i2c-device-count';
+            count.textContent = bus.scanned
+                ? `${devices.length} ${devices.length === 1 ? 'device' : 'devices'}`
+                : 'Not scanned';
+            heading.append(identity, count);
+            card.appendChild(heading);
+
+            const metadata = document.createElement('p');
+            metadata.className = 'i2c-bus-meta muted';
+            metadata.textContent = [bus.type, bus.algorithm].filter(Boolean).join(' · ') || 'Adapter details unavailable';
+            card.appendChild(metadata);
+
+            const addressList = document.createElement('div');
+            addressList.className = 'i2c-address-list';
+            if (!bus.scanned) {
+                const none = document.createElement('span');
+                none.className = 'muted';
+                none.textContent = 'Address scan disabled for this bus';
+                addressList.appendChild(none);
+            } else if (devices.length === 0) {
+                const none = document.createElement('span');
+                none.className = 'muted';
+                none.textContent = 'No responding devices';
+                addressList.appendChild(none);
+            } else {
+                for (const device of devices) {
+                    const badge = document.createElement('span');
+                    badge.className = `i2c-address${device.claimedByKernel ? ' i2c-address-claimed' : ''}`;
+                    badge.textContent = device.addressHex || `0x${Number(device.address).toString(16).padStart(2, '0')}`;
+                    if (device.claimedByKernel) {
+                        badge.title = 'Claimed by a kernel driver';
+                    }
+                    addressList.appendChild(badge);
+                }
+            }
+            card.appendChild(addressList);
+            i2cBuses.appendChild(card);
+        }
+    };
+
+    const pollI2c = async () => {
+        try {
+            const response = await fetch('/api/i2c', {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            renderI2c(await response.json());
+        } catch (_) {
+            if (i2cStatus) {
+                i2cStatus.textContent = 'I²C inventory unavailable';
+            }
+        } finally {
+            window.setTimeout(pollI2c, I2C_POLL_INTERVAL_MS);
+        }
+    };
+
     schedulePoll();
     pollGpio();
+    pollI2c();
 })();

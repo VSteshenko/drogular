@@ -1,6 +1,8 @@
 #include "actions/gpio_status_action.hpp"
+#include "actions/i2c_status_action.hpp"
 #include "actions/system_status_action.hpp"
 #include "gpio/gpiod_gpio_provider.hpp"
+#include "i2c/i2c_tools_provider.hpp"
 #include "pages/dashboard_page.hpp"
 #include "platform/linux_system_metrics_provider.hpp"
 #if defined(__APPLE__)
@@ -15,6 +17,7 @@
 #include "ssh/ssh_system_reader.hpp"
 #endif
 #include "services/gpio_service.hpp"
+#include "services/i2c_service.hpp"
 #include "services/system_monitor.hpp"
 #include "system/monitor_target.hpp"
 #include "system/system_metrics_provider.hpp"
@@ -28,6 +31,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace {
 
@@ -50,6 +54,44 @@ namespace {
     }
 
     return static_cast<std::uint16_t>(port);
+}
+
+
+[[nodiscard]] std::vector<std::uint32_t> i2cScanBusesFromEnvironment() {
+    const char* value = environmentValue("SYSTEM_MONITOR_I2C_SCAN_BUSES");
+    if (value == nullptr) {
+        return {};
+    }
+
+    std::vector<std::uint32_t> buses;
+    std::string_view remaining(value);
+    while (!remaining.empty()) {
+        const auto comma = remaining.find(',');
+        auto token = remaining.substr(0, comma);
+        const auto first = token.find_first_not_of(" \t");
+        const auto last = token.find_last_not_of(" \t");
+        if (first == std::string_view::npos) {
+            throw std::invalid_argument(
+                "SYSTEM_MONITOR_I2C_SCAN_BUSES contains an empty bus number");
+        }
+        token = token.substr(first, last - first + 1);
+
+        std::uint32_t bus = 0;
+        const auto [end, error] = std::from_chars(
+            token.data(), token.data() + token.size(), bus);
+        if (error != std::errc{} || end != token.data() + token.size()) {
+            throw std::invalid_argument(
+                "SYSTEM_MONITOR_I2C_SCAN_BUSES must be a comma-separated list of bus numbers");
+        }
+        buses.push_back(bus);
+
+        if (comma == std::string_view::npos) {
+            break;
+        }
+        remaining.remove_prefix(comma + 1);
+    }
+
+    return buses;
 }
 
 [[nodiscard]] system_monitor::SshTargetOptions sshOptionsFromEnvironment() {
@@ -138,6 +180,33 @@ namespace {
     throw std::invalid_argument("SYSTEM_MONITOR_TARGET must be 'local' or 'ssh'");
 }
 
+
+[[nodiscard]] std::shared_ptr<system_monitor::I2cProvider> makeI2cProvider() {
+    const char* target = environmentValue("SYSTEM_MONITOR_TARGET");
+    if (target == nullptr || std::string_view(target) == "local") {
+#if defined(__linux__)
+        auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
+        return std::make_shared<system_monitor::I2cToolsProvider>(reader, i2cScanBusesFromEnvironment());
+#else
+        return nullptr;
+#endif
+    }
+
+    if (std::string_view(target) == "ssh") {
+#if SYSTEM_MONITOR_HAS_LIBSSH
+        // Keep I2C on a dedicated SSH session because its cached inventory can
+        // refresh concurrently with /api/system and /api/gpio.
+        return std::make_shared<system_monitor::I2cToolsProvider>(
+            makeSshReader(),
+            i2cScanBusesFromEnvironment());
+#else
+        return nullptr;
+#endif
+    }
+
+    throw std::invalid_argument("SYSTEM_MONITOR_TARGET must be 'local' or 'ssh'");
+}
+
 } // namespace
 
 int main() {
@@ -153,6 +222,7 @@ int main() {
 
     auto provider = makeProvider();
     auto gpioProvider = makeGpioProvider();
+    auto i2cProvider = makeI2cProvider();
 
     app.services().registerService<system_monitor::SystemMetricsProvider>(provider);
     app.services().add<system_monitor::SystemMonitor>(provider);
@@ -160,9 +230,14 @@ int main() {
         app.services().registerService<system_monitor::GpioProvider>(gpioProvider);
     }
     app.services().add<system_monitor::GpioService>(gpioProvider);
+    if (i2cProvider) {
+        app.services().registerService<system_monitor::I2cProvider>(i2cProvider);
+    }
+    app.services().add<system_monitor::I2cService>(i2cProvider);
 
     app.page<system_monitor::DashboardPage>("/");
     app.get<system_monitor::SystemStatusAction>("/api/system");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");
+    app.get<system_monitor::I2cStatusAction>("/api/i2c");
     app.run(8080);
 }

@@ -418,6 +418,64 @@ dd {
     color: #8eddb7;
 }
 
+.i2c-panel-heading {
+    align-items: flex-start;
+}
+.i2c-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .2rem;
+}
+.i2c-bus-list {
+    display: grid;
+    gap: .75rem;
+}
+.i2c-bus {
+    border: 1px solid #263553;
+    border-radius: .7rem;
+    background: #0f182a;
+    padding: .9rem 1rem;
+}
+.i2c-bus-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.i2c-bus-heading > div {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+}
+.i2c-device-count {
+    color: #8fa8d8;
+    white-space: nowrap;
+}
+.i2c-bus-meta {
+    margin: .45rem 0 .7rem;
+}
+.i2c-address-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+}
+.i2c-address {
+    display: inline-flex;
+    align-items: center;
+    padding: .28rem .5rem;
+    border: 1px solid #315071;
+    border-radius: .45rem;
+    background: #14233c;
+    color: #9fc5ff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: .82rem;
+}
+.i2c-address-claimed {
+    color: #f6cf84;
+    border-color: #66522c;
+}
+
 @media (max-width: 720px) {
     .header-content { align-items: flex-start; padding: 1rem 0; }
     .connection-status { align-items: flex-end; }
@@ -430,4 +488,5 @@ dd {
     .gpio-toolbar { justify-content: space-between; }
     .gpio-chip > summary { align-items: flex-start; }
     .gpio-chip-stats { white-space: normal; text-align: right; }
+    .i2c-overview { align-items: flex-end; }
 }

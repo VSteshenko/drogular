@@ -153,6 +153,64 @@ System Monitor uses this modern gpiochip/libgpiod interface rather than the
 deprecated sysfs GPIO interface. GPIO monitoring is initially read-only and
 does not require adding `monitor` to `sudo`.
 
+
+I²C inventory uses the `i2c-tools` command-line utilities. Install them on the
+Linux target:
+
+```bash
+sudo apt update
+sudo apt install i2c-tools
+```
+
+The I²C device nodes are normally owned by the `i2c` group:
+
+```bash
+ls -l /dev/i2c-*
+```
+
+Add the dedicated monitoring account to that group:
+
+```bash
+sudo usermod -aG i2c monitor
+```
+
+Start a new login or SSH session so that the new group membership takes effect,
+then verify access:
+
+```bash
+groups
+i2cdetect -l
+```
+
+`groups` should include `i2c`. To scan a specific user-facing bus manually, for
+example the standard Raspberry Pi GPIO2/GPIO3 I²C bus:
+
+```bash
+i2cdetect -y 1
+```
+
+A device at address `0x3c` appears as `3c` in the scan table.
+
+System Monitor always inventories adapters with `i2cdetect -l`, but address
+scanning is opt-in because `i2cdetect` actively probes devices and should not
+be run automatically on unknown or internal buses. Select only buses that are
+safe to probe:
+
+```bash
+export SYSTEM_MONITOR_I2C_SCAN_BUSES=1
+```
+
+Multiple buses may be supplied as a comma-separated list:
+
+```bash
+export SYSTEM_MONITOR_I2C_SCAN_BUSES=1,4
+```
+
+The I²C snapshot is cached for five minutes, so repeated dashboard or API
+requests do not continuously probe the bus. Buses not listed in
+`SYSTEM_MONITOR_I2C_SCAN_BUSES` remain visible in the inventory with
+`scanned: false`, but their addresses are not probed.
+
 ### 2. Create a host-side SSH key
 
 On the machine running System Monitor:
@@ -230,6 +288,7 @@ export SYSTEM_MONITOR_SSH_PORT=22
 export SYSTEM_MONITOR_SSH_USER=monitor
 export SYSTEM_MONITOR_SSH_IDENTITY_FILE="$HOME/.ssh/system_monitor_pi"
 export SYSTEM_MONITOR_SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/system_monitor_pi_known_hosts"
+export SYSTEM_MONITOR_I2C_SCAN_BUSES=1
 
 ./build/examples/system_monitor_pwa/system_monitor_pwa
 ```
@@ -237,6 +296,47 @@ export SYSTEM_MONITOR_SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/system_monitor_pi_known_h
 Open <http://localhost:8080>. The dashboard should show the Raspberry Pi
 hostname and Linux metrics rather than metrics from the machine running the
 application.
+
+### 5. Verify GPIO and I²C APIs
+
+From the machine running System Monitor:
+
+```bash
+curl -s http://localhost:8080/api/gpio
+curl -s http://localhost:8080/api/i2c
+```
+
+`/api/i2c` does not require separate HTTP authentication in this example. Its
+ability to enumerate and scan the remote buses depends on the permissions of
+the SSH account (`monitor`) and on `i2c-tools` being installed on the target.
+
+With `SYSTEM_MONITOR_I2C_SCAN_BUSES=1` and a responding device at `0x3c`, the
+I²C response contains data similar to:
+
+```json
+{
+  "available": true,
+  "buses": [
+    {
+      "number": 1,
+      "name": "i2c-1",
+      "scanned": true,
+      "devices": [
+        {
+          "address": 60,
+          "addressHex": "0x3c",
+          "claimedByKernel": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+If a bus is present but not selected for scanning, it is still returned with
+`"scanned": false` and an empty `devices` array. If `i2cdetect` reports
+`Permission denied`, verify that the remote `monitor` account belongs to the
+`i2c` group and reconnect the SSH session.
 
 ## Environment variables
 
@@ -248,6 +348,7 @@ application.
 | `SYSTEM_MONITOR_SSH_USER` | SSH only | — | Remote SSH account |
 | `SYSTEM_MONITOR_SSH_IDENTITY_FILE` | SSH only | — | Path to the private key |
 | `SYSTEM_MONITOR_SSH_KNOWN_HOSTS_FILE` | SSH only | — | Path to the strict `known_hosts` file |
+| `SYSTEM_MONITOR_I2C_SCAN_BUSES` | No | — | Comma-separated I²C bus numbers allowed for active address scanning |
 
 All four SSH-specific path/host/user variables are required when
 `SYSTEM_MONITOR_TARGET=ssh`. If the application was built without libssh,
