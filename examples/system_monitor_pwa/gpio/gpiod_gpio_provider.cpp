@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -271,6 +272,77 @@ std::optional<GpioLineInfo> parseLineInfo(std::string line) {
     return info;
 }
 
+std::optional<std::pair<std::uint32_t, std::string>> parsePinctrlLine(
+    std::string line
+) {
+    line = trim(std::move(line));
+    const auto colon = line.find(':');
+    const auto comment = line.find("//", colon == std::string::npos ? 0 : colon + 1);
+    if (colon == std::string::npos || comment == std::string::npos) {
+        return std::nullopt;
+    }
+
+    std::uint32_t offset = 0;
+    const auto offsetText = trim(line.substr(0, colon));
+    const auto parsed = std::from_chars(
+        offsetText.data(),
+        offsetText.data() + offsetText.size(),
+        offset);
+    if (parsed.ec != std::errc{} ||
+        parsed.ptr != offsetText.data() + offsetText.size()) {
+        return std::nullopt;
+    }
+
+    auto description = trim(line.substr(comment + 2));
+    const auto equals = description.find('=');
+    if (equals == std::string::npos) {
+        return std::nullopt;
+    }
+
+    auto function = trim(description.substr(equals + 1));
+    if (function.empty()) {
+        return std::nullopt;
+    }
+
+    return std::pair{offset, std::move(function)};
+}
+
+void enrichWithPinctrl(
+    const std::shared_ptr<SystemReader>& reader,
+    std::vector<GpioLineInfo>& lines
+) {
+    // `pinctrl get` is a Raspberry Pi-specific, read-only complement to
+    // gpioinfo. If unavailable, generic Linux GPIO inventory remains valid.
+    const auto result = reader->execute("pinctrl get");
+    if (!result.succeeded()) {
+        return;
+    }
+
+    std::unordered_map<std::uint32_t, std::string> functions;
+    std::istringstream output(result.standardOutput);
+    std::string line;
+    while (std::getline(output, line)) {
+        if (auto parsed = parsePinctrlLine(std::move(line))) {
+            functions.insert_or_assign(parsed->first, std::move(parsed->second));
+        }
+    }
+
+    for (auto& gpioLine : lines) {
+        const auto found = functions.find(gpioLine.offset);
+        if (found == functions.end()) {
+            continue;
+        }
+
+        gpioLine.function = found->second;
+        gpioLine.alternateFunction =
+            !gpioLine.function.empty() &&
+            gpioLine.function != "input" &&
+            gpioLine.function != "output" &&
+            gpioLine.function != "no";
+
+    }
+}
+
 [[noreturn]] void throwCommandFailure(
     std::string_view command,
     const CommandResult& result
@@ -336,6 +408,10 @@ std::vector<GpioLineInfo> GpiodGpioProvider::lines(std::string_view chip) {
         if (auto info = parseLineInfo(std::move(line))) {
             lines.push_back(std::move(*info));
         }
+    }
+
+    if (chip == "gpiochip0") {
+        enrichWithPinctrl(reader_, lines);
     }
 
     return lines;

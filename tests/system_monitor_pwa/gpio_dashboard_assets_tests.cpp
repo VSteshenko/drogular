@@ -70,12 +70,12 @@ TEST(GpioDashboardAssetsTests, HidesGpioPanelWhenPlatformIsUnavailable) {
               std::string::npos);
 }
 
-TEST(GpioDashboardAssetsTests, DefaultsToUsedLinesAndFiltersClientSide) {
+TEST(GpioDashboardAssetsTests, DefaultsToActiveLinesAndFiltersClientSide) {
     const auto script = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/public/app.js");
 
-    EXPECT_NE(script.find("let gpioFilter = 'used';"),
+    EXPECT_NE(script.find("let gpioFilter = 'active';"),
               std::string::npos);
     EXPECT_NE(script.find("line.used"),
               std::string::npos);
@@ -85,17 +85,17 @@ TEST(GpioDashboardAssetsTests, DefaultsToUsedLinesAndFiltersClientSide) {
               std::string::npos);
 }
 
-TEST(GpioDashboardAssetsTests, OffersAllUsedAndFreeFilters) {
+TEST(GpioDashboardAssetsTests, OffersAllActiveAndFreeFilters) {
     const auto page = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates/dashboard.html");
 
     EXPECT_NE(page.find("data-gpio-filter=\"all\""),
               std::string::npos);
-    EXPECT_NE(page.find("data-gpio-filter=\"used\""),
+    EXPECT_NE(page.find("data-gpio-filter=\"active\""),
               std::string::npos);
     EXPECT_NE(page.find("data-gpio-filter=\"free\""),
               std::string::npos);
-    EXPECT_NE(page.find("aria-pressed=\"true\">Used</button>"),
+    EXPECT_NE(page.find("aria-pressed=\"true\">Active</button>"),
               std::string::npos);
 }

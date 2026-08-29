@@ -65,6 +65,8 @@ Json::Value toJson(
             line["offset"] = sourceLine.offset;
             line["name"] = sourceLine.name;
             line["consumer"] = sourceLine.consumer;
+            line["function"] = sourceLine.function;
+            line["alternateFunction"] = sourceLine.alternateFunction;
             line["direction"] = std::string(directionName(sourceLine.direction));
             line["drive"] = std::string(driveName(sourceLine.drive));
             line["activeLow"] = sourceLine.activeLow;

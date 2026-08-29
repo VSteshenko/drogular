@@ -228,7 +228,7 @@
     const gpioStatus = document.querySelector('[data-gpio-status]');
     const gpioChips = document.querySelector('[data-gpio-chips]');
     const gpioFilters = document.querySelector('[data-gpio-filters]');
-    let gpioFilter = 'used';
+    let gpioFilter = 'active';
     let gpioData = null;
 
     const setGpioText = (element, value) => {
@@ -266,6 +266,12 @@
         directionBadge.textContent = line.direction || 'unknown';
         direction.appendChild(directionBadge);
 
+        const functionCell = document.createElement('td');
+        functionCell.textContent = line.function || 'GPIO';
+        if (line.alternateFunction) {
+            functionCell.className = 'gpio-function-active';
+        }
+
         const consumer = document.createElement('td');
         consumer.textContent = line.consumer || '—';
         if (!line.consumer) {
@@ -284,16 +290,16 @@
         stateBadge.textContent = line.used ? 'Used' : 'Free';
         state.appendChild(stateBadge);
 
-        row.append(offset, name, direction, consumer, flags, state);
+        row.append(offset, name, functionCell, direction, consumer, flags, state);
         return row;
     };
 
     const gpioLineMatchesFilter = (line) => {
-        if (gpioFilter === 'used') {
-            return line.used;
+        if (gpioFilter === 'active') {
+            return line.used || line.alternateFunction;
         }
         if (gpioFilter === 'free') {
-            return !line.used;
+            return !line.used && !line.alternateFunction;
         }
         return true;
     };
@@ -407,7 +413,7 @@
 
             const head = document.createElement('thead');
             const headerRow = document.createElement('tr');
-            for (const titleText of ['Line', 'Name', 'Direction', 'Consumer', 'Flags', 'State']) {
+            for (const titleText of ['Line', 'Name', 'Function', 'Direction', 'Consumer', 'Flags', 'State']) {
                 const cell = document.createElement('th');
                 cell.scope = 'col';
                 cell.textContent = titleText;
@@ -424,10 +430,10 @@
                 const emptyRow = document.createElement('tr');
                 emptyRow.className = 'gpio-empty-row';
                 const emptyCell = document.createElement('td');
-                emptyCell.colSpan = 6;
+                emptyCell.colSpan = 7;
                 emptyCell.textContent =
-                    gpioFilter === 'used'
-                        ? 'No used lines on this chip.'
+                    gpioFilter === 'active'
+                        ? 'No active lines on this chip.'
                         : gpioFilter === 'free'
                             ? 'No free lines on this chip.'
                             : 'No GPIO lines reported.';
@@ -450,7 +456,7 @@
             }
 
             const nextFilter = button.dataset.gpioFilter;
-            if (!['all', 'used', 'free'].includes(nextFilter) ||
+            if (!['all', 'active', 'free'].includes(nextFilter) ||
                 nextFilter === gpioFilter) {
                 return;
             }

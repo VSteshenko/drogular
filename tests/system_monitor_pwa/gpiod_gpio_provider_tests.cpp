@@ -24,6 +24,9 @@ public:
         commands.emplace_back(command);
         const auto found = results.find(std::string(command));
         if (found == results.end()) {
+            if (command == "pinctrl get") {
+                return {127, {}, "pinctrl: command not found"};
+            }
             throw std::runtime_error("unexpected command: " + std::string(command));
         }
         return found->second;
@@ -216,7 +219,7 @@ TEST(GpiodGpioProviderTests, FallsBackToLibgpiod1AndParsesLegacyFormat) {
     EXPECT_TRUE(lines[1].used);
 
     EXPECT_TRUE(lines[2].name.empty());
-    ASSERT_EQ(reader->commands.size(), 2U);
+    ASSERT_EQ(reader->commands.size(), 3U);
     EXPECT_EQ(reader->commands[0], "gpioinfo -c 'gpiochip0'");
     EXPECT_EQ(reader->commands[1], "gpioinfo 'gpiochip0'");
 }
@@ -284,4 +287,52 @@ TEST(GpiodGpioProviderTests, RejectsNullReader) {
     EXPECT_THROW(
         system_monitor::GpiodGpioProvider(nullptr),
         std::invalid_argument);
+}
+
+TEST(GpiodGpioProviderTests, EnrichesPrimaryChipWithRaspberryPiPinFunctions) {
+    auto reader = std::make_shared<FakeSystemReader>();
+    reader->results["gpioinfo -c 'gpiochip0'"] = {
+        0,
+        "gpiochip0 - 3 lines:\n"
+        " line 2: \"GPIO2\" input\n"
+        " line 3: \"GPIO3\" input\n"
+        " line 4: \"GPIO4\" output consumer=\"onewire@0\"\n",
+        {}
+    };
+    reader->results["pinctrl get"] = {
+        0,
+        " 2: a0    pu | hi // GPIO2 = SDA1\n"
+        " 3: a0    pu | hi // GPIO3 = SCL1\n"
+        " 4: op dh pu | hi // GPIO4 = output\n",
+        {}
+    };
+
+    system_monitor::GpiodGpioProvider provider(reader);
+    const auto lines = provider.lines("gpiochip0");
+
+    ASSERT_EQ(lines.size(), 3U);
+    EXPECT_EQ(lines[0].function, "SDA1");
+    EXPECT_TRUE(lines[0].alternateFunction);
+    EXPECT_FALSE(lines[0].used);
+    EXPECT_EQ(lines[1].function, "SCL1");
+    EXPECT_TRUE(lines[1].alternateFunction);
+    EXPECT_EQ(lines[2].function, "output");
+    EXPECT_FALSE(lines[2].alternateFunction);
+}
+
+TEST(GpiodGpioProviderTests, KeepsGenericLinuxInventoryWhenPinctrlIsUnavailable) {
+    auto reader = std::make_shared<FakeSystemReader>();
+    reader->results["gpioinfo -c 'gpiochip0'"] = {
+        0,
+        "gpiochip0 - 1 lines:\n line 2: \"GPIO2\" input\n",
+        {}
+    };
+    reader->results["pinctrl get"] = {127, {}, "pinctrl: command not found"};
+
+    system_monitor::GpiodGpioProvider provider(reader);
+    const auto lines = provider.lines("gpiochip0");
+
+    ASSERT_EQ(lines.size(), 1U);
+    EXPECT_TRUE(lines[0].function.empty());
+    EXPECT_FALSE(lines[0].alternateFunction);
 }

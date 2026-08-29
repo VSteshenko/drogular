@@ -28,10 +28,12 @@ struct GpioLineInfo {
     std::uint32_t offset{0};
     std::string name;
     std::string consumer;
+    std::string function;
     GpioLineDirection direction{GpioLineDirection::Unknown};
     GpioLineDrive drive{GpioLineDrive::PushPull};
     bool activeLow{false};
     bool used{false};
+    bool alternateFunction{false};
 };
 
 } // namespace system_monitor

@@ -384,6 +384,10 @@ dd {
     text-align: center;
     font-style: italic;
 }
+.gpio-function-active {
+    color: #8eddb7;
+    font-weight: 600;
+}
 .gpio-offset {
     color: #8fa8d8;
     font-variant-numeric: tabular-nums;
