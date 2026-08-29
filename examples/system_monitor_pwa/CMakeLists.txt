@@ -1,4 +1,5 @@
 set(SYSTEM_MONITOR_CORE_SOURCES
+    services/gpio_service.cpp
     services/system_monitor.cpp
     ui/system_formatters.cpp
     platform/linux_system_metrics_provider.cpp
@@ -74,6 +75,7 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
     add_executable(system_monitor_pwa
         main.cpp
         pages/dashboard_page.cpp
+        actions/gpio_status_action.cpp
         actions/system_status_action.cpp
     )
 
