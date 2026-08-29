@@ -178,6 +178,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/macos_system_metrics_provider_tests.cpp
     system_monitor_pwa/linux_system_metrics_provider_tests.cpp
     system_monitor_pwa/raspberry_pi_probe_tests.cpp
+    system_monitor_pwa/gpiod_gpio_provider_tests.cpp
     system_monitor_pwa/ssh_client_tests.cpp
     system_monitor_pwa/libssh_client_tests.cpp
     system_monitor_pwa/ssh_system_reader_tests.cpp

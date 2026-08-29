@@ -123,6 +123,36 @@ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
 
 The value is reported in kHz by Linux and converted to Hz by System Monitor.
 
+GPIO discovery uses the Linux GPIO character devices through the libgpiod
+command-line tools. On Raspberry Pi OS these devices are normally owned by the
+`gpio` group:
+
+```bash
+ls -l /dev/gpiochip*
+```
+
+For a dedicated `monitor` account, add it to that group:
+
+```bash
+sudo usermod -aG gpio monitor
+```
+
+Start a new login or SSH session so that the new group membership takes effect,
+then verify access:
+
+```bash
+groups
+gpiodetect
+```
+
+`groups` should include `gpio`, and `gpiodetect` should list the available GPIO
+chips instead of reporting `Permission denied`. For example, a Raspberry Pi 4
+may expose `gpiochip0` and `gpiochip1`.
+
+System Monitor uses this modern gpiochip/libgpiod interface rather than the
+deprecated sysfs GPIO interface. GPIO monitoring is initially read-only and
+does not require adding `monitor` to `sudo`.
+
 ### 2. Create a host-side SSH key
 
 On the machine running System Monitor:

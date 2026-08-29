@@ -3,6 +3,7 @@ set(SYSTEM_MONITOR_CORE_SOURCES
     ui/system_formatters.cpp
     platform/linux_system_metrics_provider.cpp
     platform/raspberry_pi_probe.cpp
+    gpio/gpiod_gpio_provider.cpp
     ssh/ssh_system_reader.cpp
 )
 
