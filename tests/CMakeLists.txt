@@ -176,6 +176,7 @@ add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/actions/gpio_status_action.cpp
     ../examples/system_monitor_pwa/actions/i2c_status_action.cpp
     ../examples/system_monitor_pwa/actions/spi_status_action.cpp
+    ../examples/system_monitor_pwa/actions/uart_status_action.cpp
     ../examples/system_monitor_pwa/actions/system_status_action.cpp
     system_monitor_pwa/system_monitor_model_tests.cpp
     system_monitor_pwa/macos_system_metrics_provider_tests.cpp
@@ -194,6 +195,11 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/spi_service_tests.cpp
     system_monitor_pwa/spi_status_action_tests.cpp
     system_monitor_pwa/spi_dashboard_assets_tests.cpp
+    system_monitor_pwa/linux_uart_provider_tests.cpp
+    system_monitor_pwa/uart_gpio_correlator_tests.cpp
+    system_monitor_pwa/uart_service_tests.cpp
+    system_monitor_pwa/uart_status_action_tests.cpp
+    system_monitor_pwa/uart_dashboard_assets_tests.cpp
     system_monitor_pwa/gpio_dashboard_assets_tests.cpp
     system_monitor_pwa/ssh_client_tests.cpp
     system_monitor_pwa/libssh_client_tests.cpp

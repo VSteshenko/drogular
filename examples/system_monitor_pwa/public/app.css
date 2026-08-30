@@ -549,6 +549,49 @@ dd {
     color:#9fc5ff;
 }
 
+.uart-panel-heading {
+    align-items:flex-start;
+}
+.uart-overview {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:.2rem;
+}
+.uart-content, .uart-device-list, .uart-gpio-groups {
+    display:grid;
+    gap:.75rem;
+}
+.uart-device, .uart-gpio-group {
+    border:1px solid #263553;
+    border-radius:.7rem;
+    background:#0f182a;
+    padding:.9rem 1rem;
+}
+.uart-alias-list, .uart-gpio-mapping {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.45rem;
+    margin-top:.6rem;
+}
+.uart-alias, .uart-gpio-pin {
+    display:inline-flex;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:.22rem .55rem;
+    font-size:.8rem;
+    font-weight:600;
+    background:#10172a;
+}
+.uart-alias {
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    color:#9fc5ff;
+}
+.uart-correlation-note {
+    margin:.1rem 0;
+}
+
 @media (max-width: 720px) {
     .header-content {
         align-items: flex-start;
@@ -569,4 +612,5 @@ dd {
     }
     .i2c-overview { align-items: flex-end; }
     .spi-overview { align-items:flex-end; }
+    .uart-overview { align-items:flex-end; }
 }

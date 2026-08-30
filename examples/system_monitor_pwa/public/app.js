@@ -731,8 +731,108 @@
         }
     };
 
+    const UART_POLL_INTERVAL_MS = 30000;
+    const uartPanel = document.querySelector('[data-uart-panel]');
+    const uartSummary = document.querySelector('[data-uart-summary]');
+    const uartStatus = document.querySelector('[data-uart-status]');
+    const uartContent = document.querySelector('[data-uart-content]');
+
+    const renderUart = (data) => {
+        if (!uartPanel || !uartContent) return;
+        if (!data.available) { uartPanel.hidden = true; return; }
+        uartPanel.hidden = false;
+        const devices = Array.isArray(data.devices) ? data.devices : [];
+        const groups = Array.isArray(data.gpioGroups) ? data.gpioGroups : [];
+        if (uartSummary) {
+            uartSummary.textContent = `${devices.length} ${devices.length === 1 ? 'device' : 'devices'} · ${groups.length} ${groups.length === 1 ? 'GPIO group' : 'GPIO groups'}`;
+        }
+        if (uartStatus) {
+            if (data.monitor?.healthy === false) uartStatus.textContent = `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+            else {
+                const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
+                uartStatus.textContent = updatedAt ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}` : 'UART inventory available';
+            }
+        }
+
+        uartContent.replaceChildren();
+
+        const deviceSection = document.createElement('div');
+        deviceSection.className = 'uart-device-list';
+        if (devices.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'muted';
+            empty.textContent = 'No ttyAMA/ttyS devices detected.';
+            deviceSection.appendChild(empty);
+        } else {
+            for (const device of devices) {
+                const card = document.createElement('article');
+                card.className = 'uart-device';
+                const name = document.createElement('strong');
+                name.textContent = device.path || device.name || 'UART device';
+                card.appendChild(name);
+                const aliases = Array.isArray(device.aliases) ? device.aliases : [];
+                if (aliases.length > 0) {
+                    const aliasList = document.createElement('div');
+                    aliasList.className = 'uart-alias-list';
+                    for (const alias of aliases) {
+                        const badge = document.createElement('span');
+                        badge.className = 'uart-alias';
+                        badge.textContent = alias;
+                        aliasList.appendChild(badge);
+                    }
+                    card.appendChild(aliasList);
+                }
+                deviceSection.appendChild(card);
+            }
+        }
+        uartContent.appendChild(deviceSection);
+
+        if (groups.length > 0) {
+            const note = document.createElement('p');
+            note.className = 'muted uart-correlation-note';
+            note.textContent = 'GPIO groups reflect active pinmux functions; Linux tty numbering is not assumed to match controller numbering.';
+            uartContent.appendChild(note);
+
+            const groupList = document.createElement('div');
+            groupList.className = 'uart-gpio-groups';
+            for (const group of groups) {
+                const card = document.createElement('article');
+                card.className = 'uart-gpio-group';
+                const heading = document.createElement('strong');
+                heading.textContent = `UART${group.controller} GPIO`;
+                card.appendChild(heading);
+                const pins = document.createElement('div');
+                pins.className = 'uart-gpio-mapping';
+                for (const pin of Array.isArray(group.pins) ? group.pins : []) {
+                    const badge = document.createElement('span');
+                    badge.className = 'uart-gpio-pin';
+                    const pinName = pin.name || `${pin.chip || 'gpio'}:${pin.offset}`;
+                    badge.textContent = `${String(pin.role || '').toUpperCase()} · ${pinName}`;
+                    badge.title = `${pin.function || pin.consumer || 'UART'} on ${pin.chip || 'GPIO chip'} line ${pin.offset}`;
+                    pins.appendChild(badge);
+                }
+                card.appendChild(pins);
+                groupList.appendChild(card);
+            }
+            uartContent.appendChild(groupList);
+        }
+    };
+
+    const pollUart = async () => {
+        try {
+            const response = await fetch('/api/uart', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            renderUart(await response.json());
+        } catch (_) {
+            if (uartStatus) uartStatus.textContent = 'UART inventory unavailable';
+        } finally {
+            window.setTimeout(pollUart, UART_POLL_INTERVAL_MS);
+        }
+    };
+
     schedulePoll();
     pollGpio();
     pollI2c();
     pollSpi();
+    pollUart();
 })();

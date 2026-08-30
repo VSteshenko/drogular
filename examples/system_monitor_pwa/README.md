@@ -391,7 +391,7 @@ or security error and must be corrected rather than bypassed.
 The SPI endpoint is read-only. It discovers Linux `spidev` device nodes such as
 `/dev/spidev0.0`; it does not open devices, transfer bytes, or probe chip-selects.
 When GPIO pin-mux information is available, `/api/spi` correlates an SPI bus with
-functions such as `MOSI`, `MISO`, `SCLK`, and `CE`.
+functions such as `MOSI`, `MISO`, and `SCLK`; kernel GPIO consumers such as `spi0 CS0`/`spi0 CS1` are also used to identify chip-select lines when pinctrl reports them as ordinary outputs.
 
 On Raspberry Pi, enable SPI when you want spidev nodes to be exposed, then verify:
 
@@ -404,3 +404,41 @@ curl -s http://localhost:8080/api/spi
 Access to actually use `/dev/spidev*` is separate from inventory. Raspberry Pi
 systems commonly grant it through the `spi` group; the System Monitor does not
 require write access because it only lists device nodes.
+
+### UART inventory
+
+The UART endpoint is read-only. It inventories Linux hardware serial device nodes
+(`/dev/ttyAMA*` and `/dev/ttyS*`) together with stable Raspberry Pi aliases such
+as `/dev/serial0` and `/dev/serial1`. The provider resolves aliases with
+`readlink -f`, but never opens a serial port, changes termios settings, or sends
+data.
+
+GPIO enrichment is deliberately reported as controller groups rather than by
+assuming that Linux tty numbering matches pin-mux numbering. On Raspberry Pi,
+for example, `/dev/ttyS0` can be the primary `/dev/serial0` device while the
+header pins are muxed as `TXD1`/`RXD1`. `/api/uart` therefore exposes device
+aliases and independent `gpioGroups` built from active `TXD<N>`, `RXD<N>`,
+`CTS<N>`, and `RTS<N>` functions.
+
+Verify the target with:
+
+```bash
+ls -l /dev/ttyAMA* /dev/ttyS* /dev/serial* 2>/dev/null
+pinctrl get 14,15
+curl -s http://localhost:8080/api/uart
+```
+
+A typical Raspberry Pi GPIO group can look like:
+
+```json
+{
+  "controller": 1,
+  "pins": [
+    { "role": "txd", "name": "GPIO14", "function": "TXD1" },
+    { "role": "rxd", "name": "GPIO15", "function": "RXD1" }
+  ]
+}
+```
+
+The dashboard keeps this distinction visible instead of claiming a device-to-
+controller mapping that the available kernel metadata has not proven.
