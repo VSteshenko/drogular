@@ -1,13 +1,16 @@
 set(SYSTEM_MONITOR_CORE_SOURCES
     hardware/i2c_gpio_correlator.cpp
+    hardware/spi_gpio_correlator.cpp
     services/gpio_service.cpp
     services/i2c_service.cpp
+    services/spi_service.cpp
     services/system_monitor.cpp
     ui/system_formatters.cpp
     platform/linux_system_metrics_provider.cpp
     platform/raspberry_pi_probe.cpp
     gpio/gpiod_gpio_provider.cpp
     i2c/i2c_tools_provider.cpp
+    spi/spidev_spi_provider.cpp
     ssh/ssh_system_reader.cpp
 )
 
@@ -80,6 +83,7 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
         pages/dashboard_page.cpp
         actions/gpio_status_action.cpp
         actions/i2c_status_action.cpp
+        actions/spi_status_action.cpp
         actions/system_status_action.cpp
     )
 

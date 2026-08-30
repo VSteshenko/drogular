@@ -493,8 +493,67 @@ dd {
     border-color: #66522c;
 }
 
+.spi-panel-heading {
+    align-items: flex-start;
+}
+.spi-overview {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:.2rem;
+}
+.spi-bus-list {
+    display:grid;
+    gap:.75rem;
+}
+.spi-bus {
+    border:1px solid #263553;
+    border-radius:.7rem;
+    background:#0f182a;
+    padding:.9rem 1rem;
+}
+.spi-bus-heading {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:1rem;
+}
+.spi-bus-heading > div {
+    display:flex;
+    flex-direction:column;
+    gap:.15rem;
+}
+.spi-device-count {
+    color:#8fa8d8;
+    white-space:nowrap;
+}
+.spi-gpio-mapping, .spi-device-list {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:.45rem;
+    margin:.7rem 0;
+}
+.spi-gpio-pin, .spi-device {
+    display:inline-flex;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:.22rem .55rem;
+    font-size:.8rem;
+    font-weight:600;
+    background:#10172a;
+}
+.spi-device {
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    color:#9fc5ff;
+}
+
 @media (max-width: 720px) {
-    .header-content { align-items: flex-start; padding: 1rem 0; }
+    .header-content {
+        align-items: flex-start;
+        padding: 1rem 0;
+    }
     .connection-status { align-items: flex-end; }
     .status-detail { max-width: 220px; }
     .hero { align-items: start; }
@@ -504,6 +563,10 @@ dd {
     .gpio-overview { align-items: flex-end; }
     .gpio-toolbar { justify-content: space-between; }
     .gpio-chip > summary { align-items: flex-start; }
-    .gpio-chip-stats { white-space: normal; text-align: right; }
+    .gpio-chip-stats {
+        white-space: normal;
+        text-align: right;
+    }
     .i2c-overview { align-items: flex-end; }
+    .spi-overview { align-items:flex-end; }
 }

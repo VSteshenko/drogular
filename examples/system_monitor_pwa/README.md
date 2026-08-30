@@ -385,3 +385,22 @@ collected and the dashboard automatically returns to `Live`.
 
 An authentication failure or rejected host key is treated as a configuration
 or security error and must be corrected rather than bypassed.
+
+### SPI inventory
+
+The SPI endpoint is read-only. It discovers Linux `spidev` device nodes such as
+`/dev/spidev0.0`; it does not open devices, transfer bytes, or probe chip-selects.
+When GPIO pin-mux information is available, `/api/spi` correlates an SPI bus with
+functions such as `MOSI`, `MISO`, `SCLK`, and `CE`.
+
+On Raspberry Pi, enable SPI when you want spidev nodes to be exposed, then verify:
+
+```bash
+ls -l /dev/spidev*
+pinctrl get 7,8,9,10,11
+curl -s http://localhost:8080/api/spi
+```
+
+Access to actually use `/dev/spidev*` is separate from inventory. Raspberry Pi
+systems commonly grant it through the `spi` group; the System Monitor does not
+require write access because it only lists device nodes.

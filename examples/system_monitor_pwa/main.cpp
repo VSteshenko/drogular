@@ -1,8 +1,10 @@
 #include "actions/gpio_status_action.hpp"
 #include "actions/i2c_status_action.hpp"
+#include "actions/spi_status_action.hpp"
 #include "actions/system_status_action.hpp"
 #include "gpio/gpiod_gpio_provider.hpp"
 #include "i2c/i2c_tools_provider.hpp"
+#include "spi/spidev_spi_provider.hpp"
 #include "pages/dashboard_page.hpp"
 #include "platform/linux_system_metrics_provider.hpp"
 #if defined(__APPLE__)
@@ -18,6 +20,7 @@
 #endif
 #include "services/gpio_service.hpp"
 #include "services/i2c_service.hpp"
+#include "services/spi_service.hpp"
 #include "services/system_monitor.hpp"
 #include "system/monitor_target.hpp"
 #include "system/system_metrics_provider.hpp"
@@ -207,6 +210,28 @@ namespace {
     throw std::invalid_argument("SYSTEM_MONITOR_TARGET must be 'local' or 'ssh'");
 }
 
+[[nodiscard]] std::shared_ptr<system_monitor::SpiProvider> makeSpiProvider() {
+    const char* target = environmentValue("SYSTEM_MONITOR_TARGET");
+    if (target == nullptr || std::string_view(target) == "local") {
+#if defined(__linux__)
+        return std::make_shared<system_monitor::SpidevSpiProvider>(
+            std::make_shared<system_monitor::LocalLinuxSystemReader>());
+#else
+        return nullptr;
+#endif
+    }
+
+    if (std::string_view(target) == "ssh") {
+#if SYSTEM_MONITOR_HAS_LIBSSH
+        return std::make_shared<system_monitor::SpidevSpiProvider>(makeSshReader());
+#else
+        return nullptr;
+#endif
+    }
+
+    throw std::invalid_argument("SYSTEM_MONITOR_TARGET must be 'local' or 'ssh'");
+}
+
 } // namespace
 
 int main() {
@@ -223,6 +248,7 @@ int main() {
     auto provider = makeProvider();
     auto gpioProvider = makeGpioProvider();
     auto i2cProvider = makeI2cProvider();
+    auto spiProvider = makeSpiProvider();
 
     app.services().registerService<system_monitor::SystemMetricsProvider>(provider);
     app.services().add<system_monitor::SystemMonitor>(provider);
@@ -234,10 +260,15 @@ int main() {
         app.services().registerService<system_monitor::I2cProvider>(i2cProvider);
     }
     app.services().add<system_monitor::I2cService>(i2cProvider);
+    if (spiProvider) {
+        app.services().registerService<system_monitor::SpiProvider>(spiProvider);
+    }
+    app.services().add<system_monitor::SpiService>(spiProvider);
 
     app.page<system_monitor::DashboardPage>("/");
     app.get<system_monitor::SystemStatusAction>("/api/system");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");
     app.get<system_monitor::I2cStatusAction>("/api/i2c");
+    app.get<system_monitor::SpiStatusAction>("/api/spi");
     app.run(8080);
 }

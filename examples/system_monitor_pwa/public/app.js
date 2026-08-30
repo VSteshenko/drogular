@@ -661,7 +661,78 @@
         }
     };
 
+    const SPI_POLL_INTERVAL_MS = 30000;
+    const spiPanel = document.querySelector('[data-spi-panel]');
+    const spiSummary = document.querySelector('[data-spi-summary]');
+    const spiStatus = document.querySelector('[data-spi-status]');
+    const spiBuses = document.querySelector('[data-spi-buses]');
+
+    const renderSpi = (data) => {
+        if (!spiPanel || !spiBuses) return;
+        if (!data.available) { spiPanel.hidden = true; return; }
+        spiPanel.hidden = false;
+        const buses = Array.isArray(data.buses) ? data.buses : [];
+        const deviceCount = buses.reduce((sum, bus) => sum + (Array.isArray(bus.devices) ? bus.devices.length : 0), 0);
+        if (spiSummary) spiSummary.textContent = `${buses.length} ${buses.length === 1 ? 'bus' : 'buses'} · ${deviceCount} ${deviceCount === 1 ? 'device' : 'devices'}`;
+        if (spiStatus) {
+            if (data.monitor?.healthy === false) spiStatus.textContent = `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+            else {
+                const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
+                spiStatus.textContent = updatedAt ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}` : 'SPI inventory available';
+            }
+        }
+        spiBuses.replaceChildren();
+        if (buses.length === 0) {
+            const empty = document.createElement('p'); empty.className = 'muted'; empty.textContent = 'No spidev devices detected.'; spiBuses.appendChild(empty); return;
+        }
+        for (const bus of buses) {
+            const card = document.createElement('article'); card.className = 'spi-bus';
+            const heading = document.createElement('div'); heading.className = 'spi-bus-heading';
+            const identity = document.createElement('div');
+            const name = document.createElement('strong'); name.textContent = `spi${bus.number}`;
+            const description = document.createElement('span'); description.className = 'muted'; description.textContent = 'Linux spidev bus';
+            identity.append(name, description);
+            const devices = Array.isArray(bus.devices) ? bus.devices : [];
+            const count = document.createElement('span'); count.className = 'spi-device-count'; count.textContent = `${devices.length} ${devices.length === 1 ? 'device' : 'devices'}`;
+            heading.append(identity, count); card.appendChild(heading);
+            const gpioPins = Array.isArray(bus.gpioPins) ? bus.gpioPins : [];
+            if (gpioPins.length > 0) {
+                const mapping = document.createElement('div'); mapping.className = 'spi-gpio-mapping';
+                const label = document.createElement('span'); label.className = 'muted'; label.textContent = 'GPIO'; mapping.appendChild(label);
+                for (const pin of gpioPins) {
+                    const badge = document.createElement('span'); badge.className = 'spi-gpio-pin';
+                    const pinName = pin.name || `${pin.chip || 'gpio'}:${pin.offset}`;
+                    badge.textContent = `${String(pin.role || '').toUpperCase()} · ${pinName}`;
+                    const source = pin.consumer || pin.function || 'SPI';
+                    badge.title = `${source} on ${pin.chip || 'GPIO chip'} line ${pin.offset}`;
+                    mapping.appendChild(badge);
+                }
+                card.appendChild(mapping);
+            }
+            const list = document.createElement('div'); list.className = 'spi-device-list';
+            for (const device of devices) {
+                const badge = document.createElement('span'); badge.className = 'spi-device';
+                badge.textContent = device.path || `/dev/spidev${bus.number}.${device.chipSelect}`;
+                badge.title = `Chip select ${device.chipSelect}`; list.appendChild(badge);
+            }
+            card.appendChild(list); spiBuses.appendChild(card);
+        }
+    };
+
+    const pollSpi = async () => {
+        try {
+            const response = await fetch('/api/spi', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            renderSpi(await response.json());
+        } catch (_) {
+            if (spiStatus) spiStatus.textContent = 'SPI inventory unavailable';
+        } finally {
+            window.setTimeout(pollSpi, SPI_POLL_INTERVAL_MS);
+        }
+    };
+
     schedulePoll();
     pollGpio();
     pollI2c();
+    pollSpi();
 })();
