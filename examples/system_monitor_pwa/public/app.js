@@ -248,6 +248,19 @@
         return flags.length > 0 ? flags.join(', ') : '—';
     };
 
+    const gpioExposureText = (exposure, physicalHeaderPin) => {
+        const value = String(exposure || 'unknown');
+        if (value === 'header') {
+            return Number.isInteger(physicalHeaderPin)
+                ? `40-pin · pin ${physicalHeaderPin}`
+                : '40-pin header';
+        }
+        if (value === 'onboard') return 'onboard';
+        if (value === 'internal') return 'internal';
+        if (value === 'mixed') return 'mixed';
+        return 'unknown';
+    };
+
     const createGpioLine = (line) => {
         const row = document.createElement('tr');
 
@@ -258,7 +271,10 @@
         const name = document.createElement('td');
         const nameValue = document.createElement('strong');
         nameValue.textContent = line.name || 'Unnamed';
-        name.appendChild(nameValue);
+        const exposure = document.createElement('span');
+        exposure.className = 'gpio-line-exposure muted';
+        exposure.textContent = gpioExposureText(line.exposure, line.physicalHeaderPin);
+        name.append(nameValue, exposure);
 
         const direction = document.createElement('td');
         const directionBadge = document.createElement('span');
@@ -604,10 +620,11 @@
                     badge.className = 'i2c-gpio-pin';
                     const role = String(pin.role || '').toUpperCase();
                     const pinName = pin.name || `${pin.chip || 'gpio'}:${pin.offset}`;
-                    badge.textContent = `${role || pin.function} · ${pinName}`;
+                    const exposureText = gpioExposureText(pin.exposure, pin.physicalHeaderPin);
+                    badge.textContent = `${role || pin.function} · ${pinName}${Number.isInteger(pin.physicalHeaderPin) ? ` · pin ${pin.physicalHeaderPin}` : ''}`;
                     badge.title = pin.function
-                        ? `${pin.function} on ${pin.chip || 'GPIO chip'} line ${pin.offset}`
-                        : `${pin.chip || 'GPIO chip'} line ${pin.offset}`;
+                        ? `${pin.function} on ${pin.chip || 'GPIO chip'} line ${pin.offset} · ${exposureText}`
+                        : `${pin.chip || 'GPIO chip'} line ${pin.offset} · ${exposureText}`;
                     mapping.appendChild(badge);
                 }
 
@@ -702,9 +719,9 @@
                 for (const pin of gpioPins) {
                     const badge = document.createElement('span'); badge.className = 'spi-gpio-pin';
                     const pinName = pin.name || `${pin.chip || 'gpio'}:${pin.offset}`;
-                    badge.textContent = `${String(pin.role || '').toUpperCase()} · ${pinName}`;
+                    badge.textContent = `${String(pin.role || '').toUpperCase()} · ${pinName}${Number.isInteger(pin.physicalHeaderPin) ? ` · pin ${pin.physicalHeaderPin}` : ''}`;
                     const source = pin.consumer || pin.function || 'SPI';
-                    badge.title = `${source} on ${pin.chip || 'GPIO chip'} line ${pin.offset}`;
+                    badge.title = `${source} on ${pin.chip || 'GPIO chip'} line ${pin.offset} · ${gpioExposureText(pin.exposure, pin.physicalHeaderPin)}`;
                     mapping.appendChild(badge);
                 }
                 card.appendChild(mapping);

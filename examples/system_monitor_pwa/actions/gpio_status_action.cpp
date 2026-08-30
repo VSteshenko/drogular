@@ -1,5 +1,7 @@
 #include "gpio_status_action.hpp"
+#include "hardware/board_gpio_metadata.hpp"
 #include "services/gpio_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <json/json.h>
 
@@ -43,7 +45,8 @@ std::string_view driveName(GpioLineDrive drive) {
 
 Json::Value toJson(
     const GpioSnapshot& snapshot,
-    const GpioServiceStatistics& statistics
+    const GpioServiceStatistics& statistics,
+    const BoardGpioMetadata& boardMetadata
 ) {
     Json::Value root(Json::objectValue);
 
@@ -60,7 +63,10 @@ Json::Value toJson(
         chip["lineCount"] = source.chip.lineCount;
 
         Json::Value lines(Json::arrayValue);
+        GpioExposure chipExposure = GpioExposure::Unknown;
         for (const auto& sourceLine : source.lines) {
+            const auto metadata = boardMetadata.line(source.chip.name, sourceLine.offset);
+            chipExposure = combineGpioExposure(chipExposure, metadata.exposure);
             Json::Value line(Json::objectValue);
             line["offset"] = sourceLine.offset;
             line["name"] = sourceLine.name;
@@ -71,9 +77,16 @@ Json::Value toJson(
             line["drive"] = std::string(driveName(sourceLine.drive));
             line["activeLow"] = sourceLine.activeLow;
             line["used"] = sourceLine.used;
+            line["exposure"] = std::string(gpioExposureName(metadata.exposure));
+            if (metadata.physicalHeaderPin) {
+                line["physicalHeaderPin"] = *metadata.physicalHeaderPin;
+            } else {
+                line["physicalHeaderPin"] = Json::nullValue;
+            }
             lines.append(std::move(line));
         }
 
+        chip["exposure"] = std::string(gpioExposureName(chipExposure));
         chip["lines"] = std::move(lines);
         chips.append(std::move(chip));
     }
@@ -112,7 +125,18 @@ drogular::ActionResult GpioStatusAction::handle(
 ) {
     const auto service = context.requireService<GpioService>();
     const auto snapshot = service->snapshot();
-    return drogular::ActionResult::json(toJson(snapshot, service->statistics()));
+
+    BoardGpioMetadata boardMetadata;
+    if (const auto monitor = context.service<SystemMonitor>()) {
+        try {
+            boardMetadata = BoardGpioMetadata::fromSystemSnapshot(monitor->snapshot());
+        } catch (...) {
+            // Board metadata is optional enrichment. GPIO inventory must stay available.
+        }
+    }
+
+    return drogular::ActionResult::json(
+        toJson(snapshot, service->statistics(), boardMetadata));
 }
 
 } // namespace system_monitor

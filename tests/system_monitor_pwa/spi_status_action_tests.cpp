@@ -1,6 +1,7 @@
 #include "actions/spi_status_action.hpp"
 #include "services/gpio_service.hpp"
 #include "services/spi_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>
@@ -54,6 +55,19 @@ public:
     }
 };
 
+class SpiSystemMetricsProvider final : public system_monitor::SystemMetricsProvider {
+public:
+    system_monitor::SystemSnapshot snapshot() override {
+        system_monitor::SystemSnapshot snapshot;
+        snapshot.raspberryPi = system_monitor::RaspberryPiInfo{
+            .model = "Raspberry Pi 4 Model B Rev 1.4"
+        };
+        return snapshot;
+    }
+
+    std::vector<system_monitor::ProcessInfo> processes() override { return {}; }
+};
+
 } // namespace
 
 TEST(SpiStatusActionTests, ReturnsGroupedInventoryWithGpio) {
@@ -67,6 +81,9 @@ TEST(SpiStatusActionTests, ReturnsGroupedInventoryWithGpio) {
 
     services.registerService<system_monitor::SpiService>(service);
     services.registerService<system_monitor::GpioService>(gpioService);
+    services.registerService<system_monitor::SystemMonitor>(
+        std::make_shared<system_monitor::SystemMonitor>(
+            std::make_shared<SpiSystemMetricsProvider>()));
 
     auto req = drogon::HttpRequest::newHttpRequest();
     drogular::ActionContext ctx(req, &services);
@@ -81,4 +98,9 @@ TEST(SpiStatusActionTests, ReturnsGroupedInventoryWithGpio) {
     ASSERT_EQ(json["buses"][0]["gpioPins"].size(), 3U);
     EXPECT_EQ(json["buses"][0]["gpioPins"][0]["role"].asString(), "ce0");
     EXPECT_EQ(json["buses"][0]["gpioPins"][0]["consumer"].asString(), "spi0 CS0");
+    EXPECT_EQ(json["buses"][0]["exposure"].asString(), "header");
+    EXPECT_EQ(json["buses"][0]["gpioPins"][0]["exposure"].asString(), "header");
+    EXPECT_EQ(json["buses"][0]["gpioPins"][0]["physicalHeaderPin"].asUInt(), 24U);
+    EXPECT_EQ(json["buses"][0]["gpioPins"][1]["physicalHeaderPin"].asUInt(), 19U);
+    EXPECT_EQ(json["buses"][0]["gpioPins"][2]["physicalHeaderPin"].asUInt(), 23U);
 }

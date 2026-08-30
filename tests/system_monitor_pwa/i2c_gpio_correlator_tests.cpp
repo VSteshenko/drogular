@@ -19,6 +19,14 @@ system_monitor::GpioLineInfo line(
     };
 }
 
+system_monitor::BoardGpioMetadata raspberryPi4Metadata() {
+    system_monitor::SystemSnapshot snapshot;
+    snapshot.raspberryPi = system_monitor::RaspberryPiInfo{
+        .model = "Raspberry Pi 4 Model B Rev 1.4"
+    };
+    return system_monitor::BoardGpioMetadata::fromSystemSnapshot(snapshot);
+}
+
 } // namespace
 
 TEST(I2cGpioCorrelatorTests, CorrelatesBusWithMatchingSdaAndSclFunctions) {
@@ -32,7 +40,8 @@ TEST(I2cGpioCorrelatorTests, CorrelatesBusWithMatchingSdaAndSclFunctions) {
         }
     });
 
-    const auto pins = system_monitor::I2cGpioCorrelator::pinsForBus(1, gpio);
+    const auto pins = system_monitor::I2cGpioCorrelator::pinsForBus(
+        1, gpio, raspberryPi4Metadata());
 
     ASSERT_EQ(pins.size(), 2U);
     EXPECT_EQ(pins[0].role, system_monitor::I2cGpioRole::Sda);
@@ -43,6 +52,11 @@ TEST(I2cGpioCorrelatorTests, CorrelatesBusWithMatchingSdaAndSclFunctions) {
     EXPECT_EQ(pins[1].role, system_monitor::I2cGpioRole::Scl);
     EXPECT_EQ(pins[1].offset, 3U);
     EXPECT_EQ(pins[1].function, "SCL1");
+    EXPECT_EQ(pins[0].exposure, system_monitor::GpioExposure::Header);
+    ASSERT_TRUE(pins[0].physicalHeaderPin.has_value());
+    EXPECT_EQ(*pins[0].physicalHeaderPin, 3U);
+    ASSERT_TRUE(pins[1].physicalHeaderPin.has_value());
+    EXPECT_EQ(*pins[1].physicalHeaderPin, 5U);
 }
 
 TEST(I2cGpioCorrelatorTests, IgnoresFunctionsFromOtherBusNumbers) {

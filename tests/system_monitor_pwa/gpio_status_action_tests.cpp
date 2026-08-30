@@ -1,5 +1,6 @@
 #include "actions/gpio_status_action.hpp"
 #include "services/gpio_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>
@@ -65,11 +66,30 @@ public:
     }
 };
 
+class GpioActionSystemMetricsProvider final : public system_monitor::SystemMetricsProvider {
+public:
+    system_monitor::SystemSnapshot snapshot() override {
+        system_monitor::SystemSnapshot snapshot;
+        snapshot.raspberryPi = system_monitor::RaspberryPiInfo{
+            .model = "Raspberry Pi 4 Model B Rev 1.4"
+        };
+        return snapshot;
+    }
+
+    std::vector<system_monitor::ProcessInfo> processes() override { return {}; }
+};
+
 drogular::ActionResult runAction(
-    const std::shared_ptr<system_monitor::GpioService>& service
+    const std::shared_ptr<system_monitor::GpioService>& service,
+    bool withBoardMetadata = false
 ) {
     drogular::ApplicationServices services;
     services.registerService<system_monitor::GpioService>(service);
+    if (withBoardMetadata) {
+        services.registerService<system_monitor::SystemMonitor>(
+            std::make_shared<system_monitor::SystemMonitor>(
+                std::make_shared<GpioActionSystemMetricsProvider>()));
+    }
 
     auto request = drogon::HttpRequest::newHttpRequest();
     drogular::ActionContext context(request, &services);
@@ -117,6 +137,22 @@ TEST(GpioStatusActionTests, ReturnsGpioInventoryAsJson) {
     EXPECT_EQ(json["monitor"]["refreshIntervalMs"].asInt64(), 30000);
     EXPECT_TRUE(json["monitor"]["healthy"].asBool());
     EXPECT_GT(json["monitor"]["lastSuccessfulUpdate"].asInt64(), 0);
+}
+
+TEST(GpioStatusActionTests, EnrichesLinesWithBoardExposureAndHeaderPins) {
+    const auto result = runAction(
+        std::make_shared<system_monitor::GpioService>(
+            std::make_shared<GpioActionFakeProvider>()),
+        true);
+
+    const auto& json = result.json();
+    EXPECT_EQ(json["chips"][0]["exposure"].asString(), "header");
+    EXPECT_EQ(json["chips"][0]["lines"][0]["exposure"].asString(), "header");
+    EXPECT_EQ(json["chips"][0]["lines"][0]["physicalHeaderPin"].asUInt(), 7U);
+    EXPECT_EQ(json["chips"][0]["lines"][1]["physicalHeaderPin"].asUInt(), 11U);
+    EXPECT_EQ(json["chips"][1]["exposure"].asString(), "onboard");
+    EXPECT_EQ(json["chips"][1]["lines"][0]["exposure"].asString(), "onboard");
+    EXPECT_TRUE(json["chips"][1]["lines"][0]["physicalHeaderPin"].isNull());
 }
 
 TEST(GpioStatusActionTests, ReportsUnavailablePlatformWithoutFailure) {

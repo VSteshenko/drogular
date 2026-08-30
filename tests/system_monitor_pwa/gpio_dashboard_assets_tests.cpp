@@ -99,3 +99,11 @@ TEST(GpioDashboardAssetsTests, OffersAllActiveAndFreeFilters) {
     EXPECT_NE(page.find("aria-pressed=\"true\">Active</button>"),
               std::string::npos);
 }
+
+TEST(GpioDashboardAssetsTests, ShowsBoardExposureAndPhysicalHeaderPins) {
+    const auto script = readSource(
+        std::filesystem::path(DROGULAR_SOURCE_DIR) /
+        "examples/system_monitor_pwa/public/app.js");
+    EXPECT_NE(script.find("gpioExposureText"), std::string::npos);
+    EXPECT_NE(script.find("line.physicalHeaderPin"), std::string::npos);
+}

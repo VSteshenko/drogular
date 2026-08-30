@@ -1,7 +1,9 @@
 #include "spi_status_action.hpp"
+#include "hardware/board_gpio_metadata.hpp"
 #include "hardware/spi_gpio_correlator.hpp"
 #include "services/gpio_service.hpp"
 #include "services/spi_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <json/json.h>
 
@@ -14,7 +16,8 @@ namespace {
 
 Json::Value toJson(const SpiSnapshot& snapshot,
     const SpiServiceStatistics& statistics,
-    const GpioSnapshot* gpioSnapshot
+    const GpioSnapshot* gpioSnapshot,
+    const BoardGpioMetadata& boardMetadata
 ) {
     Json::Value root(Json::objectValue);
 
@@ -34,8 +37,12 @@ Json::Value toJson(const SpiSnapshot& snapshot,
             bus["gpioPins"] = Json::arrayValue;
             bus["devices"] = Json::arrayValue;
 
+            GpioExposure busExposure = GpioExposure::Unknown;
             if (gpioSnapshot) {
-                for (const auto& sourcePin : SpiGpioCorrelator::pinsForBus(device.bus, *gpioSnapshot)) {
+                for (const auto& sourcePin :
+                     SpiGpioCorrelator::pinsForBus(device.bus, *gpioSnapshot, boardMetadata)) {
+                    busExposure = combineGpioExposure(busExposure, sourcePin.exposure);
+
                     Json::Value pin(Json::objectValue);
 
                     pin["role"] = sourcePin.role;
@@ -44,9 +51,16 @@ Json::Value toJson(const SpiSnapshot& snapshot,
                     pin["name"] = sourcePin.name;
                     pin["function"] = sourcePin.function;
                     pin["consumer"] = sourcePin.consumer;
+                    pin["exposure"] = std::string(gpioExposureName(sourcePin.exposure));
+                    if (sourcePin.physicalHeaderPin) {
+                        pin["physicalHeaderPin"] = *sourcePin.physicalHeaderPin;
+                    } else {
+                        pin["physicalHeaderPin"] = Json::nullValue;
+                    }
                     bus["gpioPins"].append(std::move(pin));
                 }
             }
+            bus["exposure"] = std::string(gpioExposureName(busExposure));
             buses.emplace(device.bus, std::move(bus));
         }
 
@@ -93,6 +107,15 @@ Json::Value toJson(const SpiSnapshot& snapshot,
 drogular::ActionResult SpiStatusAction::handle(drogular::ActionContext& context) {
     const auto service = context.requireService<SpiService>();
     const auto snapshot = service->snapshot();
+    BoardGpioMetadata boardMetadata;
+    if (const auto monitor = context.service<SystemMonitor>()) {
+        try {
+            boardMetadata = BoardGpioMetadata::fromSystemSnapshot(monitor->snapshot());
+        } catch (...) {
+            // Board metadata is optional enrichment. SPI inventory must stay available.
+        }
+    }
+
     GpioSnapshot gpioSnapshot;
     const GpioSnapshot* gpioSnapshotPtr = nullptr;
 
@@ -106,7 +129,8 @@ drogular::ActionResult SpiStatusAction::handle(drogular::ActionContext& context)
         }
     }
 
-    return drogular::ActionResult::json(toJson(snapshot, service->statistics(), gpioSnapshotPtr));
+    return drogular::ActionResult::json(
+        toJson(snapshot, service->statistics(), gpioSnapshotPtr, boardMetadata));
 }
 
 } // namespace system_monitor

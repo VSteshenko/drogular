@@ -1,12 +1,14 @@
 #include "spi_gpio_correlator.hpp"
 
 #include <string>
+#include <utility>
 
 namespace system_monitor {
 
 std::vector<SpiGpioPin> SpiGpioCorrelator::pinsForBus(
     std::uint32_t busNumber,
-    const GpioSnapshot& gpioSnapshot
+    const GpioSnapshot& gpioSnapshot,
+    const BoardGpioMetadata& boardMetadata
 ) {
     const auto functionPrefix = "SPI" + std::to_string(busNumber) + "_";
     const auto consumerPrefix = "spi" + std::to_string(busNumber) + " CS";
@@ -32,13 +34,16 @@ std::vector<SpiGpioPin> SpiGpioCorrelator::pinsForBus(
                 }
             }
             if (role.empty()) continue;
+            const auto metadata = boardMetadata.line(chip.chip.name, line.offset);
             result.push_back(SpiGpioPin{
-                role,
-                chip.chip.name,
-                line.offset,
-                line.name,
-                line.function,
-                line.consumer
+                .role = std::move(role),
+                .chip = chip.chip.name,
+                .offset = line.offset,
+                .name = line.name,
+                .function = line.function,
+                .consumer = line.consumer,
+                .exposure = metadata.exposure,
+                .physicalHeaderPin = metadata.physicalHeaderPin
             });
         }
     }

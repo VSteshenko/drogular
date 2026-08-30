@@ -597,6 +597,13 @@ dd {
     justify-content:space-between;
     gap:.75rem;
 }
+
+.gpio-line-exposure {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+}
+
 .uart-exposure {
     display:inline-flex;
     align-items:center;

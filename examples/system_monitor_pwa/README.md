@@ -327,14 +327,18 @@ I²C response contains data similar to:
           "chip": "gpiochip0",
           "offset": 2,
           "name": "GPIO2",
-          "function": "SDA1"
+          "function": "SDA1",
+          "exposure": "header",
+          "physicalHeaderPin": 3
         },
         {
           "role": "scl",
           "chip": "gpiochip0",
           "offset": 3,
           "name": "GPIO3",
-          "function": "SCL1"
+          "function": "SCL1",
+          "exposure": "header",
+          "physicalHeaderPin": 5
         }
       ],
       "devices": [
@@ -352,8 +356,10 @@ I²C response contains data similar to:
 When GPIO pin-mux information is available, `/api/i2c` also correlates a bus
 with matching `SDA<N>` and `SCL<N>` functions from `/api/gpio`. For example,
 Raspberry Pi bus `i2c-1` is enriched with GPIO2 / `SDA1` and GPIO3 / `SCL1`.
-This is optional enrichment: I²C inventory remains available when GPIO or
-`pinctrl` information is unavailable.
+The correlated pins use the same board metadata contract as `/api/gpio` and
+`/api/uart`, including `exposure` and nullable `physicalHeaderPin`; the bus also
+gets an aggregate `exposure`. This is optional enrichment: I²C inventory remains
+available when GPIO, board metadata, or `pinctrl` information is unavailable.
 
 If a bus is present but not selected for scanning, it is still returned with
 `"scanned": false` and an empty `devices` array. If `i2cdetect` reports
@@ -391,7 +397,7 @@ or security error and must be corrected rather than bypassed.
 The SPI endpoint is read-only. It discovers Linux `spidev` device nodes such as
 `/dev/spidev0.0`; it does not open devices, transfer bytes, or probe chip-selects.
 When GPIO pin-mux information is available, `/api/spi` correlates an SPI bus with
-functions such as `MOSI`, `MISO`, and `SCLK`; kernel GPIO consumers such as `spi0 CS0`/`spi0 CS1` are also used to identify chip-select lines when pinctrl reports them as ordinary outputs.
+functions such as `MOSI`, `MISO`, and `SCLK`; kernel GPIO consumers such as `spi0 CS0`/`spi0 CS1` are also used to identify chip-select lines when pinctrl reports them as ordinary outputs. Correlated SPI pins expose the same `exposure` and nullable `physicalHeaderPin` fields, and each SPI bus gets an aggregate `exposure`.
 
 On Raspberry Pi, enable SPI when you want spidev nodes to be exposed, then verify:
 
@@ -458,8 +464,11 @@ System Monitor keeps board-specific accessibility in a separate
 Raspberry Pi 4 40-pin header. GPIOs on the primary controller that are not on
 the header are reported as `internal`; expansion-controller signals are
 `onboard`. Unsupported boards remain `unknown` rather than reusing a possibly
-incorrect pin map. This metadata can later be reused by the GPIO, I2C, and SPI
-views without putting Raspberry Pi-specific assumptions into their correlators.
+incorrect pin map. The same metadata is reused by the general GPIO inventory and
+by the I²C, SPI, and UART correlations without putting Raspberry Pi-specific
+assumptions into their providers. `/api/gpio` exposes `exposure` and nullable
+`physicalHeaderPin` for every line plus aggregate chip exposure; I²C/SPI expose
+the same fields for correlated pins plus aggregate bus exposure.
 
 The dashboard keeps this distinction visible instead of claiming a device-to-
 controller mapping that the available kernel metadata has not proven.

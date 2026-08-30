@@ -23,4 +23,6 @@ TEST(SpiDashboardAssetsTests, ContainsSpiPanelAndPolling) {
     EXPECT_NE(html.find("data-spi-panel"), std::string::npos);
     EXPECT_NE(js.find("fetch('/api/spi'"), std::string::npos);
     EXPECT_NE(js.find("pollSpi();"),std::string::npos);
+    EXPECT_NE(js.find("pin.physicalHeaderPin"), std::string::npos);
+    EXPECT_NE(js.find("pin.exposure"), std::string::npos);
 }

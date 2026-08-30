@@ -1,6 +1,7 @@
 #include "actions/i2c_status_action.hpp"
 #include "services/gpio_service.hpp"
 #include "services/i2c_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>
@@ -61,14 +62,33 @@ public:
     }
 };
 
+class I2cActionSystemMetricsProvider final : public system_monitor::SystemMetricsProvider {
+public:
+    system_monitor::SystemSnapshot snapshot() override {
+        system_monitor::SystemSnapshot snapshot;
+        snapshot.raspberryPi = system_monitor::RaspberryPiInfo{
+            .model = "Raspberry Pi 4 Model B Rev 1.4"
+        };
+        return snapshot;
+    }
+
+    std::vector<system_monitor::ProcessInfo> processes() override { return {}; }
+};
+
 drogular::ActionResult runAction(
     const std::shared_ptr<system_monitor::I2cService>& service,
-    const std::shared_ptr<system_monitor::GpioService>& gpioService = nullptr
+    const std::shared_ptr<system_monitor::GpioService>& gpioService = nullptr,
+    bool withBoardMetadata = false
 ) {
     drogular::ApplicationServices services;
     services.registerService<system_monitor::I2cService>(service);
     if (gpioService) {
         services.registerService<system_monitor::GpioService>(gpioService);
+    }
+    if (withBoardMetadata) {
+        services.registerService<system_monitor::SystemMonitor>(
+            std::make_shared<system_monitor::SystemMonitor>(
+                std::make_shared<I2cActionSystemMetricsProvider>()));
     }
 
     auto request = drogon::HttpRequest::newHttpRequest();
@@ -118,7 +138,8 @@ TEST(I2cStatusActionTests, EnrichesBusWithCorrelatedGpioPins) {
         std::make_shared<system_monitor::I2cService>(
             std::make_shared<I2cActionFakeProvider>()),
         std::make_shared<system_monitor::GpioService>(
-            std::make_shared<I2cActionFakeGpioProvider>()));
+            std::make_shared<I2cActionFakeGpioProvider>()),
+        true);
 
     const auto& pins = result.json()["buses"][0]["gpioPins"];
     ASSERT_EQ(pins.size(), 2U);
@@ -130,4 +151,8 @@ TEST(I2cStatusActionTests, EnrichesBusWithCorrelatedGpioPins) {
     EXPECT_EQ(pins[1]["role"].asString(), "scl");
     EXPECT_EQ(pins[1]["offset"].asUInt(), 3U);
     EXPECT_EQ(pins[1]["function"].asString(), "SCL1");
+    EXPECT_EQ(result.json()["buses"][0]["exposure"].asString(), "header");
+    EXPECT_EQ(pins[0]["exposure"].asString(), "header");
+    EXPECT_EQ(pins[0]["physicalHeaderPin"].asUInt(), 3U);
+    EXPECT_EQ(pins[1]["physicalHeaderPin"].asUInt(), 5U);
 }

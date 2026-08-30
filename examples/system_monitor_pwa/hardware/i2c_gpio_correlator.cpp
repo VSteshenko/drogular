@@ -6,7 +6,8 @@ namespace system_monitor {
 
 std::vector<I2cGpioPin> I2cGpioCorrelator::pinsForBus(
     std::uint32_t busNumber,
-    const GpioSnapshot& gpioSnapshot
+    const GpioSnapshot& gpioSnapshot,
+    const BoardGpioMetadata& boardMetadata
 ) {
     const auto suffix = std::to_string(busNumber);
     const auto sdaFunction = "SDA" + suffix;
@@ -25,12 +26,15 @@ std::vector<I2cGpioPin> I2cGpioCorrelator::pinsForBus(
                 continue;
             }
 
+            const auto metadata = boardMetadata.line(chip.chip.name, line.offset);
             result.push_back(I2cGpioPin{
                 .role = role,
                 .chip = chip.chip.name,
                 .offset = line.offset,
                 .name = line.name,
-                .function = line.function
+                .function = line.function,
+                .exposure = metadata.exposure,
+                .physicalHeaderPin = metadata.physicalHeaderPin
             });
         }
     }

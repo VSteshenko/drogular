@@ -1,7 +1,9 @@
 #include "i2c_status_action.hpp"
+#include "hardware/board_gpio_metadata.hpp"
 #include "hardware/i2c_gpio_correlator.hpp"
 #include "services/gpio_service.hpp"
 #include "services/i2c_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <json/json.h>
 
@@ -25,7 +27,8 @@ std::string addressText(std::uint8_t address) {
 Json::Value toJson(
     const I2cSnapshot& snapshot,
     const I2cServiceStatistics& statistics,
-    const GpioSnapshot* gpioSnapshot
+    const GpioSnapshot* gpioSnapshot,
+    const BoardGpioMetadata& boardMetadata
 ) {
     Json::Value root(Json::objectValue);
     const auto now = std::chrono::duration_cast<std::chrono::seconds>(
@@ -44,18 +47,29 @@ Json::Value toJson(
         bus["scanned"] = source.scanned;
 
         Json::Value gpioPins(Json::arrayValue);
+        GpioExposure busExposure = GpioExposure::Unknown;
         if (gpioSnapshot != nullptr) {
             for (const auto& sourcePin :
-                 I2cGpioCorrelator::pinsForBus(source.bus.number, *gpioSnapshot)) {
+                 I2cGpioCorrelator::pinsForBus(
+                     source.bus.number, *gpioSnapshot, boardMetadata)) {
+                busExposure = combineGpioExposure(busExposure, sourcePin.exposure);
+
                 Json::Value pin(Json::objectValue);
                 pin["role"] = sourcePin.role == I2cGpioRole::Sda ? "sda" : "scl";
                 pin["chip"] = sourcePin.chip;
                 pin["offset"] = sourcePin.offset;
                 pin["name"] = sourcePin.name;
                 pin["function"] = sourcePin.function;
+                pin["exposure"] = std::string(gpioExposureName(sourcePin.exposure));
+                if (sourcePin.physicalHeaderPin) {
+                    pin["physicalHeaderPin"] = *sourcePin.physicalHeaderPin;
+                } else {
+                    pin["physicalHeaderPin"] = Json::nullValue;
+                }
                 gpioPins.append(std::move(pin));
             }
         }
+        bus["exposure"] = std::string(gpioExposureName(busExposure));
         bus["gpioPins"] = std::move(gpioPins);
 
         Json::Value devices(Json::arrayValue);
@@ -105,6 +119,15 @@ drogular::ActionResult I2cStatusAction::handle(
     const auto service = context.requireService<I2cService>();
     const auto snapshot = service->snapshot();
 
+    BoardGpioMetadata boardMetadata;
+    if (const auto monitor = context.service<SystemMonitor>()) {
+        try {
+            boardMetadata = BoardGpioMetadata::fromSystemSnapshot(monitor->snapshot());
+        } catch (...) {
+            // Board metadata is optional enrichment. I²C inventory must stay available.
+        }
+    }
+
     GpioSnapshot gpioSnapshot;
     const GpioSnapshot* gpioSnapshotPtr = nullptr;
     if (const auto gpioService = context.service<GpioService>();
@@ -119,7 +142,7 @@ drogular::ActionResult I2cStatusAction::handle(
     }
 
     return drogular::ActionResult::json(
-        toJson(snapshot, service->statistics(), gpioSnapshotPtr));
+        toJson(snapshot, service->statistics(), gpioSnapshotPtr, boardMetadata));
 }
 
 } // namespace system_monitor

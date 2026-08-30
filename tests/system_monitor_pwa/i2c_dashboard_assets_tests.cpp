@@ -35,4 +35,6 @@ TEST(I2cDashboardAssetsTests, JavaScriptPollsIndependentI2cEndpoint) {
     EXPECT_NE(script.find("claimedByKernel"), std::string::npos);
     EXPECT_NE(script.find("bus.gpioPins"), std::string::npos);
     EXPECT_NE(script.find("i2c-gpio-pin"), std::string::npos);
+    EXPECT_NE(script.find("pin.physicalHeaderPin"), std::string::npos);
+    EXPECT_NE(script.find("pin.exposure"), std::string::npos);
 }
