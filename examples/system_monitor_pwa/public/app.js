@@ -798,17 +798,27 @@
             for (const group of groups) {
                 const card = document.createElement('article');
                 card.className = 'uart-gpio-group';
+                const headingRow = document.createElement('div');
+                headingRow.className = 'uart-gpio-heading';
                 const heading = document.createElement('strong');
                 heading.textContent = `UART${group.controller} GPIO`;
-                card.appendChild(heading);
+                headingRow.appendChild(heading);
+                const exposure = String(group.exposure || 'unknown');
+                const exposureBadge = document.createElement('span');
+                exposureBadge.className = `uart-exposure uart-exposure-${exposure}`;
+                exposureBadge.textContent = exposure === 'header' ? '40-pin header' : exposure;
+                headingRow.appendChild(exposureBadge);
+                card.appendChild(headingRow);
                 const pins = document.createElement('div');
                 pins.className = 'uart-gpio-mapping';
                 for (const pin of Array.isArray(group.pins) ? group.pins : []) {
                     const badge = document.createElement('span');
                     badge.className = 'uart-gpio-pin';
                     const pinName = pin.name || `${pin.chip || 'gpio'}:${pin.offset}`;
-                    badge.textContent = `${String(pin.role || '').toUpperCase()} · ${pinName}`;
-                    badge.title = `${pin.function || pin.consumer || 'UART'} on ${pin.chip || 'GPIO chip'} line ${pin.offset}`;
+                    const headerPin = Number.isInteger(pin.physicalHeaderPin) ? ` · pin ${pin.physicalHeaderPin}` : '';
+                    badge.textContent = `${String(pin.role || '').toUpperCase()} · ${pinName}${headerPin}`;
+                    const pinExposure = String(pin.exposure || 'unknown');
+                    badge.title = `${pin.function || pin.consumer || 'UART'} on ${pin.chip || 'GPIO chip'} line ${pin.offset} · ${pinExposure}`;
                     pins.appendChild(badge);
                 }
                 card.appendChild(pins);

@@ -591,6 +591,30 @@ dd {
 .uart-correlation-note {
     margin:.1rem 0;
 }
+.uart-gpio-heading {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:.75rem;
+}
+.uart-exposure {
+    display:inline-flex;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:.18rem .5rem;
+    font-size:.72rem;
+    font-weight:700;
+    text-transform:capitalize;
+    white-space:nowrap;
+}
+.uart-exposure-header {
+    color:#9fc5ff;
+    border-color:#315071;
+}
+.uart-exposure-internal, .uart-exposure-onboard {
+    color:#b8c1d8;
+}
 
 @media (max-width: 720px) {
     .header-content {

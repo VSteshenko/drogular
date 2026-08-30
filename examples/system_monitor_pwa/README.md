@@ -428,17 +428,38 @@ pinctrl get 14,15
 curl -s http://localhost:8080/api/uart
 ```
 
-A typical Raspberry Pi GPIO group can look like:
+A typical Raspberry Pi 4 GPIO group can look like:
 
 ```json
 {
   "controller": 1,
+  "exposure": "header",
   "pins": [
-    { "role": "txd", "name": "GPIO14", "function": "TXD1" },
-    { "role": "rxd", "name": "GPIO15", "function": "RXD1" }
+    {
+      "role": "txd",
+      "name": "GPIO14",
+      "function": "TXD1",
+      "exposure": "header",
+      "physicalHeaderPin": 8
+    },
+    {
+      "role": "rxd",
+      "name": "GPIO15",
+      "function": "RXD1",
+      "exposure": "header",
+      "physicalHeaderPin": 10
+    }
   ]
 }
 ```
+
+System Monitor keeps board-specific accessibility in a separate
+`BoardGpioMetadata` layer. The current board map explicitly supports the
+Raspberry Pi 4 40-pin header. GPIOs on the primary controller that are not on
+the header are reported as `internal`; expansion-controller signals are
+`onboard`. Unsupported boards remain `unknown` rather than reusing a possibly
+incorrect pin map. This metadata can later be reused by the GPIO, I2C, and SPI
+views without putting Raspberry Pi-specific assumptions into their correlators.
 
 The dashboard keeps this distinction visible instead of claiming a device-to-
 controller mapping that the available kernel metadata has not proven.

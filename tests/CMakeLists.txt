@@ -196,6 +196,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/spi_status_action_tests.cpp
     system_monitor_pwa/spi_dashboard_assets_tests.cpp
     system_monitor_pwa/linux_uart_provider_tests.cpp
+    system_monitor_pwa/board_gpio_metadata_tests.cpp
     system_monitor_pwa/uart_gpio_correlator_tests.cpp
     system_monitor_pwa/uart_service_tests.cpp
     system_monitor_pwa/uart_status_action_tests.cpp

@@ -1,8 +1,10 @@
 #include "uart_status_action.hpp"
 
+#include "hardware/board_gpio_metadata.hpp"
 #include "hardware/uart_gpio_correlator.hpp"
 #include "services/gpio_service.hpp"
 #include "services/uart_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <json/json.h>
 
@@ -14,7 +16,8 @@ namespace {
 
 Json::Value toJson(const UartSnapshot& snapshot,
                    const UartServiceStatistics& statistics,
-                   const GpioSnapshot* gpioSnapshot
+                   const GpioSnapshot* gpioSnapshot,
+                   const BoardGpioMetadata& boardMetadata
 ) {
     Json::Value root(Json::objectValue);
 
@@ -39,9 +42,10 @@ Json::Value toJson(const UartSnapshot& snapshot,
 
     Json::Value gpioGroups(Json::arrayValue);
     if (gpioSnapshot) {
-        for (const auto& sourceGroup : UartGpioCorrelator::groups(*gpioSnapshot)) {
+        for (const auto& sourceGroup : UartGpioCorrelator::groups(*gpioSnapshot, boardMetadata)) {
             Json::Value group(Json::objectValue);
             group["controller"] = sourceGroup.controller;
+            group["exposure"] = std::string(gpioExposureName(sourceGroup.exposure));
             Json::Value pins(Json::arrayValue);
             for (const auto& sourcePin : sourceGroup.pins) {
                 Json::Value pin(Json::objectValue);
@@ -51,6 +55,12 @@ Json::Value toJson(const UartSnapshot& snapshot,
                 pin["name"] = sourcePin.name;
                 pin["function"] = sourcePin.function;
                 pin["consumer"] = sourcePin.consumer;
+                pin["exposure"] = std::string(gpioExposureName(sourcePin.exposure));
+                if (sourcePin.physicalHeaderPin) {
+                    pin["physicalHeaderPin"] = *sourcePin.physicalHeaderPin;
+                } else {
+                    pin["physicalHeaderPin"] = Json::nullValue;
+                }
                 pins.append(std::move(pin));
             }
             group["pins"] = std::move(pins);
@@ -85,6 +95,15 @@ Json::Value toJson(const UartSnapshot& snapshot,
     const auto service = context.requireService<UartService>();
     const auto snapshot = service->snapshot();
 
+    BoardGpioMetadata boardMetadata;
+    if (const auto monitor = context.service<SystemMonitor>()) {
+        try {
+            boardMetadata = BoardGpioMetadata::fromSystemSnapshot(monitor->snapshot());
+        } catch (...) {
+            // Board metadata is optional enrichment. UART inventory must stay available.
+        }
+    }
+
     GpioSnapshot gpioSnapshot;
     const GpioSnapshot* gpioSnapshotPtr = nullptr;
     if (const auto gpioService = context.service<GpioService>();
@@ -99,7 +118,11 @@ Json::Value toJson(const UartSnapshot& snapshot,
     }
 
     return drogular::ActionResult::json(
-        toJson(snapshot, service->statistics(), gpioSnapshotPtr));
+        toJson(snapshot,
+            service->statistics(),
+            gpioSnapshotPtr,
+            boardMetadata
+        ));
 }
 
 } // namespace system_monitor

@@ -24,4 +24,7 @@ TEST(UartDashboardAssetsTests, ContainsUartPanelAndIndependentPolling) {
     EXPECT_NE(js.find("UART_POLL_INTERVAL_MS = 30000"), std::string::npos);
     EXPECT_NE(js.find("gpioGroups"),std::string::npos);
     EXPECT_NE(js.find("Linux tty numbering is not assumed"), std::string::npos);
+    EXPECT_NE(js.find("uart-exposure"), std::string::npos);
+    EXPECT_NE(js.find("40-pin header"), std::string::npos);
+    EXPECT_NE(js.find("physicalHeaderPin"), std::string::npos);
 }

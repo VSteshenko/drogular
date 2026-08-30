@@ -1,6 +1,7 @@
 #include "actions/uart_status_action.hpp"
 #include "services/gpio_service.hpp"
 #include "services/uart_service.hpp"
+#include "services/system_monitor.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/services.hpp>
@@ -14,6 +15,21 @@ public:
         return {
             { "ttyS0", "/dev/ttyS0", {"/dev/serial0"} }
         };
+    }
+};
+
+class UartSystemMetricsProvider final : public system_monitor::SystemMetricsProvider {
+public:
+    system_monitor::SystemSnapshot snapshot() override {
+        system_monitor::SystemSnapshot snapshot;
+        snapshot.raspberryPi = system_monitor::RaspberryPiInfo{
+            .model = "Raspberry Pi 4 Model B Rev 1.4"
+        };
+        return snapshot;
+    }
+
+    std::vector<system_monitor::ProcessInfo> processes() override {
+        return {};
     }
 };
 
@@ -39,6 +55,9 @@ TEST(UartStatusActionTests, ReturnsDevicesAliasesAndGpioGroups) {
         std::make_shared<system_monitor::UartService>(std::make_shared<UartActionProvider>()));
     services.registerService<system_monitor::GpioService>(
         std::make_shared<system_monitor::GpioService>(std::make_shared<UartGpioProvider>()));
+    services.registerService<system_monitor::SystemMonitor>(
+        std::make_shared<system_monitor::SystemMonitor>(
+            std::make_shared<UartSystemMetricsProvider>()));
     auto request=drogon::HttpRequest::newHttpRequest();
     drogular::ActionContext context(request,&services);
     system_monitor::UartStatusAction action;
@@ -51,4 +70,7 @@ TEST(UartStatusActionTests, ReturnsDevicesAliasesAndGpioGroups) {
     ASSERT_EQ(json["gpioGroups"].size(), 1U);
     EXPECT_EQ(json["gpioGroups"][0]["controller"].asUInt(), 1U);
     EXPECT_EQ(json["gpioGroups"][0]["pins"].size(), 2U);
+    EXPECT_EQ(json["gpioGroups"][0]["exposure"].asString(), "header");
+    EXPECT_EQ(json["gpioGroups"][0]["pins"][0]["physicalHeaderPin"].asUInt(), 8U);
+    EXPECT_EQ(json["gpioGroups"][0]["pins"][1]["physicalHeaderPin"].asUInt(), 10U);
 }

@@ -43,7 +43,10 @@ bool parseFunction(std::string_view function, std::string& role, std::uint32_t& 
 
 } // namespace
 
-std::vector<UartGpioGroup> UartGpioCorrelator::groups(const GpioSnapshot& gpioSnapshot) {
+std::vector<UartGpioGroup> UartGpioCorrelator::groups(
+    const GpioSnapshot& gpioSnapshot,
+    const BoardGpioMetadata& boardMetadata
+) {
     std::map<std::uint32_t, UartGpioGroup> groups;
     for (const auto& chip : gpioSnapshot.chips) {
         for (const auto& line : chip.lines) {
@@ -53,15 +56,20 @@ std::vector<UartGpioGroup> UartGpioCorrelator::groups(const GpioSnapshot& gpioSn
                 continue;
             }
 
+            const auto lineMetadata = boardMetadata.line(chip.chip.name, line.offset);
+
             auto& group = groups[controller];
             group.controller = controller;
+            group.exposure = combineGpioExposure(group.exposure, lineMetadata.exposure);
             group.pins.push_back(UartGpioPin{
                 .role = std::move(role),
                 .chip = chip.chip.name,
                 .offset = line.offset,
                 .name = line.name,
                 .function = line.function,
-                .consumer = line.consumer
+                .consumer = line.consumer,
+                .exposure = lineMetadata.exposure,
+                .physicalHeaderPin = lineMetadata.physicalHeaderPin
             });
         }
     }

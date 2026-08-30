@@ -1,4 +1,5 @@
 set(SYSTEM_MONITOR_CORE_SOURCES
+    hardware/board_gpio_metadata.cpp
     hardware/i2c_gpio_correlator.cpp
     hardware/spi_gpio_correlator.cpp
     hardware/uart_gpio_correlator.cpp
