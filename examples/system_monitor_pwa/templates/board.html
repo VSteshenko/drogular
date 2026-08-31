@@ -1,0 +1,79 @@
+<section class="hero board-hero">
+    <div>
+        <p class="eyebrow">Hardware overview</p>
+        <h2 data-board-model>{{ boardModel }}</h2>
+        <p class="muted">{{ hostname }} · board interfaces and physical header</p>
+    </div>
+    <a class="secondary-link" href="/">System dashboard</a>
+</section>
+
+<section class="board-identity panel">
+    <div>
+        <p class="eyebrow">Board</p>
+        <h2>Identity</h2>
+    </div>
+    <dl class="system-info board-identity-grid">
+        <div><dt>Model</dt><dd data-board-model-detail>{{ boardModel }}</dd></div>
+        <div><dt>Revision</dt><dd data-board-revision>{{ boardRevision }}</dd></div>
+        <div><dt>Serial</dt><dd data-board-serial>{{ boardSerial }}</dd></div>
+        <div><dt>Inventory</dt><dd data-board-inventory-status>Loading hardware inventory…</dd></div>
+    </dl>
+</section>
+
+<section class="hardware-summary-grid" aria-label="Hardware interfaces">
+    <article class="hardware-summary-card" data-board-summary="gpio">
+        <span class="hardware-summary-icon">GPIO</span>
+        <strong data-board-summary-value="gpio">Loading…</strong>
+        <span class="muted" data-board-summary-detail="gpio">GPIO inventory</span>
+    </article>
+    <article class="hardware-summary-card" data-board-summary="i2c">
+        <span class="hardware-summary-icon">I²C</span>
+        <strong data-board-summary-value="i2c">Loading…</strong>
+        <span class="muted" data-board-summary-detail="i2c">I²C buses</span>
+    </article>
+    <article class="hardware-summary-card" data-board-summary="spi">
+        <span class="hardware-summary-icon">SPI</span>
+        <strong data-board-summary-value="spi">Loading…</strong>
+        <span class="muted" data-board-summary-detail="spi">SPI buses</span>
+    </article>
+    <article class="hardware-summary-card" data-board-summary="uart">
+        <span class="hardware-summary-icon">UART</span>
+        <strong data-board-summary-value="uart">Loading…</strong>
+        <span class="muted" data-board-summary-detail="uart">Serial interfaces</span>
+    </article>
+</section>
+
+<section class="board-overview-grid">
+    <article class="panel board-header-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">Physical layout</p>
+                <h2>40-pin header</h2>
+            </div>
+            <span class="muted" data-board-header-status>Waiting for board metadata</span>
+        </div>
+        <div class="board-header-legend" aria-label="Header legend">
+            <span><i class="board-legend-dot board-legend-power"></i>Power</span>
+            <span><i class="board-legend-dot board-legend-ground"></i>Ground</span>
+            <span><i class="board-legend-dot board-legend-gpio"></i>GPIO</span>
+            <span><i class="board-legend-dot board-legend-active"></i>Interface</span>
+        </div>
+        <div class="board-header-map" data-board-header-map>
+            <p class="muted">Loading physical header…</p>
+        </div>
+    </article>
+
+    <aside class="board-interface-list" data-board-interface-list>
+        <article class="panel board-interface-card">
+            <p class="eyebrow">Interfaces</p>
+            <h2>Detected hardware</h2>
+            <p class="muted">Loading interface status…</p>
+        </article>
+    </aside>
+</section>
+
+<section class="panel board-notes">
+    <p class="eyebrow">Interpretation</p>
+    <h2>What this page shows</h2>
+    <p class="muted">The header map is composed from board metadata plus the live GPIO, I²C, SPI and UART inventories. Interface labels describe detected kernel/pinmux state; the page does not open devices, transfer data or change GPIO configuration.</p>
+</section>

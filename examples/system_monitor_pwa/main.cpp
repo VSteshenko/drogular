@@ -8,6 +8,7 @@
 #include "spi/spidev_spi_provider.hpp"
 #include "uart/linux_uart_provider.hpp"
 #include "pages/dashboard_page.hpp"
+#include "pages/board_page.hpp"
 #include "platform/linux_system_metrics_provider.hpp"
 #if defined(__APPLE__)
 #include "platform/macos_system_metrics_provider.hpp"
@@ -297,6 +298,7 @@ int main() {
     app.services().add<system_monitor::UartService>(uartProvider);
 
     app.page<system_monitor::DashboardPage>("/");
+    app.page<system_monitor::BoardPage>("/hardware");
     app.get<system_monitor::SystemStatusAction>("/api/system");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");
     app.get<system_monitor::I2cStatusAction>("/api/i2c");

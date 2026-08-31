@@ -13,6 +13,10 @@
                 <p class="eyebrow">Drogular example</p>
                 <h1>{{ title }}</h1>
             </div>
+            <nav class="site-nav" aria-label="System monitor sections">
+                <a href="/">System</a>
+                <a href="/hardware">Hardware</a>
+            </nav>
             <div class="connection-status">
                 <div class="connection-status-content">
                     <span class="status" data-monitor-status>
@@ -29,6 +33,6 @@
     <main class="shell">
         @content
     </main>
-    <script src="/assets/app.js" defer></script>
+    <script src="{{ pageScript }}" defer></script>
 </body>
 </html>

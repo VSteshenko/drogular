@@ -85,6 +85,7 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
     add_executable(system_monitor_pwa
         main.cpp
         pages/dashboard_page.cpp
+        pages/board_page.cpp
         actions/gpio_status_action.cpp
         actions/i2c_status_action.cpp
         actions/spi_status_action.cpp

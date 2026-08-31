@@ -173,6 +173,7 @@ target_link_libraries(drogular_portal_demo_tests
 
 add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/pages/dashboard_page.cpp
+    ../examples/system_monitor_pwa/pages/board_page.cpp
     ../examples/system_monitor_pwa/actions/gpio_status_action.cpp
     ../examples/system_monitor_pwa/actions/i2c_status_action.cpp
     ../examples/system_monitor_pwa/actions/spi_status_action.cpp
@@ -208,6 +209,8 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/system_monitor_service_tests.cpp
     system_monitor_pwa/system_monitor_formatters_tests.cpp
     system_monitor_pwa/system_monitor_dashboard_page_tests.cpp
+    system_monitor_pwa/hardware_board_page_tests.cpp
+    system_monitor_pwa/hardware_board_assets_tests.cpp
     system_monitor_pwa/system_monitor_status_action_tests.cpp
 )
 

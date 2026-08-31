@@ -24,6 +24,7 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
         snapshot.memory.totalBytes);
 
     context.set("title", std::string("Drogular System Monitor"));
+    context.set("pageScript", std::string("/assets/app.js"));
     context.set("hostname", snapshot.system.hostname);
     context.set("operatingSystem", snapshot.system.operatingSystem);
     context.set("kernel", snapshot.system.kernel);

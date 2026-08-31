@@ -472,3 +472,23 @@ the same fields for correlated pins plus aggregate bus exposure.
 
 The dashboard keeps this distinction visible instead of claiming a device-to-
 controller mapping that the available kernel metadata has not proven.
+
+## Hardware overview
+
+The dedicated `/hardware` page composes the existing system, GPIO, I²C, SPI,
+and UART inventories into a single board-oriented view. It does not introduce a
+second hardware probing path: the page reads the same `/api/system`, `/api/gpio`,
+`/api/i2c`, `/api/spi`, and `/api/uart` endpoints used by the dashboard.
+
+On a supported Raspberry Pi board the page renders the physical 40-pin header.
+GPIO positions come from `BoardGpioMetadata`; I²C, SPI, and UART labels are then
+overlaid from their live correlation results using `physicalHeaderPin`. Power
+and ground contacts are static properties of the physical header and are shown
+even though they are not GPIO lines.
+
+The interface summary distinguishes header, onboard, internal, mixed, and
+unknown exposure. Unsupported board models remain usable as inventory pages but
+do not receive a guessed physical pin map.
+
+The overview is read-only. Rendering the page does not request GPIO lines, open
+serial or SPI devices, perform additional I²C probes, or change pinmux state.

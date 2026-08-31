@@ -645,3 +645,239 @@ dd {
     .spi-overview { align-items:flex-end; }
     .uart-overview { align-items:flex-end; }
 }
+
+/* Hardware overview / board page */
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-left: auto;
+}
+.site-nav a, .secondary-link {
+    color: #b9c9e8;
+    text-decoration: none;
+    border: 1px solid #30405f;
+    border-radius: .65rem;
+    padding: .45rem .7rem;
+    background: #151f35;
+}
+.site-nav a:hover, .secondary-link:hover {
+    background: #1d2a46;
+}
+.board-hero {
+    align-items: center;
+}
+.board-identity {
+    margin-bottom: 1rem;
+}
+.board-identity-grid {
+    margin-top: 1rem;
+}
+.hardware-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .8rem;
+    margin: 1rem 0;
+}
+.hardware-summary-card {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid #26314f;
+    border-radius: .85rem;
+    background: #111a2e;
+    display: grid;
+    gap: .4rem;
+}
+.hardware-summary-card strong {
+    font-size: 1.2rem;
+}
+.hardware-summary-icon {
+    width: fit-content;
+    padding: .25rem .45rem;
+    border: 1px solid #40557d;
+    border-radius: .45rem;
+    color: #a9c4f5;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+.board-overview-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, .95fr) minmax(0, 1.25fr);
+    gap: 1rem;
+    align-items: start;
+}
+.board-header-panel {
+    min-width: 0;
+}
+.board-header-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin: .9rem 0 1rem;
+    color: #9aa8c3;
+    font-size: .78rem;
+}
+.board-header-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+.board-legend-dot {
+    display: inline-block;
+    width: .62rem;
+    height: .62rem;
+    border-radius: 50%;
+    border: 1px solid #6f7f9d;
+}
+.board-legend-power {
+    background: #b86d72;
+}
+.board-legend-ground {
+    background: #4d566a;
+}
+.board-legend-gpio {
+    background: #365d75;
+}
+.board-legend-active {
+    background: #5b7f58;
+}
+.board-header-map {
+    display: grid;
+    gap: .35rem;
+}
+.board-header-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .35rem;
+}
+.board-pin {
+    min-width: 0;
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: 1.65rem minmax(0, 1fr);
+    gap: .45rem;
+    align-items: start;
+    padding: .45rem;
+    border: 1px solid #2d3b58;
+    border-radius: .55rem;
+    background: #111a2e;
+}
+.board-pin-power {
+    border-color: #70484e;
+    background: #25191f;
+}
+.board-pin-ground {
+    border-color: #434c60;
+    background: #151923;
+}
+.board-pin-interface {
+    border-color: #557b55;
+    box-shadow: inset 0 0 0 1px rgba(110, 231, 168, .08);
+}
+.board-pin-number {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 50%;
+    background: #24314c;
+    color: #dce7ff;
+    font-size: .72rem;
+    font-weight: 800;
+}
+.board-pin-body {
+    min-width: 0;
+    display: grid;
+    gap: .15rem;
+}
+.board-pin-body strong {
+    overflow-wrap: anywhere;
+    font-size: .82rem;
+}
+.board-pin-detail {
+    font-size: .68rem;
+    overflow-wrap: anywhere;
+}
+.board-pin-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem;
+    margin-top: .18rem;
+}
+.board-pin-tag, .board-interface-badges span {
+    display: inline-flex;
+    padding: .18rem .32rem;
+    border: 1px solid #496b54;
+    border-radius: .4rem;
+    background: #17261e;
+    color: #bfe8c9;
+    font-size: .64rem;
+    font-weight: 700;
+}
+.board-interface-list {
+    display: grid;
+    gap: 1rem;
+}
+.board-interface-card {
+    margin: 0;
+}
+.board-interface-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+}
+.board-interface-heading h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+.board-interface-state {
+    margin: .7rem 0 .25rem;
+    font-weight: 700;
+}
+.board-interface-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: .7rem;
+}
+.board-exposure {
+    white-space: nowrap;
+    padding: .22rem .42rem;
+    border: 1px solid #40557d;
+    border-radius: 999px;
+    color: #b9c9e8;
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.board-exposure-header {
+    border-color: #4f7657;
+    color: #bfe8c9;
+}
+.board-exposure-internal {
+    border-color: #6b536f;
+    color: #d9badf;
+}
+.board-exposure-onboard {
+    border-color: #665d43;
+    color: #e4d4a4;
+}
+.board-notes {
+    margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+    .hardware-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .board-overview-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .site-nav { order: 3; width: 100%; }
+    .site-nav a { flex: 1; text-align: center; }
+    .hardware-summary-grid { grid-template-columns: 1fr; }
+    .board-header-row { grid-template-columns: 1fr 1fr; }
+    .board-pin { grid-template-columns: 1.45rem minmax(0, 1fr); padding: .35rem; }
+}
