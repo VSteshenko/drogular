@@ -2,20 +2,22 @@
     <div>
         <p class="eyebrow">Hardware overview</p>
         <h2 data-board-model>{{ boardModel }}</h2>
-        <p class="muted">{{ hostname }} · board interfaces and physical header</p>
+        <p class="muted">{{ hostname }} · {{ hardwareSubtitle }}</p>
     </div>
     <a class="secondary-link" href="/">System dashboard</a>
 </section>
 
 <section class="board-identity panel">
     <div>
-        <p class="eyebrow">Board</p>
+        <p class="eyebrow">{{ hardwareIdentityLabel }}</p>
         <h2>Identity</h2>
     </div>
     <dl class="system-info board-identity-grid">
         <div><dt>Model</dt><dd data-board-model-detail>{{ boardModel }}</dd></div>
+@if(hasRaspberryPi)
         <div><dt>Revision</dt><dd data-board-revision>{{ boardRevision }}</dd></div>
         <div><dt>Serial</dt><dd data-board-serial>{{ boardSerial }}</dd></div>
+@endif
         <div><dt>Inventory</dt><dd data-board-inventory-status>Loading hardware inventory…</dd></div>
     </dl>
 </section>
@@ -43,7 +45,8 @@
     </article>
 </section>
 
-<section class="board-overview-grid">
+<section class="{{ boardOverviewClass }}">
+@if(hasBoardHeader)
     <article class="panel board-header-panel">
         <div class="panel-heading">
             <div>
@@ -62,6 +65,7 @@
             <p class="muted">Loading physical header…</p>
         </div>
     </article>
+@endif
 
     <aside class="board-interface-list" data-board-interface-list>
         <article class="panel board-interface-card">
@@ -75,5 +79,9 @@
 <section class="panel board-notes">
     <p class="eyebrow">Interpretation</p>
     <h2>What this page shows</h2>
+@if(hasBoardHeader)
     <p class="muted">The header map is composed from board metadata plus the live GPIO, I²C, SPI and UART inventories. Interface labels describe detected kernel/pinmux state; the page does not open devices, transfer data or change GPIO configuration.</p>
+@else
+    <p class="muted">This page shows hardware interfaces reported by the monitored operating system. Board-specific pin mappings are enabled only after a supported board is positively identified. Generic targets show operating-system hardware inventory without applying any board layout assumptions.</p>
+@endif
 </section>

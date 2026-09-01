@@ -481,6 +481,11 @@ second hardware probing path: the page reads the same `/api/system`, `/api/gpio`
 `/api/i2c`, `/api/spi`, and `/api/uart` endpoints used by the dashboard.
 
 On a supported Raspberry Pi board the page renders the physical 40-pin header.
+Board-specific metadata is enabled only after the monitored system is positively
+identified as a supported board. Generic macOS and Linux targets keep their native
+hardware inventory, but do not receive Raspberry Pi exposure classifications or the
+40-pin header map.
+
 GPIO positions come from `BoardGpioMetadata`; I²C, SPI, and UART labels are then
 overlaid from their live correlation results using `physicalHeaderPin`. Power
 and ground contacts are static properties of the physical header and are shown

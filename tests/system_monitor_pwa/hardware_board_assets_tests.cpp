@@ -33,6 +33,9 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     EXPECT_NE(js.find("fetchJson('/api/spi')"), std::string::npos);
     EXPECT_NE(js.find("fetchJson('/api/uart')"), std::string::npos);
     EXPECT_NE(js.find("physicalHeaderPin"), std::string::npos);
+    EXPECT_NE(js.find("hasPhysicalHeader"), std::string::npos);
+    EXPECT_NE(js.find("`${gpioLines} GPIO lines`"), std::string::npos);
+    EXPECT_NE(js.find("pinBadge(pin, pin.role)"), std::string::npos);
     EXPECT_NE(js.find("I²C${bus.number}"), std::string::npos);
     EXPECT_NE(js.find("SPI${bus.number}"), std::string::npos);
     EXPECT_NE(js.find("UART${group.controller}"), std::string::npos);
@@ -40,4 +43,5 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     EXPECT_NE(css.find(".board-header-map"), std::string::npos);
     EXPECT_NE(css.find(".hardware-summary-grid"), std::string::npos);
     EXPECT_NE(css.find(".board-interface-card"), std::string::npos);
+    EXPECT_NE(css.find(".board-overview-grid-generic"), std::string::npos);
 }

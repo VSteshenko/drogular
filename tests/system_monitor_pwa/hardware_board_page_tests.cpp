@@ -32,6 +32,21 @@ public:
     }
 };
 
+class GenericLinuxFakeProvider final : public system_monitor::SystemMetricsProvider {
+public:
+    system_monitor::SystemSnapshot snapshot() override {
+        system_monitor::SystemSnapshot value;
+        value.system.hostname = "linux-monitor";
+        value.system.operatingSystem = "Linux";
+        value.system.architecture = "x86_64";
+        return value;
+    }
+
+    std::vector<system_monitor::ProcessInfo> processes() override {
+        return {};
+    }
+};
+
 } // namespace
 
 TEST(HardwareBoardPageTests, RendersBoardIdentityAndHardwareShell) {
@@ -59,4 +74,28 @@ TEST(HardwareBoardPageTests, RendersBoardIdentityAndHardwareShell) {
     EXPECT_TRUE(drogular::test::contains(result.html, "/assets/board.js"));
     EXPECT_TRUE(drogular::test::contains(result.html, "href=\"/hardware\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "href=\"/\""));
+}
+TEST(HardwareBoardPageTests, GenericLinuxDoesNotRenderRaspberryPiSpecification) {
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+    options.setTemplateRoot(
+        std::filesystem::path(DROGULAR_SOURCE_DIR) /
+        "examples/system_monitor_pwa/templates");
+    services.setOptions(&options);
+
+    auto provider = std::make_shared<GenericLinuxFakeProvider>();
+    services.registerService<system_monitor::SystemMonitor>(
+        std::make_shared<system_monitor::SystemMonitor>(provider));
+
+    const auto result =
+        drogular::test::renderPage<system_monitor::BoardPage>(&services);
+
+    EXPECT_TRUE(drogular::test::contains(result.html, "Linux · x86_64"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "linux-monitor · hardware interfaces detected on this monitoring target"));
+    EXPECT_FALSE(drogular::test::contains(result.html, "40-pin header"));
+    EXPECT_FALSE(drogular::test::contains(result.html, "data-board-header-map"));
+    EXPECT_FALSE(drogular::test::contains(result.html, "Revision</dt>"));
+    EXPECT_FALSE(drogular::test::contains(result.html, "Serial</dt>"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "without applying any board layout assumptions"));
+    EXPECT_FALSE(drogular::test::contains(result.html, "Raspberry Pi"));
 }

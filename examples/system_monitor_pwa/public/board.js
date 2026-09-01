@@ -1,7 +1,8 @@
 (() => {
     const REFRESH_INTERVAL_MS = 30000;
+    const hasPhysicalHeader = Boolean(document.querySelector('[data-board-header-map]'));
 
-    const staticPins = new Map([
+    const staticPins = hasPhysicalHeader ? new Map([
         [1, { label: '3V3', kind: 'power' }],
         [2, { label: '5V', kind: 'power' }],
         [4, { label: '5V', kind: 'power' }],
@@ -14,7 +15,7 @@
         [30, { label: 'GND', kind: 'ground' }],
         [34, { label: 'GND', kind: 'ground' }],
         [39, { label: 'GND', kind: 'ground' }]
-    ]);
+    ]) : new Map();
 
     const summaryValue = (name) => document.querySelector(`[data-board-summary-value="${name}"]`);
     const summaryDetail = (name) => document.querySelector(`[data-board-summary-detail="${name}"]`);
@@ -193,7 +194,9 @@
         const chips = Array.isArray(gpio?.chips) ? gpio.chips : [];
         const gpioLines = chips.reduce((count, chip) => count + (Array.isArray(chip.lines) ? chip.lines.length : 0), 0);
         const headerLines = gpioHeaderLines(gpio).length;
-        if (summaryValue('gpio')) summaryValue('gpio').textContent = gpio?.available ? `${headerLines} header GPIO` : 'Unavailable';
+        if (summaryValue('gpio')) summaryValue('gpio').textContent = gpio?.available
+            ? (hasPhysicalHeader ? `${headerLines} header GPIO` : `${gpioLines} GPIO lines`)
+            : 'Unavailable';
         if (summaryDetail('gpio')) summaryDetail('gpio').textContent = gpio?.available ? `${chips.length} chips · ${gpioLines} lines · ${healthyLabel(gpio)}` : 'GPIO inventory unavailable';
 
         const i2cBuses = Array.isArray(i2c?.buses) ? i2c.buses : [];
@@ -249,19 +252,38 @@
         return card;
     };
 
+    const pinBadge = (pin, role) => {
+        const label = String(role || '').toUpperCase();
+        if (hasPhysicalHeader && Number.isInteger(pin?.physicalHeaderPin)) {
+            return `${label} · pin ${pin.physicalHeaderPin}`;
+        }
+        const gpioName = pin?.name || (Number.isInteger(pin?.offset) ? `GPIO${pin.offset}` : 'GPIO');
+        const functionName = pin?.function && pin.function !== gpioName ? ` · ${pin.function}` : '';
+        return `${label} · ${gpioName}${functionName}`;
+    };
+
     const renderInterfaces = (gpio, i2c, spi, uart) => {
         const target = document.querySelector('[data-board-interface-list]');
         if (!target) return;
         target.replaceChildren();
 
+        const chips = Array.isArray(gpio?.chips) ? gpio.chips : [];
+        const allLines = chips.flatMap((chip) =>
+            (Array.isArray(chip.lines) ? chip.lines : []).map((line) => ({ ...line, chip: chip.name })));
         const headerLines = gpioHeaderLines(gpio);
-        const usedHeader = headerLines.filter((line) => line.used || line.alternateFunction);
+        const visibleLines = hasPhysicalHeader ? headerLines : allLines;
+        const activeLines = visibleLines.filter((line) => line.used || line.alternateFunction);
         target.appendChild(makeInterfaceCard(
             'GPIO',
             gpio?.available ? healthyLabel(gpio) : 'Unavailable',
-            headerLines.length > 0 ? 'header' : 'unknown',
-            gpio?.available ? `${usedHeader.length} active or muxed header lines` : 'GPIO service is not available.',
-            usedHeader.slice(0, 8).map((line) => `${line.name} · pin ${line.physicalHeaderPin}`)));
+            hasPhysicalHeader && headerLines.length > 0 ? 'header' : 'unknown',
+            gpio?.available
+                ? `${activeLines.length} active or muxed ${hasPhysicalHeader ? 'header ' : ''}lines`
+                : 'GPIO service is not available.',
+            activeLines.slice(0, 8).map((line) =>
+                hasPhysicalHeader && Number.isInteger(line.physicalHeaderPin)
+                    ? `${line.name} · pin ${line.physicalHeaderPin}`
+                    : `${line.name}${line.function ? ` · ${line.function}` : ''}`)));
 
         for (const bus of Array.isArray(i2c?.buses) ? i2c.buses : []) {
             const devices = Array.isArray(bus.devices) ? bus.devices : [];
@@ -272,7 +294,7 @@
                 bus.exposure,
                 bus.description || bus.name || 'I²C bus',
                 [
-                    ...pins.map((pin) => `${String(pin.role || '').toUpperCase()} · pin ${pin.physicalHeaderPin ?? '?'}`),
+                    ...pins.map((pin) => pinBadge(pin, pin.role)),
                     ...devices.map((device) => device.addressHex || `0x${Number(device.address).toString(16)}`)
                 ]));
         }
@@ -285,7 +307,7 @@
                 `${devices.length} ${devices.length === 1 ? 'device node' : 'device nodes'}`,
                 bus.exposure,
                 devices.map((device) => device.path).join(' · ') || 'No spidev nodes detected.',
-                pins.map((pin) => `${String(pin.role || '').toUpperCase()} · pin ${pin.physicalHeaderPin ?? '?'}`)));
+                pins.map((pin) => pinBadge(pin, pin.role))));
         }
 
         const aliases = [];
@@ -300,7 +322,7 @@
                 group.exposure === 'header' ? 'Available on header' : 'Detected pinmux group',
                 group.exposure,
                 aliases.length > 0 ? `Linux serial: ${aliases.join(' · ')}` : 'No Linux serial device alias detected.',
-                pins.map((pin) => `${String(pin.role || '').toUpperCase()} · pin ${pin.physicalHeaderPin ?? 'internal'}`)));
+                pins.map((pin) => pinBadge(pin, pin.role))));
         }
     };
 
