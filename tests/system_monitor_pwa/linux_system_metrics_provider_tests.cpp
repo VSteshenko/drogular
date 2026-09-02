@@ -144,10 +144,19 @@ TEST(LinuxSystemMetricsProviderTests, RejectsNullReader) {
     EXPECT_THROW(system_monitor::LinuxSystemMetricsProvider(nullptr), std::invalid_argument);
 }
 
-TEST(LinuxSystemMetricsProviderTests, ProcessesAreDeferredToDedicatedStage) {
+TEST(LinuxSystemMetricsProviderTests, ProcessesParseSinglePsCommand) {
     auto reader = makeReader();
+    reader->commands["LC_ALL=C ps -eo pid=,user=,%cpu=,%mem=,rss=,comm=,args="] = {
+        0,
+        "42 alice 7.5 1.2 2048 worker /usr/bin/worker --serve\n",
+        {}};
     system_monitor::LinuxSystemMetricsProvider provider(reader);
-    EXPECT_TRUE(provider.processes().empty());
+
+    const auto processes = provider.processes();
+    ASSERT_EQ(processes.size(), 1U);
+    EXPECT_EQ(processes.front().pid, 42);
+    EXPECT_EQ(processes.front().name, "worker");
+    EXPECT_EQ(processes.front().residentBytes, 2048ULL * 1024ULL);
 }
 
 #if defined(__linux__)

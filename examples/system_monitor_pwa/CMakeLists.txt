@@ -5,9 +5,11 @@ set(SYSTEM_MONITOR_CORE_SOURCES
     hardware/uart_gpio_correlator.cpp
     services/gpio_service.cpp
     services/i2c_service.cpp
+    services/process_service.cpp
     services/spi_service.cpp
     services/uart_service.cpp
     services/system_monitor.cpp
+    system/process_list_parser.cpp
     ui/system_formatters.cpp
     platform/linux_system_metrics_provider.cpp
     platform/raspberry_pi_probe.cpp
@@ -88,6 +90,7 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
         pages/board_page.cpp
         actions/gpio_status_action.cpp
         actions/i2c_status_action.cpp
+        actions/process_status_action.cpp
         actions/spi_status_action.cpp
         actions/uart_status_action.cpp
         actions/system_status_action.cpp

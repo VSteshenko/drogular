@@ -161,6 +161,48 @@
     </div>
 </section>
 
+<section class="panel process-panel" data-process-panel>
+    <div class="panel-heading process-panel-heading">
+        <div>
+            <p class="eyebrow">Runtime</p>
+            <h2>Processes</h2>
+        </div>
+        <div class="process-overview">
+            <strong data-process-summary>Loading…</strong>
+            <span class="muted" data-process-status>Waiting for process inventory</span>
+        </div>
+    </div>
+
+    <div class="process-toolbar">
+        <label class="process-search">
+            <span class="muted">Search</span>
+            <input type="search" data-process-search placeholder="PID, user, name or command" autocomplete="off">
+        </label>
+        <label class="process-sort">
+            <span class="muted">Sort</span>
+            <select data-process-sort>
+                <option value="cpu">CPU</option>
+                <option value="memory">Memory</option>
+                <option value="rss">RSS</option>
+                <option value="pid">PID</option>
+                <option value="name">Name</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="process-table-wrap">
+        <table class="process-table">
+            <thead>
+                <tr><th>PID</th><th>User</th><th>Process</th><th>CPU</th><th>Memory</th><th>RSS</th></tr>
+            </thead>
+            <tbody data-process-rows>
+                <tr><td colspan="6" class="muted">Loading processes…</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="muted process-note">Showing up to 50 matching processes. Inventory is read-only.</p>
+</section>
+
 <section class="panel system-panel">
     <div>
         <p class="eyebrow">System</p>

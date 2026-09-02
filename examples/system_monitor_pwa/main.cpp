@@ -1,5 +1,6 @@
 #include "actions/gpio_status_action.hpp"
 #include "actions/i2c_status_action.hpp"
+#include "actions/process_status_action.hpp"
 #include "actions/spi_status_action.hpp"
 #include "actions/uart_status_action.hpp"
 #include "actions/system_status_action.hpp"
@@ -23,6 +24,7 @@
 #endif
 #include "services/gpio_service.hpp"
 #include "services/i2c_service.hpp"
+#include "services/process_service.hpp"
 #include "services/spi_service.hpp"
 #include "services/uart_service.hpp"
 #include "services/system_monitor.hpp"
@@ -280,6 +282,7 @@ int main() {
 
     app.services().registerService<system_monitor::SystemMetricsProvider>(provider);
     app.services().add<system_monitor::SystemMonitor>(provider);
+    app.services().add<system_monitor::ProcessService>(provider);
     if (gpioProvider) {
         app.services().registerService<system_monitor::GpioProvider>(gpioProvider);
     }
@@ -300,6 +303,7 @@ int main() {
     app.page<system_monitor::DashboardPage>("/");
     app.page<system_monitor::BoardPage>("/hardware");
     app.get<system_monitor::SystemStatusAction>("/api/system");
+    app.get<system_monitor::ProcessStatusAction>("/api/processes");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");
     app.get<system_monitor::I2cStatusAction>("/api/i2c");
     app.get<system_monitor::SpiStatusAction>("/api/spi");

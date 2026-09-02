@@ -497,3 +497,28 @@ do not receive a guessed physical pin map.
 
 The overview is read-only. Rendering the page does not request GPIO lines, open
 serial or SPI devices, perform additional I²C probes, or change pinmux state.
+
+## Process inventory
+
+The dashboard includes a read-only process inventory backed by `/api/processes`.
+Process collection is intentionally independent from the main system snapshot so a
+slow or temporarily unavailable process query cannot invalidate CPU, memory, disk,
+or hardware monitoring.
+
+Linux uses one `ps` command through `SystemReader`, which means SSH targets require
+only one remote command per refresh rather than one round trip per PID. macOS uses
+the native system `ps` command with the same normalized parser. `LC_ALL=C` keeps
+numeric CPU and memory fields locale-independent.
+
+The API reports PID, user, process name, full command, CPU percentage, memory
+percentage, and resident memory. `ProcessService` caches the inventory for two
+seconds and keeps the last successful snapshot as stale data if a later refresh
+fails. The dashboard polls every three seconds, supports client-side search and
+sorting, and displays at most 50 matching rows. No process-control operations such
+as signals, kill, renice, or command execution are exposed.
+
+Verify locally or through an SSH target with:
+
+```bash
+curl -s http://localhost:8080/api/processes
+```

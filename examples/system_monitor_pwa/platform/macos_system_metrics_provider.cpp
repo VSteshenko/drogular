@@ -1,4 +1,5 @@
 #include "macos_system_metrics_provider.hpp"
+#include "system/process_list_parser.hpp"
 
 #if !defined(__APPLE__)
 #error "MacOsSystemMetricsProvider can only be built on macOS"
@@ -7,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <cerrno>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
@@ -58,6 +60,31 @@ std::uint64_t safeMultiply(std::uint64_t left, std::uint64_t right) {
     return left * right;
 }
 
+std::string executeProcessListCommand() {
+    constexpr const char* command =
+        "LC_ALL=C ps -axo pid=,user=,%cpu=,%mem=,rss=,comm=,command=";
+    std::array<char, 4096> buffer{};
+    std::string output;
+    FILE* pipe = ::popen(command, "r");
+    if (pipe == nullptr) {
+        throw std::system_error(
+            errno,
+            std::generic_category(),
+            "popen failed for ps");
+    }
+
+    while (::fgets(buffer.data(), static_cast<int>(buffer.size()), pipe) != nullptr) {
+        output.append(buffer.data());
+    }
+
+    const int status = ::pclose(pipe);
+    if (status != 0) {
+        throw std::runtime_error("ps command failed while reading processes");
+    }
+
+    return output;
+}
+
 } // namespace
 
 SystemSnapshot MacOsSystemMetricsProvider::snapshot() {
@@ -70,7 +97,7 @@ SystemSnapshot MacOsSystemMetricsProvider::snapshot() {
 }
 
 std::vector<ProcessInfo> MacOsSystemMetricsProvider::processes() {
-    return {};
+    return parseProcessList(executeProcessListCommand());
 }
 
 CpuInfo MacOsSystemMetricsProvider::readCpu() {

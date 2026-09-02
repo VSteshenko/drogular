@@ -1,6 +1,8 @@
 (() => {
     const POLL_INTERVAL_MS = 2000;
     const GPIO_POLL_INTERVAL_MS = 30000;
+    const PROCESS_POLL_INTERVAL_MS = 3000;
+    const PROCESS_LIMIT = 50;
     const MAX_RECONNECT_ATTEMPTS = 3;
 
     let reconnectAttempts = 0;
@@ -857,7 +859,109 @@
         }
     };
 
+    const processPanel = document.querySelector('[data-process-panel]');
+    const processSummary = document.querySelector('[data-process-summary]');
+    const processStatus = document.querySelector('[data-process-status]');
+    const processRows = document.querySelector('[data-process-rows]');
+    const processSearch = document.querySelector('[data-process-search]');
+    const processSort = document.querySelector('[data-process-sort]');
+    let processPayload = { processes: [] };
+
+    const renderProcesses = (data) => {
+        if (!processPanel || !processRows) return;
+        processPanel.hidden = false;
+        processPayload = data;
+        const processData = Array.isArray(data.processes) ? data.processes : [];
+
+        const query = String(processSearch?.value || '').trim().toLowerCase();
+        const sort = processSort?.value || 'cpu';
+        let visible = processData.filter((process) => {
+            if (!query) return true;
+            return [process.pid, process.user, process.name, process.command]
+                .some((value) => String(value ?? '').toLowerCase().includes(query));
+        });
+
+        visible.sort((left, right) => {
+            if (sort === 'memory') return Number(right.memoryPercent) - Number(left.memoryPercent);
+            if (sort === 'rss') return Number(right.residentBytes) - Number(left.residentBytes);
+            if (sort === 'pid') return Number(left.pid) - Number(right.pid);
+            if (sort === 'name') return String(left.name || '').localeCompare(String(right.name || ''));
+            return Number(right.cpuPercent) - Number(left.cpuPercent);
+        });
+
+        const shown = visible.slice(0, PROCESS_LIMIT);
+        if (processSummary) {
+            processSummary.textContent = query
+                ? `${shown.length} of ${visible.length} matching · ${processData.length} total`
+                : `${shown.length} of ${processData.length} shown`;
+        }
+        if (processStatus) {
+            if (data.monitor?.healthy === false) {
+                processStatus.textContent = `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+            } else {
+                const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
+                processStatus.textContent = updatedAt
+                    ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}`
+                    : 'Process inventory available';
+            }
+        }
+
+        processRows.replaceChildren();
+        if (shown.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 6;
+            cell.className = 'muted';
+            cell.textContent = query ? 'No matching processes.' : 'No processes reported.';
+            row.appendChild(cell);
+            processRows.appendChild(row);
+            return;
+        }
+
+        for (const process of shown) {
+            const row = document.createElement('tr');
+            const values = [
+                String(process.pid ?? ''),
+                process.user || '',
+                process.name || '',
+                formatPercent(process.cpuPercent ?? 0),
+                formatPercent(process.memoryPercent ?? 0),
+                formatBytes(process.residentBytes ?? 0),
+            ];
+            values.forEach((value, index) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                if (index === 2) {
+                    cell.className = 'process-command';
+                    cell.title = process.command || process.name || '';
+                }
+                row.appendChild(cell);
+            });
+            processRows.appendChild(row);
+        }
+    };
+
+    const pollProcesses = async () => {
+        try {
+            const response = await fetch('/api/processes', {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store',
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            renderProcesses(await response.json());
+        } catch (_) {
+            if (processStatus) processStatus.textContent = 'Process inventory unavailable';
+            if (processSummary) processSummary.textContent = 'Unavailable';
+        } finally {
+            window.setTimeout(pollProcesses, PROCESS_POLL_INTERVAL_MS);
+        }
+    };
+
+    processSearch?.addEventListener('input', () => renderProcesses(processPayload));
+    processSort?.addEventListener('change', () => renderProcesses(processPayload));
+
     schedulePoll();
+    pollProcesses();
     pollGpio();
     pollI2c();
     pollSpi();

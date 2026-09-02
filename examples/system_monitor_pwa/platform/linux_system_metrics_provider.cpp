@@ -1,4 +1,5 @@
 #include "linux_system_metrics_provider.hpp"
+#include "system/process_list_parser.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -107,7 +108,10 @@ SystemSnapshot LinuxSystemMetricsProvider::snapshot() {
 }
 
 std::vector<ProcessInfo> LinuxSystemMetricsProvider::processes() {
-    return {};
+    const auto command = requireCommand(
+        *reader_,
+        "LC_ALL=C ps -eo pid=,user=,%cpu=,%mem=,rss=,comm=,args=");
+    return parseProcessList(command.standardOutput);
 }
 
 CpuInfo LinuxSystemMetricsProvider::readCpu() {

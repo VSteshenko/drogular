@@ -37,10 +37,12 @@ TEST(MacOsSystemMetricsProviderTests, SnapshotContainsNativeSystemMetrics) {
     EXPECT_FALSE(snapshot.raspberryPi.has_value());
 }
 
-TEST(MacOsSystemMetricsProviderTests, ProcessesAreDeferredToDedicatedStage) {
+TEST(MacOsSystemMetricsProviderTests, ProcessesContainNativeInventory) {
     MacOsSystemMetricsProvider provider;
-
-    EXPECT_TRUE(provider.processes().empty());
+    const auto processes = provider.processes();
+    EXPECT_FALSE(processes.empty());
+    EXPECT_GT(processes.front().pid, 0);
+    EXPECT_FALSE(processes.front().name.empty());
 }
 
 #endif

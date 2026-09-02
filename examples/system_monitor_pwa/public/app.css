@@ -885,3 +885,78 @@ dd {
     .board-header-row { grid-template-columns: 1fr 1fr; }
     .board-pin { grid-template-columns: 1.45rem minmax(0, 1fr); padding: .35rem; }
 }
+
+/* Process inventory */
+.process-panel-heading {
+    align-items: flex-start;
+}
+.process-overview {
+    display: grid;
+    gap: .2rem;
+    text-align: right;
+}
+.process-toolbar {
+    display: flex;
+    gap: .8rem;
+    align-items: end;
+    margin-bottom: .9rem;
+}
+.process-search {
+    flex: 1;
+    display: grid;
+    gap: .3rem;
+}
+.process-sort {
+    min-width: 150px;
+    display: grid;
+    gap: .3rem;
+}
+.process-search input, .process-sort select {
+    width: 100%;
+    border: 1px solid #30405f;
+    border-radius: .55rem;
+    background: #111a2e;
+    color: #e7edf8;
+    padding: .55rem .65rem;
+}
+.process-table-wrap {
+    overflow-x: auto;
+}
+.process-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+}
+.process-table th, .process-table td {
+    padding: .55rem .5rem;
+    border-bottom: 1px solid #26314f;
+    text-align: left;
+    white-space: nowrap;
+}
+.process-table th {
+    color: #9fb0cf;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.process-table th:nth-child(n+4), .process-table td:nth-child(n+4) {
+    text-align: right;
+}
+.process-command {
+    max-width: 360px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.process-note {
+    margin: .7rem 0 0;
+    font-size: .75rem;
+}
+
+@media (max-width: 640px) {
+    .process-toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+    .process-sort { min-width: 0; }
+    .process-overview { text-align: left; }
+}
