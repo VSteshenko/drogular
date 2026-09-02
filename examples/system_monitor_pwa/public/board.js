@@ -351,7 +351,11 @@
         }
 
         const succeeded = results.filter((result) => result.status === 'fulfilled').length;
-        setText('[data-board-inventory-status]', `${succeeded}/5 data sources available`);
+        const availableInventories = [gpio, i2c, spi, uart]
+            .filter((inventory) => inventory?.available).length;
+        setText(
+            '[data-board-inventory-status]',
+            `${succeeded}/5 data sources reachable · ${availableInventories}/4 hardware inventories available`);
         renderSummary(gpio, i2c, spi, uart);
         renderHeader(system, gpio, i2c, spi, uart);
         renderInterfaces(gpio, i2c, spi, uart);

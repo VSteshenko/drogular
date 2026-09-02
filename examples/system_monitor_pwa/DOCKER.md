@@ -3,7 +3,11 @@
 For native local/SSH operation and Raspberry Pi setup, see [README.md](README.md).
 
 The normal Docker setup runs the Linux version of `system_monitor_pwa` and
-reports metrics for the application container itself, not for the macOS host.
+reports metrics and processes for the application container itself, not for the
+macOS host. Hardware buses are capability-detected: GPIO, I²C, SPI, and UART
+remain unavailable unless the required tools and device nodes are actually
+present inside the container. Missing host hardware is therefore a normal
+`available: false` state rather than an application error.
 
 From the repository root:
 
@@ -43,7 +47,8 @@ The dashboards are then available at:
 - <http://localhost:8080> — local container monitoring;
 - <http://localhost:8081> — `ssh-target` monitoring through SSH.
 
-The remote dashboard should report `ssh-target` as its hostname.
+The remote dashboard should report `ssh-target` as its hostname. Both Docker
+modes also expose the read-only process inventory at `/api/processes`.
 
 To run only the remote-monitoring path and its dependencies:
 
@@ -87,6 +92,7 @@ The image uses a multi-stage build. Build dependencies remain in the builder
 stage; the runtime stage contains the application, templates, static assets,
 and required runtime libraries.
 
-Host monitoring is intentionally not enabled at this stage. A later stage can
-add explicit `/proc` and `/sys` mounts for Linux/Raspberry Pi hosts without
-changing the normal container-monitoring mode.
+Host monitoring is intentionally not enabled. The normal container-monitoring
+mode does not mount host `/proc`, `/sys`, or hardware device nodes, so it cannot
+be mistaken for monitoring the Docker host. Use the SSH target mode when the
+monitored Linux or Raspberry Pi system is outside the application container.

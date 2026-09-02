@@ -366,6 +366,22 @@ If a bus is present but not selected for scanning, it is still returned with
 `Permission denied`, verify that the remote `monitor` account belongs to the
 `i2c` group and reconnect the SSH session.
 
+## Supported monitoring modes
+
+The example intentionally keeps target capabilities explicit:
+
+| Mode | System metrics | Processes | GPIO / I²C / SPI / UART | Raspberry Pi metadata |
+| --- | --- | --- | --- | --- |
+| Local macOS | Yes | Yes | No | No |
+| Local Linux | Yes | Yes | Capability-detected | Only when the target is identified as Raspberry Pi |
+| Docker/Linux | Container | Container | Unavailable unless tools/devices are passed through | No by default |
+| SSH to Linux | Remote | Remote | Capability-detected on the remote host | Only when the remote target is identified as Raspberry Pi |
+| Raspberry Pi | Yes | Yes | Capability-detected | Yes when supported |
+
+Hardware capability detection is deliberately conservative. Missing command-line
+tools or device nodes disable only the corresponding inventory service; they do
+not make system or process monitoring unhealthy.
+
 ## Environment variables
 
 | Variable | Required | Default | Description |

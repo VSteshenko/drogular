@@ -34,6 +34,7 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     EXPECT_NE(js.find("fetchJson('/api/uart')"), std::string::npos);
     EXPECT_NE(js.find("physicalHeaderPin"), std::string::npos);
     EXPECT_NE(js.find("hasPhysicalHeader"), std::string::npos);
+    EXPECT_NE(js.find("hardware inventories available"), std::string::npos);
     EXPECT_NE(js.find("`${gpioLines} GPIO lines`"), std::string::npos);
     EXPECT_NE(js.find("pinBadge(pin, pin.role)"), std::string::npos);
     EXPECT_NE(js.find("I²C${bus.number}"), std::string::npos);
