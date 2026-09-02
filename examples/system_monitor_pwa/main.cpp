@@ -5,6 +5,7 @@
 #include "actions/uart_status_action.hpp"
 #include "actions/system_status_action.hpp"
 #include "gpio/gpiod_gpio_provider.hpp"
+#include "hardware/linux_hardware_capability_probe.hpp"
 #include "i2c/i2c_tools_provider.hpp"
 #include "spi/spidev_spi_provider.hpp"
 #include "uart/linux_uart_provider.hpp"
@@ -169,6 +170,10 @@ namespace {
     if (target == nullptr || std::string_view(target) == "local") {
 #if defined(__linux__)
         auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::Gpio)) {
+            return nullptr;
+        }
         return std::make_shared<system_monitor::GpiodGpioProvider>(reader);
 #else
         return nullptr;
@@ -179,8 +184,12 @@ namespace {
 #if SYSTEM_MONITOR_HAS_LIBSSH
         // Keep GPIO on its own SSH session. /api/system and /api/gpio can be
         // handled concurrently, while SshClient has no thread-safe contract.
-        return std::make_shared<system_monitor::GpiodGpioProvider>(
-            makeSshReader());
+        auto reader = makeSshReader();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::Gpio)) {
+            return nullptr;
+        }
+        return std::make_shared<system_monitor::GpiodGpioProvider>(reader);
 #else
         return nullptr;
 #endif
@@ -195,7 +204,12 @@ namespace {
     if (target == nullptr || std::string_view(target) == "local") {
 #if defined(__linux__)
         auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
-        return std::make_shared<system_monitor::I2cToolsProvider>(reader, i2cScanBusesFromEnvironment());
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::I2c)) {
+            return nullptr;
+        }
+        return std::make_shared<system_monitor::I2cToolsProvider>(
+            reader, i2cScanBusesFromEnvironment());
 #else
         return nullptr;
 #endif
@@ -205,9 +219,13 @@ namespace {
 #if SYSTEM_MONITOR_HAS_LIBSSH
         // Keep I2C on a dedicated SSH session because its cached inventory can
         // refresh concurrently with /api/system and /api/gpio.
+        auto reader = makeSshReader();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::I2c)) {
+            return nullptr;
+        }
         return std::make_shared<system_monitor::I2cToolsProvider>(
-            makeSshReader(),
-            i2cScanBusesFromEnvironment());
+            reader, i2cScanBusesFromEnvironment());
 #else
         return nullptr;
 #endif
@@ -220,8 +238,12 @@ namespace {
     const char* target = environmentValue("SYSTEM_MONITOR_TARGET");
     if (target == nullptr || std::string_view(target) == "local") {
 #if defined(__linux__)
-        return std::make_shared<system_monitor::SpidevSpiProvider>(
-            std::make_shared<system_monitor::LocalLinuxSystemReader>());
+        auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::Spi)) {
+            return nullptr;
+        }
+        return std::make_shared<system_monitor::SpidevSpiProvider>(reader);
 #else
         return nullptr;
 #endif
@@ -229,7 +251,12 @@ namespace {
 
     if (std::string_view(target) == "ssh") {
 #if SYSTEM_MONITOR_HAS_LIBSSH
-        return std::make_shared<system_monitor::SpidevSpiProvider>(makeSshReader());
+        auto reader = makeSshReader();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::Spi)) {
+            return nullptr;
+        }
+        return std::make_shared<system_monitor::SpidevSpiProvider>(reader);
 #else
         return nullptr;
 #endif
@@ -242,8 +269,12 @@ namespace {
     const char* target = environmentValue("SYSTEM_MONITOR_TARGET");
     if (target == nullptr || std::string_view(target) == "local") {
 #if defined(__linux__)
-        return std::make_shared<system_monitor::LinuxUartProvider>(
-            std::make_shared<system_monitor::LocalLinuxSystemReader>());
+        auto reader = std::make_shared<system_monitor::LocalLinuxSystemReader>();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::Uart)) {
+            return nullptr;
+        }
+        return std::make_shared<system_monitor::LinuxUartProvider>(reader);
 #else
         return nullptr;
 #endif
@@ -252,7 +283,12 @@ namespace {
     if (std::string_view(target) == "ssh") {
 #if SYSTEM_MONITOR_HAS_LIBSSH
         // UART inventory uses its own SSH session so it can refresh independently.
-        return std::make_shared<system_monitor::LinuxUartProvider>(makeSshReader());
+        auto reader = makeSshReader();
+        if (!system_monitor::hasLinuxHardwareCapability(
+                *reader, system_monitor::LinuxHardwareCapability::Uart)) {
+            return nullptr;
+        }
+        return std::make_shared<system_monitor::LinuxUartProvider>(reader);
 #else
         return nullptr;
 #endif

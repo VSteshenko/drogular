@@ -185,6 +185,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/linux_system_metrics_provider_tests.cpp
     system_monitor_pwa/raspberry_pi_probe_tests.cpp
     system_monitor_pwa/gpiod_gpio_provider_tests.cpp
+    system_monitor_pwa/linux_hardware_capability_probe_tests.cpp
     system_monitor_pwa/gpio_service_tests.cpp
     system_monitor_pwa/gpio_status_action_tests.cpp
     system_monitor_pwa/i2c_tools_provider_tests.cpp

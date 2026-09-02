@@ -16,7 +16,7 @@ constexpr std::string_view kInventoryCommand =
     "done; "
     "for p in /dev/serial*; do "
     "[ -L \"$p\" ] && printf 'alias\\t%s\\t%s\\n' \"$p\" \"$(readlink -f \"$p\")\"; "
-    "done";
+    "done; true";
 
 std::string baseName(std::string_view path) {
     const auto slash = path.find_last_of('/');

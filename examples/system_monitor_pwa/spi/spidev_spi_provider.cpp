@@ -10,7 +10,7 @@ namespace system_monitor {
 namespace {
 
 constexpr std::string_view kListCommand =
-    "for p in /dev/spidev*; do [ -e \"$p\" ] && basename \"$p\"; done";
+    "for p in /dev/spidev*; do [ -e \"$p\" ] && basename \"$p\"; done; true";
 
 bool parseUnsigned(std::string_view text, std::uint32_t& value) {
     if (text.empty()) return false;

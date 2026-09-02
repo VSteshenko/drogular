@@ -56,6 +56,7 @@ TEST(LinuxUartProviderTests, EmptyInventoryIsValid) {
     reader->result = { 0, "", {} };
     system_monitor::LinuxUartProvider provider(reader);
     EXPECT_TRUE(provider.devices().empty());
+    EXPECT_NE(reader->command.find("; true"), std::string::npos);
 }
 
 TEST(LinuxUartProviderTests, RejectsNullReader) {

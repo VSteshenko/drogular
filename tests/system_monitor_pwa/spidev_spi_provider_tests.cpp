@@ -10,12 +10,14 @@ namespace {
 class Reader final : public system_monitor::SystemReader {
 public:
     system_monitor::CommandResult result;
+    std::string command;
 
     std::string readFile(std::string_view) override {
         throw std::runtime_error("unexpected");
     }
 
-    system_monitor::CommandResult execute(std::string_view) override {
+    system_monitor::CommandResult execute(std::string_view value) override {
+        command = std::string(value);
         return result;
     }
 };
@@ -47,6 +49,7 @@ TEST(SpidevSpiProviderTests, EmptyInventoryIsValid) {
     system_monitor::SpidevSpiProvider provider(reader);
 
     EXPECT_TRUE(provider.devices().empty());
+    EXPECT_NE(reader->command.find("; true"), std::string::npos);
 }
 
 TEST(SpidevSpiProviderTests, RejectsNullReader) {
