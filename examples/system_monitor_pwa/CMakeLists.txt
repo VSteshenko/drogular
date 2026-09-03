@@ -89,6 +89,7 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
         main.cpp
         pages/dashboard_page.cpp
         pages/board_page.cpp
+        pages/offline_page.cpp
         actions/gpio_status_action.cpp
         actions/i2c_status_action.cpp
         actions/process_status_action.cpp

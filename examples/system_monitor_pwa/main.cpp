@@ -11,6 +11,7 @@
 #include "uart/linux_uart_provider.hpp"
 #include "pages/dashboard_page.hpp"
 #include "pages/board_page.hpp"
+#include "pages/offline_page.hpp"
 #include "platform/linux_system_metrics_provider.hpp"
 #if defined(__APPLE__)
 #include "platform/macos_system_metrics_provider.hpp"
@@ -308,6 +309,8 @@ int main() {
            "/assets",
            "examples/system_monitor_pwa/public")
        .staticFileCacheProfile(drogular::StaticFileCacheProfile::Development)
+       .serviceWorker("examples/system_monitor_pwa/public/service-worker.js")
+       .offlinePage<system_monitor::OfflinePage>()
        .profile(drogular::ApplicationProfile::Development);
 
     auto provider = makeProvider();

@@ -3,6 +3,7 @@
 #include "hardware/board_gpio_metadata.hpp"
 #include "services/system_monitor.hpp"
 
+#include <drogular/pwa_page_support.hpp>
 #include <drogular/render_context.hpp>
 
 #include <stdexcept>
@@ -11,6 +12,9 @@
 namespace system_monitor {
 
 void BoardPage::onInit(drogular::RenderContext& context) {
+    drogular::PwaOptions pwaOptions;
+    pwaOptions.themeColor = "#10172a";
+    drogular::PwaPageSupport::apply(context, pwaOptions);
     const auto monitor = context.service<SystemMonitor>();
     if (monitor == nullptr) {
         throw std::runtime_error("SystemMonitor service is not registered");
@@ -20,6 +24,7 @@ void BoardPage::onInit(drogular::RenderContext& context) {
 
     context.set("title", std::string("Drogular Hardware Overview"));
     context.set("pageScript", std::string("/assets/board.js"));
+    context.set("hasPageScript", true);
     context.set("hostname", snapshot.system.hostname);
     const auto boardMetadata = BoardGpioMetadata::fromSystemSnapshot(snapshot);
     const bool hasRaspberryPi = snapshot.raspberryPi.has_value();

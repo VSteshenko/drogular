@@ -3,6 +3,7 @@
 #include "services/system_monitor.hpp"
 #include "ui/system_formatters.hpp"
 
+#include <drogular/pwa_page_support.hpp>
 #include <drogular/render_context.hpp>
 
 #include <json/json.h>
@@ -13,6 +14,9 @@
 namespace system_monitor {
 
 void DashboardPage::onInit(drogular::RenderContext& context) {
+    drogular::PwaOptions pwaOptions;
+    pwaOptions.themeColor = "#10172a";
+    drogular::PwaPageSupport::apply(context, pwaOptions);
     const auto monitor = context.service<SystemMonitor>();
     if (monitor == nullptr) {
         throw std::runtime_error("SystemMonitor service is not registered");
@@ -25,6 +29,7 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
 
     context.set("title", std::string("Drogular System Monitor"));
     context.set("pageScript", std::string("/assets/app.js"));
+    context.set("hasPageScript", true);
     context.set("hostname", snapshot.system.hostname);
     context.set("operatingSystem", snapshot.system.operatingSystem);
     context.set("kernel", snapshot.system.kernel);

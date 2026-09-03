@@ -1,0 +1,10 @@
+{
+  "name": "Drogular System Monitor",
+  "short_name": "System Monitor",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#10172a",
+  "description": "Cross-platform system monitoring PWA built with Drogular"
+}

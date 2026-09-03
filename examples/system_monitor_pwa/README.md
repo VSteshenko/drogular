@@ -366,6 +366,33 @@ If a bus is present but not selected for scanning, it is still returned with
 `Permission denied`, verify that the remote `monitor` account belongs to the
 `i2c` group and reconnect the SSH session.
 
+## PWA and offline behavior
+
+System Monitor is registered as a progressive web application through Drogular's
+`serviceWorker(...)`, `offlinePage<...>()`, and `PwaPageSupport` APIs. The web app
+manifest is served from `/assets/manifest.webmanifest` and the service worker is
+served from `/service-worker.js`.
+
+The cache policy is intentionally conservative because monitoring data becomes
+misleading when it is stale:
+
+- static application assets (`app.css`, `app.js`, and `board.js`) are cached;
+- the dedicated `/__offline` page is cached for offline navigation;
+- rendered `/` and `/hardware` pages are not cached because their initial HTML
+  contains a system snapshot;
+- `/api/*` requests are always sent to the network and are never satisfied from
+  the service-worker cache.
+
+When an already-open dashboard loses connectivity, its normal
+`Live -> Reconnecting -> Offline` behavior remains responsible for connection
+state. When navigation itself cannot reach System Monitor, the service worker
+shows the dedicated offline page instead of displaying an old monitoring
+snapshot as if it were current.
+
+Application icons are intentionally handled separately from this cache/offline
+stage and can be added to the manifest without changing the service-worker
+strategy.
+
 ## Supported monitoring modes
 
 The example intentionally keeps target capabilities explicit:

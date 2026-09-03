@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ title }}</title>
+    {{{ manifestLink }}}
+    {{{ themeColorMeta }}}
     <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body>
@@ -19,13 +21,22 @@
             </nav>
             <div class="connection-status">
                 <div class="connection-status-content">
+@if(hasPageScript)
                     <span class="status" data-monitor-status>
                         <span class="status-dot"></span>
                         <span data-monitor-status-label>Live</span>
                     </span>
                     <span class="status-detail" data-monitor-status-detail hidden></span>
+@else
+                    <span class="status status-offline">
+                        <span class="status-dot"></span>
+                        <span>Offline</span>
+                    </span>
+@endif
                 </div>
+@if(hasPageScript)
                 <button class="retry-button" type="button" data-monitor-retry hidden>Retry</button>
+@endif
             </div>
         </div>
     </header>
@@ -33,6 +44,9 @@
     <main class="shell">
         @content
     </main>
+@if(hasPageScript)
     <script src="{{ pageScript }}" defer></script>
+@endif
+    {{{ serviceWorkerRegistration }}}
 </body>
 </html>
