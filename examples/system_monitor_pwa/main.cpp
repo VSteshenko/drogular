@@ -308,6 +308,9 @@ int main() {
        .staticFiles(
            "/assets",
            "examples/system_monitor_pwa/public")
+       .staticFiles(
+           "/assets/icons",
+           "examples/system_monitor_pwa/public/icons")
        .staticFileCacheProfile(drogular::StaticFileCacheProfile::Development)
        .serviceWorker("examples/system_monitor_pwa/public/service-worker.js")
        .offlinePage<system_monitor::OfflinePage>()

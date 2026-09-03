@@ -565,3 +565,22 @@ Verify locally or through an SSH target with:
 ```bash
 curl -s http://localhost:8080/api/processes
 ```
+
+## Application identity
+
+The PWA is installed as **Drogular System Monitor** (`System Monitor` as the
+short name). Its application identity includes dedicated 192px and 512px icons,
+a maskable 512px icon for adaptive launchers, an Apple touch icon, and an SVG
+favicon. The icon combines system metric bars with a live heartbeat line to
+distinguish the monitoring example from the other Drogular applications.
+
+The service worker precaches the identity assets together with the application
+shell. Live monitoring API responses remain network-only and are never added to
+the PWA cache.
+
+### Rich install presentation
+
+The manifest includes a desktop `wide` screenshot and a portrait/mobile
+screenshot so Chromium can present the richer install UI on both form factors.
+The icon directory is registered as its own static-file mapping because the
+current Drogular static-file route maps a single path segment.

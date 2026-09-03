@@ -217,6 +217,8 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/system_monitor_formatters_tests.cpp
     system_monitor_pwa/system_monitor_dashboard_page_tests.cpp
     system_monitor_pwa/hardware_board_page_tests.cpp
+    system_monitor_pwa/system_monitor_pwa_identity_tests.cpp
+    system_monitor_pwa/system_monitor_pwa_identity_routes_tests.cpp
     system_monitor_pwa/hardware_board_assets_tests.cpp
     system_monitor_pwa/system_monitor_pwa_tests.cpp
     system_monitor_pwa/system_monitor_status_action_tests.cpp

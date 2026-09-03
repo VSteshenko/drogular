@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-system-monitor-v1";
+const CACHE_NAME = "drogular-system-monitor-v3";
 
 const OFFLINE_PAGE = "/__offline";
 
@@ -7,7 +7,14 @@ const STATIC_ASSETS = [
     "/assets/manifest.webmanifest",
     "/assets/app.css",
     "/assets/app.js",
-    "/assets/board.js"
+    "/assets/board.js",
+    "/assets/icons/favicon.svg",
+    "/assets/icons/apple-touch-icon.png",
+    "/assets/icons/icon-192.png",
+    "/assets/icons/icon-512.png",
+    "/assets/icons/icon-512-maskable.png",
+    "/assets/screenshot-wide.png",
+    "/assets/screenshot-mobile.png"
 ];
 
 self.addEventListener("install", event => {
