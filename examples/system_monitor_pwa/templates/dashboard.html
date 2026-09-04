@@ -4,9 +4,12 @@
         <h2>{{ hostname }}</h2>
         <p class="muted">{{ operatingSystem }} · {{ architecture }}</p>
     </div>
-    <div class="uptime">
-        <span class="muted">{{ t("dashboard.uptime") }}</span>
-        <strong data-monitor-field="uptime-hero">{{ uptime }}</strong>
+    <div class="hero-actions">
+        <div class="uptime">
+            <span class="muted">{{ t("dashboard.uptime") }}</span>
+            <strong data-monitor-field="uptime-hero">{{ uptime }}</strong>
+        </div>
+        <a class="secondary-link" href="/hardware">{{ t("nav.hardware") }}</a>
     </div>
 </section>
 

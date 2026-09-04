@@ -429,6 +429,8 @@ inline std::string clientTranslationsJson(drogular::RenderContext& context) {
 inline void applyLocalization(drogular::RenderContext& context) {
     const auto locale = drogular::LocaleSupport::current(context);
     context.set("locale", locale);
+    context.set("localeEnglish", locale == "en");
+    context.set("localeGerman", locale == "de");
     context.set("clientTranslationsJson", clientTranslationsJson(context));
 }
 

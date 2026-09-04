@@ -49,7 +49,7 @@ TEST(SystemMonitorPwaIdentityTests, LayoutAndServiceWorkerExposeIdentityAssets) 
 
     EXPECT_NE(layout.find("rel=\"icon\""), std::string::npos);
     EXPECT_NE(layout.find("rel=\"apple-touch-icon\""), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v4"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v5"), std::string::npos);
     EXPECT_NE(worker.find("/assets/icons/icon-192.png"), std::string::npos);
     EXPECT_NE(worker.find("/assets/icons/icon-512-maskable.png"), std::string::npos);
 }

@@ -45,6 +45,8 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
 
     EXPECT_NE(layout.find("{{ locale }}"), std::string::npos);
     EXPECT_NE(layout.find("action=\"/language\""), std::string::npos);
+    EXPECT_EQ(layout.find("class=\"site-nav\""), std::string::npos);
+    EXPECT_NE(layout.find("language-button is-active"), std::string::npos);
     EXPECT_NE(layout.find("system-monitor-i18n"), std::string::npos);
     EXPECT_NE(dashboard.find("t(\"dashboard.monitoring_target\")"), std::string::npos);
     EXPECT_NE(board.find("t(\"board.overview\")"), std::string::npos);
@@ -62,6 +64,6 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(app.find("tr('status.live'"), std::string::npos);
     EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
     EXPECT_NE(board.find("tr('status.offline'"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v4"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v5"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

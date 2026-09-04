@@ -13,19 +13,25 @@
 <body>
     <header class="site-header">
         <div class="shell header-content">
-            <div>
-                <p class="eyebrow">{{ t("app.example") }}</p>
-                <h1>{{ title }}</h1>
+            <div class="header-primary">
+                <div>
+                    <p class="eyebrow">{{ t("app.example") }}</p>
+                    <h1>{{ title }}</h1>
+                </div>
+                <form class="language-switcher" method="post" action="/language" aria-label="Language">
+                    <input type="hidden" name="redirect" value="{{ languageRedirect }}">
+@if(localeEnglish)
+                    <button type="submit" name="language" value="en" class="language-button is-active" aria-current="true">EN</button>
+@else
+                    <button type="submit" name="language" value="en" class="language-button">EN</button>
+@endif
+@if(localeGerman)
+                    <button type="submit" name="language" value="de" class="language-button is-active" aria-current="true">DE</button>
+@else
+                    <button type="submit" name="language" value="de" class="language-button">DE</button>
+@endif
+                </form>
             </div>
-            <nav class="site-nav" aria-label="{{ t("dashboard.system_metrics") }}">
-                <a href="/">{{ t("nav.system") }}</a>
-                <a href="/hardware">{{ t("nav.hardware") }}</a>
-            </nav>
-            <form class="language-switcher" method="post" action="/language">
-                <input type="hidden" name="redirect" value="{{ languageRedirect }}">
-                <button type="submit" name="language" value="en" class="language-button">EN</button>
-                <button type="submit" name="language" value="de" class="language-button">DE</button>
-            </form>
             <div class="connection-status">
                 <div class="connection-status-content">
 @if(hasPageScript)
