@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-system-monitor-v3";
+const CACHE_NAME = "drogular-system-monitor-v4";
 
 const OFFLINE_PAGE = "/__offline";
 
@@ -56,6 +56,18 @@ self.addEventListener("fetch", event => {
     if (event.request.mode === "navigate") {
         event.respondWith(
             fetch(event.request)
+                .then(async response => {
+                    // Refresh the rendered offline page after successful
+                    // navigations so it follows the current language cookie.
+                    try {
+                        const offlineResponse = await fetch(OFFLINE_PAGE);
+                        const cache = await caches.open(CACHE_NAME);
+                        await cache.put(OFFLINE_PAGE, offlineResponse);
+                    } catch (_) {
+                        // Keep the previously cached fallback.
+                    }
+                    return response;
+                })
                 .catch(() => caches.match(OFFLINE_PAGE))
         );
         return;

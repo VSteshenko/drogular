@@ -1,3 +1,4 @@
+#include "localization/system_monitor_translations.hpp"
 #include "pages/offline_page.hpp"
 
 #include <drogular/services.hpp>
@@ -51,6 +52,11 @@ TEST(SystemMonitorPwaTests, OfflinePageExplainsThatMetricsAreNotCached) {
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates");
     services.setOptions(&options);
+    services.expressionFunctions().registerFunction(
+        "t",
+        system_monitor::systemMonitorTranslationExpressionFunction());
+    services.registerService<drogular::TranslationProvider>(
+        std::make_shared<system_monitor::SystemMonitorTranslations>());
 
     const auto result = drogular::test::renderPage<system_monitor::OfflinePage>(&services);
 

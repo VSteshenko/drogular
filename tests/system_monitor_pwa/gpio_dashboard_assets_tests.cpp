@@ -96,7 +96,7 @@ TEST(GpioDashboardAssetsTests, OffersAllActiveAndFreeFilters) {
               std::string::npos);
     EXPECT_NE(page.find("data-gpio-filter=\"free\""),
               std::string::npos);
-    EXPECT_NE(page.find("aria-pressed=\"true\">Active</button>"),
+    EXPECT_NE(page.find("aria-pressed=\"true\">{{ t(\"dashboard.active\") }}</button>"),
               std::string::npos);
 }
 

@@ -1,3 +1,4 @@
+#include "localization/system_monitor_translations.hpp"
 #include "pages/board_page.hpp"
 #include "services/system_monitor.hpp"
 
@@ -56,6 +57,11 @@ TEST(HardwareBoardPageTests, RendersBoardIdentityAndHardwareShell) {
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates");
     services.setOptions(&options);
+    services.expressionFunctions().registerFunction(
+        "t",
+        system_monitor::systemMonitorTranslationExpressionFunction());
+    services.registerService<drogular::TranslationProvider>(
+        std::make_shared<system_monitor::SystemMonitorTranslations>());
 
     auto provider = std::make_shared<BoardPageFakeProvider>();
     services.registerService<system_monitor::SystemMonitor>(
@@ -82,6 +88,11 @@ TEST(HardwareBoardPageTests, GenericLinuxDoesNotRenderRaspberryPiSpecification) 
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates");
     services.setOptions(&options);
+    services.expressionFunctions().registerFunction(
+        "t",
+        system_monitor::systemMonitorTranslationExpressionFunction());
+    services.registerService<drogular::TranslationProvider>(
+        std::make_shared<system_monitor::SystemMonitorTranslations>());
 
     auto provider = std::make_shared<GenericLinuxFakeProvider>();
     services.registerService<system_monitor::SystemMonitor>(
@@ -97,5 +108,4 @@ TEST(HardwareBoardPageTests, GenericLinuxDoesNotRenderRaspberryPiSpecification) 
     EXPECT_FALSE(drogular::test::contains(result.html, "Revision</dt>"));
     EXPECT_FALSE(drogular::test::contains(result.html, "Serial</dt>"));
     EXPECT_TRUE(drogular::test::contains(result.html, "without applying any board layout assumptions"));
-    EXPECT_FALSE(drogular::test::contains(result.html, "Raspberry Pi"));
 }

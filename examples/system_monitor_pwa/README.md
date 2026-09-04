@@ -584,3 +584,18 @@ The manifest includes a desktop `wide` screenshot and a portrait/mobile
 screenshot so Chromium can present the richer install UI on both form factors.
 The icon directory is registered as its own static-file mapping because the
 current Drogular static-file route maps a single path segment.
+
+## Localization
+
+System Monitor supports English and German through Drogular's
+`TranslationProvider` and `LocaleSupport`. The selected language is stored in
+the `lang` cookie and can be changed from every rendered page.
+
+Templates use the `t()` expression function. Dynamic labels produced by
+`app.js` and `board.js` use a server-rendered JSON translation dictionary, so
+the browser code does not maintain a second EN/DE translation table.
+
+The offline page is rendered by Drogular as well. After each successful
+navigation the service worker refreshes its cached offline page, allowing the
+offline fallback to follow the currently selected language while keeping all
+live `/api/*` responses network-only.

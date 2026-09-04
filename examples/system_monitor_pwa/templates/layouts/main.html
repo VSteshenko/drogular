@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,30 +14,35 @@
     <header class="site-header">
         <div class="shell header-content">
             <div>
-                <p class="eyebrow">Drogular example</p>
+                <p class="eyebrow">{{ t("app.example") }}</p>
                 <h1>{{ title }}</h1>
             </div>
-            <nav class="site-nav" aria-label="System monitor sections">
-                <a href="/">System</a>
-                <a href="/hardware">Hardware</a>
+            <nav class="site-nav" aria-label="{{ t("dashboard.system_metrics") }}">
+                <a href="/">{{ t("nav.system") }}</a>
+                <a href="/hardware">{{ t("nav.hardware") }}</a>
             </nav>
+            <form class="language-switcher" method="post" action="/language">
+                <input type="hidden" name="redirect" value="{{ languageRedirect }}">
+                <button type="submit" name="language" value="en" class="language-button">EN</button>
+                <button type="submit" name="language" value="de" class="language-button">DE</button>
+            </form>
             <div class="connection-status">
                 <div class="connection-status-content">
 @if(hasPageScript)
                     <span class="status" data-monitor-status>
                         <span class="status-dot"></span>
-                        <span data-monitor-status-label>Live</span>
+                        <span data-monitor-status-label>{{ t("status.live") }}</span>
                     </span>
                     <span class="status-detail" data-monitor-status-detail hidden></span>
 @else
                     <span class="status status-offline">
                         <span class="status-dot"></span>
-                        <span>Offline</span>
+                        <span>{{ t("status.offline") }}</span>
                     </span>
 @endif
                 </div>
 @if(hasPageScript)
-                <button class="retry-button" type="button" data-monitor-retry hidden>Retry</button>
+                <button class="retry-button" type="button" data-monitor-retry hidden>{{ t("status.retry") }}</button>
 @endif
             </div>
         </div>
@@ -46,6 +51,7 @@
     <main class="shell">
         @content
     </main>
+    <script id="system-monitor-i18n" type="application/json">{{{ clientTranslationsJson }}}</script>
 @if(hasPageScript)
     <script src="{{ pageScript }}" defer></script>
 @endif

@@ -1,4 +1,15 @@
 (() => {
+    const translations = (() => {
+        const element = document.getElementById('system-monitor-i18n');
+        if (!element) return {};
+        try {
+            return JSON.parse(element.textContent || '{}');
+        } catch (_) {
+            return {};
+        }
+    })();
+    const tr = (key, fallback = key) => translations[key] ?? fallback;
+
     const REFRESH_INTERVAL_MS = 30000;
     const hasPhysicalHeader = Boolean(document.querySelector('[data-board-header-map]'));
 
@@ -42,9 +53,9 @@
     };
 
     const healthyLabel = (data) => {
-        if (!data?.available) return 'Unavailable';
-        if (data.monitor?.healthy === false) return 'Stale';
-        return 'Healthy';
+        if (!data?.available) return tr('status.unavailable', 'Unavailable');
+        if (data.monitor?.healthy === false) return tr('status.stale', 'Stale');
+        return tr('status.healthy', 'Healthy');
     };
 
     const renderConnectionStatus = (system) => {
@@ -58,15 +69,15 @@
         status.classList.toggle('status-stale', stale);
         status.classList.toggle('status-offline', unavailable);
         if (unavailable) {
-            label.textContent = 'Offline';
+            label.textContent = tr('status.offline', 'Offline');
         } else if (stale) {
-            label.textContent = 'Stale';
+            label.textContent = tr('status.stale', 'Stale');
         } else {
-            label.textContent = 'Live';
+            label.textContent = tr('status.live', 'Live');
         }
         if (detail) {
             detail.hidden = !stale;
-            detail.textContent = stale ? 'Hardware overview is using the last successful system snapshot.' : '';
+            detail.textContent = stale ? tr('client.hardware_overview_stale') : '';
         }
     };
 
@@ -121,10 +132,10 @@
             const empty = document.createElement('p');
             empty.className = 'muted';
             empty.textContent = system?.raspberryPi
-                ? 'Physical header metadata is not available for this board model.'
-                : '40-pin Raspberry Pi header is not available for this monitoring target.';
+                ? tr('client.physical_metadata_unavailable')
+                : tr('client.header_not_available');
             map.appendChild(empty);
-            if (status) status.textContent = 'Header metadata unavailable';
+            if (status) status.textContent = tr('client.header_metadata_unavailable');
             return;
         }
 
@@ -195,24 +206,24 @@
         const gpioLines = chips.reduce((count, chip) => count + (Array.isArray(chip.lines) ? chip.lines.length : 0), 0);
         const headerLines = gpioHeaderLines(gpio).length;
         if (summaryValue('gpio')) summaryValue('gpio').textContent = gpio?.available
-            ? (hasPhysicalHeader ? `${headerLines} header GPIO` : `${gpioLines} GPIO lines`)
-            : 'Unavailable';
-        if (summaryDetail('gpio')) summaryDetail('gpio').textContent = gpio?.available ? `${chips.length} chips · ${gpioLines} lines · ${healthyLabel(gpio)}` : 'GPIO inventory unavailable';
+            ? (hasPhysicalHeader ? `${headerLines} ${tr("client.header_gpio")}` : `${gpioLines} ${tr("client.gpio_lines")}`)
+            : tr('status.unavailable', 'Unavailable');
+        if (summaryDetail('gpio')) summaryDetail('gpio').textContent = gpio?.available ? `${chips.length} ${tr("client.chips")} · ${gpioLines} ${tr("client.lines")} · ${healthyLabel(gpio)}` : `GPIO ${tr('client.inventory_unavailable')}`;
 
         const i2cBuses = Array.isArray(i2c?.buses) ? i2c.buses : [];
         const i2cDevices = i2cBuses.reduce((count, bus) => count + (Array.isArray(bus.devices) ? bus.devices.length : 0), 0);
-        if (summaryValue('i2c')) summaryValue('i2c').textContent = i2c?.available ? `${i2cBuses.length} buses` : 'Unavailable';
-        if (summaryDetail('i2c')) summaryDetail('i2c').textContent = i2c?.available ? `${i2cDevices} detected devices · ${healthyLabel(i2c)}` : 'I²C inventory unavailable';
+        if (summaryValue('i2c')) summaryValue('i2c').textContent = i2c?.available ? `${i2cBuses.length} ${tr("client.buses")}` : tr('status.unavailable', 'Unavailable');
+        if (summaryDetail('i2c')) summaryDetail('i2c').textContent = i2c?.available ? `${i2cDevices} ${tr("client.detected_devices")} · ${healthyLabel(i2c)}` : `I²C ${tr('client.inventory_unavailable')}`;
 
         const spiBuses = Array.isArray(spi?.buses) ? spi.buses : [];
         const spiDevices = spiBuses.reduce((count, bus) => count + (Array.isArray(bus.devices) ? bus.devices.length : 0), 0);
-        if (summaryValue('spi')) summaryValue('spi').textContent = spi?.available ? `${spiBuses.length} buses` : 'Unavailable';
-        if (summaryDetail('spi')) summaryDetail('spi').textContent = spi?.available ? `${spiDevices} spidev nodes · ${healthyLabel(spi)}` : 'SPI inventory unavailable';
+        if (summaryValue('spi')) summaryValue('spi').textContent = spi?.available ? `${spiBuses.length} ${tr("client.buses")}` : tr('status.unavailable', 'Unavailable');
+        if (summaryDetail('spi')) summaryDetail('spi').textContent = spi?.available ? `${spiDevices} ${tr("client.spidev_nodes")} · ${healthyLabel(spi)}` : `SPI ${tr('client.inventory_unavailable')}`;
 
         const uartDevices = Array.isArray(uart?.devices) ? uart.devices : [];
         const uartGroups = Array.isArray(uart?.gpioGroups) ? uart.gpioGroups : [];
-        if (summaryValue('uart')) summaryValue('uart').textContent = uart?.available ? `${uartDevices.length} devices` : 'Unavailable';
-        if (summaryDetail('uart')) summaryDetail('uart').textContent = uart?.available ? `${uartGroups.length} pinmux groups · ${healthyLabel(uart)}` : 'UART inventory unavailable';
+        if (summaryValue('uart')) summaryValue('uart').textContent = uart?.available ? `${uartDevices.length} ${tr("client.devices")}` : tr('status.unavailable', 'Unavailable');
+        if (summaryDetail('uart')) summaryDetail('uart').textContent = uart?.available ? `${uartGroups.length} ${tr("client.pinmux_groups")} · ${healthyLabel(uart)}` : `UART ${tr('client.inventory_unavailable')}`;
     };
 
     const makeInterfaceCard = (title, status, exposure, details, badges = []) => {
@@ -275,11 +286,11 @@
         const activeLines = visibleLines.filter((line) => line.used || line.alternateFunction);
         target.appendChild(makeInterfaceCard(
             'GPIO',
-            gpio?.available ? healthyLabel(gpio) : 'Unavailable',
+            gpio?.available ? healthyLabel(gpio) : tr('status.unavailable', 'Unavailable'),
             hasPhysicalHeader && headerLines.length > 0 ? 'header' : 'unknown',
             gpio?.available
                 ? `${activeLines.length} active or muxed ${hasPhysicalHeader ? 'header ' : ''}lines`
-                : 'GPIO service is not available.',
+                : tr('client.gpio_service_unavailable'),
             activeLines.slice(0, 8).map((line) =>
                 hasPhysicalHeader && Number.isInteger(line.physicalHeaderPin)
                     ? `${line.name} · pin ${line.physicalHeaderPin}`
@@ -306,7 +317,7 @@
                 `SPI ${bus.number}`,
                 `${devices.length} ${devices.length === 1 ? 'device node' : 'device nodes'}`,
                 bus.exposure,
-                devices.map((device) => device.path).join(' · ') || 'No spidev nodes detected.',
+                devices.map((device) => device.path).join(' · ') || tr('client.no_spi'),
                 pins.map((pin) => pinBadge(pin, pin.role))));
         }
 
@@ -319,9 +330,9 @@
             const pins = Array.isArray(group.pins) ? group.pins : [];
             target.appendChild(makeInterfaceCard(
                 `UART ${group.controller}`,
-                group.exposure === 'header' ? 'Available on header' : 'Detected pinmux group',
+                group.exposure === 'header' ? tr('client.available_on_header') : tr('client.detected_pinmux'),
                 group.exposure,
-                aliases.length > 0 ? `Linux serial: ${aliases.join(' · ')}` : 'No Linux serial device alias detected.',
+                aliases.length > 0 ? `Linux serial: ${aliases.join(' · ')}` : tr('client.no_linux_serial'),
                 pins.map((pin) => pinBadge(pin, pin.role))));
         }
     };
@@ -346,8 +357,8 @@
         if (system?.raspberryPi) {
             setText('[data-board-model]', system.raspberryPi.model);
             setText('[data-board-model-detail]', system.raspberryPi.model);
-            setText('[data-board-revision]', system.raspberryPi.revision || 'Unavailable');
-            setText('[data-board-serial]', system.raspberryPi.serial || 'Unavailable');
+            setText('[data-board-revision]', system.raspberryPi.revision || tr('status.unavailable', 'Unavailable'));
+            setText('[data-board-serial]', system.raspberryPi.serial || tr('status.unavailable', 'Unavailable'));
         }
 
         const succeeded = results.filter((result) => result.status === 'fulfilled').length;
@@ -355,7 +366,7 @@
             .filter((inventory) => inventory?.available).length;
         setText(
             '[data-board-inventory-status]',
-            `${succeeded}/5 data sources reachable · ${availableInventories}/4 hardware inventories available`);
+            `${succeeded}/5 ${tr("client.data_sources_reachable")} · ${availableInventories}/4 ${tr("client.hardware_inventories_available")}`);
         renderSummary(gpio, i2c, spi, uart);
         renderHeader(system, gpio, i2c, spi, uart);
         renderInterfaces(gpio, i2c, spi, uart);

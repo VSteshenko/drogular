@@ -1,4 +1,5 @@
 #include "board_page.hpp"
+#include "localization/system_monitor_translations.hpp"
 
 #include "hardware/board_gpio_metadata.hpp"
 #include "services/system_monitor.hpp"
@@ -12,6 +13,8 @@
 namespace system_monitor {
 
 void BoardPage::onInit(drogular::RenderContext& context) {
+    applyLocalization(context);
+    context.set("languageRedirect", std::string("/hardware"));
     drogular::PwaOptions pwaOptions;
     pwaOptions.themeColor = "#10172a";
     drogular::PwaPageSupport::apply(context, pwaOptions);
@@ -22,7 +25,7 @@ void BoardPage::onInit(drogular::RenderContext& context) {
 
     const auto snapshot = monitor->snapshot();
 
-    context.set("title", std::string("Drogular Hardware Overview"));
+    context.set("title", context.translate("board.page_title"));
     context.set("pageScript", std::string("/assets/board.js"));
     context.set("hasPageScript", true);
     context.set("hostname", snapshot.system.hostname);
@@ -31,11 +34,11 @@ void BoardPage::onInit(drogular::RenderContext& context) {
 
     context.set("hasRaspberryPi", hasRaspberryPi);
     context.set("hasBoardHeader", boardMetadata.available());
-    context.set("hardwareIdentityLabel", std::string(hasRaspberryPi ? "Board" : "System"));
-    context.set("hardwareSubtitle", std::string(
+    context.set("hardwareIdentityLabel", context.translate(hasRaspberryPi ? "board.identity_board" : "nav.system"));
+    context.set("hardwareSubtitle", context.translate(
         boardMetadata.available()
-            ? "board interfaces and physical header"
-            : "hardware interfaces detected on this monitoring target"));
+            ? "board.subtitle_pi"
+            : "board.subtitle_generic"));
     context.set("boardOverviewClass", std::string(
         boardMetadata.available()
             ? "board-overview-grid"
@@ -51,8 +54,8 @@ void BoardPage::onInit(drogular::RenderContext& context) {
             systemIdentity += " · " + snapshot.system.architecture;
         }
         context.set("boardModel", systemIdentity);
-        context.set("boardRevision", std::string("Unavailable"));
-        context.set("boardSerial", std::string("Unavailable"));
+        context.set("boardRevision", context.translate("status.unavailable"));
+        context.set("boardSerial", context.translate("status.unavailable"));
     }
 }
 

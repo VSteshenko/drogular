@@ -1,23 +1,23 @@
 <section class="hero">
     <div>
-        <p class="eyebrow">Monitoring target</p>
+        <p class="eyebrow">{{ t("dashboard.monitoring_target") }}</p>
         <h2>{{ hostname }}</h2>
         <p class="muted">{{ operatingSystem }} · {{ architecture }}</p>
     </div>
     <div class="uptime">
-        <span class="muted">Uptime</span>
+        <span class="muted">{{ t("dashboard.uptime") }}</span>
         <strong data-monitor-field="uptime-hero">{{ uptime }}</strong>
     </div>
 </section>
 
-<section class="metric-grid" aria-label="System metrics">
+<section class="metric-grid" aria-label="{{ t("dashboard.system_metrics") }}">
     <article class="metric-card">
         <div class="metric-heading">
             <span>CPU</span>
             <strong data-monitor-field="cpu-usage">{{ cpuUsage }}</strong>
         </div>
         <progress data-monitor-field="cpu-progress" max="100" value="{{ cpuUsageValue }}">{{ cpuUsage }}</progress>
-        <p class="metric-detail">{{ cpuCores }} logical cores</p>
+        <p class="metric-detail">{{ cpuCores }} {{ t("dashboard.logical_cores") }}</p>
         <div class="load-grid">
             <span><small>1 min</small><span data-monitor-field="load-1">{{ load1 }}</span></span>
             <span><small>5 min</small><span data-monitor-field="load-5">{{ load5 }}</span></span>
@@ -27,20 +27,20 @@
 
     <article class="metric-card">
         <div class="metric-heading">
-            <span>Memory</span>
+            <span>{{ t("dashboard.memory") }}</span>
             <strong data-monitor-field="memory-usage">{{ memoryUsage }}</strong>
         </div>
         <progress data-monitor-field="memory-progress" max="100" value="{{ memoryUsageValue }}">{{ memoryUsage }}</progress>
-        <p class="metric-detail" data-monitor-field="memory-summary">{{ memoryUsed }} of {{ memoryTotal }} used</p>
-        <p class="muted" data-monitor-field="memory-available">{{ memoryAvailable }} available</p>
+        <p class="metric-detail" data-monitor-field="memory-summary">{{ memoryUsed }} {{ t("dashboard.of") }} {{ memoryTotal }} {{ t("dashboard.used") }}</p>
+        <p class="muted" data-monitor-field="memory-available">{{ memoryAvailable }} {{ t("dashboard.available") }}</p>
     </article>
 </section>
 
 <section class="panel">
     <div class="panel-heading">
         <div>
-            <p class="eyebrow">Storage</p>
-            <h2>Disks</h2>
+            <p class="eyebrow">{{ t("dashboard.storage") }}</p>
+            <h2>{{ t("dashboard.disks") }}</h2>
         </div>
     </div>
 
@@ -63,7 +63,7 @@
         @endforeach
     </div>
     @else
-    <p class="muted">No disk information is available.</p>
+    <p class="muted">{{ t("dashboard.no_disks") }}</p>
     @endif
 </section>
 
@@ -74,13 +74,13 @@
         <h2 data-monitor-field="pi-model">{{ raspberryPiModel }}</h2>
     </div>
     <dl class="system-info">
-        <div><dt>Revision</dt><dd data-monitor-field="pi-revision">{{ raspberryPiRevision }}</dd></div>
-        <div><dt>Serial</dt><dd data-monitor-field="pi-serial">{{ raspberryPiSerial }}</dd></div>
-        <div><dt>CPU temperature</dt><dd data-monitor-field="pi-temperature">{{ raspberryPiTemperature }}</dd></div>
-        <div><dt>CPU frequency</dt><dd data-monitor-field="pi-frequency">{{ raspberryPiFrequency }}</dd></div>
+        <div><dt>{{ t("dashboard.revision") }}</dt><dd data-monitor-field="pi-revision">{{ raspberryPiRevision }}</dd></div>
+        <div><dt>{{ t("dashboard.serial") }}</dt><dd data-monitor-field="pi-serial">{{ raspberryPiSerial }}</dd></div>
+        <div><dt>{{ t("dashboard.cpu_temperature") }}</dt><dd data-monitor-field="pi-temperature">{{ raspberryPiTemperature }}</dd></div>
+        <div><dt>{{ t("dashboard.cpu_frequency") }}</dt><dd data-monitor-field="pi-frequency">{{ raspberryPiFrequency }}</dd></div>
         @if(hasRaspberryPiHealth)
-        <div><dt>Current health</dt><dd data-monitor-field="pi-health-current">{{ raspberryPiHealthCurrent }}</dd></div>
-        <div><dt>Health history</dt><dd data-monitor-field="pi-health-history">{{ raspberryPiHealthHistory }}</dd></div>
+        <div><dt>{{ t("dashboard.current_health") }}</dt><dd data-monitor-field="pi-health-current">{{ raspberryPiHealthCurrent }}</dd></div>
+        <div><dt>{{ t("dashboard.health_history") }}</dt><dd data-monitor-field="pi-health-history">{{ raspberryPiHealthHistory }}</dd></div>
         @endif
     </dl>
 </section>
@@ -89,103 +89,103 @@
 <section class="panel gpio-panel" data-gpio-panel>
     <div class="panel-heading gpio-panel-heading">
         <div>
-            <p class="eyebrow">Hardware</p>
+            <p class="eyebrow">{{ t("dashboard.hardware") }}</p>
             <h2>GPIO</h2>
         </div>
         <div class="gpio-overview">
-            <strong data-gpio-summary>Loading…</strong>
-            <span class="muted" data-gpio-status>Waiting for GPIO inventory</span>
+            <strong data-gpio-summary>{{ t("dashboard.loading") }}</strong>
+            <span class="muted" data-gpio-status>{{ t("dashboard.wait_gpio") }}</span>
         </div>
     </div>
 
     <div class="gpio-toolbar" aria-label="GPIO line filter">
-        <span class="muted">Show</span>
+        <span class="muted">{{ t("dashboard.show") }}</span>
         <div class="gpio-filter-group" data-gpio-filters>
-            <button type="button" class="gpio-filter" data-gpio-filter="all" aria-pressed="false">All</button>
-            <button type="button" class="gpio-filter is-active" data-gpio-filter="active" aria-pressed="true">Active</button>
-            <button type="button" class="gpio-filter" data-gpio-filter="free" aria-pressed="false">Free</button>
+            <button type="button" class="gpio-filter" data-gpio-filter="all" aria-pressed="false">{{ t("dashboard.all") }}</button>
+            <button type="button" class="gpio-filter is-active" data-gpio-filter="active" aria-pressed="true">{{ t("dashboard.active") }}</button>
+            <button type="button" class="gpio-filter" data-gpio-filter="free" aria-pressed="false">{{ t("dashboard.free") }}</button>
         </div>
     </div>
 
     <div class="gpio-chip-list" data-gpio-chips>
-        <p class="muted">Loading GPIO chips…</p>
+        <p class="muted">{{ t("dashboard.loading_gpio") }}</p>
     </div>
 </section>
 
 <section class="panel i2c-panel" data-i2c-panel>
     <div class="panel-heading i2c-panel-heading">
         <div>
-            <p class="eyebrow">Hardware buses</p>
+            <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
             <h2>I²C</h2>
         </div>
         <div class="i2c-overview">
-            <strong data-i2c-summary>Loading…</strong>
-            <span class="muted" data-i2c-status>Waiting for I²C inventory</span>
+            <strong data-i2c-summary>{{ t("dashboard.loading") }}</strong>
+            <span class="muted" data-i2c-status>{{ t("dashboard.wait_i2c") }}</span>
         </div>
     </div>
 
     <div class="i2c-bus-list" data-i2c-buses>
-        <p class="muted">Loading I²C buses…</p>
+        <p class="muted">{{ t("dashboard.loading_i2c") }}</p>
     </div>
 </section>
 
 <section class="panel spi-panel" data-spi-panel>
     <div class="panel-heading spi-panel-heading">
         <div>
-            <p class="eyebrow">Hardware buses</p>
+            <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
             <h2>SPI</h2>
         </div>
         <div class="spi-overview">
-            <strong data-spi-summary>Loading…</strong>
-            <span class="muted" data-spi-status>Waiting for SPI inventory</span>
+            <strong data-spi-summary>{{ t("dashboard.loading") }}</strong>
+            <span class="muted" data-spi-status>{{ t("dashboard.wait_spi") }}</span>
         </div>
     </div>
     <div class="spi-bus-list" data-spi-buses>
-        <p class="muted">Loading SPI buses…</p>
+        <p class="muted">{{ t("dashboard.loading_spi") }}</p>
     </div>
 </section>
 
 <section class="panel uart-panel" data-uart-panel>
     <div class="panel-heading uart-panel-heading">
         <div>
-            <p class="eyebrow">Hardware buses</p>
+            <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
             <h2>UART</h2>
         </div>
         <div class="uart-overview">
-            <strong data-uart-summary>Loading…</strong>
-            <span class="muted" data-uart-status>Waiting for UART inventory</span>
+            <strong data-uart-summary>{{ t("dashboard.loading") }}</strong>
+            <span class="muted" data-uart-status>{{ t("dashboard.wait_uart") }}</span>
         </div>
     </div>
     <div class="uart-content" data-uart-content>
-        <p class="muted">Loading UART devices…</p>
+        <p class="muted">{{ t("dashboard.loading_uart") }}</p>
     </div>
 </section>
 
 <section class="panel process-panel" data-process-panel>
     <div class="panel-heading process-panel-heading">
         <div>
-            <p class="eyebrow">Runtime</p>
-            <h2>Processes</h2>
+            <p class="eyebrow">{{ t("dashboard.runtime") }}</p>
+            <h2>{{ t("dashboard.processes") }}</h2>
         </div>
         <div class="process-overview">
-            <strong data-process-summary>Loading…</strong>
-            <span class="muted" data-process-status>Waiting for process inventory</span>
+            <strong data-process-summary>{{ t("dashboard.loading") }}</strong>
+            <span class="muted" data-process-status>{{ t("dashboard.wait_processes") }}</span>
         </div>
     </div>
 
     <div class="process-toolbar">
         <label class="process-search">
-            <span class="muted">Search</span>
-            <input type="search" data-process-search placeholder="PID, user, name or command" autocomplete="off">
+            <span class="muted">{{ t("dashboard.search") }}</span>
+            <input type="search" data-process-search placeholder="{{ t("dashboard.search_placeholder") }}" autocomplete="off">
         </label>
         <label class="process-sort">
-            <span class="muted">Sort</span>
+            <span class="muted">{{ t("dashboard.sort") }}</span>
             <select data-process-sort>
                 <option value="cpu">CPU</option>
-                <option value="memory">Memory</option>
+                <option value="memory">{{ t("dashboard.memory") }}</option>
                 <option value="rss">RSS</option>
                 <option value="pid">PID</option>
-                <option value="name">Name</option>
+                <option value="name">{{ t("dashboard.name") }}</option>
             </select>
         </label>
     </div>
@@ -193,28 +193,28 @@
     <div class="process-table-wrap">
         <table class="process-table">
             <thead>
-                <tr><th>PID</th><th>User</th><th>Process</th><th>CPU</th><th>Memory</th><th>RSS</th></tr>
+                <tr><th>PID</th><th>{{ t("dashboard.user") }}</th><th>{{ t("dashboard.process") }}</th><th>CPU</th><th>{{ t("dashboard.memory") }}</th><th>RSS</th></tr>
             </thead>
             <tbody data-process-rows>
-                <tr><td colspan="6" class="muted">Loading processes…</td></tr>
+                <tr><td colspan="6" class="muted">{{ t("dashboard.loading_processes") }}</td></tr>
             </tbody>
         </table>
     </div>
-    <p class="muted process-note">Showing up to 50 matching processes. Inventory is read-only.</p>
+    <p class="muted process-note">{{ t("dashboard.process_note") }}</p>
 </section>
 
 <section class="panel system-panel">
     <div>
-        <p class="eyebrow">System</p>
-        <h2>Host information</h2>
+        <p class="eyebrow">{{ t("nav.system") }}</p>
+        <h2>{{ t("dashboard.host_information") }}</h2>
     </div>
     <dl class="system-info">
-        <div><dt>Hostname</dt><dd>{{ hostname }}</dd></div>
-        <div><dt>Operating system</dt><dd>{{ operatingSystem }}</dd></div>
-        <div><dt>Kernel</dt><dd>{{ kernel }}</dd></div>
-        <div><dt>Architecture</dt><dd>{{ architecture }}</dd></div>
-        <div><dt>Uptime</dt><dd data-monitor-field="uptime-system">{{ uptime }}</dd></div>
+        <div><dt>{{ t("dashboard.hostname") }}</dt><dd>{{ hostname }}</dd></div>
+        <div><dt>{{ t("dashboard.operating_system") }}</dt><dd>{{ operatingSystem }}</dd></div>
+        <div><dt>{{ t("dashboard.kernel") }}</dt><dd>{{ kernel }}</dd></div>
+        <div><dt>{{ t("dashboard.architecture") }}</dt><dd>{{ architecture }}</dd></div>
+        <div><dt>{{ t("dashboard.uptime") }}</dt><dd data-monitor-field="uptime-system">{{ uptime }}</dd></div>
     </dl>
 </section>
 
-<p class="refresh-note">Last live update: <span data-monitor-field="last-update">waiting for first refresh</span></p>
+<p class="refresh-note">{{ t("dashboard.last_live_update") }} <span data-monitor-field="last-update">{{ t("dashboard.wait_first_refresh") }}</span></p>

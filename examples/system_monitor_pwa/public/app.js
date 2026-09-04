@@ -1,4 +1,15 @@
 (() => {
+    const translations = (() => {
+        const element = document.getElementById('system-monitor-i18n');
+        if (!element) return {};
+        try {
+            return JSON.parse(element.textContent || '{}');
+        } catch (_) {
+            return {};
+        }
+    })();
+    const tr = (key, fallback = key) => translations[key] ?? fallback;
+
     const POLL_INTERVAL_MS = 2000;
     const GPIO_POLL_INTERVAL_MS = 30000;
     const PROCESS_POLL_INTERVAL_MS = 3000;
@@ -40,27 +51,27 @@
         remaining %= 3600;
         const minutes = Math.floor(remaining / 60);
         if (days > 0) {
-            return `${days}d ${hours}h ${minutes}m`;
+            return `${days}${tr("client.day_short")} ${hours}${tr("client.hour_short")} ${minutes}${tr("client.minute_short")}`;
         }
         if (hours > 0) {
-            return `${hours}h ${minutes}m`;
+            return `${hours}${tr("client.hour_short")} ${minutes}${tr("client.minute_short")}`;
         }
-        return `${minutes}m`;
+        return `${minutes}${tr("client.minute_short")}`;
     };
 
     const formatAge = (milliseconds) => {
         const seconds = Math.max(0, Math.floor(Number(milliseconds) / 1000));
         if (seconds < 60) {
-            return `${seconds}s`;
+            return `${seconds}${tr("client.second_short")}`;
         }
 
         const minutes = Math.floor(seconds / 60);
         if (minutes < 60) {
-            return `${minutes}m`;
+            return `${minutes}${tr("client.minute_short")}`;
         }
 
         const hours = Math.floor(minutes / 60);
-        return `${hours}h`;
+        return `${hours}${tr("client.hour_short")}`;
     };
 
     const setConnectionState = (state, monitor = null) => {
@@ -78,22 +89,22 @@
         const label = status.querySelector('[data-monitor-status-label]');
         if (label) {
             if (state === 'live') {
-                label.textContent = 'Live';
+                label.textContent = tr('status.live', 'Live');
             } else if (state === 'stale') {
-                label.textContent = `Stale · ${formatAge(monitor?.snapshotAgeMs ?? 0)} old`;
+                label.textContent = `${tr("status.stale")} · ${formatAge(monitor?.snapshotAgeMs ?? 0)} ${tr("client.old")}`;
             } else if (state === 'connecting') {
-                label.textContent = 'Connecting';
+                label.textContent = tr('status.connecting', 'Connecting');
             } else if (state === 'reconnecting') {
-                label.textContent = `Reconnecting ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`;
+                label.textContent = `${tr("status.reconnecting")} ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`;
             } else {
-                label.textContent = 'Offline';
+                label.textContent = tr('status.offline', 'Offline');
             }
         }
 
         if (detail) {
             if (state === 'stale') {
                 detail.hidden = false;
-                detail.textContent = 'Monitoring target unavailable; showing the last successful snapshot.';
+                detail.textContent = tr('client.target_stale');
             } else {
                 detail.hidden = true;
                 detail.textContent = '';
@@ -147,12 +158,12 @@
             setText(
                 'pi-temperature',
                 data.raspberryPi.temperatureCelsius == null
-                    ? 'Unavailable'
+                    ? tr('status.unavailable', 'Unavailable')
                     : `${Number(data.raspberryPi.temperatureCelsius).toFixed(1)} °C`);
             setText(
                 'pi-frequency',
                 data.raspberryPi.cpuFrequencyHz == null
-                    ? 'Unavailable'
+                    ? tr('status.unavailable', 'Unavailable')
                     : `${Math.round(Number(data.raspberryPi.cpuFrequencyHz) / 1000000)} MHz`);
 
             if (data.raspberryPi.health) {
@@ -167,17 +178,17 @@
                     health.frequencyCappingOccurred ||
                     health.throttlingOccurred ||
                     health.softTemperatureLimitOccurred;
-                setText('pi-health-current', currentWarning ? 'Warning' : 'Normal');
+                setText('pi-health-current', currentWarning ? tr('status.warning', 'Warning') : tr('status.normal', 'Normal'));
                 setText(
                     'pi-health-history',
-                    historicalWarning ? 'Events recorded' : 'No events recorded');
+                    historicalWarning ? tr('status.events_recorded', 'Events recorded') : tr('status.no_events_recorded', 'No events recorded'));
             }
         }
 
         setText('memory-usage', formatPercent(data.memory.usagePercent));
         setProgress('memory-progress', data.memory.usagePercent);
-        setText('memory-summary', `${formatBytes(data.memory.usedBytes)} of ${formatBytes(data.memory.totalBytes)} used`);
-        setText('memory-available', `${formatBytes(data.memory.availableBytes)} available`);
+        setText('memory-summary', `${formatBytes(data.memory.usedBytes)} ${document.documentElement.lang === "de" ? "von" : "of"} ${formatBytes(data.memory.totalBytes)} ${tr("client.used", "used").toLowerCase()}`);
+        setText('memory-available', `${formatBytes(data.memory.availableBytes)} ${tr("dashboard.available")}`);
 
         const uptime = formatDuration(data.system.uptimeSeconds);
         setText('uptime-hero', uptime);
@@ -272,7 +283,7 @@
 
         const name = document.createElement('td');
         const nameValue = document.createElement('strong');
-        nameValue.textContent = line.name || 'Unnamed';
+        nameValue.textContent = line.name || tr('client.unnamed');
         const exposure = document.createElement('span');
         exposure.className = 'gpio-line-exposure muted';
         exposure.textContent = gpioExposureText(line.exposure, line.physicalHeaderPin);
@@ -305,7 +316,7 @@
         const state = document.createElement('td');
         const stateBadge = document.createElement('span');
         stateBadge.className = `gpio-badge ${line.used ? 'gpio-used' : 'gpio-free'}`;
-        stateBadge.textContent = line.used ? 'Used' : 'Free';
+        stateBadge.textContent = line.used ? tr('client.used') : tr('client.free');
         state.appendChild(stateBadge);
 
         row.append(offset, name, functionCell, direction, consumer, flags, state);
@@ -365,14 +376,14 @@
         if (data.monitor?.healthy === false) {
             setGpioText(
                 gpioStatus,
-                `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`);
+                `${tr("status.stale")} · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} ${tr("client.old")}`);
         } else {
             const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
             setGpioText(
                 gpioStatus,
                 updatedAt
-                    ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}`
-                    : 'GPIO inventory available');
+                    ? `${tr("client.updated")} ${new Date(updatedAt * 1000).toLocaleTimeString()}`
+                    : `GPIO ${tr('client.inventory_available')}`);
         }
 
         const openChips = new Set(
@@ -386,7 +397,7 @@
         if (chips.length === 0) {
             const empty = document.createElement('p');
             empty.className = 'muted';
-            empty.textContent = 'No GPIO chips detected.';
+            empty.textContent = tr('client.no_gpio_chips');
             gpioChips.appendChild(empty);
             return;
         }
@@ -411,15 +422,15 @@
             title.textContent = chip.name;
             const label = document.createElement('span');
             label.className = 'muted';
-            label.textContent = chip.label || 'Unlabelled GPIO chip';
+            label.textContent = chip.label || tr('client.unlabelled_chip');
             identity.append(title, label);
 
             const stats = document.createElement('span');
             stats.className = 'gpio-chip-stats';
             const lineCount = chip.lineCount ?? lines.length;
             stats.textContent = gpioFilter === 'all'
-                ? `${lineCount} lines · ${used} used`
-                : `${visibleLines.length} of ${lineCount} shown`;
+                ? `${lineCount} ${tr("client.lines")} · ${used} ${tr("client.used").toLowerCase()}`
+                : `${visibleLines.length} / ${lineCount} ${tr("client.shown")}`;
 
             summary.append(identity, stats);
 
@@ -431,7 +442,7 @@
 
             const head = document.createElement('thead');
             const headerRow = document.createElement('tr');
-            for (const titleText of ['Line', 'Name', 'Function', 'Direction', 'Consumer', 'Flags', 'State']) {
+            for (const titleText of [tr('client.line'), 'Name', tr('client.function'), tr('client.direction'), tr('client.consumer'), tr('client.flags'), tr('client.state')]) {
                 const cell = document.createElement('th');
                 cell.scope = 'col';
                 cell.textContent = titleText;
@@ -451,10 +462,10 @@
                 emptyCell.colSpan = 7;
                 emptyCell.textContent =
                     gpioFilter === 'active'
-                        ? 'No active lines on this chip.'
+                        ? tr('client.no_active_lines')
                         : gpioFilter === 'free'
-                            ? 'No free lines on this chip.'
-                            : 'No GPIO lines reported.';
+                            ? tr('client.no_free_lines')
+                            : tr('client.no_gpio_lines');
                 emptyRow.appendChild(emptyCell);
                 body.appendChild(emptyRow);
             }
@@ -507,7 +518,7 @@
             const data = await response.json();
             renderGpio(data);
         } catch (_) {
-            setGpioText(gpioStatus, 'GPIO inventory unavailable');
+            setGpioText(gpioStatus, `GPIO ${tr('client.inventory_unavailable')}`);
         }
 
         gpioPollTimer = window.setTimeout(pollGpio, GPIO_POLL_INTERVAL_MS);
@@ -560,12 +571,12 @@
         if (i2cStatus) {
             if (data.monitor?.healthy === false) {
                 i2cStatus.textContent =
-                    `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+                    `${tr("status.stale")} · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} ${tr("client.old")}`;
             } else {
                 const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
                 i2cStatus.textContent = updatedAt
-                    ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}`
-                    : 'I²C inventory available';
+                    ? `${tr("client.updated")} ${new Date(updatedAt * 1000).toLocaleTimeString()}`
+                    : `I²C ${tr('client.inventory_available')}`;
             }
         }
 
@@ -573,7 +584,7 @@
         if (buses.length === 0) {
             const empty = document.createElement('p');
             empty.className = 'muted';
-            empty.textContent = 'No I²C buses detected.';
+            empty.textContent = tr('client.no_i2c');
             i2cBuses.appendChild(empty);
             return;
         }
@@ -598,13 +609,13 @@
             count.className = 'i2c-device-count';
             count.textContent = bus.scanned
                 ? `${devices.length} ${devices.length === 1 ? 'device' : 'devices'}`
-                : 'Not scanned';
+                : tr('client.not_scanned');
             heading.append(identity, count);
             card.appendChild(heading);
 
             const metadata = document.createElement('p');
             metadata.className = 'i2c-bus-meta muted';
-            metadata.textContent = [bus.type, bus.algorithm].filter(Boolean).join(' · ') || 'Adapter details unavailable';
+            metadata.textContent = [bus.type, bus.algorithm].filter(Boolean).join(' · ') || tr('client.adapter_unavailable');
             card.appendChild(metadata);
 
             const gpioPins = Array.isArray(bus.gpioPins) ? bus.gpioPins : [];
@@ -638,12 +649,12 @@
             if (!bus.scanned) {
                 const none = document.createElement('span');
                 none.className = 'muted';
-                none.textContent = 'Address scan disabled for this bus';
+                none.textContent = tr('client.scan_disabled');
                 addressList.appendChild(none);
             } else if (devices.length === 0) {
                 const none = document.createElement('span');
                 none.className = 'muted';
-                none.textContent = 'No responding devices';
+                none.textContent = tr('client.no_responding');
                 addressList.appendChild(none);
             } else {
                 for (const device of devices) {
@@ -651,7 +662,7 @@
                     badge.className = `i2c-address${device.claimedByKernel ? ' i2c-address-claimed' : ''}`;
                     badge.textContent = device.addressHex || `0x${Number(device.address).toString(16).padStart(2, '0')}`;
                     if (device.claimedByKernel) {
-                        badge.title = 'Claimed by a kernel driver';
+                        badge.title = tr('client.kernel_driver');
                     }
                     addressList.appendChild(badge);
                 }
@@ -673,7 +684,7 @@
             renderI2c(await response.json());
         } catch (_) {
             if (i2cStatus) {
-                i2cStatus.textContent = 'I²C inventory unavailable';
+                i2cStatus.textContent = `I²C ${tr('client.inventory_unavailable')}`;
             }
         } finally {
             window.setTimeout(pollI2c, I2C_POLL_INTERVAL_MS);
@@ -694,10 +705,10 @@
         const deviceCount = buses.reduce((sum, bus) => sum + (Array.isArray(bus.devices) ? bus.devices.length : 0), 0);
         if (spiSummary) spiSummary.textContent = `${buses.length} ${buses.length === 1 ? 'bus' : 'buses'} · ${deviceCount} ${deviceCount === 1 ? 'device' : 'devices'}`;
         if (spiStatus) {
-            if (data.monitor?.healthy === false) spiStatus.textContent = `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+            if (data.monitor?.healthy === false) spiStatus.textContent = `${tr("status.stale")} · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} ${tr("client.old")}`;
             else {
                 const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
-                spiStatus.textContent = updatedAt ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}` : 'SPI inventory available';
+                spiStatus.textContent = updatedAt ? `${tr("client.updated")} ${new Date(updatedAt * 1000).toLocaleTimeString()}` : `SPI ${tr('client.inventory_available')}`;
             }
         }
         spiBuses.replaceChildren();
@@ -744,7 +755,7 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             renderSpi(await response.json());
         } catch (_) {
-            if (spiStatus) spiStatus.textContent = 'SPI inventory unavailable';
+            if (spiStatus) spiStatus.textContent = `SPI ${tr('client.inventory_unavailable')}`;
         } finally {
             window.setTimeout(pollSpi, SPI_POLL_INTERVAL_MS);
         }
@@ -766,10 +777,10 @@
             uartSummary.textContent = `${devices.length} ${devices.length === 1 ? 'device' : 'devices'} · ${groups.length} ${groups.length === 1 ? 'GPIO group' : 'GPIO groups'}`;
         }
         if (uartStatus) {
-            if (data.monitor?.healthy === false) uartStatus.textContent = `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+            if (data.monitor?.healthy === false) uartStatus.textContent = `${tr("status.stale")} · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} ${tr("client.old")}`;
             else {
                 const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
-                uartStatus.textContent = updatedAt ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}` : 'UART inventory available';
+                uartStatus.textContent = updatedAt ? `${tr("client.updated")} ${new Date(updatedAt * 1000).toLocaleTimeString()}` : `UART ${tr('client.inventory_available')}`;
             }
         }
 
@@ -780,7 +791,7 @@
         if (devices.length === 0) {
             const empty = document.createElement('p');
             empty.className = 'muted';
-            empty.textContent = 'No ttyAMA/ttyS devices detected.';
+            empty.textContent = tr('client.no_uart');
             deviceSection.appendChild(empty);
         } else {
             for (const device of devices) {
@@ -853,7 +864,7 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             renderUart(await response.json());
         } catch (_) {
-            if (uartStatus) uartStatus.textContent = 'UART inventory unavailable';
+            if (uartStatus) uartStatus.textContent = `UART ${tr('client.inventory_unavailable')}`;
         } finally {
             window.setTimeout(pollUart, UART_POLL_INTERVAL_MS);
         }
@@ -892,17 +903,17 @@
         const shown = visible.slice(0, PROCESS_LIMIT);
         if (processSummary) {
             processSummary.textContent = query
-                ? `${shown.length} of ${visible.length} matching · ${processData.length} total`
-                : `${shown.length} of ${processData.length} shown`;
+                ? `${shown.length} / ${visible.length} ${tr("client.matching")} · ${processData.length} ${tr("client.total")}`
+                : `${shown.length} / ${processData.length} ${tr("client.shown")}`;
         }
         if (processStatus) {
             if (data.monitor?.healthy === false) {
-                processStatus.textContent = `Stale · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} old`;
+                processStatus.textContent = `${tr("status.stale")} · ${formatAge(data.monitor.snapshotAgeMs ?? 0)} ${tr("client.old")}`;
             } else {
                 const updatedAt = data.monitor?.lastSuccessfulUpdate ?? data.timestamp;
                 processStatus.textContent = updatedAt
-                    ? `Updated ${new Date(updatedAt * 1000).toLocaleTimeString()}`
-                    : 'Process inventory available';
+                    ? `${tr("client.updated")} ${new Date(updatedAt * 1000).toLocaleTimeString()}`
+                    : tr('client.process_available');
             }
         }
 
@@ -912,7 +923,7 @@
             const cell = document.createElement('td');
             cell.colSpan = 6;
             cell.className = 'muted';
-            cell.textContent = query ? 'No matching processes.' : 'No processes reported.';
+            cell.textContent = query ? tr('client.no_matching_processes') : tr('client.no_processes');
             row.appendChild(cell);
             processRows.appendChild(row);
             return;
@@ -950,8 +961,8 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             renderProcesses(await response.json());
         } catch (_) {
-            if (processStatus) processStatus.textContent = 'Process inventory unavailable';
-            if (processSummary) processSummary.textContent = 'Unavailable';
+            if (processStatus) processStatus.textContent = tr('client.process_unavailable');
+            if (processSummary) processSummary.textContent = tr('status.unavailable', 'Unavailable');
         } finally {
             window.setTimeout(pollProcesses, PROCESS_POLL_INTERVAL_MS);
         }

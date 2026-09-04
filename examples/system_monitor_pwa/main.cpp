@@ -1,5 +1,6 @@
 #include "actions/gpio_status_action.hpp"
 #include "actions/i2c_status_action.hpp"
+#include "actions/language_action.hpp"
 #include "actions/process_status_action.hpp"
 #include "actions/spi_status_action.hpp"
 #include "actions/uart_status_action.hpp"
@@ -7,6 +8,7 @@
 #include "gpio/gpiod_gpio_provider.hpp"
 #include "hardware/linux_hardware_capability_probe.hpp"
 #include "i2c/i2c_tools_provider.hpp"
+#include "localization/system_monitor_translations.hpp"
 #include "spi/spidev_spi_provider.hpp"
 #include "uart/linux_uart_provider.hpp"
 #include "pages/dashboard_page.hpp"
@@ -303,6 +305,16 @@ namespace {
 int main() {
     drogular::App app;
 
+    app.expressionFunction(
+        "t",
+        system_monitor::systemMonitorTranslationExpressionFunction());
+
+    app.services().addFactory<drogular::TranslationProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [] {
+            return std::make_shared<system_monitor::SystemMonitorTranslations>();
+        });
+
     app.templateRoot("examples/system_monitor_pwa/templates")
        .templateCache(false)
        .staticFiles(
@@ -344,6 +356,7 @@ int main() {
 
     app.page<system_monitor::DashboardPage>("/");
     app.page<system_monitor::BoardPage>("/hardware");
+    app.action<system_monitor::LanguageAction>("/language");
     app.get<system_monitor::SystemStatusAction>("/api/system");
     app.get<system_monitor::ProcessStatusAction>("/api/processes");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");

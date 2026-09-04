@@ -1,5 +1,5 @@
 #include "dashboard_page.hpp"
-
+#include "localization/system_monitor_translations.hpp"
 #include "services/system_monitor.hpp"
 #include "ui/system_formatters.hpp"
 
@@ -14,6 +14,8 @@
 namespace system_monitor {
 
 void DashboardPage::onInit(drogular::RenderContext& context) {
+    applyLocalization(context);
+    context.set("languageRedirect", std::string("/"));
     drogular::PwaOptions pwaOptions;
     pwaOptions.themeColor = "#10172a";
     drogular::PwaPageSupport::apply(context, pwaOptions);
@@ -27,7 +29,7 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
         snapshot.memory.usedBytes,
         snapshot.memory.totalBytes);
 
-    context.set("title", std::string("Drogular System Monitor"));
+    context.set("title", context.translate("app.title"));
     context.set("pageScript", std::string("/assets/app.js"));
     context.set("hasPageScript", true);
     context.set("hostname", snapshot.system.hostname);
@@ -75,12 +77,12 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
             "raspberryPiTemperature",
             snapshot.raspberryPi->temperatureCelsius
                 ? ui::formatTemperature(*snapshot.raspberryPi->temperatureCelsius)
-                : std::string("Unavailable"));
+                : context.translate("status.unavailable"));
         context.set(
             "raspberryPiFrequency",
             snapshot.raspberryPi->cpuFrequencyHz
                 ? ui::formatFrequency(*snapshot.raspberryPi->cpuFrequencyHz)
-                : std::string("Unavailable"));
+                : context.translate("status.unavailable"));
 
         context.set("hasRaspberryPiHealth", snapshot.raspberryPi->health.has_value());
         if (snapshot.raspberryPi->health) {
@@ -89,16 +91,16 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
                 "raspberryPiHealthCurrent",
                 health.underVoltage || health.frequencyCapped ||
                         health.throttled || health.softTemperatureLimit
-                    ? std::string("Warning")
-                    : std::string("Normal"));
+                    ? context.translate("status.warning")
+                    : context.translate("status.normal"));
             context.set(
                 "raspberryPiHealthHistory",
                 health.underVoltageOccurred ||
                         health.frequencyCappingOccurred ||
                         health.throttlingOccurred ||
                         health.softTemperatureLimitOccurred
-                    ? std::string("Events recorded")
-                    : std::string("No events recorded"));
+                    ? context.translate("status.events_recorded")
+                    : context.translate("status.no_events_recorded"));
         }
     }
 

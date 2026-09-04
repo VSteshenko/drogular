@@ -21,7 +21,7 @@ TEST(ProcessDashboardAssetsTests, ContainsReadOnlyProcessInventoryWithFilteringA
     EXPECT_NE(html.find("data-process-panel"), std::string::npos);
     EXPECT_NE(html.find("data-process-search"), std::string::npos);
     EXPECT_NE(html.find("data-process-sort"), std::string::npos);
-    EXPECT_NE(html.find("Inventory is read-only"), std::string::npos);
+    EXPECT_NE(html.find("t(\"dashboard.process_note\")"), std::string::npos);
     EXPECT_NE(js.find("fetch('/api/processes'"), std::string::npos);
     EXPECT_NE(js.find("PROCESS_POLL_INTERVAL_MS = 3000"), std::string::npos);
     EXPECT_NE(js.find("PROCESS_LIMIT = 50"), std::string::npos);

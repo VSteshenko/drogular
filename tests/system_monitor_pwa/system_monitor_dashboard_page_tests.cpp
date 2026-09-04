@@ -1,3 +1,4 @@
+#include "localization/system_monitor_translations.hpp"
 #include "pages/dashboard_page.hpp"
 #include "services/system_monitor.hpp"
 
@@ -65,6 +66,11 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates");
     services.setOptions(&options);
+    services.expressionFunctions().registerFunction(
+        "t",
+        system_monitor::systemMonitorTranslationExpressionFunction());
+    services.registerService<drogular::TranslationProvider>(
+        std::make_shared<system_monitor::SystemMonitorTranslations>());
 
     auto provider = std::make_shared<DashboardFakeProvider>();
     services.registerService<system_monitor::SystemMonitor>(
