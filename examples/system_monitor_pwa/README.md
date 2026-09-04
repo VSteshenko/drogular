@@ -603,6 +603,15 @@ and localization are handled while rendering the fragment on the server. The
 browser only serializes the named controls, polls every three seconds, and swaps
 the returned HTML into the declared target.
 
+The example-local interaction runtime also owns the request lifecycle state. An
+interactive fragment receives `dg-loading`, `dg-ready`, `dg-empty`, or `dg-error`
+and an equivalent `data-dg-state` value; `aria-busy` follows the loading state.
+Server-rendered fragments mark semantic empty results with `data-dg-empty`, so
+the browser does not need process-specific knowledge to distinguish an empty
+inventory from a successful non-empty response. Generic `dg-state-view` and
+`dg-empty-state` styles provide the loading, error, and empty presentation while
+the server remains responsible for localized messages.
+
 This experiment intentionally lives entirely inside `system_monitor_pwa`; no
 Drogular framework API or core asset is changed yet. `/api/processes` remains
 available as the JSON inventory endpoint so the fragment approach can be evaluated

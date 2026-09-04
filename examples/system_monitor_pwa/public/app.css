@@ -896,6 +896,41 @@ dd {
     }
 }
 
+/* Declarative interaction states */
+.dg-request-feedback {
+    min-height: 1.5rem;
+    margin: .15rem 0 .7rem;
+}
+.dg-state-view {
+    display: none;
+    margin: 0;
+    color: #9fb0cf;
+    font-size: .82rem;
+}
+.dg-loading [data-dg-state-view="loading"],
+.dg-error [data-dg-state-view="error"] {
+    display: block;
+}
+.dg-error [data-dg-state-view="error"] {
+    color: #efb4b4;
+}
+.dg-request-content {
+    transition: opacity .15s ease;
+}
+.dg-loading .dg-request-content:not(:empty) {
+    opacity: .55;
+}
+.dg-empty-state {
+    padding: 1rem;
+    border: 1px dashed #30405f;
+    border-radius: .65rem;
+    color: #9fb0cf;
+    text-align: center;
+}
+.dg-empty-state p {
+    margin: 0;
+}
+
 /* Process inventory */
 .process-panel-heading {
     align-items: flex-start;

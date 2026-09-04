@@ -65,6 +65,23 @@ TEST(ProcessFragmentActionTests, RendersLocalizedHtmlInsteadOfClientSideRows) {
     EXPECT_NE(html.find("8.5%"), std::string::npos);
 }
 
+TEST(ProcessFragmentActionTests, MarksEmptyResultForDeclarativeRuntime) {
+    drogular::ApplicationServices services;
+    drogular::ApplicationOptions options;
+    configureServices(services, options);
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->setParameter("query", "missing");
+    drogular::ActionContext context(request, &services);
+    system_monitor::ProcessFragmentAction action;
+
+    const auto html = action.handle(context).body();
+
+    EXPECT_NE(html.find("data-dg-empty"), std::string::npos);
+    EXPECT_NE(html.find("dg-empty-state"), std::string::npos);
+    EXPECT_NE(html.find("No matching processes."), std::string::npos);
+    EXPECT_EQ(html.find("<table"), std::string::npos);
+}
+
 TEST(ProcessFragmentActionTests, UsesLanguageCookieForServerRenderedFragment) {
     drogular::ApplicationServices services;
     drogular::ApplicationOptions options;

@@ -9,6 +9,7 @@
     </div>
 </div>
 
+@if(hasProcesses)
 <div class="process-table-wrap">
     <table class="process-table">
         <thead>
@@ -22,7 +23,6 @@
             </tr>
         </thead>
         <tbody>
-@if(hasProcesses)
 @foreach(process in processRows)
             <tr>
                 <td>{{ process.pid }}</td>
@@ -33,13 +33,15 @@
                 <td>{{ process.rss }}</td>
             </tr>
 @endforeach
-@else
-@if(hasQuery)
-            <tr><td colspan="6" class="muted">{{ t("client.no_matching_processes") }}</td></tr>
-@else
-            <tr><td colspan="6" class="muted">{{ t("client.no_processes") }}</td></tr>
-@endif
-@endif
         </tbody>
     </table>
 </div>
+@else
+<div class="dg-empty-state" data-dg-empty>
+@if(hasQuery)
+    <p>{{ t("client.no_matching_processes") }}</p>
+@else
+    <p>{{ t("client.no_processes") }}</p>
+@endif
+</div>
+@endif

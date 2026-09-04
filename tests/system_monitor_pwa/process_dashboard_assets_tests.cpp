@@ -23,6 +23,9 @@ TEST(ProcessDashboardAssetsTests, ContainsReadOnlyProcessInventoryWithFilteringA
     EXPECT_NE(html.find("dg-get=\"/fragments/processes\""), std::string::npos);
     EXPECT_NE(html.find("dg-trigger=\"load, every 3s, input delay:250ms, change\""), std::string::npos);
     EXPECT_NE(html.find("data-process-sort"), std::string::npos);
+    EXPECT_NE(html.find("data-dg-state=\"loading\""), std::string::npos);
+    EXPECT_NE(html.find("data-dg-state-view=\"loading\""), std::string::npos);
+    EXPECT_NE(html.find("data-dg-state-view=\"error\""), std::string::npos);
     EXPECT_NE(html.find("t(\"dashboard.process_note\")"), std::string::npos);
     EXPECT_EQ(js.find("fetch('/api/processes'"), std::string::npos);
     EXPECT_EQ(js.find("renderProcesses"), std::string::npos);
@@ -31,4 +34,14 @@ TEST(ProcessDashboardAssetsTests, ContainsReadOnlyProcessInventoryWithFilteringA
         "/examples/system_monitor_pwa/public/interactions.js");
     EXPECT_NE(interactions.find("document.querySelectorAll('[dg-get]')"), std::string::npos);
     EXPECT_NE(interactions.find("Accept': 'text/html"), std::string::npos);
+    EXPECT_NE(interactions.find("setState(element, 'loading')"), std::string::npos);
+    EXPECT_NE(interactions.find("setState(element, 'error')"), std::string::npos);
+    EXPECT_NE(interactions.find("querySelector('[data-dg-empty]')"), std::string::npos);
+    EXPECT_NE(interactions.find("aria-busy"), std::string::npos);
+
+    const auto css = readFile(std::string(DROGULAR_SOURCE_DIR) +
+        "/examples/system_monitor_pwa/public/app.css");
+    EXPECT_NE(css.find(".dg-empty-state"), std::string::npos);
+    EXPECT_NE(css.find("[data-dg-state-view=\"loading\"]"), std::string::npos);
+    EXPECT_NE(css.find("[data-dg-state-view=\"error\"]"), std::string::npos);
 }

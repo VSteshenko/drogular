@@ -64,6 +64,6 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(app.find("tr('status.live'"), std::string::npos);
     EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
     EXPECT_NE(board.find("tr('status.offline'"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v6"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v7"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

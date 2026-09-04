@@ -164,10 +164,12 @@
     </div>
 </section>
 
-<form class="panel process-panel" data-process-panel
+<form class="panel process-panel dg-loading" data-process-panel
       dg-get="/fragments/processes"
       dg-trigger="load, every 3s, input delay:250ms, change"
-      dg-target="[data-process-fragment]">
+      dg-target="[data-process-fragment]"
+      data-dg-state="loading"
+      aria-busy="true">
     <div class="process-toolbar">
         <label class="process-search">
             <span class="muted">{{ t("dashboard.search") }}</span>
@@ -185,35 +187,12 @@
         </label>
     </div>
 
-    <div data-process-fragment>
-        <div class="panel-heading process-panel-heading">
-            <div>
-                <p class="eyebrow">{{ t("dashboard.runtime") }}</p>
-                <h2>{{ t("dashboard.processes") }}</h2>
-            </div>
-            <div class="process-overview">
-                <strong>{{ t("dashboard.loading") }}</strong>
-                <span class="muted">{{ t("dashboard.wait_processes") }}</span>
-            </div>
-        </div>
-        <div class="process-table-wrap">
-            <table class="process-table">
-                <thead>
-                    <tr>
-                        <th>PID</th>
-                        <th>{{ t("dashboard.user") }}</th>
-                        <th>{{ t("dashboard.process") }}</th>
-                        <th>CPU</th><th>{{ t("dashboard.memory") }}</th>
-                        <th>RSS</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="6" class="muted">{{ t("dashboard.loading_processes") }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="dg-request-feedback" aria-live="polite">
+        <p class="dg-state-view" data-dg-state-view="loading">{{ t("dashboard.loading_processes") }}</p>
+        <p class="dg-state-view" data-dg-state-view="error">{{ t("client.process_unavailable") }}</p>
     </div>
+
+    <div class="dg-request-content" data-process-fragment></div>
     <p class="muted process-note">{{ t("dashboard.process_note") }}</p>
 </form>
 

@@ -1,5 +1,7 @@
 (() => {
     const requestStates = new WeakMap();
+    const stateClasses = ['dg-loading', 'dg-ready', 'dg-empty', 'dg-error'];
+
     const parseDelay = (token) => {
         const match = token.match(/delay:(\d+)ms/);
         return match ? Number(match[1]) : 0;
@@ -25,6 +27,19 @@
         return element.querySelector(selector) || document.querySelector(selector);
     };
 
+    const setState = (element, state) => {
+        element.classList.remove(...stateClasses);
+        element.classList.add(`dg-${state}`);
+        element.setAttribute('data-dg-state', state);
+        element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
+    };
+
+    const responseState = (html) => {
+        const template = document.createElement('template');
+        template.innerHTML = html;
+        return template.content.querySelector('[data-dg-empty]') ? 'empty' : 'ready';
+    };
+
     const refresh = async (element) => {
         const state = requestStates.get(element) || { running: false, pending: false };
         requestStates.set(element, state);
@@ -38,8 +53,7 @@
         if (!url || !target) return;
 
         state.running = true;
-        element.classList.add('dg-loading');
-        element.classList.remove('dg-error');
+        setState(element, 'loading');
         try {
             const response = await fetch(url, {
                 headers: { 'Accept': 'text/html' },
@@ -47,12 +61,14 @@
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const html = await response.text();
-            if (!state.pending) target.innerHTML = html;
+            if (!state.pending) {
+                target.innerHTML = html;
+                setState(element, responseState(html));
+            }
         } catch (_) {
-            element.classList.add('dg-error');
+            if (!state.pending) setState(element, 'error');
         } finally {
             state.running = false;
-            element.classList.remove('dg-loading');
             if (state.pending) {
                 state.pending = false;
                 refresh(element);
