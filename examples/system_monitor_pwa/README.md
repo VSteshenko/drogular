@@ -8,12 +8,20 @@ verification. Password authentication is not used by the application.
 
 ## Local monitoring
 
-Local monitoring is the default. `SYSTEM_MONITOR_TARGET` may be omitted or set
-explicitly:
+Local monitoring is the default. No configuration is required:
 
 ```bash
-export SYSTEM_MONITOR_TARGET=local
 ./build/examples/system_monitor_pwa/system_monitor_pwa
+```
+
+It can also be selected explicitly either through the environment or the
+command line:
+
+```bash
+SYSTEM_MONITOR_TARGET=local \
+    ./build/examples/system_monitor_pwa/system_monitor_pwa
+
+./build/examples/system_monitor_pwa/system_monitor_pwa --target local
 ```
 
 On macOS this uses the native macOS metrics provider. On Linux it reads local
@@ -297,6 +305,21 @@ Open <http://localhost:8080>. The dashboard should show the Raspberry Pi
 hostname and Linux metrics rather than metrics from the machine running the
 application.
 
+The same target can be configured directly from the command line. Command-line
+options override matching environment variables, so this is also convenient
+for temporarily changing a deployment configuration:
+
+```bash
+./build/examples/system_monitor_pwa/system_monitor_pwa \
+    --target ssh \
+    --ssh-host <PI_HOST> \
+    --ssh-port 22 \
+    --ssh-user monitor \
+    --ssh-identity-file "$HOME/.ssh/system_monitor_pi" \
+    --ssh-known-hosts-file "$HOME/.ssh/system_monitor_pi_known_hosts" \
+    --i2c-scan-buses 1
+```
+
 ### 5. Verify GPIO and I²C APIs
 
 From the machine running System Monitor:
@@ -409,21 +432,34 @@ Hardware capability detection is deliberately conservative. Missing command-line
 tools or device nodes disable only the corresponding inventory service; they do
 not make system or process monitoring unhealthy.
 
-## Environment variables
+## Runtime configuration
 
-| Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `SYSTEM_MONITOR_TARGET` | No | `local` | `local` or `ssh` |
-| `SYSTEM_MONITOR_SSH_HOST` | SSH only | — | Remote hostname or IP address |
-| `SYSTEM_MONITOR_SSH_PORT` | No | `22` | SSH port, 1-65535 |
-| `SYSTEM_MONITOR_SSH_USER` | SSH only | — | Remote SSH account |
-| `SYSTEM_MONITOR_SSH_IDENTITY_FILE` | SSH only | — | Path to the private key |
-| `SYSTEM_MONITOR_SSH_KNOWN_HOSTS_FILE` | SSH only | — | Path to the strict `known_hosts` file |
-| `SYSTEM_MONITOR_I2C_SCAN_BUSES` | No | — | Comma-separated I²C bus numbers allowed for active address scanning |
+Configuration has three layers, applied in this order:
 
-All four SSH-specific path/host/user variables are required when
-`SYSTEM_MONITOR_TARGET=ssh`. If the application was built without libssh,
-requesting the SSH target fails at startup.
+```text
+defaults < environment variables < command-line options
+```
+
+This keeps environment-based Docker/deployment configuration intact while
+allowing a one-off command-line option to replace an environment value.
+
+| Command-line option | Environment variable | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--target` | `SYSTEM_MONITOR_TARGET` | No | `local` | `local` or `ssh` |
+| `--ssh-host` | `SYSTEM_MONITOR_SSH_HOST` | SSH only | — | Remote hostname or IP address |
+| `--ssh-port` | `SYSTEM_MONITOR_SSH_PORT` | No | `22` | SSH port, 1-65535 |
+| `--ssh-user` | `SYSTEM_MONITOR_SSH_USER` | SSH only | — | Remote SSH account |
+| `--ssh-identity-file` | `SYSTEM_MONITOR_SSH_IDENTITY_FILE` | SSH only | — | Path to the private key |
+| `--ssh-known-hosts-file` | `SYSTEM_MONITOR_SSH_KNOWN_HOSTS_FILE` | SSH only | — | Path to the strict `known_hosts` file |
+| `--i2c-scan-buses` | `SYSTEM_MONITOR_I2C_SCAN_BUSES` | No | — | Comma-separated I²C bus numbers allowed for active address scanning |
+
+Options accept both `--option value` and `--option=value`. Use `-h` or
+`--help` to print the complete startup reference without starting the server.
+
+All four SSH-specific host/user/path settings are required when the effective
+target is `ssh`. Values may be mixed between the environment and command line.
+If the application was built without libssh, requesting the SSH target fails at
+startup.
 
 ## Connection recovery
 

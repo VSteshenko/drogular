@@ -1,4 +1,5 @@
 set(SYSTEM_MONITOR_CORE_SOURCES
+    configuration/runtime_options.cpp
     hardware/board_gpio_metadata.cpp
     hardware/i2c_gpio_correlator.cpp
     hardware/linux_hardware_capability_probe.cpp

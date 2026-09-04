@@ -182,6 +182,7 @@ add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/actions/uart_status_action.cpp
     ../examples/system_monitor_pwa/actions/system_status_action.cpp
     system_monitor_pwa/system_monitor_model_tests.cpp
+    system_monitor_pwa/runtime_options_tests.cpp
     system_monitor_pwa/macos_system_metrics_provider_tests.cpp
     system_monitor_pwa/linux_system_metrics_provider_tests.cpp
     system_monitor_pwa/raspberry_pi_probe_tests.cpp
