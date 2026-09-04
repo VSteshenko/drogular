@@ -1,0 +1,45 @@
+<div class="panel-heading process-panel-heading">
+    <div>
+        <p class="eyebrow">{{ t("dashboard.runtime") }}</p>
+        <h2>{{ t("dashboard.processes") }}</h2>
+    </div>
+    <div class="process-overview">
+        <strong>{{ processSummary }}</strong>
+        <span class="muted">{{ processStatus }}</span>
+    </div>
+</div>
+
+<div class="process-table-wrap">
+    <table class="process-table">
+        <thead>
+            <tr>
+                <th>PID</th>
+                <th>{{ t("dashboard.user") }}</th>
+                <th>{{ t("dashboard.process") }}</th>
+                <th>CPU</th>
+                <th>{{ t("dashboard.memory") }}</th>
+                <th>RSS</th>
+            </tr>
+        </thead>
+        <tbody>
+@if(hasProcesses)
+@foreach(process in processRows)
+            <tr>
+                <td>{{ process.pid }}</td>
+                <td>{{ process.user }}</td>
+                <td class="process-command" title="{{ process.command }}">{{ process.name }}</td>
+                <td>{{ process.cpu }}</td>
+                <td>{{ process.memory }}</td>
+                <td>{{ process.rss }}</td>
+            </tr>
+@endforeach
+@else
+@if(hasQuery)
+            <tr><td colspan="6" class="muted">{{ t("client.no_matching_processes") }}</td></tr>
+@else
+            <tr><td colspan="6" class="muted">{{ t("client.no_processes") }}</td></tr>
+@endif
+@endif
+        </tbody>
+    </table>
+</div>

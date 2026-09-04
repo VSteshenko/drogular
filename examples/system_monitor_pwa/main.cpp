@@ -1,6 +1,7 @@
 #include "actions/gpio_status_action.hpp"
 #include "actions/i2c_status_action.hpp"
 #include "actions/language_action.hpp"
+#include "actions/process_fragment_action.hpp"
 #include "actions/process_status_action.hpp"
 #include "actions/spi_status_action.hpp"
 #include "actions/uart_status_action.hpp"
@@ -266,6 +267,7 @@ int main(int argc, const char* argv[]) {
     app.action<system_monitor::LanguageAction>("/language");
     app.get<system_monitor::SystemStatusAction>("/api/system");
     app.get<system_monitor::ProcessStatusAction>("/api/processes");
+    app.get<system_monitor::ProcessFragmentAction>("/fragments/processes");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");
     app.get<system_monitor::I2cStatusAction>("/api/i2c");
     app.get<system_monitor::SpiStatusAction>("/api/spi");

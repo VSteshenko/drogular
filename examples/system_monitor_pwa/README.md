@@ -592,9 +592,21 @@ numeric CPU and memory fields locale-independent.
 The API reports PID, user, process name, full command, CPU percentage, memory
 percentage, and resident memory. `ProcessService` caches the inventory for two
 seconds and keeps the last successful snapshot as stale data if a later refresh
-fails. The dashboard polls every three seconds, supports client-side search and
-sorting, and displays at most 50 matching rows. No process-control operations such
-as signals, kill, renice, or command execution are exposed.
+fails. No process-control operations such as signals, kill, renice, or command
+execution are exposed.
+
+The process panel is also the first System Monitor experiment with server-rendered
+HTML fragments. The dashboard declares `dg-get`, `dg-trigger`, and `dg-target`
+attributes and a small example-local `interactions.js` runtime requests
+`/fragments/processes`. Search, sorting, formatting, the 50-row limit, stale state,
+and localization are handled while rendering the fragment on the server. The
+browser only serializes the named controls, polls every three seconds, and swaps
+the returned HTML into the declared target.
+
+This experiment intentionally lives entirely inside `system_monitor_pwa`; no
+Drogular framework API or core asset is changed yet. `/api/processes` remains
+available as the JSON inventory endpoint so the fragment approach can be evaluated
+without removing the existing machine-readable contract.
 
 Verify locally or through an SSH target with:
 

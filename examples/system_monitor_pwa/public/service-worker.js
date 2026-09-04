@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-system-monitor-v5";
+const CACHE_NAME = "drogular-system-monitor-v6";
 
 const OFFLINE_PAGE = "/__offline";
 
@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
     "/assets/manifest.webmanifest",
     "/assets/app.css",
     "/assets/app.js",
+    "/assets/interactions.js",
     "/assets/board.js",
     "/assets/icons/favicon.svg",
     "/assets/icons/apple-touch-icon.png",

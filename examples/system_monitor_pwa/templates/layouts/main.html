@@ -59,6 +59,7 @@
     </main>
     <script id="system-monitor-i18n" type="application/json">{{{ clientTranslationsJson }}}</script>
 @if(hasPageScript)
+    <script src="/assets/interactions.js" defer></script>
     <script src="{{ pageScript }}" defer></script>
 @endif
     {{{ serviceWorkerRegistration }}}

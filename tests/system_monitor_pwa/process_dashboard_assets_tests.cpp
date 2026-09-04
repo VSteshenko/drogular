@@ -20,9 +20,15 @@ TEST(ProcessDashboardAssetsTests, ContainsReadOnlyProcessInventoryWithFilteringA
 
     EXPECT_NE(html.find("data-process-panel"), std::string::npos);
     EXPECT_NE(html.find("data-process-search"), std::string::npos);
+    EXPECT_NE(html.find("dg-get=\"/fragments/processes\""), std::string::npos);
+    EXPECT_NE(html.find("dg-trigger=\"load, every 3s, input delay:250ms, change\""), std::string::npos);
     EXPECT_NE(html.find("data-process-sort"), std::string::npos);
     EXPECT_NE(html.find("t(\"dashboard.process_note\")"), std::string::npos);
-    EXPECT_NE(js.find("fetch('/api/processes'"), std::string::npos);
-    EXPECT_NE(js.find("PROCESS_POLL_INTERVAL_MS = 3000"), std::string::npos);
-    EXPECT_NE(js.find("PROCESS_LIMIT = 50"), std::string::npos);
+    EXPECT_EQ(js.find("fetch('/api/processes'"), std::string::npos);
+    EXPECT_EQ(js.find("renderProcesses"), std::string::npos);
+
+    const auto interactions = readFile(std::string(DROGULAR_SOURCE_DIR) +
+        "/examples/system_monitor_pwa/public/interactions.js");
+    EXPECT_NE(interactions.find("document.querySelectorAll('[dg-get]')"), std::string::npos);
+    EXPECT_NE(interactions.find("Accept': 'text/html"), std::string::npos);
 }
