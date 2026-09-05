@@ -1,0 +1,41 @@
+@if(spiAvailable)
+<div class="panel-heading spi-panel-heading">
+    <div>
+        <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
+        <h2>SPI</h2>
+    </div>
+    <div class="spi-overview">
+        <strong>{{ spiSummary }}</strong>
+        <span class="muted">{{ spiStatus }}</span>
+    </div>
+</div>
+@if(hasSpiBuses)
+<div class="spi-bus-list">
+@foreach(bus in spiBuses)
+    <article class="spi-bus">
+        <div class="spi-bus-heading">
+            <div><strong>{{ bus.name }}</strong><span class="muted">{{ bus.description }}</span></div>
+            <span class="spi-device-count">{{ bus.deviceCountText }}</span>
+        </div>
+@if(bus.hasPins)
+        <div class="spi-gpio-mapping">
+            <span class="muted">GPIO</span>
+@foreach(pin in bus.pins)
+            <span class="spi-gpio-pin" title="{{ pin.title }}">{{ pin.text }}</span>
+@endforeach
+        </div>
+@endif
+        <div class="spi-device-list">
+@foreach(device in bus.devices)
+            <span class="spi-device" title="{{ device.title }}">{{ device.path }}</span>
+@endforeach
+        </div>
+    </article>
+@endforeach
+</div>
+@else
+<div class="dg-empty-state" data-dg-empty><p>{{ t("client.no_spi") }}</p></div>
+@endif
+@else
+<div data-dg-empty data-dg-unavailable></div>
+@endif

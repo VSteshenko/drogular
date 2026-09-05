@@ -161,6 +161,9 @@ private:
             {"client.detected_pinmux", "Detected pinmux group"},
             {"client.gpio_service_unavailable", "GPIO service is not available."},
             {"client.no_linux_serial", "No Linux serial device alias detected."},
+            {"client.group", "group"},
+            {"client.groups", "groups"},
+            {"client.uart_correlation_note", "GPIO groups reflect active pinmux functions; Linux tty numbering is not assumed to match controller numbering."},
         }},
         {"de", {
             {"app.title", "Drogular Systemmonitor"},
@@ -321,6 +324,9 @@ private:
             {"client.detected_pinmux", "Erkannte Pinmux-Gruppe"},
             {"client.gpio_service_unavailable", "GPIO-Service ist nicht verfügbar."},
             {"client.no_linux_serial", "Kein Linux-Alias für das serielle Gerät erkannt."},
+            {"client.group", "Gruppe"},
+            {"client.groups", "Gruppen"},
+            {"client.uart_correlation_note", "GPIO-Gruppen spiegeln aktive Pinmux-Funktionen wider; die Linux-tty-Nummerierung wird nicht mit der Controller-Nummerierung gleichgesetzt."},
         }}
     };
 };

@@ -179,11 +179,17 @@ add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/actions/gpio_fragment_action.cpp
     ../examples/system_monitor_pwa/ui/gpio_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/i2c_status_action.cpp
+    ../examples/system_monitor_pwa/actions/i2c_fragment_action.cpp
+    ../examples/system_monitor_pwa/ui/i2c_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/process_status_action.cpp
     ../examples/system_monitor_pwa/actions/process_fragment_action.cpp
     ../examples/system_monitor_pwa/ui/processes_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/spi_status_action.cpp
+    ../examples/system_monitor_pwa/actions/spi_fragment_action.cpp
+    ../examples/system_monitor_pwa/ui/spi_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/uart_status_action.cpp
+    ../examples/system_monitor_pwa/actions/uart_fragment_action.cpp
+    ../examples/system_monitor_pwa/ui/uart_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/system_status_action.cpp
     system_monitor_pwa/system_monitor_model_tests.cpp
     system_monitor_pwa/runtime_options_tests.cpp

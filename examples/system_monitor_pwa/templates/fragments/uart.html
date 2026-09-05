@@ -1,0 +1,49 @@
+@if(uartAvailable)
+<div class="panel-heading uart-panel-heading">
+    <div>
+        <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
+        <h2>UART</h2>
+    </div>
+    <div class="uart-overview">
+        <strong>{{ uartSummary }}</strong>
+        <span class="muted">{{ uartStatus }}</span>
+    </div>
+</div>
+<div class="uart-content">
+@if(hasUartDevices)
+    <div class="uart-device-list">
+@foreach(device in uartDevices)
+        <article class="uart-device">
+            <strong>{{ device.name }}</strong>
+@if(device.hasAliases)
+            <div class="uart-alias-list">
+@foreach(alias in device.aliases)
+                <span class="uart-alias">{{ alias }}</span>
+@endforeach
+            </div>
+@endif
+        </article>
+@endforeach
+    </div>
+@else
+    <div class="dg-empty-state" data-dg-empty><p>{{ t("client.no_uart") }}</p></div>
+@endif
+@if(hasUartGroups)
+    <p class="muted uart-correlation-note">{{ t("client.uart_correlation_note") }}</p>
+    <div class="uart-gpio-groups">
+@foreach(group in uartGroups)
+        <article class="uart-gpio-group">
+            <div class="uart-gpio-heading"><strong>{{ group.name }}</strong><span class="uart-exposure {{ group.exposureClass }}">{{ group.exposure }}</span></div>
+            <div class="uart-gpio-mapping">
+@foreach(pin in group.pins)
+                <span class="uart-gpio-pin" title="{{ pin.title }}">{{ pin.text }}</span>
+@endforeach
+            </div>
+        </article>
+@endforeach
+    </div>
+@endif
+</div>
+@else
+<div data-dg-empty data-dg-unavailable></div>
+@endif

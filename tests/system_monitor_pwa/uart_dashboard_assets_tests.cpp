@@ -4,27 +4,26 @@
 #include <sstream>
 #include <string>
 
-namespace {
+static std::string readFile(const std::string& path) {
+    std::ifstream in(path);
+    std::ostringstream out;
+    out << in.rdbuf();
 
-std::string readFile(const std::string& path) {
-    std::ifstream stream(path); std::ostringstream out; out << stream.rdbuf(); return out.str();
+    return out.str();
 }
 
-} // namespace
+TEST(UartDashboardAssetsTests, UsesServerFragment) {
+    const auto base = std::string(DROGULAR_SOURCE_DIR);
+    auto html = readFile(
+        base+"/examples/system_monitor_pwa/templates/dashboard.html");
+    auto js = readFile(
+        base+"/examples/system_monitor_pwa/public/app.js");
+    auto fragment = readFile(
+        base+"/examples/system_monitor_pwa/templates/fragments/uart.html");
 
-TEST(UartDashboardAssetsTests, ContainsUartPanelAndIndependentPolling) {
-    const auto html = readFile(
-        std::string(DROGULAR_SOURCE_DIR) + "/examples/system_monitor_pwa/templates/dashboard.html"
-    );
-    const auto js = readFile(
-        std::string(DROGULAR_SOURCE_DIR) + "/examples/system_monitor_pwa/public/app.js"
-    );
-    EXPECT_NE(html.find("data-uart-panel"), std::string::npos);
-    EXPECT_NE(js.find("fetch('/api/uart'"), std::string::npos);
-    EXPECT_NE(js.find("UART_POLL_INTERVAL_MS = 30000"), std::string::npos);
-    EXPECT_NE(js.find("gpioGroups"),std::string::npos);
-    EXPECT_NE(js.find("Linux tty numbering is not assumed"), std::string::npos);
-    EXPECT_NE(js.find("uart-exposure"), std::string::npos);
-    EXPECT_NE(js.find("40-pin header"), std::string::npos);
-    EXPECT_NE(js.find("physicalHeaderPin"), std::string::npos);
+    EXPECT_NE(html.find("dg-get=\"/fragments/uart\""), std::string::npos);
+    EXPECT_NE(html.find("dg-trigger=\"load, every 30s\""), std::string::npos);
+    EXPECT_EQ(js.find("fetch('/api/uart'"), std::string::npos);
+    EXPECT_NE(fragment.find("uart-exposure"), std::string::npos);
+    EXPECT_NE(fragment.find("uart-gpio-pin"), std::string::npos);
 }

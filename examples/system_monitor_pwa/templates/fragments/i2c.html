@@ -1,0 +1,50 @@
+@if(i2cAvailable)
+<div class="panel-heading i2c-panel-heading">
+    <div>
+        <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
+        <h2>I²C</h2>
+    </div>
+    <div class="i2c-overview">
+        <strong>{{ i2cSummary }}</strong>
+        <span class="muted">{{ i2cStatus }}</span>
+    </div>
+</div>
+@if(hasI2cBuses)
+<div class="i2c-bus-list">
+@foreach(bus in i2cBuses)
+    <article class="i2c-bus">
+        <div class="i2c-bus-heading">
+            <div><strong>{{ bus.name }}</strong><span class="muted">{{ bus.description }}</span></div>
+            <span class="i2c-device-count">{{ bus.deviceCountText }}</span>
+        </div>
+        <p class="i2c-bus-meta muted">{{ bus.metadata }}</p>
+@if(bus.hasPins)
+        <div class="i2c-gpio-mapping">
+            <span class="muted">GPIO</span>
+@foreach(pin in bus.pins)
+            <span class="i2c-gpio-pin" title="{{ pin.title }}">{{ pin.text }}</span>
+@endforeach
+        </div>
+@endif
+        <div class="i2c-address-list">
+@if(bus.scanned)
+@if(bus.hasDevices)
+@foreach(device in bus.devices)
+            <span class="{{ device.class }}" title="{{ device.title }}">{{ device.address }}</span>
+@endforeach
+@else
+            <span class="muted">{{ t("client.no_responding") }}</span>
+@endif
+@else
+            <span class="muted">{{ t("client.scan_disabled") }}</span>
+@endif
+        </div>
+    </article>
+@endforeach
+</div>
+@else
+<div class="dg-empty-state" data-dg-empty><p>{{ t("client.no_i2c") }}</p></div>
+@endif
+@else
+<div data-dg-empty data-dg-unavailable></div>
+@endif

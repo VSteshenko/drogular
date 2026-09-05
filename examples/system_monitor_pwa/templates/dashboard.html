@@ -101,53 +101,31 @@
     <div data-dg-fragment></div>
 </form>
 
-<section class="panel i2c-panel" data-i2c-panel>
-    <div class="panel-heading i2c-panel-heading">
-        <div>
-            <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
-            <h2>I²C</h2>
-        </div>
-        <div class="i2c-overview">
-            <strong data-i2c-summary>{{ t("dashboard.loading") }}</strong>
-            <span class="muted" data-i2c-status>{{ t("dashboard.wait_i2c") }}</span>
-        </div>
+<section class="panel i2c-panel dg-interaction" data-i2c-panel
+         dg-get="/fragments/i2c" dg-target="[data-dg-fragment]" dg-trigger="load, every 60s">
+    <div class="dg-request-feedback" aria-live="polite">
+        <p data-dg-state-view="loading">{{ t("dashboard.loading_i2c") }}</p>
+        <p data-dg-state-view="error">I²C {{ t("client.inventory_unavailable") }}</p>
     </div>
-
-    <div class="i2c-bus-list" data-i2c-buses>
-        <p class="muted">{{ t("dashboard.loading_i2c") }}</p>
-    </div>
+    <div data-dg-fragment></div>
 </section>
 
-<section class="panel spi-panel" data-spi-panel>
-    <div class="panel-heading spi-panel-heading">
-        <div>
-            <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
-            <h2>SPI</h2>
-        </div>
-        <div class="spi-overview">
-            <strong data-spi-summary>{{ t("dashboard.loading") }}</strong>
-            <span class="muted" data-spi-status>{{ t("dashboard.wait_spi") }}</span>
-        </div>
+<section class="panel spi-panel dg-interaction" data-spi-panel
+         dg-get="/fragments/spi" dg-target="[data-dg-fragment]" dg-trigger="load, every 30s">
+    <div class="dg-request-feedback" aria-live="polite">
+        <p data-dg-state-view="loading">{{ t("dashboard.loading_spi") }}</p>
+        <p data-dg-state-view="error">SPI {{ t("client.inventory_unavailable") }}</p>
     </div>
-    <div class="spi-bus-list" data-spi-buses>
-        <p class="muted">{{ t("dashboard.loading_spi") }}</p>
-    </div>
+    <div data-dg-fragment></div>
 </section>
 
-<section class="panel uart-panel" data-uart-panel>
-    <div class="panel-heading uart-panel-heading">
-        <div>
-            <p class="eyebrow">{{ t("dashboard.hardware_buses") }}</p>
-            <h2>UART</h2>
-        </div>
-        <div class="uart-overview">
-            <strong data-uart-summary>{{ t("dashboard.loading") }}</strong>
-            <span class="muted" data-uart-status>{{ t("dashboard.wait_uart") }}</span>
-        </div>
+<section class="panel uart-panel dg-interaction" data-uart-panel
+         dg-get="/fragments/uart" dg-target="[data-dg-fragment]" dg-trigger="load, every 30s">
+    <div class="dg-request-feedback" aria-live="polite">
+        <p data-dg-state-view="loading">{{ t("dashboard.loading_uart") }}</p>
+        <p data-dg-state-view="error">UART {{ t("client.inventory_unavailable") }}</p>
     </div>
-    <div class="uart-content" data-uart-content>
-        <p class="muted">{{ t("dashboard.loading_uart") }}</p>
-    </div>
+    <div data-dg-fragment></div>
 </section>
 
 <form class="panel process-panel dg-loading" data-process-panel

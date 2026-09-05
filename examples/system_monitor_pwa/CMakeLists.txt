@@ -95,11 +95,17 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
         actions/gpio_fragment_action.cpp
         ui/gpio_fragment_component.cpp
         actions/i2c_status_action.cpp
+        actions/i2c_fragment_action.cpp
+        ui/i2c_fragment_component.cpp
         actions/process_status_action.cpp
         actions/process_fragment_action.cpp
         ui/processes_fragment_component.cpp
         actions/spi_status_action.cpp
+        actions/spi_fragment_action.cpp
+        ui/spi_fragment_component.cpp
         actions/uart_status_action.cpp
+        actions/uart_fragment_action.cpp
+        ui/uart_fragment_component.cpp
         actions/system_status_action.cpp
     )
 
