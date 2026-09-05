@@ -1,3 +1,4 @@
+#include "actions/gpio_fragment_action.hpp"
 #include "actions/gpio_status_action.hpp"
 #include "actions/i2c_status_action.hpp"
 #include "actions/language_action.hpp"
@@ -269,6 +270,7 @@ int main(int argc, const char* argv[]) {
     app.get<system_monitor::ProcessStatusAction>("/api/processes");
     app.get<system_monitor::ProcessFragmentAction>("/fragments/processes");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");
+    app.get<system_monitor::GpioFragmentAction>("/fragments/gpio");
     app.get<system_monitor::I2cStatusAction>("/api/i2c");
     app.get<system_monitor::SpiStatusAction>("/api/spi");
     app.get<system_monitor::UartStatusAction>("/api/uart");

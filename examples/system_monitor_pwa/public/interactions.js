@@ -40,6 +40,25 @@
         return template.content.querySelector('[data-dg-empty]') ? 'empty' : 'ready';
     };
 
+    const preservedOpenState = (target) => {
+        const items = Array.from(target.querySelectorAll('details[data-dg-preserve-key]'));
+        return {
+            initialized: items.length > 0,
+            keys: new Set(items
+                .filter((details) => details.open)
+                .map((details) => details.getAttribute('data-dg-preserve-key'))
+                .filter(Boolean)),
+        };
+    };
+
+    const restoreOpenState = (target, preserved) => {
+        const details = target.querySelectorAll('details[data-dg-preserve-key]');
+        details.forEach((item, index) => {
+            const key = item.getAttribute('data-dg-preserve-key');
+            item.open = preserved.initialized ? preserved.keys.has(key) : index === 0;
+        });
+    };
+
     const refresh = async (element) => {
         const state = requestStates.get(element) || { running: false, pending: false };
         requestStates.set(element, state);
@@ -62,7 +81,10 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const html = await response.text();
             if (!state.pending) {
+                const openState = preservedOpenState(target);
                 target.innerHTML = html;
+                restoreOpenState(target, openState);
+                element.hidden = target.querySelector('[data-dg-unavailable]') !== null;
                 setState(element, responseState(html));
             }
         } catch (_) {

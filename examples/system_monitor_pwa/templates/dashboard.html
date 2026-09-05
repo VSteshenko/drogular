@@ -89,31 +89,17 @@
 </section>
 @endif
 
-<section class="panel gpio-panel" data-gpio-panel>
-    <div class="panel-heading gpio-panel-heading">
-        <div>
-            <p class="eyebrow">{{ t("dashboard.hardware") }}</p>
-            <h2>GPIO</h2>
-        </div>
-        <div class="gpio-overview">
-            <strong data-gpio-summary>{{ t("dashboard.loading") }}</strong>
-            <span class="muted" data-gpio-status>{{ t("dashboard.wait_gpio") }}</span>
-        </div>
+<form class="panel gpio-panel dg-interaction"
+      dg-get="/fragments/gpio"
+      dg-target="[data-dg-fragment]"
+      dg-trigger="load, every 30s, change"
+      data-gpio-panel>
+    <div class="dg-request-feedback" aria-live="polite">
+        <p data-dg-state-view="loading">{{ t("dashboard.loading_gpio") }}</p>
+        <p data-dg-state-view="error">GPIO {{ t("client.inventory_unavailable") }}</p>
     </div>
-
-    <div class="gpio-toolbar" aria-label="GPIO line filter">
-        <span class="muted">{{ t("dashboard.show") }}</span>
-        <div class="gpio-filter-group" data-gpio-filters>
-            <button type="button" class="gpio-filter" data-gpio-filter="all" aria-pressed="false">{{ t("dashboard.all") }}</button>
-            <button type="button" class="gpio-filter is-active" data-gpio-filter="active" aria-pressed="true">{{ t("dashboard.active") }}</button>
-            <button type="button" class="gpio-filter" data-gpio-filter="free" aria-pressed="false">{{ t("dashboard.free") }}</button>
-        </div>
-    </div>
-
-    <div class="gpio-chip-list" data-gpio-chips>
-        <p class="muted">{{ t("dashboard.loading_gpio") }}</p>
-    </div>
-</section>
+    <div data-dg-fragment></div>
+</form>
 
 <section class="panel i2c-panel" data-i2c-panel>
     <div class="panel-heading i2c-panel-heading">

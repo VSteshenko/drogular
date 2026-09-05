@@ -617,6 +617,14 @@ Drogular framework API or core asset is changed yet. `/api/processes` remains
 available as the JSON inventory endpoint so the fragment approach can be evaluated
 without removing the existing machine-readable contract.
 
+GPIO is the second inventory migrated to the same experiment. `/fragments/gpio`
+now performs filtering, formatting, localization, board-metadata enrichment, and
+row rendering on the server while the dashboard only declares a 30-second refresh
+and a `filter` radio group. The existing `/api/gpio` JSON endpoint remains intact.
+The local interaction runtime also preserves the open/closed state of keyed native
+`<details>` elements across fragment replacement and can hide an interaction when
+the server marks the inventory `data-dg-unavailable`.
+
 Verify locally or through an SSH target with:
 
 ```bash

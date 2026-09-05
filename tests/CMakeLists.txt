@@ -176,6 +176,8 @@ add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/pages/board_page.cpp
     ../examples/system_monitor_pwa/pages/offline_page.cpp
     ../examples/system_monitor_pwa/actions/gpio_status_action.cpp
+    ../examples/system_monitor_pwa/actions/gpio_fragment_action.cpp
+    ../examples/system_monitor_pwa/ui/gpio_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/i2c_status_action.cpp
     ../examples/system_monitor_pwa/actions/process_status_action.cpp
     ../examples/system_monitor_pwa/actions/process_fragment_action.cpp
@@ -192,6 +194,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/linux_hardware_capability_probe_tests.cpp
     system_monitor_pwa/gpio_service_tests.cpp
     system_monitor_pwa/gpio_status_action_tests.cpp
+    system_monitor_pwa/gpio_fragment_action_tests.cpp
     system_monitor_pwa/i2c_tools_provider_tests.cpp
     system_monitor_pwa/i2c_gpio_correlator_tests.cpp
     system_monitor_pwa/i2c_service_tests.cpp

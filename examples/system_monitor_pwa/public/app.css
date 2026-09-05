@@ -1058,3 +1058,14 @@ dd {
         flex-direction: column;
     }
 }
+
+.gpio-panel.dg-interaction {
+    margin: 0;
+    margin-top: 1rem;
+}
+
+.gpio-filter input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}

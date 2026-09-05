@@ -1,0 +1,60 @@
+@if(gpioAvailable)
+<div class="panel-heading gpio-panel-heading">
+    <div>
+        <p class="eyebrow">{{ t("dashboard.hardware") }}</p>
+        <h2>GPIO</h2>
+    </div>
+    <div class="gpio-overview">
+        <strong>{{ gpioSummary }}</strong>
+        <span class="muted">{{ gpioStatus }}</span>
+    </div>
+</div>
+
+<div class="gpio-toolbar" aria-label="GPIO line filter">
+    <span class="muted">{{ t("dashboard.show") }}</span>
+    <div class="gpio-filter-group">
+        <label class="gpio-filter {{ filterAllClass }}"><input type="radio" name="filter" value="all" @if(filterAll)checked@endif> {{ t("dashboard.all") }}</label>
+        <label class="gpio-filter {{ filterActiveClass }}"><input type="radio" name="filter" value="active" @if(filterActive)checked@endif> {{ t("dashboard.active") }}</label>
+        <label class="gpio-filter {{ filterFreeClass }}"><input type="radio" name="filter" value="free" @if(filterFree)checked@endif> {{ t("dashboard.free") }}</label>
+    </div>
+</div>
+
+<div class="gpio-chip-list">
+@if(hasGpioChips)
+@foreach(chip in gpioChips)
+    <details class="gpio-chip" data-dg-preserve-key="{{ chip.preserveKey }}">
+        <summary>
+            <span class="gpio-chip-identity"><strong>{{ chip.name }}</strong><span class="muted">{{ chip.label }}</span></span>
+            <span class="gpio-chip-stats">{{ chip.stats }}</span>
+        </summary>
+        <div class="gpio-table-scroll">
+            <table class="gpio-table">
+                <thead><tr><th>{{ t("client.line") }}</th><th>Name</th><th>{{ t("client.function") }}</th><th>{{ t("client.direction") }}</th><th>{{ t("client.consumer") }}</th><th>{{ t("client.flags") }}</th><th>{{ t("client.state") }}</th></tr></thead>
+                <tbody>
+@if(chip.hasLines)
+@foreach(line in chip.lines)
+                    <tr>
+                        <td class="gpio-offset">{{ line.offset }}</td>
+                        <td><strong>{{ line.name }}</strong><span class="gpio-line-exposure muted">{{ line.exposure }}</span></td>
+                        <td class="{{ line.functionClass }}">{{ line.function }}</td>
+                        <td><span class="gpio-badge gpio-direction gpio-direction-{{ line.direction }}">{{ line.direction }}</span></td>
+                        <td class="{{ line.consumerClass }}">{{ line.consumer }}</td>
+                        <td class="{{ line.flagsClass }}">{{ line.flags }}</td>
+                        <td><span class="gpio-badge {{ line.stateClass }}">{{ line.stateText }}</span></td>
+                    </tr>
+@endforeach
+@else
+                    <tr class="gpio-empty-row"><td colspan="7">{{ chip.emptyText }}</td></tr>
+@endif
+                </tbody>
+            </table>
+        </div>
+    </details>
+@endforeach
+@else
+    <div class="dg-empty-state" data-dg-empty><p>{{ t("client.no_gpio_chips") }}</p></div>
+@endif
+</div>
+@else
+<div data-dg-empty data-dg-unavailable></div>
+@endif

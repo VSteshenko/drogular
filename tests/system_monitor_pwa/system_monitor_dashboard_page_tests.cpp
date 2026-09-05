@@ -98,11 +98,10 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-retry"));
     EXPECT_TRUE(drogular::test::contains(result.html, ">Retry</button>"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-panel"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-summary"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-chips"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-filters"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-filter=\"active\""));
-    EXPECT_TRUE(drogular::test::contains(result.html, "aria-pressed=\"true\">Active</button>"));
-    EXPECT_TRUE(drogular::test::contains(result.html, ">GPIO</h2>"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-get=\"/fragments/gpio\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-target=\"[data-dg-fragment]\""));
+    EXPECT_TRUE(drogular::test::contains(
+        result.html, "dg-trigger=\"load, every 30s, change\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-dg-fragment"));
     EXPECT_TRUE(drogular::test::contains(result.html, "href=\"/hardware\""));
 }
