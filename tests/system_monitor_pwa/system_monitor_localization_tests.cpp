@@ -41,6 +41,7 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
     const auto layout = readFile(root / "layouts/main.html");
     const auto dashboard = readFile(root / "dashboard.html");
     const auto board = readFile(root / "board.html");
+    const auto systemFragment = readFile(root / "fragments/system.html");
     const auto offline = readFile(root / "offline.html");
 
     EXPECT_NE(layout.find("{{ locale }}"), std::string::npos);
@@ -48,7 +49,9 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
     EXPECT_EQ(layout.find("class=\"site-nav\""), std::string::npos);
     EXPECT_NE(layout.find("language-button is-active"), std::string::npos);
     EXPECT_NE(layout.find("system-monitor-i18n"), std::string::npos);
-    EXPECT_NE(dashboard.find("t(\"dashboard.monitoring_target\")"), std::string::npos);
+    EXPECT_NE(dashboard.find("dg-get=\"/fragments/system\""), std::string::npos);
+    EXPECT_NE(systemFragment.find("t(\"dashboard.monitoring_target\")"), std::string::npos);
+    EXPECT_NE(systemFragment.find("data-dg-connection-label"), std::string::npos);
     EXPECT_NE(board.find("t(\"board.overview\")"), std::string::npos);
     EXPECT_NE(offline.find("t(\"offline.title\")"), std::string::npos);
 }
@@ -56,14 +59,20 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
 TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations) {
     const auto root = std::filesystem::path(DROGULAR_SOURCE_DIR) /
                       "examples/system_monitor_pwa/public";
-    const auto app = readFile(root / "app.js");
+    const auto interactions = readFile(root / "interactions.js");
     const auto board = readFile(root / "board.js");
     const auto worker = readFile(root / "service-worker.js");
 
-    EXPECT_NE(app.find("system-monitor-i18n"), std::string::npos);
-    EXPECT_NE(app.find("tr('status.live'"), std::string::npos);
+    EXPECT_NE(interactions.find("dataset.dgConnectionLabel"), std::string::npos);
+    EXPECT_NE(interactions.find("dgLabelReconnecting"), std::string::npos);
+    EXPECT_NE(interactions.find("dg-pause-on-failure"), std::string::npos);
+    EXPECT_NE(interactions.find("window.clearInterval(interval)"), std::string::npos);
+    EXPECT_NE(interactions.find("pollGroupElements(element).forEach(pauseElement)"), std::string::npos);
+    EXPECT_NE(interactions.find("members.forEach((member) => refresh(member))"), std::string::npos);
+    EXPECT_NE(interactions.find("document.querySelectorAll('[dg-resume]')"), std::string::npos);
+    EXPECT_NE(interactions.find("new CustomEvent('dg:resume')"), std::string::npos);
     EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
     EXPECT_NE(board.find("tr('status.offline'"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v9"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v12"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

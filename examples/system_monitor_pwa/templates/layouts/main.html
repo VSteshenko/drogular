@@ -35,7 +35,11 @@
             <div class="connection-status">
                 <div class="connection-status-content">
 @if(hasPageScript)
-                    <span class="status" data-monitor-status>
+                    <span class="status" data-monitor-status
+                          data-dg-label-live="{{ t("status.live") }}"
+                          data-dg-label-connecting="{{ t("status.connecting") }}"
+                          data-dg-label-reconnecting="{{ t("status.reconnecting") }}"
+                          data-dg-label-offline="{{ t("status.offline") }}">
                         <span class="status-dot"></span>
                         <span data-monitor-status-label>{{ t("status.live") }}</span>
                     </span>
@@ -48,7 +52,7 @@
 @endif
                 </div>
 @if(hasPageScript)
-                <button class="retry-button" type="button" data-monitor-retry hidden>{{ t("status.retry") }}</button>
+                <button class="retry-button" type="button" data-monitor-retry dg-resume="[data-system-live-region]" hidden>{{ t("status.retry") }}</button>
 @endif
             </div>
         </div>
@@ -60,7 +64,9 @@
     <script id="system-monitor-i18n" type="application/json">{{{ clientTranslationsJson }}}</script>
 @if(hasPageScript)
     <script src="/assets/interactions.js" defer></script>
+@if(hasApplicationScript)
     <script src="{{ pageScript }}" defer></script>
+@endif
 @endif
     {{{ serviceWorkerRegistration }}}
 </body>

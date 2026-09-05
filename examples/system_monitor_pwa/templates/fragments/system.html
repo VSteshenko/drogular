@@ -1,0 +1,111 @@
+<div data-system-fragment
+     data-dg-connection-state="{{ monitorConnectionState }}"
+     data-dg-connection-label="{{ monitorStatusLabel }}"
+     data-dg-connection-detail="{{ monitorStatusDetail }}">
+<section class="hero">
+    <div>
+        <p class="eyebrow">{{ t("dashboard.monitoring_target") }}</p>
+        <h2>{{ hostname }}</h2>
+        <p class="muted">{{ operatingSystem }} · {{ architecture }}</p>
+    </div>
+    <div class="hero-actions">
+        <div class="uptime">
+            <span class="muted">{{ t("dashboard.uptime") }}</span>
+            <strong>{{ uptime }}</strong>
+        </div>
+        <a class="secondary-link" href="/hardware">{{ t("nav.hardware") }}</a>
+    </div>
+</section>
+
+<section class="metric-grid" aria-label="{{ t("dashboard.system_metrics") }}">
+    <article class="metric-card">
+        <div class="metric-heading">
+            <span>CPU</span>
+            <strong>{{ cpuUsage }}</strong>
+        </div>
+        <progress max="100" value="{{ cpuUsageValue }}">{{ cpuUsage }}</progress>
+        <p class="metric-detail">{{ cpuCores }} {{ t("dashboard.logical_cores") }}</p>
+        <div class="load-grid">
+            <span><small>1 min</small><span>{{ load1 }}</span></span>
+            <span><small>5 min</small><span>{{ load5 }}</span></span>
+            <span><small>15 min</small><span>{{ load15 }}</span></span>
+        </div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-heading">
+            <span>{{ t("dashboard.memory") }}</span>
+            <strong>{{ memoryUsage }}</strong>
+        </div>
+        <progress max="100" value="{{ memoryUsageValue }}">{{ memoryUsage }}</progress>
+        <p class="metric-detail">{{ memoryUsed }} {{ t("dashboard.of") }} {{ memoryTotal }} {{ t("dashboard.used") }}</p>
+        <p class="muted">{{ memoryAvailable }} {{ t("dashboard.available") }}</p>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <p class="eyebrow">{{ t("dashboard.storage") }}</p>
+            <h2>{{ t("dashboard.disks") }}</h2>
+        </div>
+    </div>
+
+    @if(hasDisks)
+    <div class="disk-list">
+        @foreach(disk in disks)
+        <article class="disk-row">
+            <div class="disk-title">
+                <strong>{{ disk.mountPoint }}</strong>
+                <span class="muted">{{ disk.device }} · {{ disk.fileSystem }}</span>
+            </div>
+            <div class="disk-usage">
+                <div>
+                    <strong>{{ disk.usage }}</strong>
+                    <span class="muted">{{ disk.used }} / {{ disk.total }}</span>
+                </div>
+                <progress max="100" value="{{ disk.usageValue }}">{{ disk.usage }}</progress>
+            </div>
+        </article>
+        @endforeach
+    </div>
+    @else
+    <p class="muted">{{ t("dashboard.no_disks") }}</p>
+    @endif
+</section>
+
+@if(hasRaspberryPi)
+<section class="panel system-panel">
+    <div>
+        <p class="eyebrow">Raspberry Pi</p>
+        <h2>{{ raspberryPiModel }}</h2>
+    </div>
+    <dl class="system-info">
+        <div><dt>{{ t("dashboard.revision") }}</dt><dd>{{ raspberryPiRevision }}</dd></div>
+        <div><dt>{{ t("dashboard.serial") }}</dt><dd>{{ raspberryPiSerial }}</dd></div>
+        <div><dt>{{ t("dashboard.cpu_temperature") }}</dt><dd>{{ raspberryPiTemperature }}</dd></div>
+        <div><dt>{{ t("dashboard.cpu_frequency") }}</dt><dd>{{ raspberryPiFrequency }}</dd></div>
+        @if(hasRaspberryPiHealth)
+        <div><dt>{{ t("dashboard.current_health") }}</dt><dd>{{ raspberryPiHealthCurrent }}</dd></div>
+        <div><dt>{{ t("dashboard.health_history") }}</dt><dd>{{ raspberryPiHealthHistory }}</dd></div>
+        @endif
+    </dl>
+</section>
+@endif
+
+<section class="panel system-panel">
+    <div>
+        <p class="eyebrow">{{ t("nav.system") }}</p>
+        <h2>{{ t("dashboard.host_information") }}</h2>
+    </div>
+    <dl class="system-info">
+        <div><dt>{{ t("dashboard.hostname") }}</dt><dd>{{ hostname }}</dd></div>
+        <div><dt>{{ t("dashboard.operating_system") }}</dt><dd>{{ operatingSystem }}</dd></div>
+        <div><dt>{{ t("dashboard.kernel") }}</dt><dd>{{ kernel }}</dd></div>
+        <div><dt>{{ t("dashboard.architecture") }}</dt><dd>{{ architecture }}</dd></div>
+        <div><dt>{{ t("dashboard.uptime") }}</dt><dd>{{ uptime }}</dd></div>
+    </dl>
+</section>
+
+<p class="refresh-note">{{ t("dashboard.last_live_update") }} <span>{{ lastUpdate }}</span></p>
+</div>

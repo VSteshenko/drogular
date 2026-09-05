@@ -28,6 +28,7 @@ void BoardPage::onInit(drogular::RenderContext& context) {
     context.set("title", context.translate("board.page_title"));
     context.set("pageScript", std::string("/assets/board.js"));
     context.set("hasPageScript", true);
+    context.set("hasApplicationScript", true);
     context.set("hostname", snapshot.system.hostname);
     const auto boardMetadata = BoardGpioMetadata::fromSystemSnapshot(snapshot);
     const bool hasRaspberryPi = snapshot.raspberryPi.has_value();

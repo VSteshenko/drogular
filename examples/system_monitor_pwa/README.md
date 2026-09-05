@@ -399,7 +399,7 @@ served from `/service-worker.js`.
 The cache policy is intentionally conservative because monitoring data becomes
 misleading when it is stale:
 
-- static application assets (`app.css`, `app.js`, and `board.js`) are cached;
+- static application assets (`app.css`, `interactions.js`, and `board.js`) are cached;
 - the dedicated `/__offline` page is cached for offline navigation;
 - rendered `/` and `/hardware` pages are not cached because their initial HTML
   contains a system snapshot;
@@ -657,10 +657,29 @@ System Monitor supports English and German through Drogular's
 the `lang` cookie and can be changed from every rendered page.
 
 Templates use the `t()` expression function. Dynamic labels produced by
-`app.js` and `board.js` use a server-rendered JSON translation dictionary, so
+`board.js` uses a server-rendered JSON translation dictionary, while 
+dashboard fragments are localized on the server, so
 the browser code does not maintain a second EN/DE translation table.
 
 The offline page is rendered by Drogular as well. After each successful
 navigation the service worker refreshes its cached offline page, allowing the
 offline fallback to follow the currently selected language while keeping all
 live `/api/*` responses network-only.
+
+### System metrics fragment experiment
+
+The live system dashboard now completes the server-fragment experiment. The initial
+CPU, memory, disk, Raspberry Pi, host, and uptime view is rendered on the server by
+`SystemFragmentComponent`; the same component serves `/fragments/system` for the
+subsequent two-second refreshes. This removes the dashboard-specific `app.js`
+entirely while keeping `/api/system` unchanged for machine-readable consumers.
+
+The example-local interaction runtime gained only generic connection behavior:
+`dg-failure-limit`, `dg-pause-on-failure`, `dg-connection`, `dg-retry`, and
+`dg-resume`. A successful system fragment reports `live` or `stale` through
+`data-dg-connection-*`. After three consecutive network failures the system
+interaction enters the offline state, clears its polling interval, drops any
+queued refresh, and remains paused. The Retry button sends an explicit
+`dg:resume` signal, which resets the failure count, performs one immediate
+request, and restarts periodic polling. No CPU-, memory-, disk-, or
+Raspberry-Pi-specific code lives in the browser runtime.

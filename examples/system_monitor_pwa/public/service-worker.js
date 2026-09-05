@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-system-monitor-v9";
+const CACHE_NAME = "drogular-system-monitor-v12";
 
 const OFFLINE_PAGE = "/__offline";
 
@@ -6,7 +6,6 @@ const STATIC_ASSETS = [
     OFFLINE_PAGE,
     "/assets/manifest.webmanifest",
     "/assets/app.css",
-    "/assets/app.js",
     "/assets/interactions.js",
     "/assets/board.js",
     "/assets/icons/favicon.svg",
@@ -47,7 +46,8 @@ self.addEventListener("fetch", event => {
 
     // Monitoring APIs must always reflect the network/backend state. Never
     // satisfy them from the service-worker cache.
-    if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) {
+    if (url.origin === self.location.origin &&
+        (url.pathname.startsWith("/api/") || url.pathname.startsWith("/fragments/"))) {
         event.respondWith(fetch(event.request));
         return;
     }

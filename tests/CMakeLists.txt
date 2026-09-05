@@ -191,6 +191,8 @@ add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/actions/uart_fragment_action.cpp
     ../examples/system_monitor_pwa/ui/uart_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/system_status_action.cpp
+    ../examples/system_monitor_pwa/actions/system_fragment_action.cpp
+    ../examples/system_monitor_pwa/ui/system_fragment_component.cpp
     system_monitor_pwa/system_monitor_model_tests.cpp
     system_monitor_pwa/runtime_options_tests.cpp
     system_monitor_pwa/macos_system_metrics_provider_tests.cpp
@@ -236,6 +238,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/hardware_board_assets_tests.cpp
     system_monitor_pwa/system_monitor_pwa_tests.cpp
     system_monitor_pwa/system_monitor_status_action_tests.cpp
+    system_monitor_pwa/system_fragment_action_tests.cpp
 )
 
 target_compile_definitions(drogular_system_monitor_pwa_tests

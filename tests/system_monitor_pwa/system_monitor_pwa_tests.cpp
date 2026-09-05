@@ -28,6 +28,7 @@ TEST(SystemMonitorPwaTests, ServiceWorkerNeverCachesMonitoringApisOrRenderedSnap
     const auto worker = readFile(root / "public/service-worker.js");
 
     EXPECT_NE(worker.find("url.pathname.startsWith(\"/api/\")"), std::string::npos);
+    EXPECT_NE(worker.find("url.pathname.startsWith(\"/fragments/\")"), std::string::npos);
     EXPECT_NE(worker.find("fetch(event.request)"), std::string::npos);
     EXPECT_NE(worker.find("caches.match(OFFLINE_PAGE)"), std::string::npos);
     EXPECT_EQ(worker.find("\"/\",\n"), std::string::npos);

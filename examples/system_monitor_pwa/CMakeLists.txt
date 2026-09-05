@@ -107,6 +107,8 @@ if((APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND DROGULAR_BUILD_EXAMPLES)
         actions/uart_fragment_action.cpp
         ui/uart_fragment_component.cpp
         actions/system_status_action.cpp
+        actions/system_fragment_action.cpp
+        ui/system_fragment_component.cpp
     )
 
     target_link_libraries(system_monitor_pwa

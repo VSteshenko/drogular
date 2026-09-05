@@ -91,11 +91,17 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "1500 MHz"));
     EXPECT_TRUE(drogular::test::contains(result.html, "38.9 °C"));
     EXPECT_TRUE(drogular::test::contains(result.html, "Events recorded"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"cpu-usage\""));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-field=\"memory-usage\""));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-disk=\"/\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-system-live-region"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-get=\"/fragments/system\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-trigger=\"every 2s\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-failure-limit=\"3\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-pause-on-failure"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-poll-group=\"monitor\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-system-fragment"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-status"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-retry"));
+    EXPECT_TRUE(drogular::test::contains(
+        result.html, "dg-resume=\"[data-system-live-region]\""));
     EXPECT_TRUE(drogular::test::contains(result.html, ">Retry</button>"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-gpio-panel"));
     EXPECT_TRUE(drogular::test::contains(result.html, "dg-get=\"/fragments/gpio\""));

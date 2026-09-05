@@ -9,6 +9,7 @@
 #include "actions/process_status_action.hpp"
 #include "actions/spi_status_action.hpp"
 #include "actions/uart_status_action.hpp"
+#include "actions/system_fragment_action.hpp"
 #include "actions/system_status_action.hpp"
 #include "configuration/runtime_options.hpp"
 #include "gpio/gpiod_gpio_provider.hpp"
@@ -270,6 +271,7 @@ int main(int argc, const char* argv[]) {
     app.page<system_monitor::BoardPage>("/hardware");
     app.action<system_monitor::LanguageAction>("/language");
     app.get<system_monitor::SystemStatusAction>("/api/system");
+    app.get<system_monitor::SystemFragmentAction>("/fragments/system");
     app.get<system_monitor::ProcessStatusAction>("/api/processes");
     app.get<system_monitor::ProcessFragmentAction>("/fragments/processes");
     app.get<system_monitor::GpioStatusAction>("/api/gpio");

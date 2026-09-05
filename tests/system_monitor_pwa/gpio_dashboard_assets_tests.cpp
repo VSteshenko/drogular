@@ -30,17 +30,6 @@ TEST(GpioDashboardAssetsTests, UsesDeclarativeFragmentAtServiceCadence) {
     EXPECT_NE(page.find("dg-target=\"[data-dg-fragment]\""), std::string::npos);
 }
 
-TEST(GpioDashboardAssetsTests, RemovesClientSideGpioRenderingFromApplicationScript) {
-    const auto script = readSource(
-        std::filesystem::path(DROGULAR_SOURCE_DIR) /
-        "examples/system_monitor_pwa/public/app.js");
-
-    EXPECT_EQ(script.find("fetch('/api/gpio'"), std::string::npos);
-    EXPECT_EQ(script.find("createGpioLine"), std::string::npos);
-    EXPECT_EQ(script.find("renderGpio"), std::string::npos);
-    EXPECT_EQ(script.find("gpioLineMatchesFilter"), std::string::npos);
-}
-
 TEST(GpioDashboardAssetsTests, OffersServerDrivenAllActiveAndFreeFilters) {
     const auto fragment = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
