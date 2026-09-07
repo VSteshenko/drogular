@@ -25,7 +25,8 @@ It provides these capabilities as parts of a single application framework with a
 ## Core Principles
 
 - 🧩 Component-based architecture
-- ⚡ Server-driven UI
+- ⚡ Server-driven UI with progressively enhanced interactions
+- 🎨 Optional, composable UI foundations
 - 💉 Dependency Injection everywhere
 - 🔄 Reactive State Management
 - 🌐 Native GraphQL integration
@@ -221,13 +222,40 @@ See [RELEASE_NOTES_0.21.md](RELEASE_NOTES_0.21.md) for the complete release note
 - PortalDemo expansion
 - Architecture, Best Practices, and CLI documentation
 
-### 0.23 — Template Engine — future cleanup
+### 0.23 — Server-driven UI & Framework Foundations
+
+Drogular 0.23 is planned to turn the successful System Monitor experiments into reusable framework capabilities while keeping JavaScript and CSS optional, small, and composable.
+
+**Drogular Interactions**
+
+- Declarative fragment requests with `dg-get`, `dg-target`, and `dg-trigger`
+- Load, polling, change, and debounced input triggers
+- Standard loading, ready, empty, and error states
+- Polling groups for coordinated live UI
+- Failure limits with pause and explicit resume
+- First-class Component / Fragment rendering from Actions
+- Keep the interaction runtime independent from application-specific markup
+
+**Drogular UI**
+
+A small optional UI foundation rather than a full CSS framework:
+
+- `dg-button`
+- `dg-card`
+- `dg-toolbar`
+- `dg-status`
+- `dg-badge`
+- `dg-segmented`
+
+Drogular UI and Drogular Interactions are intentionally independent: applications can use either one alone or combine them. Application-specific layout, branding, and domain presentation remain application-owned.
+
+**Template Engine cleanup**
 
 - Precompile interpolation expressions
 - Compile component tags/attributes into semantic AST
-- Split template_runtime.cpp
+- Split `template_runtime.cpp`
 - Split Expression parser/lexer
-- Integer ExpressionValue
+- Integer `ExpressionValue`
 - Runtime diagnostics for custom functions
 
 ### 1.0
