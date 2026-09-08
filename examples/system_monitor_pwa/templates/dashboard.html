@@ -1,5 +1,5 @@
 <section class="system-live-region dg-interaction"
-         data-system-live-region
+         data-system-live-region data-connection-live-region
          dg-get="/fragments/system"
          dg-target="[data-system-fragment-host]"
          dg-trigger="every 2s"
@@ -11,11 +11,12 @@
     <div data-system-fragment-host>{{{ systemFragmentHtml }}}</div>
 </section>
 
-<form class="panel gpio-panel dg-interaction"
+<form class="panel dg-card gpio-panel dg-interaction"
       dg-get="/fragments/gpio"
       dg-target="[data-dg-fragment]"
       dg-trigger="load, every 30s, change"
       dg-poll-group="monitor"
+      dg-hide-on-unavailable
       data-gpio-panel>
     <div class="dg-request-feedback" aria-live="polite">
         <p data-dg-state-view="loading">{{ t("dashboard.loading_gpio") }}</p>
@@ -24,9 +25,9 @@
     <div data-dg-fragment></div>
 </form>
 
-<section class="panel i2c-panel dg-interaction" data-i2c-panel
+<section class="panel dg-card i2c-panel dg-interaction" data-i2c-panel
          dg-get="/fragments/i2c" dg-target="[data-dg-fragment]" dg-trigger="load, every 60s"
-         dg-poll-group="monitor">
+         dg-poll-group="monitor" dg-hide-on-unavailable>
     <div class="dg-request-feedback" aria-live="polite">
         <p data-dg-state-view="loading">{{ t("dashboard.loading_i2c") }}</p>
         <p data-dg-state-view="error">I²C {{ t("client.inventory_unavailable") }}</p>
@@ -34,9 +35,9 @@
     <div data-dg-fragment></div>
 </section>
 
-<section class="panel spi-panel dg-interaction" data-spi-panel
+<section class="panel dg-card spi-panel dg-interaction" data-spi-panel
          dg-get="/fragments/spi" dg-target="[data-dg-fragment]" dg-trigger="load, every 30s"
-         dg-poll-group="monitor">
+         dg-poll-group="monitor" dg-hide-on-unavailable>
     <div class="dg-request-feedback" aria-live="polite">
         <p data-dg-state-view="loading">{{ t("dashboard.loading_spi") }}</p>
         <p data-dg-state-view="error">SPI {{ t("client.inventory_unavailable") }}</p>
@@ -44,9 +45,9 @@
     <div data-dg-fragment></div>
 </section>
 
-<section class="panel uart-panel dg-interaction" data-uart-panel
+<section class="panel dg-card uart-panel dg-interaction" data-uart-panel
          dg-get="/fragments/uart" dg-target="[data-dg-fragment]" dg-trigger="load, every 30s"
-         dg-poll-group="monitor">
+         dg-poll-group="monitor" dg-hide-on-unavailable>
     <div class="dg-request-feedback" aria-live="polite">
         <p data-dg-state-view="loading">{{ t("dashboard.loading_uart") }}</p>
         <p data-dg-state-view="error">UART {{ t("client.inventory_unavailable") }}</p>
@@ -54,14 +55,14 @@
     <div data-dg-fragment></div>
 </section>
 
-<form class="panel process-panel dg-loading" data-process-panel
+<form class="panel dg-card process-panel dg-loading" data-process-panel
       dg-get="/fragments/processes"
       dg-trigger="load, every 3s, input delay:250ms, change"
       dg-poll-group="monitor"
       dg-target="[data-process-fragment]"
       data-dg-state="loading"
       aria-busy="true">
-    <div class="process-toolbar">
+    <div class="process-toolbar dg-toolbar">
         <label class="process-search">
             <span class="muted">{{ t("dashboard.search") }}</span>
             <input type="search" name="query" data-process-search placeholder="{{ t("dashboard.search_placeholder") }}" autocomplete="off">

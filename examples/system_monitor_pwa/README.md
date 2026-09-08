@@ -683,3 +683,22 @@ queued refresh, and remains paused. The Retry button sends an explicit
 `dg:resume` signal, which resets the failure count, performs one immediate
 request, and restarts periodic polling. No CPU-, memory-, disk-, or
 Raspberry-Pi-specific code lives in the browser runtime.
+
+### Local UI foundation experiment
+
+System Monitor also contains an example-local CSS experiment for a possible future
+Drogular UI foundation. The goal is not to introduce a full CSS framework, but to
+extract small reusable presentation primitives while domain classes keep ownership
+of application-specific layout and visual differences.
+
+The first pass uses six primitives: `dg-button`, `dg-card`, `dg-toolbar`,
+`dg-status`, `dg-badge`, and `dg-segmented`. They are composed with the existing
+System Monitor classes rather than replacing them. For example, the same
+`dg-segmented` behavior now provides the visual base for both the language switcher
+and the GPIO filter, while `dg-badge` is shared by GPIO, I²C, SPI, and UART pills.
+
+Like the interaction experiment, this remains entirely inside
+`examples/system_monitor_pwa`; no Drogular core stylesheet or public UI API is
+introduced yet. The experiment is intended to measure whether a small optional UI
+foundation can reduce repeated CSS without taking ownership of application
+branding or domain presentation.

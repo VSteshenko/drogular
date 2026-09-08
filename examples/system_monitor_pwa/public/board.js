@@ -58,29 +58,6 @@
         return tr('status.healthy', 'Healthy');
     };
 
-    const renderConnectionStatus = (system) => {
-        const status = document.querySelector('[data-monitor-status]');
-        const label = document.querySelector('[data-monitor-status-label]');
-        const detail = document.querySelector('[data-monitor-status-detail]');
-        if (!status || !label) return;
-
-        const stale = system?.monitor?.healthy === false;
-        const unavailable = !system;
-        status.classList.toggle('status-stale', stale);
-        status.classList.toggle('status-offline', unavailable);
-        if (unavailable) {
-            label.textContent = tr('status.offline', 'Offline');
-        } else if (stale) {
-            label.textContent = tr('status.stale', 'Stale');
-        } else {
-            label.textContent = tr('status.live', 'Live');
-        }
-        if (detail) {
-            detail.hidden = !stale;
-            detail.textContent = stale ? tr('client.hardware_overview_stale') : '';
-        }
-    };
-
     const gpioHeaderLines = (gpio) => {
         const lines = [];
         for (const chip of Array.isArray(gpio?.chips) ? gpio.chips : []) {
@@ -351,8 +328,6 @@
         const i2c = value(2);
         const spi = value(3);
         const uart = value(4);
-
-        renderConnectionStatus(system);
 
         if (system?.raspberryPi) {
             setText('[data-board-model]', system.raspberryPi.model);

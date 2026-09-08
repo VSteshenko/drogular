@@ -13,12 +13,12 @@
             <span class="muted">{{ t("dashboard.uptime") }}</span>
             <strong>{{ uptime }}</strong>
         </div>
-        <a class="secondary-link" href="/hardware">{{ t("nav.hardware") }}</a>
+        <a class="secondary-link dg-button" href="/hardware">{{ t("nav.hardware") }}</a>
     </div>
 </section>
 
 <section class="metric-grid" aria-label="{{ t("dashboard.system_metrics") }}">
-    <article class="metric-card">
+    <article class="metric-card dg-card">
         <div class="metric-heading">
             <span>CPU</span>
             <strong>{{ cpuUsage }}</strong>
@@ -32,7 +32,7 @@
         </div>
     </article>
 
-    <article class="metric-card">
+    <article class="metric-card dg-card">
         <div class="metric-heading">
             <span>{{ t("dashboard.memory") }}</span>
             <strong>{{ memoryUsage }}</strong>
@@ -43,7 +43,7 @@
     </article>
 </section>
 
-<section class="panel">
+<section class="panel dg-card">
     <div class="panel-heading">
         <div>
             <p class="eyebrow">{{ t("dashboard.storage") }}</p>
@@ -75,7 +75,7 @@
 </section>
 
 @if(hasRaspberryPi)
-<section class="panel system-panel">
+<section class="panel dg-card system-panel">
     <div>
         <p class="eyebrow">Raspberry Pi</p>
         <h2>{{ raspberryPiModel }}</h2>
@@ -93,7 +93,7 @@
 </section>
 @endif
 
-<section class="panel system-panel">
+<section class="panel dg-card system-panel">
     <div>
         <p class="eyebrow">{{ t("nav.system") }}</p>
         <h2>{{ t("dashboard.host_information") }}</h2>

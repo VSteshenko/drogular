@@ -78,7 +78,12 @@ TEST(HardwareBoardPageTests, RendersBoardIdentityAndHardwareShell) {
     EXPECT_TRUE(drogular::test::contains(result.html, "data-board-interface-list"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-board-summary=\"gpio\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "/assets/board.js"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "class=\"secondary-link\" href=\"/\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-board-connection"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-connection-live-region"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-get=\"/fragments/system\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-failure-limit=\"3\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "dg-resume=\"[data-connection-live-region]\""));
+    EXPECT_TRUE(drogular::test::contains(result.html, "class=\"secondary-link dg-button\" href=\"/\""));
 }
 TEST(HardwareBoardPageTests, GenericLinuxDoesNotRenderRaspberryPiSpecification) {
     drogular::ApplicationServices services;

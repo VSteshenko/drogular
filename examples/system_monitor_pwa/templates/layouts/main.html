@@ -18,24 +18,24 @@
                     <p class="eyebrow">{{ t("app.example") }}</p>
                     <h1>{{ title }}</h1>
                 </div>
-                <form class="language-switcher" method="post" action="/language" aria-label="Language">
+                <form class="language-switcher dg-segmented" method="post" action="/language" aria-label="Language">
                     <input type="hidden" name="redirect" value="{{ languageRedirect }}">
 @if(localeEnglish)
-                    <button type="submit" name="language" value="en" class="language-button is-active" aria-current="true">EN</button>
+                    <button type="submit" name="language" value="en" class="language-button is-active dg-segmented-item" aria-current="true">EN</button>
 @else
-                    <button type="submit" name="language" value="en" class="language-button">EN</button>
+                    <button type="submit" name="language" value="en" class="language-button dg-segmented-item">EN</button>
 @endif
 @if(localeGerman)
-                    <button type="submit" name="language" value="de" class="language-button is-active" aria-current="true">DE</button>
+                    <button type="submit" name="language" value="de" class="language-button is-active dg-segmented-item" aria-current="true">DE</button>
 @else
-                    <button type="submit" name="language" value="de" class="language-button">DE</button>
+                    <button type="submit" name="language" value="de" class="language-button dg-segmented-item">DE</button>
 @endif
                 </form>
             </div>
             <div class="connection-status">
                 <div class="connection-status-content">
 @if(hasPageScript)
-                    <span class="status" data-monitor-status
+                    <span class="status dg-status" data-monitor-status
                           data-dg-label-live="{{ t("status.live") }}"
                           data-dg-label-connecting="{{ t("status.connecting") }}"
                           data-dg-label-reconnecting="{{ t("status.reconnecting") }}"
@@ -45,14 +45,14 @@
                     </span>
                     <span class="status-detail" data-monitor-status-detail hidden></span>
 @else
-                    <span class="status status-offline">
+                    <span class="status status-offline dg-status">
                         <span class="status-dot"></span>
                         <span>{{ t("status.offline") }}</span>
                     </span>
 @endif
                 </div>
 @if(hasPageScript)
-                <button class="retry-button" type="button" data-monitor-retry dg-resume="[data-system-live-region]" hidden>{{ t("status.retry") }}</button>
+                <button class="retry-button dg-button" type="button" data-monitor-retry dg-resume="[data-connection-live-region]" hidden>{{ t("status.retry") }}</button>
 @endif
             </div>
         </div>

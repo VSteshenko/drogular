@@ -204,7 +204,9 @@
                 const openState = preservedOpenState(target);
                 target.innerHTML = html;
                 restoreOpenState(target, openState);
-                element.hidden = target.querySelector('[data-dg-unavailable]') !== null;
+                if (element.hasAttribute('dg-hide-on-unavailable')) {
+                    element.hidden = target.querySelector('[data-dg-unavailable]') !== null;
+                }
                 setState(element, responseState(html));
                 state.failures = 0;
                 applyConnectionResponse(element, target);

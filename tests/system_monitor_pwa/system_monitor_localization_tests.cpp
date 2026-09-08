@@ -53,6 +53,8 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
     EXPECT_NE(systemFragment.find("t(\"dashboard.monitoring_target\")"), std::string::npos);
     EXPECT_NE(systemFragment.find("data-dg-connection-label"), std::string::npos);
     EXPECT_NE(board.find("t(\"board.overview\")"), std::string::npos);
+    EXPECT_NE(board.find("data-board-connection"), std::string::npos);
+    EXPECT_NE(board.find("dg-get=\"/fragments/system\""), std::string::npos);
     EXPECT_NE(offline.find("t(\"offline.title\")"), std::string::npos);
 }
 
@@ -72,7 +74,7 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(interactions.find("document.querySelectorAll('[dg-resume]')"), std::string::npos);
     EXPECT_NE(interactions.find("new CustomEvent('dg:resume')"), std::string::npos);
     EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
-    EXPECT_NE(board.find("tr('status.offline'"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v12"), std::string::npos);
+    EXPECT_EQ(board.find("renderConnectionStatus"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v15"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

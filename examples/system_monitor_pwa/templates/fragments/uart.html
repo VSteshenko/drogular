@@ -18,7 +18,7 @@
 @if(device.hasAliases)
             <div class="uart-alias-list">
 @foreach(alias in device.aliases)
-                <span class="uart-alias">{{ alias }}</span>
+                <span class="uart-alias dg-badge">{{ alias }}</span>
 @endforeach
             </div>
 @endif
@@ -33,10 +33,10 @@
     <div class="uart-gpio-groups">
 @foreach(group in uartGroups)
         <article class="uart-gpio-group">
-            <div class="uart-gpio-heading"><strong>{{ group.name }}</strong><span class="uart-exposure {{ group.exposureClass }}">{{ group.exposure }}</span></div>
+            <div class="uart-gpio-heading"><strong>{{ group.name }}</strong><span class="uart-exposure dg-badge {{ group.exposureClass }}">{{ group.exposure }}</span></div>
             <div class="uart-gpio-mapping">
 @foreach(pin in group.pins)
-                <span class="uart-gpio-pin" title="{{ pin.title }}">{{ pin.text }}</span>
+                <span class="uart-gpio-pin dg-badge" title="{{ pin.title }}">{{ pin.text }}</span>
 @endforeach
             </div>
         </article>

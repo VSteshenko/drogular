@@ -60,8 +60,11 @@ TEST(GpioDashboardAssetsTests, HidesUnavailableInventoryDeclaratively) {
     const auto runtime = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/public/interactions.js");
+    const auto dashboard = readSource(
+        std::filesystem::path(DROGULAR_SOURCE_DIR) /
+        "examples/system_monitor_pwa/templates/dashboard.html");
 
     EXPECT_NE(fragment.find("data-dg-unavailable"), std::string::npos);
-    EXPECT_NE(runtime.find("element.hidden = target.querySelector('[data-dg-unavailable]') !== null"),
-              std::string::npos);
+    EXPECT_NE(runtime.find("element.hasAttribute('dg-hide-on-unavailable')"), std::string::npos);
+    EXPECT_NE(dashboard.find("dg-hide-on-unavailable"), std::string::npos);
 }
