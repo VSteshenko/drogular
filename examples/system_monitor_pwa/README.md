@@ -702,3 +702,11 @@ Like the interaction experiment, this remains entirely inside
 introduced yet. The experiment is intended to measure whether a small optional UI
 foundation can reduce repeated CSS without taking ownership of application
 branding or domain presentation.
+
+A follow-up audit after the first migration found that the six primitives already
+cover the reusable presentation layer well. The remaining repeated I²C, SPI, and
+UART rules are hardware-domain patterns rather than general UI primitives, so they
+are consolidated locally instead of expanding the prospective framework API. The
+stylesheet dropped from 1026 to 982 lines in this pass without changing markup or
+introducing additional `dg-*` primitives. Board maps, hardware tables, process
+inventory, and responsive layout remain application-owned CSS.

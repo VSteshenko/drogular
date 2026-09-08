@@ -446,51 +446,73 @@ dd {
     color: #8eddb7;
 }
 
-.i2c-panel-heading {
+.i2c-panel-heading,
+.spi-panel-heading,
+.uart-panel-heading {
     align-items: flex-start;
 }
-.i2c-overview {
+.i2c-overview,
+.spi-overview,
+.uart-overview {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: .2rem;
 }
-.i2c-bus-list {
+.i2c-bus-list,
+.spi-bus-list,
+.uart-content,
+.uart-device-list,
+.uart-gpio-groups {
     display: grid;
     gap: .75rem;
 }
-.i2c-bus {
+.i2c-bus,
+.spi-bus,
+.uart-device,
+.uart-gpio-group {
     border: 1px solid #263553;
     border-radius: .7rem;
     background: #0f182a;
     padding: .9rem 1rem;
 }
-.i2c-bus-heading {
+.i2c-bus-heading,
+.spi-bus-heading {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
 }
-.i2c-bus-heading > div {
+.i2c-bus-heading > div,
+.spi-bus-heading > div {
     display: flex;
     flex-direction: column;
     gap: .15rem;
 }
-.i2c-device-count {
+.i2c-device-count,
+.spi-device-count {
     color: #8fa8d8;
     white-space: nowrap;
 }
 .i2c-bus-meta {
     margin: .45rem 0 .7rem;
 }
-.i2c-gpio-mapping {
+.i2c-gpio-mapping,
+.spi-gpio-mapping,
+.spi-device-list {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.45rem;
-    margin: 0.7rem 0;
+    gap: .45rem;
+    margin: .7rem 0;
 }
-.i2c-gpio-pin { background: #10172a; }
+.i2c-gpio-pin,
+.spi-gpio-pin,
+.spi-device,
+.uart-alias,
+.uart-gpio-pin {
+    background: #10172a;
+}
 .i2c-address-list {
     display: flex;
     flex-wrap: wrap;
@@ -511,92 +533,26 @@ dd {
     color: #f6cf84;
     border-color: #66522c;
 }
-
-.spi-panel-heading {
-    align-items: flex-start;
-}
-.spi-overview {
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:.2rem;
-}
-.spi-bus-list {
-    display:grid;
-    gap:.75rem;
-}
-.spi-bus {
-    border:1px solid #263553;
-    border-radius:.7rem;
-    background:#0f182a;
-    padding:.9rem 1rem;
-}
-.spi-bus-heading {
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:1rem;
-}
-.spi-bus-heading > div {
-    display:flex;
-    flex-direction:column;
-    gap:.15rem;
-}
-.spi-device-count {
-    color:#8fa8d8;
-    white-space:nowrap;
-}
-.spi-gpio-mapping, .spi-device-list {
-    display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    gap:.45rem;
-    margin:.7rem 0;
-}
-.spi-gpio-pin, .spi-device { background:#10172a; }
-.spi-device {
-    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-    color:#9fc5ff;
-}
-
-.uart-panel-heading {
-    align-items:flex-start;
-}
-.uart-overview {
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:.2rem;
-}
-.uart-content, .uart-device-list, .uart-gpio-groups {
-    display:grid;
-    gap:.75rem;
-}
-.uart-device, .uart-gpio-group {
-    border:1px solid #263553;
-    border-radius:.7rem;
-    background:#0f182a;
-    padding:.9rem 1rem;
-}
-.uart-alias-list, .uart-gpio-mapping {
-    display:flex;
-    flex-wrap:wrap;
-    gap:.45rem;
-    margin-top:.6rem;
-}
-.uart-alias, .uart-gpio-pin { background:#10172a; }
+.spi-device,
 .uart-alias {
-    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-    color:#9fc5ff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: #9fc5ff;
+}
+.uart-alias-list,
+.uart-gpio-mapping {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-top: .6rem;
 }
 .uart-correlation-note {
-    margin:.1rem 0;
+    margin: .1rem 0;
 }
 .uart-gpio-heading {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
 }
 
 .gpio-line-exposure {
@@ -638,9 +594,9 @@ dd {
         white-space: normal;
         text-align: right;
     }
-    .i2c-overview { align-items: flex-end; }
-    .spi-overview { align-items:flex-end; }
-    .uart-overview { align-items:flex-end; }
+    .i2c-overview,
+    .spi-overview,
+    .uart-overview { align-items: flex-end; }
 }
 
 /* Hardware overview / board page */
