@@ -205,7 +205,7 @@
 
     const makeInterfaceCard = (title, status, exposure, details, badges = []) => {
         const card = document.createElement('article');
-        card.className = 'panel board-interface-card';
+        card.className = 'panel dg-card board-interface-card';
         const heading = document.createElement('div');
         heading.className = 'board-interface-heading';
         const titleElement = document.createElement('h3');

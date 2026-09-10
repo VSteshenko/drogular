@@ -76,6 +76,7 @@ TEST(HardwareBoardPageTests, RendersBoardIdentityAndHardwareShell) {
     EXPECT_TRUE(drogular::test::contains(result.html, "10000000a5bd2dd2"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-board-header-map"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-board-interface-list"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "class=\"board-identity panel dg-card\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-board-summary=\"gpio\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "/assets/board.js"));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-board-connection"));

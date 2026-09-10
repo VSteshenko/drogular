@@ -40,6 +40,7 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     EXPECT_NE(js.find("I²C${bus.number}"), std::string::npos);
     EXPECT_NE(js.find("SPI${bus.number}"), std::string::npos);
     EXPECT_NE(js.find("UART${group.controller}"), std::string::npos);
+    EXPECT_NE(js.find("panel dg-card board-interface-card"), std::string::npos);
 
     EXPECT_EQ(js.find("renderConnectionStatus"), std::string::npos);
 
