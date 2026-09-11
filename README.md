@@ -234,7 +234,7 @@ Drogular 0.23 is planned to turn the successful System Monitor experiments into 
 - Polling groups for coordinated live UI
 - Failure limits with pause and explicit resume
 - First-class Component / Fragment rendering from Actions
-- Keep the interaction runtime independent from application-specific markup
+- Finish separating the interaction runtime from application-specific connection/status markup
 
 **Drogular UI**
 
@@ -246,8 +246,11 @@ A small optional UI foundation rather than a full CSS framework:
 - `dg-status`
 - `dg-badge`
 - `dg-segmented`
+- Semantic variants: `neutral`, `info`, `success`, `warning`, and `danger`
 
-Drogular UI and Drogular Interactions are intentionally independent: applications can use either one alone or combine them. Application-specific layout, branding, and domain presentation remain application-owned.
+The System Monitor experiment also validated a server-driven presentation model: C++ Components choose semantic state and UI variants, templates compose the primitives, and Drogular UI owns the shared visual treatment. Application-specific layout, branding, and domain presentation remain application-owned.
+
+Drogular UI and Drogular Interactions are intentionally independent: applications can use either one alone or combine them. The goal is to remove repeated presentation boilerplate without turning Drogular into a general-purpose CSS framework.
 
 **Template Engine cleanup**
 
