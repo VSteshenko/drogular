@@ -1,15 +1,58 @@
 # Creating a Project with the Drogular CLI
 
-The Drogular CLI can create a minimal application with the recommended project structure already in place.
+The Drogular CLI creates ready-to-build applications from embedded project templates. No template files need to be installed separately.
 
-## Create the project
+## Create a minimal project
 
 ```bash
 drogular new hello_drogular
 cd hello_drogular
+cmake -S . -B build
+cmake --build build
+./build/hello_drogular
 ```
 
-The generated project contains:
+Then open `http://localhost:8080/`.
+
+`minimal` is the default template. It keeps the generated application deliberately small while showing the recommended Page, Component, template, public-asset, and startup structure.
+
+## Choose the output path
+
+The project argument can include a relative or absolute destination path:
+
+```bash
+drogular new examples/hello_drogular
+drogular new ../generated/hello_drogular
+drogular new /tmp/hello_drogular
+```
+
+The final path component becomes the project name. For `examples/admin/My-App`, the project name is `My-App`; the generated C++ namespace is normalized to `My_App`.
+
+The destination must not already exist. This prevents the generator from silently overwriting an existing project.
+
+## List project templates
+
+The installed CLI can describe the starters embedded in that build:
+
+```bash
+drogular templates
+```
+
+| Template | Purpose |
+|----------|---------|
+| `minimal` | Smallest recommended Drogular application; best for learning the core project structure. |
+| `pwa` | Ready-to-run installable PWA with an application shell, manifest, service worker, offline fallback, icons, and responsive starter UI. |
+
+## Select a template
+
+```bash
+drogular new MyPWA --template pwa
+drogular new apps/customer-portal --template=pwa
+```
+
+An unknown template is rejected. Run `drogular templates` to see the identifiers supported by the installed CLI.
+
+## What the minimal starter creates
 
 ```text
 hello_drogular/
@@ -27,44 +70,25 @@ hello_drogular/
     └── home.html
 ```
 
-The project is intentionally small. It demonstrates the same basic organization used throughout the Getting Started guide: application startup in `main.cpp`, Pages in application code, reusable Components, and external templates.
+The generated source contains short `Tip:` comments at useful extension points without turning the starter into a tutorial.
 
-## Choose a project template
+## What the PWA starter adds
 
-The CLI embeds multiple starters. List the templates available in the installed CLI:
+The `pwa` template keeps the same Drogular structure and adds the pieces needed for an installable application:
 
-```bash
-drogular templates
-```
+- PWA Page metadata;
+- reusable application shell;
+- `manifest.webmanifest`;
+- root-scoped service worker;
+- offline navigation fallback;
+- starter icons and favicon;
+- responsive starter UI.
 
-The default is `minimal`. To generate the PWA starter instead:
-
-```bash
-drogular new hello_pwa --template pwa
-```
-
-The equivalent `--template=pwa` form is also accepted.
-
-The `pwa` starter adds an application shell, offline page, web manifest, service worker, public assets, and the PWA Page 
-helpers required by the generated application.
-
-## Build and run
-
-```bash
-cmake -S . -B build
-cmake --build build
-./build/hello_drogular
-```
-
-Then open:
-
-```text
-http://localhost:8080/
-```
+After building and running the project on localhost, the browser can register the service worker and install the application without additional PWA setup.
 
 ## Drogular version used by generated projects
 
-A released Drogular CLI generates a project pinned to the corresponding Drogular Git tag. For example, the `0.21.0` CLI writes:
+Generated `CMakeLists.txt` files are pinned to the Drogular Git tag corresponding to the CLI build:
 
 ```cmake
 FetchContent_Declare(
@@ -74,16 +98,30 @@ FetchContent_Declare(
 )
 ```
 
-This keeps newly generated applications reproducible instead of silently following future changes on `main`.
+The concrete tag above is only an example. A released CLI writes its own matching release tag, keeping generated projects reproducible instead of silently following future changes on `main`.
 
-When building the CLI itself from source, the Git ref can be overridden explicitly:
+When developing Drogular itself and testing a generated project against the local checkout, override FetchContent at configure time instead of changing the generated template:
 
 ```bash
-cmake -S . -B build -DDROGULAR_CLI_GIT_REF=main
+cmake -S . -B build \
+  -DFETCHCONTENT_SOURCE_DIR_DROGULAR=/absolute/path/to/drogular
 ```
 
-A branch name, tag, or commit hash can be used as the value.
+This keeps release pinning intact while letting framework development test the starter against the current source tree.
+
+## CLI reference
+
+```text
+drogular new <path/to/project> [--template <id>]
+drogular templates
+drogular --help
+drogular --version
+```
+
+`drogular new` fails rather than leaving a partially generated project when generation cannot complete successfully.
 
 ## Next steps
 
-Continue with [Your First Drogular Application](your-first-drogular-application.md) to understand how the generated Page, Component, templates, dependency injection, and startup sequence fit together.
+Continue with [Your First Drogular Application](your-first-drogular-application.md) to understand how Pages, Components, templates, dependency injection, and application startup fit together.
+
+For a new installable web application, the generated `pwa` starter is intended to be a practical starting point rather than only a demonstration.

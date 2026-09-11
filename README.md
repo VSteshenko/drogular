@@ -131,7 +131,19 @@ cmake --build build
 ./build/hello_drogular
 ```
 
-The generated project is pinned to the matching Drogular release and includes a Page, reusable Component, templates, public assets, and the recommended startup structure.
+The generated project is pinned to the matching Drogular release and includes a Page, reusable Component, templates, 
+public assets, and the recommended startup structure.
+
+The CLI also supports explicit output paths and multiple embedded starters:
+
+```bash
+drogular templates
+drogular new examples/admin --template minimal
+drogular new apps/MyPWA --template pwa
+```
+
+`minimal` is the smallest recommended Drogular application. `pwa` is a ready-to-run installable starter with a manifest
+, service worker, offline fallback, responsive UI, and short `Tip:` comments that explain the important extension points.
 
 A complete minimal route needs only a Page and `drogular::App`:
 

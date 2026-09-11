@@ -32,7 +32,11 @@ void printHelp() {
               << "Options:\n"
               << "  --template <id>  Project template to use (default: minimal)\n"
               << "  --help           Show this help\n"
-              << "  --version        Show version\n";
+              << "  --version        Show version\n\n"
+              << "Examples:\n"
+              << "  drogular new MyApp\n"
+              << "  drogular new examples/MyPWA --template pwa\n"
+              << "  drogular templates\n";
 }
 
 std::string currentYear() {

@@ -30,10 +30,12 @@ Generate a ready-to-build application skeleton with `drogular new`.
 
 You'll learn:
 
+- how to create a project at a chosen output path
+- how to list and select the `minimal` and `pwa` starters
 - what files the CLI creates
 - how to build and run the generated application
 - how generated projects are pinned to the matching Drogular release
-- how to override the Git ref when developing against another branch or commit
+- how to test a generated project against a local Drogular checkout
 
 ---
 
