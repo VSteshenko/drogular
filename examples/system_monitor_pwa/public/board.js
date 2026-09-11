@@ -203,6 +203,16 @@
         if (summaryDetail('uart')) summaryDetail('uart').textContent = uart?.available ? `${uartGroups.length} ${tr("client.pinmux_groups")} · ${healthyLabel(uart)}` : `UART ${tr('client.inventory_unavailable')}`;
     };
 
+    const exposureBadgeVariant = (exposure) => {
+        switch (exposure) {
+            case 'header': return 'dg-badge-success';
+            case 'internal': return 'dg-badge-info';
+            case 'onboard': return 'dg-badge-warning';
+            case 'mixed': return 'dg-badge-warning';
+            default: return 'dg-badge-neutral';
+        }
+    };
+
     const makeInterfaceCard = (title, status, exposure, details, badges = []) => {
         const card = document.createElement('article');
         card.className = 'panel dg-card board-interface-card';
@@ -212,7 +222,7 @@
         titleElement.textContent = title;
         heading.appendChild(titleElement);
         const exposureBadge = document.createElement('span');
-        exposureBadge.className = `board-exposure board-exposure-${exposure || 'unknown'}`;
+        exposureBadge.className = `board-exposure dg-badge ${exposureBadgeVariant(exposure)}`;
         exposureBadge.textContent = exposureLabel(exposure);
         heading.appendChild(exposureBadge);
         card.appendChild(heading);
@@ -232,6 +242,7 @@
             badgeList.className = 'board-interface-badges';
             for (const value of badges) {
                 const badge = document.createElement('span');
+                badge.className = 'dg-badge dg-badge-success';
                 badge.textContent = value;
                 badgeList.appendChild(badge);
             }

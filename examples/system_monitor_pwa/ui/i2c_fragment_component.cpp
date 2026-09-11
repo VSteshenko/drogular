@@ -89,8 +89,8 @@ void I2cFragmentComponent::onInit(drogular::RenderContext& context) {
             Json::Value v;
             v["address"] = addressText(d.address);
             v["class"] = d.claimedByKernel
-                ? "i2c-address i2c-address-claimed"
-                : "i2c-address";
+                ? "i2c-address dg-badge dg-badge-warning"
+                : "i2c-address dg-badge dg-badge-info";
             v["title"] = d.claimedByKernel
                 ? context.translate("client.kernel_driver")
                 : "";

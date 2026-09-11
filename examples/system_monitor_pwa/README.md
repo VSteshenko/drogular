@@ -702,3 +702,12 @@ Like the interaction experiment, this remains entirely inside
 introduced yet. The experiment is intended to measure whether a small optional UI
 foundation can reduce repeated CSS without taking ownership of application
 branding or domain presentation.
+
+### Semantic UI variants experiment
+
+The local UI experiment now separates domain state from visual styling. C++ components
+and the small client runtime choose semantic variants such as `success`, `info`,
+`warning`, `danger`, and `neutral`, while `dg-badge-*` and `dg-status-*` define their
+shared presentation. GPIO, I²C, UART, board exposure, and connection states therefore
+no longer need separate application-specific color classes for equivalent meanings.
+Layout, sizing, typography, and board-specific structure remain application-owned.

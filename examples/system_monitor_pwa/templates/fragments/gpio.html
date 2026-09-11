@@ -50,12 +50,12 @@
                         </td>
                         <td class="{{ line.functionClass }}">{{ line.function }}</td>
                         <td>
-                            <span class="gpio-badge dg-badge gpio-direction gpio-direction-{{ line.direction }}">{{ line.direction }}</span>
+                            <span class="gpio-badge dg-badge {{ line.directionVariant }}">{{ line.direction }}</span>
                         </td>
                         <td class="{{ line.consumerClass }}">{{ line.consumer }}</td>
                         <td class="{{ line.flagsClass }}">{{ line.flags }}</td>
                         <td>
-                            <span class="gpio-badge dg-badge {{ line.stateClass }}">{{ line.stateText }}</span>
+                            <span class="gpio-badge dg-badge {{ line.stateVariant }}">{{ line.stateText }}</span>
                         </td>
                     </tr>
 @endforeach

@@ -36,6 +36,21 @@ std::string directionName(GpioLineDirection direction) {
     return "unknown";
 }
 
+std::string directionVariant(GpioLineDirection direction) {
+    switch (direction) {
+        case GpioLineDirection::Input:
+            return "dg-badge-info";
+
+        case GpioLineDirection::Output:
+            return "dg-badge-warning";
+
+        case GpioLineDirection::Unknown:
+            return "dg-badge-neutral";
+    }
+
+    return "dg-badge-neutral";
+}
+
 std::string flags(const GpioLineInfo& line) {
     std::string result;
     if (line.activeLow) result = "active-low";
@@ -131,6 +146,7 @@ void GpioFragmentComponent::onInit(drogular::RenderContext& context) {
             line["consumer"] = sourceLine.consumer.empty() ? "—" : sourceLine.consumer;
             line["function"] = sourceLine.function.empty() ? "GPIO" : sourceLine.function;
             line["direction"] = directionName(sourceLine.direction);
+            line["directionVariant"] = directionVariant(sourceLine.direction);
             line["flags"] = flags(sourceLine);
             line["used"] = sourceLine.used;
             line["alternateFunction"] = sourceLine.alternateFunction;
@@ -138,7 +154,7 @@ void GpioFragmentComponent::onInit(drogular::RenderContext& context) {
             line["functionClass"] = sourceLine.alternateFunction ? "gpio-function-active" : "";
             line["consumerClass"] = sourceLine.consumer.empty() ? "muted" : "";
             line["flagsClass"] = flags(sourceLine) == "—" ? "muted" : "";
-            line["stateClass"] = sourceLine.used ? "gpio-used" : "gpio-free";
+            line["stateVariant"] = sourceLine.used ? "dg-badge-warning" : "dg-badge-success";
             line["stateText"] = context.translate(sourceLine.used ? "client.used" : "client.free");
             lines.append(std::move(line));
         }

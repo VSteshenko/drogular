@@ -75,6 +75,6 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(interactions.find("new CustomEvent('dg:resume')"), std::string::npos);
     EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
     EXPECT_EQ(board.find("renderConnectionStatus"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v18"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v19"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

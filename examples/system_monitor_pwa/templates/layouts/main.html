@@ -35,7 +35,7 @@
             <div class="connection-status">
                 <div class="connection-status-content">
 @if(hasPageScript)
-                    <span class="status dg-status" data-monitor-status
+                    <span class="status dg-status dg-status-success" data-monitor-status
                           data-dg-label-live="{{ t("status.live") }}"
                           data-dg-label-connecting="{{ t("status.connecting") }}"
                           data-dg-label-reconnecting="{{ t("status.reconnecting") }}"
@@ -45,7 +45,7 @@
                     </span>
                     <span class="status-detail" data-monitor-status-detail hidden></span>
 @else
-                    <span class="status status-offline dg-status">
+                    <span class="status dg-status dg-status-danger">
                         <span class="status-dot"></span>
                         <span>{{ t("status.offline") }}</span>
                     </span>

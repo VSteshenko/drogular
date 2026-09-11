@@ -69,7 +69,7 @@ TEST(GpioFragmentActionTests, DefaultsToActiveLinesAndRendersServerSideRows) {
     EXPECT_NE(html.find("GPIO4"), std::string::npos);
     EXPECT_EQ(html.find("GPIO17"), std::string::npos);
     EXPECT_NE(html.find("onewire@0"), std::string::npos);
-    EXPECT_NE(html.find("gpio-used"), std::string::npos);
+    EXPECT_NE(html.find("dg-badge-warning"), std::string::npos);
     EXPECT_NE(html.find("data-dg-preserve-key=\"gpio-chip:gpiochip0\""), std::string::npos);
 }
 

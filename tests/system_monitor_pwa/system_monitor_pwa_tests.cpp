@@ -65,6 +65,6 @@ TEST(SystemMonitorPwaTests, OfflinePageExplainsThatMetricsAreNotCached) {
     EXPECT_TRUE(drogular::test::contains(result.html, "No cached metrics are shown"));
     EXPECT_TRUE(drogular::test::contains(result.html, "rel=\"manifest\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "navigator.serviceWorker.register"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "status status-offline"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "status dg-status dg-status-danger"));
     EXPECT_FALSE(drogular::test::contains(result.html, "src=\"/assets/app.js\""));
 }

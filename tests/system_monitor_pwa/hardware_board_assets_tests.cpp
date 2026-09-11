@@ -54,5 +54,8 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     EXPECT_NE(css.find(".dg-status"), std::string::npos);
     EXPECT_NE(css.find(".dg-badge"), std::string::npos);
     EXPECT_NE(css.find(".dg-segmented"), std::string::npos);
+    EXPECT_NE(css.find(".dg-badge-success"), std::string::npos);
+    EXPECT_NE(css.find(".dg-badge-warning"), std::string::npos);
+    EXPECT_NE(css.find(".dg-status-danger"), std::string::npos);
     EXPECT_NE(css.find("[hidden] { display: none !important; }"), std::string::npos);
 }

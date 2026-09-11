@@ -33,9 +33,19 @@
         const { status, retry } = connectionElements(element);
         if (!status) return;
 
-        status.classList.toggle('status-stale', state === 'stale');
-        status.classList.toggle('status-reconnecting', state === 'connecting' || state === 'reconnecting');
-        status.classList.toggle('status-offline', state === 'offline');
+        const variants = [
+            'dg-status-neutral',
+            'dg-status-info',
+            'dg-status-success',
+            'dg-status-warning',
+            'dg-status-danger',
+        ];
+        status.classList.remove(...variants);
+        status.classList.add(
+            state === 'live' ? 'dg-status-success' :
+            state === 'connecting' ? 'dg-status-info' :
+            state === 'stale' || state === 'reconnecting' ? 'dg-status-warning' :
+            state === 'offline' ? 'dg-status-danger' : 'dg-status-neutral');
 
         const label = status.querySelector('[data-monitor-status-label]');
         const detailElement = status.closest('.connection-status')?.querySelector('[data-monitor-status-detail]') || null;

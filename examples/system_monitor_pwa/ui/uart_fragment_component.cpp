@@ -42,7 +42,12 @@ void UartFragmentComponent::onInit(drogular::RenderContext& context) {
         for (const auto& g: UartGpioCorrelator::groups(*gpio,board)) {
             Json::Value v;
             v["name"] = "UART" + std::to_string(g.controller) + " GPIO";
-            v["exposureClass"] = "uart-exposure-" + std::string(gpioExposureName(g.exposure));
+            const auto exposureName = std::string(gpioExposureName(g.exposure));
+            v["exposureClass"] = exposureName == "header"
+                ? "dg-badge-info"
+                : exposureName == "mixed"
+                    ? "dg-badge-warning"
+                    : "dg-badge-neutral";
             v["exposure"] = hardware_fragment_support::exposure(g.exposure);
 
             Json::Value pins(Json::arrayValue);
