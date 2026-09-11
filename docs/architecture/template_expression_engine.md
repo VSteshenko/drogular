@@ -90,10 +90,9 @@ are generated on demand rather than materialized, so a loop over a range does
 not first allocate an intermediate array. The same iterable abstraction is used
 by membership operations and `@foreach`.
 
-The evaluated element is bound back into the child `RenderContext` without
-losing its expression type. This is important for nested expression-owned
-collections and is also the storage model future `@let` / `@const` bindings can
-reuse.
+The evaluated element is bound into the current lexical scope without losing
+its expression type. This is important for nested expression-owned collections
+and is the same value model used by `@let` / `@const` bindings.
 
 ## Expression AST
 
@@ -135,8 +134,7 @@ base RenderContext
 
 Bindings therefore shadow view/request data without mutating it. A child scope
 may shadow a parent binding, while duplicate definitions inside the same scope
-are rejected. This gives future `@let` and `@const` directives normal lexical
-scope semantics.
+are rejected. This gives `@let` and `@const` normal lexical scope semantics.
 
 Each binding stores an `ExpressionValue` directly, so expression-owned Lists and
 Ranges do not need to be converted through JSON. Bindings also carry
@@ -202,8 +200,7 @@ This means range bounds and steps may be arbitrary expressions:
 [(first + 1)..last]
 ```
 
-The same arithmetic expressions are also available to `@if`, `where`, and
-future expression consumers.
+The same arithmetic expressions are also available to `@if`, `where`, `@switch`, `@let`, and `@const`.
 
 ## List literals
 

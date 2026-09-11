@@ -25,8 +25,7 @@ It provides these capabilities as parts of a single application framework with a
 ## Core Principles
 
 - 🧩 Component-based architecture
-- ⚡ Server-driven UI with progressively enhanced interactions
-- 🎨 Optional, composable UI foundations
+- ⚡ Server-rendered UI with progressive enhancement where needed
 - 💉 Dependency Injection everywhere
 - 🔄 Reactive State Management
 - 🌐 Native GraphQL integration
@@ -115,6 +114,7 @@ Rather than being a collection of isolated examples, PortalDemo shows how these 
 | Auth Sample | Authentication & Sessions |
 | Developer Tools | Extending the Developer Tools platform |
 | Repository Sample | Repository pattern and data access |
+| System Monitor PWA | Live server-rendered fragments, PWA behavior, and remote/system hardware monitoring |
 | PortalDemo | Complete reference application architecture |
 
 ---
@@ -212,6 +212,9 @@ See [RELEASE_NOTES_0.21.md](RELEASE_NOTES_0.21.md) for the complete release note
 ## Roadmap
 
 ### 0.22 — Developer Productivity
+
+Current progress: the standalone CLI, embedded project-template registry, `minimal` starter, and `pwa` starter are
+already implemented on `main`. Feature/CRUD scaffolding and the remaining productivity work are still roadmap items.
 
 - CLI Generators
 - Feature-first scaffolding

@@ -29,6 +29,25 @@ hello_drogular/
 
 The project is intentionally small. It demonstrates the same basic organization used throughout the Getting Started guide: application startup in `main.cpp`, Pages in application code, reusable Components, and external templates.
 
+## Choose a project template
+
+The CLI embeds multiple starters. List the templates available in the installed CLI:
+
+```bash
+drogular templates
+```
+
+The default is `minimal`. To generate the PWA starter instead:
+
+```bash
+drogular new hello_pwa --template pwa
+```
+
+The equivalent `--template=pwa` form is also accepted.
+
+The `pwa` starter adds an application shell, offline page, web manifest, service worker, public assets, and the PWA Page 
+helpers required by the generated application.
+
 ## Build and run
 
 ```bash

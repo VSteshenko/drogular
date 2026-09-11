@@ -37,10 +37,12 @@ Every article is based on the current framework implementation and working examp
 
 Available guides:
 
+- Authentication & Authorization
 - Forms & Validation
 - State Management
 - GraphQL
 - Localization
+- Pagination
 
 [Open the Cookbook](cookbook/README.md)
 

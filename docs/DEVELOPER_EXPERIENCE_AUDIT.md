@@ -451,3 +451,29 @@ Public Framework API
 ```
 
 Never in the opposite direction.
+
+---
+
+## Architecture consolidation completed in 0.20
+
+### Shared TemplateRenderable pipeline
+
+`TemplatePage` and `TemplateComponent` now use one internal source-loading,
+preprocessing, compilation, caching and component-expansion pipeline.
+
+Status: Framework.
+
+### Component API review
+
+The existing `onInit -> render -> onDestroy` lifecycle remains unchanged.
+No additional lifecycle or metadata API was introduced without repeated usage
+in reference applications.
+
+Status: Keep as-is.
+
+### Portal select and pagination components
+
+The abstractions were first proven in Portal Demo and remain application-level
+components. They remove repeated markup without hiding feature behavior.
+
+Status: Prototype.

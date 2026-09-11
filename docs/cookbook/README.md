@@ -50,15 +50,17 @@ Parse stable request parameters, paginate application results, and preserve acti
 
 ---
 
-# Planned Guides
-
-These tasks are already supported by Drogular's public API. Their Cookbook guides will be added after the existing implementations and examples have been reviewed and documented.
-
-## Authentication & Authorization
+## [Authentication & Authorization](authentication/overview.md)
 
 **Need to authenticate users and protect application resources?**
 
-Use Drogular's authentication and authorization infrastructure to establish identity and enforce access rules.
+Establish application identity, manage sessions, protect Pages and Actions, enforce roles, and integrate custom 
+authentication backends.
+
+Related guides cover login/logout, session management, protected Pages and Actions, role-based authorization, security 
+practices, and custom backends.
+
+---
 
 # Reading Order
 
