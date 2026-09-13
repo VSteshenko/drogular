@@ -33,6 +33,7 @@ It provides these capabilities as parts of a single application framework with a
 - 📱 Progressive Web Apps
 - 🛠 Developer Tools built on public APIs
 - 🔌 Extensible architecture
+- 🚀 Built-in project generator and developer CLI
 
 ---
 
@@ -194,19 +195,19 @@ The [Getting Started](docs/getting-started/README.md) guide adds the required CM
 
 ---
 
-## What's New in 0.21
+## What's New in 0.22
 
-Drogular 0.21 focuses on developer experience, diagnostics, and production readiness.
+Drogular 0.22 focuses on developer productivity and making the path from an installed CLI to a working application fast and reproducible.
 
-- 🚀 Standalone Drogular CLI with reproducible project generation
-- 🔍 Application Inspection API
-- 🛠 Extensible Developer Tools platform
-- 📊 Built-in Diagnostics Page and JSON inspection endpoint
-- ⚙️ Request-scoped dependency injection across request contexts
-- 🔒 Thread-safety improvements for template caching and lazy singletons
-- 📚 Major expansion of Getting Started, Cookbook, and API Reference documentation
+- 🚀 Reusable project generator with embedded project templates
+- 🧰 Developer-focused `drogular` CLI with destination-path support and template discovery
+- 🧩 `minimal` starter with the recommended Drogular project structure and concise `Tip:` guidance
+- 📱 Installable `pwa` starter with manifest, service worker, offline fallback, responsive UI, and application icons
+- 🛡 Safer generation with path validation, overwrite protection, and cleanup after failures
+- 🧪 End-to-end smoke tests that generate, configure, compile, and link both official starters
+- 📊 New System Monitor PWA example with live monitoring, reconnect/offline behavior, SSH, and Raspberry Pi hardware inspection
 
-See [RELEASE_NOTES_0.21.md](RELEASE_NOTES_0.21.md) for the complete release notes.
+See [RELEASE_NOTES_0.22.md](RELEASE_NOTES_0.22.md) for the complete release notes.
 
 ---
 
@@ -222,20 +223,6 @@ See [RELEASE_NOTES_0.21.md](RELEASE_NOTES_0.21.md) for the complete release note
 ---
 
 ## Roadmap
-
-### 0.22 — Developer Productivity
-
-Current progress: the standalone CLI, embedded project-template registry, `minimal` starter, and `pwa` starter are
-already implemented on `main`. Feature/CRUD scaffolding and the remaining productivity work are still roadmap items.
-
-- CLI Generators
-- Feature-first scaffolding
-- Project Templates
-- Feature / CRUD generation
-- Asset Pipeline
-- Localization 2.0
-- PortalDemo expansion
-- Architecture, Best Practices, and CLI documentation
 
 ### 0.23 — Server-driven UI & Framework Foundations
 
