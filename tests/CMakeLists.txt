@@ -1,5 +1,7 @@
 add_executable(drogular_tests
     core/core_app_tests.cpp
+    core/core_interactions_resources_tests.cpp
+    core/core_ui_resources_tests.cpp
     core/core_application_inspection_tests.cpp
     core/core_diagnostics_page_tests.cpp
     core/core_application_options_tests.cpp

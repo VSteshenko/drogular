@@ -2,6 +2,8 @@
 #include <drogular/developer_tools_component_registry.hpp>
 #include <drogular/developer_tools/diagnostics_page.hpp>
 #include <drogular/developer_tools/diagnostics_resources.hpp>
+#include <drogular/interactions_resources.hpp>
+#include <drogular/ui_resources.hpp>
 
 #include <drogon/drogon.h>
 
@@ -171,6 +173,62 @@ App& App::enableInspection() {
     );
 
     inspectionEnabled_ = true;
+    return *this;
+}
+
+App& App::interactions() {
+    if (interactionsEnabled_) {
+        return *this;
+    }
+
+    drogon::app().registerHandler(
+        std::string(interactions_resources::ScriptPath),
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response = drogon::HttpResponse::newHttpResponse();
+            response->addHeader(
+                "Content-Type",
+                "text/javascript; charset=utf-8"
+            );
+            response->setBody(
+                std::string(interactions_resources::script())
+            );
+            callback(response);
+        },
+        {drogon::Get}
+    );
+
+    interactionsEnabled_ = true;
+    return *this;
+}
+
+App& App::ui() {
+    if (uiEnabled_) {
+        return *this;
+    }
+
+    drogon::app().registerHandler(
+        std::string(ui_resources::StylesheetPath),
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response = drogon::HttpResponse::newHttpResponse();
+            response->addHeader(
+                "Content-Type",
+                "text/css; charset=utf-8"
+            );
+            response->setBody(
+                std::string(ui_resources::stylesheet())
+            );
+            callback(response);
+        },
+        {drogon::Get}
+    );
+
+    uiEnabled_ = true;
     return *this;
 }
 

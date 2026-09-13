@@ -357,6 +357,22 @@ public:
     App& enableInspection();
 
     /**
+     * Enables the built-in Drogular Interactions browser runtime.
+     *
+     * The runtime is served from /__drogular/assets/interactions.js.
+     * Calling this method more than once is safe.
+     */
+    App& interactions();
+
+    /**
+     * Enables the built-in Drogular UI stylesheet.
+     *
+     * The stylesheet is served from /__drogular/assets/ui.css.
+     * Calling this method more than once is safe.
+     */
+    App& ui();
+
+    /**
      * Enables the built-in diagnostics application at /__drogular.
      *
      * The page is an independent browser client of the public inspection
@@ -397,6 +413,8 @@ private:
     std::optional<bool> developerToolsOverride_;
     bool developerToolsEnabled_ = false;
     bool inspectionEnabled_ = false;
+    bool interactionsEnabled_ = false;
+    bool uiEnabled_ = false;
     bool diagnosticsPageEnabled_ = false;
     std::shared_ptr<ApplicationInspectionController> inspectionController_;
 };
