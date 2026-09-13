@@ -62,7 +62,7 @@
     ({{ member.role }})
     @if(isAdmin)
     <form method="post" action="{{ member.removeUrl }}" style="display:inline">
-        <button type="submit">
+        <button class="dg-button" type="submit">
             {{ t('departments.members.remove') }}
         </button>
     </form>
@@ -88,7 +88,7 @@
         </option>
     @endforeach
     </select>
-    <button type="submit">
+    <button class="dg-button" type="submit">
         {{ t('departments.members.add') }}
     </button>
 </form>

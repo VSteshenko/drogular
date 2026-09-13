@@ -99,6 +99,24 @@ TEST(PortalAuthTests, LoginPageRendersForm) {
             "name=\"password\""
         )
     );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "class=\"dg-button\""
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "/__drogular/assets/ui.css"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "/__drogular/assets/interactions.js"
+        )
+    );
     EXPECT_FALSE(
         HtmlTestSupport::containsText(
             html,
@@ -126,6 +144,12 @@ TEST(PortalAuthTests, LoginPageShowsMissingCredentialsError) {
         HtmlTestSupport::containsText(
             html,
             "Please enter username and password."
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "class=\"dg-status dg-status-danger\""
         )
     );
 }

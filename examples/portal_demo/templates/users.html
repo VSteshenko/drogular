@@ -31,7 +31,7 @@
                 required="{{ usersRoleRequired }}"
         />
     </div>
-    <button type="submit">{{ t('users.create') }}</button>
+    <button class="dg-button" type="submit">{{ t('users.create') }}</button>
 </form>
 @endif
 
@@ -66,7 +66,7 @@
                     options="userSortDirectionOptions"
             />
         </div>
-        <button type="submit">{{ t('users.search.button') }}</button>
+        <button class="dg-button" type="submit">{{ t('users.search.button') }}</button>
         @if(hasActiveUserFilters)
         <a href="/users">{{ t('users.search.clear') }}</a>
         @endif

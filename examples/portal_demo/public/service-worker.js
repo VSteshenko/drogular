@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-portal-demo-v1";
+const CACHE_NAME = "drogular-portal-demo-v2";
 
 const APP_SHELL = [
     "/",
@@ -7,7 +7,9 @@ const APP_SHELL = [
     "/__offline",
     "/assets/manifest.webmanifest",
     "/service-worker.js",
-    "/assets/favicon.ico"
+    "/assets/favicon.ico",
+    "/__drogular/assets/ui.css",
+    "/__drogular/assets/interactions.js"
 ];
 
 self.addEventListener("install", event => {

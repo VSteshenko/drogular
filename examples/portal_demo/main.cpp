@@ -87,26 +87,28 @@ int main(
 
     drogular::App app;
 
-    app.templateRoot(
-        "examples/portal_demo/templates"
-    )
-    .staticFiles(
-       "/assets",
-       "examples/portal_demo/public"
-    )
-    .templateCache(false)
-    .staticFileCacheProfile(
-        drogular::StaticFileCacheProfile::Development
-    )
-    .serviceWorker(
-        "examples/portal_demo/public/service-worker.js"
-    )
-    .offlinePage<PortalOfflinePage>()
-    .profile(drogular::ApplicationProfile::Development)
-    .developerToolsComponent(
-        "portal.summary",
-        "/assets/portal-inspection.js"
-    );
+    app.ui()
+       .interactions()
+       .templateRoot(
+           "examples/portal_demo/templates"
+       )
+       .staticFiles(
+           "/assets",
+           "examples/portal_demo/public"
+       )
+       .templateCache(false)
+       .staticFileCacheProfile(
+           drogular::StaticFileCacheProfile::Development
+       )
+       .serviceWorker(
+           "examples/portal_demo/public/service-worker.js"
+       )
+       .offlinePage<PortalOfflinePage>()
+       .profile(drogular::ApplicationProfile::Development)
+       .developerToolsComponent(
+           "portal.summary",
+           "/assets/portal-inspection.js"
+       );
 
     app.expressionFunction(
         "t",

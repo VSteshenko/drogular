@@ -4,7 +4,7 @@
 <p>{{ t('auth.login_required.message') }}</p>
 
 <p>
-  <a href="/login">{{ t('nav.login') }}</a>
+    <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @endif
 
@@ -20,9 +20,9 @@
 <p>{{ t('project_types.not_found.message') }}</p>
 
 <p>
-  <a href="/project-types">
-    {{ t('project_types.back') }}
-  </a>
+    <a href="/project-types">
+        {{ t('project_types.back') }}
+    </a>
 </p>
 @endif
 
@@ -41,43 +41,43 @@
         method="post"
         action="/project-types/{{ projectTypeId }}/update"
 >
-  <div>
-    <label for="code">
-      {{ projectTypeCodeLabel }}
-      @if(projectTypeCodeRequired):@endif
-    </label>
+    <div>
+        <label for="code">
+            {{ projectTypeCodeLabel }}
+            @if(projectTypeCodeRequired):@endif
+        </label>
 
-    <input
-            id="code"
-            name="code"
-            value="{{ projectTypeCode }}"
-            @if(projectTypeCodeRequired)required@endif
-    />
-  </div>
+        <input
+                id="code"
+                name="code"
+                value="{{ projectTypeCode }}"
+                @if(projectTypeCodeRequired)required@endif
+        />
+    </div>
 
-  <div>
-    <label for="title">
-      {{ projectTypeTitleLabel }}
-      @if(projectTypeTitleRequired):@endif
-    </label>
+    <div>
+        <label for="title">
+            {{ projectTypeTitleLabel }}
+            @if(projectTypeTitleRequired):@endif
+        </label>
 
-    <input
-            id="title"
-            name="title"
-            value="{{ projectTypeTitle }}"
-            @if(projectTypeTitleRequired)required@endif
-    />
-  </div>
+        <input
+                id="title"
+                name="title"
+                value="{{ projectTypeTitle }}"
+                @if(projectTypeTitleRequired)required@endif
+        />
+    </div>
 
-  <button type="submit">
-    {{ t('project_types.update') }}
-  </button>
+    <button class="dg-button" type="submit">
+        {{ t('project_types.update') }}
+    </button>
 </form>
 
 <p>
-  <a href="/project-types">
-    {{ t('project_types.back') }}
-  </a>
+    <a href="/project-types">
+        {{ t('project_types.back') }}
+    </a>
 </p>
 
 @endif
