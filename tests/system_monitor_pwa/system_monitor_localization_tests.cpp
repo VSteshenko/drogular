@@ -1,5 +1,7 @@
 #include "localization/system_monitor_translations.hpp"
 
+#include <drogular/interactions_resources.hpp>
+
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -61,7 +63,7 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
 TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations) {
     const auto root = std::filesystem::path(DROGULAR_SOURCE_DIR) /
                       "examples/system_monitor_pwa/public";
-    const auto interactions = readFile(root / "interactions.js");
+    const auto interactions = drogular::interactions_resources::script();
     const auto board = readFile(root / "board.js");
     const auto worker = readFile(root / "service-worker.js");
 
@@ -75,6 +77,6 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(interactions.find("new CustomEvent('dg:resume')"), std::string::npos);
     EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
     EXPECT_EQ(board.find("renderConnectionStatus"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v19"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v20"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

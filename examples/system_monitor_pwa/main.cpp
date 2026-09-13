@@ -228,7 +228,9 @@ int main(int argc, const char* argv[]) {
             return std::make_shared<system_monitor::SystemMonitorTranslations>();
         });
 
-    app.templateRoot("examples/system_monitor_pwa/templates")
+    app.ui()
+       .interactions()
+       .templateRoot("examples/system_monitor_pwa/templates")
        .templateCache(false)
        .staticFiles(
            "/assets",

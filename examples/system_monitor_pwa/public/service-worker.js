@@ -1,12 +1,13 @@
-const CACHE_NAME = "drogular-system-monitor-v19";
+const CACHE_NAME = "drogular-system-monitor-v20";
 
 const OFFLINE_PAGE = "/__offline";
 
 const STATIC_ASSETS = [
     OFFLINE_PAGE,
     "/assets/manifest.webmanifest",
+    "/__drogular/assets/ui.css",
+    "/__drogular/assets/interactions.js",
     "/assets/app.css",
-    "/assets/interactions.js",
     "/assets/board.js",
     "/assets/icons/favicon.svg",
     "/assets/icons/apple-touch-icon.png",
@@ -74,7 +75,9 @@ self.addEventListener("fetch", event => {
         return;
     }
 
-    if (url.origin === self.location.origin && url.pathname.startsWith("/assets/")) {
+    if (url.origin === self.location.origin &&
+        (url.pathname.startsWith("/assets/") ||
+         url.pathname.startsWith("/__drogular/assets/"))) {
         event.respondWith(
             caches.match(event.request)
                 .then(cached => cached || fetch(event.request))

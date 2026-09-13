@@ -1,3 +1,5 @@
+#include <drogular/interactions_resources.hpp>
+
 #include <gtest/gtest.h>
 
 #include <fstream>
@@ -27,8 +29,7 @@ TEST(ProcessDashboardAssetsTests, ContainsReadOnlyProcessInventoryWithFilteringA
     EXPECT_NE(html.find("data-dg-state-view=\"error\""), std::string::npos);
     EXPECT_NE(html.find("t(\"dashboard.process_note\")"), std::string::npos);
 
-    const auto interactions = readFile(std::string(DROGULAR_SOURCE_DIR) +
-        "/examples/system_monitor_pwa/public/interactions.js");
+    const auto interactions = drogular::interactions_resources::script();
     EXPECT_NE(interactions.find("document.querySelectorAll('[dg-get]')"), std::string::npos);
     EXPECT_NE(interactions.find("Accept': 'text/html"), std::string::npos);
     EXPECT_NE(interactions.find("setState(element, 'loading')"), std::string::npos);

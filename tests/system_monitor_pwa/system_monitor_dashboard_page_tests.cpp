@@ -98,8 +98,8 @@ TEST(SystemMonitorDashboardPageTests, RendersSnapshotFromMonitorService) {
     EXPECT_TRUE(drogular::test::contains(result.html, "dg-pause-on-failure"));
     EXPECT_TRUE(drogular::test::contains(result.html, "dg-poll-group=\"monitor\""));
     EXPECT_TRUE(drogular::test::contains(result.html, "data-system-fragment"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-status"));
-    EXPECT_TRUE(drogular::test::contains(result.html, "data-monitor-retry"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-dg-connection-status"));
+    EXPECT_TRUE(drogular::test::contains(result.html, "data-dg-connection-retry"));
     EXPECT_TRUE(drogular::test::contains(
         result.html, "dg-resume=\"[data-connection-live-region]\""));
     EXPECT_TRUE(drogular::test::contains(result.html, ">Retry</button>"));

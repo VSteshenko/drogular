@@ -1,3 +1,5 @@
+#include <drogular/ui_resources.hpp>
+
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -22,6 +24,7 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     const auto html = readAsset(root / "templates/board.html");
     const auto js = readAsset(root / "public/board.js");
     const auto css = readAsset(root / "public/app.css");
+    const auto ui = drogular::ui_resources::stylesheet();
 
     EXPECT_NE(html.find("data-board-header-map"), std::string::npos);
     EXPECT_NE(html.find("data-board-interface-list"), std::string::npos);
@@ -48,14 +51,14 @@ TEST(HardwareBoardAssetsTests, ComposesExistingHardwareApisIntoPhysicalHeaderMap
     EXPECT_NE(css.find(".hardware-summary-grid"), std::string::npos);
     EXPECT_NE(css.find(".board-interface-card"), std::string::npos);
     EXPECT_NE(css.find(".board-overview-grid-generic"), std::string::npos);
-    EXPECT_NE(css.find(".dg-card"), std::string::npos);
-    EXPECT_NE(css.find(".dg-button"), std::string::npos);
-    EXPECT_NE(css.find(".dg-toolbar"), std::string::npos);
-    EXPECT_NE(css.find(".dg-status"), std::string::npos);
-    EXPECT_NE(css.find(".dg-badge"), std::string::npos);
-    EXPECT_NE(css.find(".dg-segmented"), std::string::npos);
-    EXPECT_NE(css.find(".dg-badge-success"), std::string::npos);
-    EXPECT_NE(css.find(".dg-badge-warning"), std::string::npos);
-    EXPECT_NE(css.find(".dg-status-danger"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-card"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-button"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-toolbar"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-status"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-badge"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-segmented"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-badge-success"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-badge-warning"), std::string::npos);
+    EXPECT_NE(ui.find(".dg-status-danger"), std::string::npos);
     EXPECT_NE(css.find("[hidden] { display: none !important; }"), std::string::npos);
 }

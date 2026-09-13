@@ -1,3 +1,5 @@
+#include <drogular/interactions_resources.hpp>
+
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -44,9 +46,7 @@ TEST(GpioDashboardAssetsTests, PreservesCollapsibleChipStateAcrossFragmentRefres
     const auto fragment = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates/fragments/gpio.html");
-    const auto runtime = readSource(
-        std::filesystem::path(DROGULAR_SOURCE_DIR) /
-        "examples/system_monitor_pwa/public/interactions.js");
+    const auto runtime = drogular::interactions_resources::script();
 
     EXPECT_NE(fragment.find("data-dg-preserve-key"), std::string::npos);
     EXPECT_NE(runtime.find("preservedOpenState"), std::string::npos);
@@ -57,9 +57,7 @@ TEST(GpioDashboardAssetsTests, HidesUnavailableInventoryDeclaratively) {
     const auto fragment = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates/fragments/gpio.html");
-    const auto runtime = readSource(
-        std::filesystem::path(DROGULAR_SOURCE_DIR) /
-        "examples/system_monitor_pwa/public/interactions.js");
+    const auto runtime = drogular::interactions_resources::script();
     const auto dashboard = readSource(
         std::filesystem::path(DROGULAR_SOURCE_DIR) /
         "examples/system_monitor_pwa/templates/dashboard.html");

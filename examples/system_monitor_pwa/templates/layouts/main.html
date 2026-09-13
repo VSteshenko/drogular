@@ -8,6 +8,7 @@
     {{{ themeColorMeta }}}
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="/__drogular/assets/ui.css">
     <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body>
@@ -35,15 +36,15 @@
             <div class="connection-status">
                 <div class="connection-status-content">
 @if(hasPageScript)
-                    <span class="status dg-status dg-status-success" data-monitor-status
+                    <span class="status dg-status" data-dg-connection-status
                           data-dg-label-live="{{ t("status.live") }}"
                           data-dg-label-connecting="{{ t("status.connecting") }}"
                           data-dg-label-reconnecting="{{ t("status.reconnecting") }}"
                           data-dg-label-offline="{{ t("status.offline") }}">
                         <span class="status-dot"></span>
-                        <span data-monitor-status-label>{{ t("status.live") }}</span>
+                        <span data-dg-connection-label>{{ t("status.live") }}</span>
                     </span>
-                    <span class="status-detail" data-monitor-status-detail hidden></span>
+                    <span class="status-detail" data-dg-connection-detail hidden></span>
 @else
                     <span class="status dg-status dg-status-danger">
                         <span class="status-dot"></span>
@@ -52,7 +53,7 @@
 @endif
                 </div>
 @if(hasPageScript)
-                <button class="retry-button dg-button" type="button" data-monitor-retry dg-resume="[data-connection-live-region]" hidden>{{ t("status.retry") }}</button>
+                <button class="retry-button dg-button" type="button" data-dg-connection-retry dg-resume="[data-connection-live-region]" hidden>{{ t("status.retry") }}</button>
 @endif
             </div>
         </div>
@@ -63,7 +64,7 @@
     </main>
     <script id="system-monitor-i18n" type="application/json">{{{ clientTranslationsJson }}}</script>
 @if(hasPageScript)
-    <script src="/assets/interactions.js" defer></script>
+    <script src="/__drogular/assets/interactions.js" defer></script>
 @if(hasApplicationScript)
     <script src="{{ pageScript }}" defer></script>
 @endif
