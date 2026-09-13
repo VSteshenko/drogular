@@ -50,6 +50,15 @@ Parse stable request parameters, paginate application results, and preserve acti
 
 ---
 
+## [Server-driven Interactions](server-driven-interactions.md)
+
+**Need to refresh server-rendered HTML without building a client application?**
+
+Use Drogular Interactions for declarative fragment requests, polling, request state, connection state, and retry/offline 
+behavior while keeping rendering on the server.
+
+---
+
 ## [Authentication & Authorization](authentication/overview.md)
 
 **Need to authenticate users and protect application resources?**

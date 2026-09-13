@@ -23,12 +23,13 @@ choices stay in templates.
 
 ## System Monitor PWA
 
-System Monitor PWA is the reference experiment for server-rendered fragments and
-progressively enhanced live UI. It demonstrates server-rendered system/process/hardware 
-fragments, declarative `dg-get` / `dg-target` / `dg-trigger` / `dg-resume` interactions, 
-polling and retry/offline behavior, macOS/Linux monitoring, Raspberry Pi hardware inspection,
+System Monitor PWA is the reference application for server-rendered fragments and
+progressively enhanced live UI. It uses the framework-level Drogular Interactions and
+Drogular UI modules to demonstrate server-rendered system/process/hardware fragments,
+declarative `dg-get` / `dg-target` / `dg-trigger` / `dg-resume` interactions, polling and
+retry/offline behavior, macOS/Linux monitoring, Raspberry Pi hardware inspection,
 SSH-backed remote monitoring, and PWA integration.
 
-These interaction primitives currently live in the example while the reusable framework-level 
-API is still being designed. 
+The example keeps application-specific layout and hardware presentation local while shared
+interaction behavior and UI primitives come from `/__drogular/assets/`.
 See [`examples/system_monitor_pwa/README.md`](../../examples/system_monitor_pwa/README.md).

@@ -226,7 +226,7 @@ See [RELEASE_NOTES_0.22.md](RELEASE_NOTES_0.22.md) for the complete release note
 
 ### 0.23 — Server-driven UI & Framework Foundations
 
-Drogular 0.23 is planned to turn the successful System Monitor experiments into reusable framework capabilities while keeping JavaScript and CSS optional, small, and composable.
+Drogular 0.23 is turning the successful System Monitor experiments into reusable framework capabilities while keeping JavaScript and CSS optional, small, and composable. The first framework-level Drogular Interactions and Drogular UI APIs are now in place and System Monitor has been migrated to consume them.
 
 **Drogular Interactions**
 
@@ -235,8 +235,9 @@ Drogular 0.23 is planned to turn the successful System Monitor experiments into 
 - Standard loading, ready, empty, and error states
 - Polling groups for coordinated live UI
 - Failure limits with pause and explicit resume
-- First-class Component / Fragment rendering from Actions
-- Finish separating the interaction runtime from application-specific connection/status markup
+- Framework-served `/__drogular/assets/interactions.js` via opt-in `app.interactions()`
+- Interaction runtime separated from application-specific connection/status markup through `data-dg-connection-*`
+- First-class Component / Fragment rendering from Actions *(planned)*
 
 **Drogular UI**
 
@@ -249,6 +250,7 @@ A small optional UI foundation rather than a full CSS framework:
 - `dg-badge`
 - `dg-segmented`
 - Semantic variants: `neutral`, `info`, `success`, `warning`, and `danger`
+- Framework-served `/__drogular/assets/ui.css` via opt-in `app.ui()`
 
 The System Monitor experiment also validated a server-driven presentation model: C++ Components choose semantic state and UI variants, templates compose the primitives, and Drogular UI owns the shared visual treatment. Application-specific layout, branding, and domain presentation remain application-owned.
 

@@ -33,6 +33,7 @@ Application startup
         ├── Components
         ├── GraphQL
         ├── Static Files and PWA
+        ├── Drogular UI / Interactions
         └── Developer Tools
 ```
 
@@ -171,6 +172,65 @@ The overload without a tag uses `ComponentType::tag`.
 ```cpp
 app.component<TodoItemComponent>();
 app.component<AlertComponent>("app-alert");
+```
+
+---
+
+## Optional Browser Resources
+
+### `interactions()`
+
+```cpp
+App& interactions();
+```
+
+Enables the built-in [Drogular Interactions](../interactions/README.md) browser runtime.
+The JavaScript resource is served from:
+
+```text
+/__drogular/assets/interactions.js
+```
+
+The call is idempotent. It registers the resource route only; applications still
+include the `<script>` tag explicitly. Enabling interactions does not enable
+Drogular UI.
+
+```cpp
+app.interactions();
+```
+
+```html
+<script src="/__drogular/assets/interactions.js" defer></script>
+```
+
+### `ui()`
+
+```cpp
+App& ui();
+```
+
+Enables the built-in [Drogular UI](../ui/README.md) stylesheet at:
+
+```text
+/__drogular/assets/ui.css
+```
+
+The call is idempotent and independent from `interactions()`. Drogular does not
+inject the stylesheet into page layouts automatically.
+
+```cpp
+app.ui();
+```
+
+```html
+<link rel="stylesheet" href="/__drogular/assets/ui.css">
+```
+
+The two modules can be combined when an application wants both the shared UI
+primitives and declarative server-fragment behavior:
+
+```cpp
+app.ui().interactions();
 ```
 
 ---

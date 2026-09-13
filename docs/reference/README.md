@@ -89,6 +89,18 @@ Generate PWA metadata and browser scripts, publish a root service worker, and in
 
 - [PWA](pwa/README.md)
 
+## Drogular Interactions
+
+Add optional declarative GET-based HTML fragment updates, polling, request state, retry/offline behavior, and connection-state coordination.
+
+- [Drogular Interactions](interactions/README.md)
+
+## Drogular UI
+
+Use optional shared presentation primitives and semantic variants without giving the framework ownership of application layout or branding.
+
+- [Drogular UI](ui/README.md)
+
 ## Static Files
 
 Map public URL prefixes to filesystem directories, protect mapped roots, configure browser caching, and serve conditional file responses.

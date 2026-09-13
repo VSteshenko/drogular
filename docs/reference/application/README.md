@@ -10,7 +10,7 @@ The Application subsystem provides the top-level API for configuring and startin
 
 ## [`App`](app.md)
 
-Main application entry point used to configure routes, components, services, static files, PWA behavior, runtime profiles, and Developer Tools before starting the server.
+Main application entry point used to configure routes, components, services, static files, PWA behavior, optional Drogular UI / Interactions resources, runtime profiles, and Developer Tools before starting the server.
 
 ## [`ApplicationOptions`](application-options.md)
 
@@ -34,6 +34,9 @@ Configure options and services
 Register components, pages and actions
     │
     ▼
+Enable optional browser resources
+    │
+    ▼
 Select runtime profile
     │
     ▼
@@ -44,6 +47,8 @@ Run the HTTP server
 drogular::App app;
 
 app.templateRoot("templates")
+    .ui()
+    .interactions()
     .profile(drogular::ApplicationProfile::Development)
     .page<HomePage>("/")
     .action<LoginAction>("/login");

@@ -399,7 +399,7 @@ served from `/service-worker.js`.
 The cache policy is intentionally conservative because monitoring data becomes
 misleading when it is stale:
 
-- static application assets (`app.css`, `interactions.js`, and `board.js`) are cached;
+- static application assets (`app.css` and `board.js`) plus the built-in Drogular UI / Interactions resources are cached;
 - the dedicated `/__offline` page is cached for offline navigation;
 - rendered `/` and `/hardware` pages are not cached because their initial HTML
   contains a system snapshot;
@@ -595,27 +595,26 @@ seconds and keeps the last successful snapshot as stale data if a later refresh
 fails. No process-control operations such as signals, kill, renice, or command
 execution are exposed.
 
-The process panel is also the first System Monitor experiment with server-rendered
-HTML fragments. The dashboard declares `dg-get`, `dg-trigger`, and `dg-target`
-attributes and a small example-local `interactions.js` runtime requests
+The process panel uses Drogular Interactions for server-rendered HTML fragments.
+The dashboard declares `dg-get`, `dg-trigger`, and `dg-target` attributes and the
+built-in `/__drogular/assets/interactions.js` runtime requests
 `/fragments/processes`. Search, sorting, formatting, the 50-row limit, stale state,
 and localization are handled while rendering the fragment on the server. The
 browser only serializes the named controls, polls every three seconds, and swaps
 the returned HTML into the declared target.
 
-The example-local interaction runtime also owns the request lifecycle state. An
+The shared interaction runtime also owns the request lifecycle state. An
 interactive fragment receives `dg-loading`, `dg-ready`, `dg-empty`, or `dg-error`
 and an equivalent `data-dg-state` value; `aria-busy` follows the loading state.
 Server-rendered fragments mark semantic empty results with `data-dg-empty`, so
 the browser does not need process-specific knowledge to distinguish an empty
-inventory from a successful non-empty response. Generic `dg-state-view` and
-`dg-empty-state` styles provide the loading, error, and empty presentation while
-the server remains responsible for localized messages.
+inventory from a successful non-empty response. System Monitor keeps its
+application-specific state presentation local while the server remains responsible
+for localized messages.
 
-This experiment intentionally lives entirely inside `system_monitor_pwa`; no
-Drogular framework API or core asset is changed yet. `/api/processes` remains
-available as the JSON inventory endpoint so the fragment approach can be evaluated
-without removing the existing machine-readable contract.
+`/api/processes` remains available as the JSON inventory endpoint, demonstrating
+that server-rendered fragments can coexist with an existing machine-readable
+contract.
 
 GPIO is the second inventory migrated to the same experiment. `/fragments/gpio`
 now performs filtering, formatting, localization, board-metadata enrichment, and
@@ -674,7 +673,7 @@ CPU, memory, disk, Raspberry Pi, host, and uptime view is rendered on the server
 subsequent two-second refreshes. This removes the dashboard-specific `app.js`
 entirely while keeping `/api/system` unchanged for machine-readable consumers.
 
-The example-local interaction runtime gained only generic connection behavior:
+Drogular Interactions provides the generic connection behavior:
 `dg-failure-limit`, `dg-pause-on-failure`, `dg-connection`, `dg-retry`, and
 `dg-resume`. A successful system fragment reports `live` or `stale` through
 `data-dg-connection-*`. After three consecutive network failures the system
@@ -684,30 +683,21 @@ queued refresh, and remains paused. The Retry button sends an explicit
 request, and restarts periodic polling. No CPU-, memory-, disk-, or
 Raspberry-Pi-specific code lives in the browser runtime.
 
-### Local UI foundation experiment
+### Drogular UI integration
 
-System Monitor also contains an example-local CSS experiment for a possible future
-Drogular UI foundation. The goal is not to introduce a full CSS framework, but to
-extract small reusable presentation primitives while domain classes keep ownership
-of application-specific layout and visual differences.
+System Monitor enables the built-in Drogular UI foundation with `app.ui()` and
+loads `/__drogular/assets/ui.css`. The framework stylesheet intentionally remains
+small: application-specific layout, branding, and hardware presentation stay in
+System Monitor's own `app.css`.
 
-The first pass uses six primitives: `dg-button`, `dg-card`, `dg-toolbar`,
-`dg-status`, `dg-badge`, and `dg-segmented`. They are composed with the existing
+The shared layer currently provides six primitives: `dg-button`, `dg-card`,
+`dg-toolbar`, `dg-status`, `dg-badge`, and `dg-segmented`. They are composed with
 System Monitor classes rather than replacing them. For example, the same
-`dg-segmented` behavior now provides the visual base for both the language switcher
-and the GPIO filter, while `dg-badge` is shared by GPIO, I²C, SPI, and UART pills.
+`dg-segmented` base is used by both the language switcher and the GPIO filter, while
+`dg-badge` is shared by GPIO, I²C, SPI, and UART pills.
 
-Like the interaction experiment, this remains entirely inside
-`examples/system_monitor_pwa`; no Drogular core stylesheet or public UI API is
-introduced yet. The experiment is intended to measure whether a small optional UI
-foundation can reduce repeated CSS without taking ownership of application
-branding or domain presentation.
-
-### Semantic UI variants experiment
-
-The local UI experiment now separates domain state from visual styling. C++ components
-and the small client runtime choose semantic variants such as `success`, `info`,
-`warning`, `danger`, and `neutral`, while `dg-badge-*` and `dg-status-*` define their
-shared presentation. GPIO, I²C, UART, board exposure, and connection states therefore
-no longer need separate application-specific color classes for equivalent meanings.
-Layout, sizing, typography, and board-specific structure remain application-owned.
+System Monitor also uses the semantic `neutral`, `info`, `success`, `warning`, and
+`danger` variants. C++ components choose semantic meaning while Drogular UI owns the
+shared treatment. Connection status uses the same model through
+`data-dg-connection-state`; layout, sizing, typography, and board-specific structure
+remain application-owned.
