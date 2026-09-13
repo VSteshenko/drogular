@@ -399,7 +399,7 @@ served from `/service-worker.js`.
 The cache policy is intentionally conservative because monitoring data becomes
 misleading when it is stale:
 
-- static application assets (`app.css` and `board.js`) plus the built-in Drogular UI / Interactions resources are cached;
+- static application assets (`app.css`) plus the built-in Drogular UI / Interactions resources are cached;
 - the dedicated `/__offline` page is cached for offline navigation;
 - rendered `/` and `/hardware` pages are not cached because their initial HTML
   contains a system snapshot;
@@ -555,9 +555,17 @@ controller mapping that the available kernel metadata has not proven.
 ## Hardware overview
 
 The dedicated `/hardware` page composes the existing system, GPIO, I²C, SPI,
-and UART inventories into a single board-oriented view. It does not introduce a
-second hardware probing path: the page reads the same `/api/system`, `/api/gpio`,
-`/api/i2c`, `/api/spi`, and `/api/uart` endpoints used by the dashboard.
+and UART services into a single board-oriented server-rendered view. It does not
+introduce a second hardware probing path: `HardwareFragmentAction` reads the same
+service layer that backs the machine-readable `/api/*` endpoints and renders the
+combined `/fragments/hardware` response through `HardwareFragmentComponent`.
+
+Hardware inventory refresh and connection detection intentionally use different
+cadences. A lightweight `/fragments/system` interaction probes connection state
+every two seconds and drives the shared retry/offline UI. The heavier
+`/fragments/hardware` interaction refreshes the board inventory every 30 seconds.
+The stable `board-hero` therefore remains part of the page shell rather than being
+replaced with each hardware refresh.
 
 On a supported Raspberry Pi board the page renders the physical 40-pin header.
 Board-specific metadata is enabled only after the monitored system is positively
@@ -616,13 +624,13 @@ for localized messages.
 that server-rendered fragments can coexist with an existing machine-readable
 contract.
 
-GPIO is the second inventory migrated to the same experiment. `/fragments/gpio`
-now performs filtering, formatting, localization, board-metadata enrichment, and
-row rendering on the server while the dashboard only declares a 30-second refresh
-and a `filter` radio group. The existing `/api/gpio` JSON endpoint remains intact.
-The local interaction runtime also preserves the open/closed state of keyed native
-`<details>` elements across fragment replacement and can hide an interaction when
-the server marks the inventory `data-dg-unavailable`.
+GPIO follows the same server-driven pattern. `/fragments/gpio` performs filtering,
+formatting, localization, board-metadata enrichment, and row rendering on the server
+while the dashboard only declares a 30-second refresh and a `filter` radio group.
+The existing `/api/gpio` JSON endpoint remains intact. Drogular Interactions also
+preserves the open/closed state of keyed native `<details>` elements across fragment
+replacement and can hide an interaction when the server marks the inventory
+`data-dg-unavailable`.
 
 Verify locally or through an SSH target with:
 
@@ -655,23 +663,26 @@ System Monitor supports English and German through Drogular's
 `TranslationProvider` and `LocaleSupport`. The selected language is stored in
 the `lang` cookie and can be changed from every rendered page.
 
-Templates use the `t()` expression function. Dynamic labels produced by
-`board.js` uses a server-rendered JSON translation dictionary, while 
-dashboard fragments are localized on the server, so
-the browser code does not maintain a second EN/DE translation table.
+Templates use the `t()` expression function. Dashboard and Hardware fragments are
+localized entirely on the server, so the browser does not maintain a second EN/DE
+translation table. System Monitor no longer needs application-specific JavaScript
+for rendering or localization; the only browser runtime is the framework-provided
+Drogular Interactions module.
 
 The offline page is rendered by Drogular as well. After each successful
 navigation the service worker refreshes its cached offline page, allowing the
 offline fallback to follow the currently selected language while keeping all
 live `/api/*` responses network-only.
 
-### System metrics fragment experiment
+### Server-driven live fragments
 
-The live system dashboard now completes the server-fragment experiment. The initial
+The live system dashboard uses the same server-fragment architecture throughout. The initial
 CPU, memory, disk, Raspberry Pi, host, and uptime view is rendered on the server by
 `SystemFragmentComponent`; the same component serves `/fragments/system` for the
-subsequent two-second refreshes. This removes the dashboard-specific `app.js`
-entirely while keeping `/api/system` unchanged for machine-readable consumers.
+subsequent two-second refreshes while keeping `/api/system` unchanged for
+machine-readable consumers. Hardware uses the same model through
+`HardwareFragmentComponent` and `/fragments/hardware`, so neither Dashboard nor
+Hardware requires application-specific JavaScript.
 
 Drogular Interactions provides the generic connection behavior:
 `dg-failure-limit`, `dg-pause-on-failure`, `dg-connection`, `dg-retry`, and

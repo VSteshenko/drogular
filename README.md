@@ -252,7 +252,7 @@ A small optional UI foundation rather than a full CSS framework:
 - Semantic variants: `neutral`, `info`, `success`, `warning`, and `danger`
 - Framework-served `/__drogular/assets/ui.css` via opt-in `app.ui()`
 
-The System Monitor experiment also validated a server-driven presentation model: C++ Components choose semantic state and UI variants, templates compose the primitives, and Drogular UI owns the shared visual treatment. Application-specific layout, branding, and domain presentation remain application-owned.
+The System Monitor reference application also validates a server-driven presentation model: C++ Components choose semantic state and UI variants, templates compose the primitives, and Drogular UI owns the shared visual treatment. Application-specific layout, branding, and domain presentation remain application-owned.
 
 Drogular UI and Drogular Interactions are intentionally independent: applications can use either one alone or combine them. The goal is to remove repeated presentation boilerplate without turning Drogular into a general-purpose CSS framework.
 

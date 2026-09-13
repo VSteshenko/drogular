@@ -31,5 +31,8 @@ retry/offline behavior, macOS/Linux monitoring, Raspberry Pi hardware inspection
 SSH-backed remote monitoring, and PWA integration.
 
 The example keeps application-specific layout and hardware presentation local while shared
-interaction behavior and UI primitives come from `/__drogular/assets/`.
+interaction behavior and UI primitives come from `/__drogular/assets/`. Dashboard fragments
+refresh independently according to their data cadence; the Hardware page uses a two-second
+system connection probe alongside a 30-second aggregated `/fragments/hardware` refresh. No
+application-specific JavaScript is required for either page.
 See [`examples/system_monitor_pwa/README.md`](../../examples/system_monitor_pwa/README.md).
