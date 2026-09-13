@@ -50,6 +50,14 @@ TEST(DrogularCliOptionsTests, AllowsParentDirectoriesInProjectPath) {
     EXPECT_EQ(options.projectName, "MyApp");
 }
 
+TEST(DrogularCliOptionsTests, AllowsSpacesInParentDirectories) {
+    const Options options = parseArguments({"new", "My Projects/MyApp"});
+
+    EXPECT_EQ(options.command, Command::NewProject);
+    EXPECT_EQ(options.projectPath, "My Projects/MyApp");
+    EXPECT_EQ(options.projectName, "MyApp");
+}
+
 TEST(DrogularCliOptionsTests, RejectsInvalidProjectNameAtEndOfPath) {
     const Options options = parseArguments({"new", "examples/My App"});
 
@@ -77,11 +85,11 @@ TEST(DrogularCliOptionsTests, ParsesTemplatesCommand) {
     EXPECT_EQ(options.command, Command::ListTemplates);
 }
 
-TEST(DrogularCliOptionsTests, RejectsMissingProjectName) {
+TEST(DrogularCliOptionsTests, RejectsMissingProjectPath) {
     const Options options = parseArguments({"new"});
 
     EXPECT_EQ(options.command, Command::Invalid);
-    EXPECT_FALSE(options.error.empty());
+    EXPECT_EQ(options.error, "Missing project path.");
 }
 
 TEST(DrogularCliOptionsTests, RejectsMissingTemplateId) {

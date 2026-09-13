@@ -39,6 +39,19 @@ void printHelp() {
               << "  drogular templates\n";
 }
 
+std::string shellQuote(std::string_view value) {
+    std::string result{"'"};
+    for (const char ch : value) {
+        if (ch == '\'') {
+            result += "'\\''";
+        } else {
+            result.push_back(ch);
+        }
+    }
+    result.push_back('\'');
+    return result;
+}
+
 std::string currentYear() {
     const auto today = std::chrono::floor<std::chrono::days>(
         std::chrono::system_clock::now());
@@ -119,7 +132,7 @@ int createProject(
     std::cout << "Created Drogular project: " << name
               << " (template: " << templateId << ")\n\n"
               << "Next steps:\n"
-              << "  cd " << path << '\n'
+              << "  cd " << shellQuote(path) << '\n'
               << "  cmake -S . -B build\n"
               << "  cmake --build build\n"
               << "  ./build/" << name << '\n';

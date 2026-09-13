@@ -280,3 +280,26 @@ gtest_discover_tests(drogular_tests)
 gtest_discover_tests(drogular_portal_demo_tests)
 gtest_discover_tests(drogular_project_generator_tests)
 gtest_discover_tests(drogular_system_monitor_pwa_tests)
+
+# Generated-project smoke tests verify that official starters remain buildable
+# against the current Drogular source tree, without following a released Git tag.
+# They require the CLI executable, so library-only test configurations skip them.
+if(TARGET drogular_cli)
+    set(DROGULAR_GENERATED_PROJECT_SMOKE_ROOT
+        "${CMAKE_CURRENT_BINARY_DIR}/generated_project_smoke"
+    )
+
+    foreach(template_id IN ITEMS minimal pwa)
+        add_test(
+            NAME "drogular_generated_${template_id}_smoke"
+            COMMAND
+                ${CMAKE_COMMAND}
+                "-DDROGULAR_CLI=$<TARGET_FILE:drogular_cli>"
+                "-DDROGULAR_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
+                "-DSMOKE_ROOT=${DROGULAR_GENERATED_PROJECT_SMOKE_ROOT}"
+                "-DTEMPLATE_ID=${template_id}"
+                "-DPARENT_DROGON_DIR=${Drogon_DIR}"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/project_generator/generated_project_smoke.cmake"
+        )
+    endforeach()
+endif()

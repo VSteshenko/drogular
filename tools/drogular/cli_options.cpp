@@ -44,7 +44,7 @@ Options parseArguments(const std::vector<std::string_view>& arguments) {
     }
 
     if (arguments.size() < 2) {
-        return invalid("Missing project name.");
+        return invalid("Missing project path.");
     }
 
     const fs::path requestedPath{arguments[1]};
