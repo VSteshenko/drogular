@@ -62,12 +62,8 @@
     <main class="shell">
         @content
     </main>
-    <script id="system-monitor-i18n" type="application/json">{{{ clientTranslationsJson }}}</script>
 @if(hasPageScript)
     <script src="/__drogular/assets/interactions.js" defer></script>
-@if(hasApplicationScript)
-    <script src="{{ pageScript }}" defer></script>
-@endif
 @endif
     {{{ serviceWorkerRegistration }}}
 </body>

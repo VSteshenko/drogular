@@ -17,7 +17,6 @@ void OfflinePage::onInit(drogular::RenderContext& context) {
 
     context.set("title", context.translate("app.title"));
     context.set("hasPageScript", false);
-    context.set("hasApplicationScript", false);
 }
 
 } // namespace system_monitor

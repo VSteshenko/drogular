@@ -50,13 +50,12 @@ TEST(SystemMonitorLocalizationTests, TemplatesUseTranslationExpression) {
     EXPECT_NE(layout.find("action=\"/language\""), std::string::npos);
     EXPECT_EQ(layout.find("class=\"site-nav\""), std::string::npos);
     EXPECT_NE(layout.find("language-button is-active"), std::string::npos);
-    EXPECT_NE(layout.find("system-monitor-i18n"), std::string::npos);
+    EXPECT_EQ(layout.find("system-monitor-i18n"), std::string::npos);
     EXPECT_NE(dashboard.find("dg-get=\"/fragments/system\""), std::string::npos);
     EXPECT_NE(systemFragment.find("t(\"dashboard.monitoring_target\")"), std::string::npos);
     EXPECT_NE(systemFragment.find("data-dg-connection-label"), std::string::npos);
-    EXPECT_NE(board.find("t(\"board.overview\")"), std::string::npos);
-    EXPECT_NE(board.find("data-board-connection"), std::string::npos);
-    EXPECT_NE(board.find("dg-get=\"/fragments/system\""), std::string::npos);
+    EXPECT_NE(board.find("data-board-live-region"), std::string::npos);
+    EXPECT_NE(board.find("dg-get=\"/fragments/hardware\""), std::string::npos);
     EXPECT_NE(offline.find("t(\"offline.title\")"), std::string::npos);
 }
 
@@ -64,7 +63,6 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     const auto root = std::filesystem::path(DROGULAR_SOURCE_DIR) /
                       "examples/system_monitor_pwa/public";
     const auto interactions = drogular::interactions_resources::script();
-    const auto board = readFile(root / "board.js");
     const auto worker = readFile(root / "service-worker.js");
 
     EXPECT_NE(interactions.find("dataset.dgConnectionLabel"), std::string::npos);
@@ -75,8 +73,7 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(interactions.find("members.forEach((member) => refresh(member))"), std::string::npos);
     EXPECT_NE(interactions.find("document.querySelectorAll('[dg-resume]')"), std::string::npos);
     EXPECT_NE(interactions.find("new CustomEvent('dg:resume')"), std::string::npos);
-    EXPECT_NE(board.find("system-monitor-i18n"), std::string::npos);
-    EXPECT_EQ(board.find("renderConnectionStatus"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v20"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v21"), std::string::npos);
+    EXPECT_EQ(worker.find("/assets/board.js"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

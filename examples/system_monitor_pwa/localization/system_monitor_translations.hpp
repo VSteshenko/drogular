@@ -6,8 +6,6 @@
 #include <drogular/template/expression/binding_context.hpp>
 #include <drogular/template/expression/functions.hpp>
 
-#include <json/json.h>
-
 #include <span>
 #include <string>
 #include <string_view>
@@ -344,94 +342,11 @@ systemMonitorTranslationExpressionFunction() {
     };
 }
 
-inline const std::span<const std::string_view> clientTranslationKeys() {
-    static constexpr std::string_view keys[] = {
-        "status.live",
-        "status.offline",
-        "status.stale",
-        "status.connecting",
-        "status.reconnecting",
-        "status.retry",
-        "status.unavailable",
-        "status.healthy",
-        "status.normal",
-        "status.warning",
-        "status.events_recorded",
-        "status.no_events_recorded",
-        "dashboard.available",
-        "client.target_stale",
-        "client.inventory_available",
-        "client.inventory_unavailable",
-        "client.no_gpio_chips",
-        "client.no_gpio_lines",
-        "client.no_active_lines",
-        "client.no_free_lines",
-        "client.unnamed",
-        "client.unlabelled_chip",
-        "client.line",
-        "client.function",
-        "client.direction",
-        "client.consumer",
-        "client.flags",
-        "client.state",
-        "client.used",
-        "client.free",
-        "client.not_scanned",
-        "client.scan_disabled",
-        "client.no_responding",
-        "client.kernel_driver",
-        "client.adapter_unavailable",
-        "client.no_i2c",
-        "client.no_spi",
-        "client.no_uart",
-        "client.updated",
-        "client.day_short",
-        "client.hour_short",
-        "client.minute_short",
-        "client.second_short",
-        "client.old",
-        "client.shown",
-        "client.lines",
-        "client.chips",
-        "client.buses",
-        "client.devices",
-        "client.device",
-        "client.device_nodes",
-        "client.header_gpio",
-        "client.gpio_lines",
-        "client.detected_devices",
-        "client.spidev_nodes",
-        "client.pinmux_groups",
-        "client.hardware_inventories_available",
-        "client.data_sources_reachable",
-        "client.header_metadata_unavailable",
-        "client.header_not_available",
-        "client.physical_metadata_unavailable",
-        "client.hardware_overview_stale",
-        "client.available_on_header",
-        "client.detected_pinmux",
-        "client.gpio_service_unavailable",
-        "client.no_linux_serial"
-    };
-    return keys;
-}
-
-inline std::string clientTranslationsJson(drogular::RenderContext& context) {
-    Json::Value values(Json::objectValue);
-    for (const auto key : clientTranslationKeys()) {
-        values[std::string(key)] = context.translate(std::string(key));
-    }
-    Json::StreamWriterBuilder builder;
-    builder["indentation"] = "";
-    return Json::writeString(builder, values);
-}
-
 inline void applyLocalization(drogular::RenderContext& context) {
     const auto locale = drogular::LocaleSupport::current(context);
     context.set("locale", locale);
     context.set("localeEnglish", locale == "en");
     context.set("localeGerman", locale == "de");
-    context.set("clientTranslationsJson", clientTranslationsJson(context));
 }
 
 } // namespace system_monitor

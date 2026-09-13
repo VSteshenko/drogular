@@ -178,6 +178,8 @@ add_executable(drogular_system_monitor_pwa_tests
     ../examples/system_monitor_pwa/pages/board_page.cpp
     ../examples/system_monitor_pwa/pages/offline_page.cpp
     ../examples/system_monitor_pwa/actions/gpio_status_action.cpp
+    ../examples/system_monitor_pwa/actions/hardware_fragment_action.cpp
+    ../examples/system_monitor_pwa/ui/hardware_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/gpio_fragment_action.cpp
     ../examples/system_monitor_pwa/ui/gpio_fragment_component.cpp
     ../examples/system_monitor_pwa/actions/i2c_status_action.cpp
@@ -234,6 +236,7 @@ add_executable(drogular_system_monitor_pwa_tests
     system_monitor_pwa/system_monitor_formatters_tests.cpp
     system_monitor_pwa/system_monitor_dashboard_page_tests.cpp
     system_monitor_pwa/hardware_board_page_tests.cpp
+    system_monitor_pwa/hardware_fragment_action_tests.cpp
     system_monitor_pwa/system_monitor_pwa_identity_tests.cpp
     system_monitor_pwa/system_monitor_pwa_identity_routes_tests.cpp
     system_monitor_pwa/system_monitor_localization_tests.cpp

@@ -21,7 +21,6 @@ void DashboardPage::onInit(drogular::RenderContext& context) {
 
     context.set("title", context.translate("app.title"));
     context.set("hasPageScript", true);
-    context.set("hasApplicationScript", false);
 
     SystemFragmentComponent component;
     component.onInit(context);

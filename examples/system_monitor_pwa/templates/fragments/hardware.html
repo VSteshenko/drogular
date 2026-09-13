@@ -1,0 +1,129 @@
+<section class="board-identity panel dg-card">
+    <div>
+        <p class="eyebrow">{{ hardwareIdentityLabel }}</p>
+        <h2>{{ t("board.identity") }}</h2>
+    </div>
+    <dl class="system-info board-identity-grid">
+        <div><dt>{{ t("board.model") }}</dt><dd>{{ boardModel }}</dd></div>
+@if(hasRaspberryPi)
+        <div><dt>{{ t("dashboard.revision") }}</dt><dd>{{ boardRevision }}</dd></div>
+        <div><dt>{{ t("dashboard.serial") }}</dt><dd>{{ boardSerial }}</dd></div>
+@endif
+        <div><dt>{{ t("board.inventory") }}</dt><dd>{{ inventoryStatus }}</dd></div>
+    </dl>
+</section>
+
+<section class="hardware-summary-grid" aria-label="{{ t("board.hardware_interfaces") }}">
+    <article class="hardware-summary-card" data-board-summary="gpio">
+        <span class="hardware-summary-icon">GPIO</span>
+        <strong>{{ gpioSummaryValue }}</strong>
+        <span class="muted">{{ gpioSummaryDetail }}</span>
+    </article>
+    <article class="hardware-summary-card" data-board-summary="i2c">
+        <span class="hardware-summary-icon">I²C</span>
+        <strong>{{ i2cSummaryValue }}</strong>
+        <span class="muted">{{ i2cSummaryDetail }}</span>
+    </article>
+    <article class="hardware-summary-card" data-board-summary="spi">
+        <span class="hardware-summary-icon">SPI</span>
+        <strong>{{ spiSummaryValue }}</strong>
+        <span class="muted">{{ spiSummaryDetail }}</span>
+    </article>
+    <article class="hardware-summary-card" data-board-summary="uart">
+        <span class="hardware-summary-icon">UART</span>
+        <strong>{{ uartSummaryValue }}</strong>
+        <span class="muted">{{ uartSummaryDetail }}</span>
+    </article>
+</section>
+
+<section class="{{ boardOverviewClass }}">
+@if(hasBoardHeader)
+    <article class="panel dg-card board-header-panel">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow">{{ t("board.physical_layout") }}</p>
+                <h2>{{ t("board.header") }}</h2>
+            </div>
+            <span class="muted">{{ headerStatus }}</span>
+        </div>
+        <div class="board-header-legend" aria-label="{{ t("board.header_legend") }}">
+            <span><i class="board-legend-dot board-legend-power"></i>{{ t("board.power") }}</span>
+            <span><i class="board-legend-dot board-legend-ground"></i>{{ t("board.ground") }}</span>
+            <span><i class="board-legend-dot board-legend-gpio"></i>GPIO</span>
+            <span><i class="board-legend-dot board-legend-active"></i>{{ t("board.interface") }}</span>
+        </div>
+        <div class="board-header-map" data-board-header-map>
+@if(hasHeaderMetadata)
+@foreach(row in headerRows)
+            <div class="board-header-row">
+                <article class="{{ row.left.class }}" data-physical-pin="{{ row.left.number }}">
+                    <span class="board-pin-number">{{ row.left.number }}</span>
+                    <div class="board-pin-body">
+                        <strong>{{ row.left.label }}</strong>
+@if(row.left.hasDetail)
+                        <span class="muted board-pin-detail">{{ row.left.detail }}</span>
+@endif
+@if(row.left.hasRoles)
+                        <div class="board-pin-tags">
+@foreach(role in row.left.roles)
+                            <span class="board-pin-tag" title="{{ role.detail }}">{{ role.label }}</span>
+@endforeach
+                        </div>
+@endif
+                    </div>
+                </article>
+                <article class="{{ row.right.class }}" data-physical-pin="{{ row.right.number }}">
+                    <span class="board-pin-number">{{ row.right.number }}</span>
+                    <div class="board-pin-body">
+                        <strong>{{ row.right.label }}</strong>
+@if(row.right.hasDetail)
+                        <span class="muted board-pin-detail">{{ row.right.detail }}</span>
+@endif
+@if(row.right.hasRoles)
+                        <div class="board-pin-tags">
+@foreach(role in row.right.roles)
+                            <span class="board-pin-tag" title="{{ role.detail }}">{{ role.label }}</span>
+@endforeach
+                        </div>
+@endif
+                    </div>
+                </article>
+            </div>
+@endforeach
+@else
+            <p class="muted">{{ t("client.physical_metadata_unavailable") }}</p>
+@endif
+        </div>
+    </article>
+@endif
+
+    <aside class="board-interface-list" data-board-interface-list>
+@foreach(card in interfaceCards)
+        <article class="panel dg-card board-interface-card">
+            <div class="board-interface-heading">
+                <h3>{{ card.title }}</h3>
+                <span class="board-exposure dg-badge {{ card.exposureVariant }}">{{ card.exposure }}</span>
+            </div>
+            <p class="board-interface-state">{{ card.status }}</p>
+            <p class="muted">{{ card.details }}</p>
+@if(card.hasBadges)
+            <div class="board-interface-badges">
+@foreach(badge in card.badges)
+                <span class="dg-badge dg-badge-success">{{ badge }}</span>
+@endforeach
+            </div>
+@endif
+        </article>
+@endforeach
+    </aside>
+</section>
+
+<section class="panel dg-card board-notes">
+    <p class="eyebrow">{{ t("board.interpretation") }}</p>
+    <h2>{{ t("board.what_shows") }}</h2>
+@if(hasBoardHeader)
+    <p class="muted">{{ t("board.header_note") }}</p>
+@else
+    <p class="muted">{{ t("board.generic_note") }}</p>
+@endif
+</section>

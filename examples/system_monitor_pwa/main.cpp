@@ -1,4 +1,5 @@
 #include "actions/gpio_fragment_action.hpp"
+#include "actions/hardware_fragment_action.hpp"
 #include "actions/gpio_status_action.hpp"
 #include "actions/i2c_fragment_action.hpp"
 #include "actions/spi_fragment_action.hpp"
@@ -271,6 +272,7 @@ int main(int argc, const char* argv[]) {
 
     app.page<system_monitor::DashboardPage>("/");
     app.page<system_monitor::BoardPage>("/hardware");
+    app.get<system_monitor::HardwareFragmentAction>("/fragments/hardware");
     app.action<system_monitor::LanguageAction>("/language");
     app.get<system_monitor::SystemStatusAction>("/api/system");
     app.get<system_monitor::SystemFragmentAction>("/fragments/system");
