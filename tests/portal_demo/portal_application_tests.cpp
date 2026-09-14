@@ -26,6 +26,7 @@
 #include "features/departments/pages/department_details_page.hpp"
 #include "features/departments/pages/department_edit_page.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
+#include "features/admin/pages/admin_page.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 #include "features/department_members/actions/add_department_member_action.hpp"
@@ -118,6 +119,48 @@ TEST(PortalApplicationTests, DashboardUsesCardPrimitivesForQuickLinks) {
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-header")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-link-list")"));
+}
+
+TEST(PortalApplicationTests, UsersUsesCardFormAndTablePrimitives) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalUsersPage>(
+        {},
+        {},
+        "/users"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-stack")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card dg-collapsible")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-form-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-table")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-badge dg-badge-info")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-footer")"));
+}
+
+TEST(PortalApplicationTests, AdminUsesCardGridForDestinations) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalAdminPage>(
+        {},
+        {},
+        "/admin"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/roles")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/project-types")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/__drogular")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Manage roles and authorization options."));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-button")"));
 }
 
 TEST(PortalApplicationTests, ProjectsUsesFormAndTablePrimitives) {

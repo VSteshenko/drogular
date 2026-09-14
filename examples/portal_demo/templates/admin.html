@@ -1,43 +1,58 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>
-    {{ t('auth.login_required.message') }}
-</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2>
+        <p>{{ t('auth.login_required.message') }}</p>
+        <p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></p>
+    </div>
+</section>
 @endif
 
 @if(accessDenied)
-<h2>{{ t('auth.access_denied.title') }}</h2>
-
-<p>
-    {{ t('auth.access_denied.message') }}
-</p>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <h2 class="dg-card-title">{{ t('auth.access_denied.title') }}</h2>
+        <p>{{ t('auth.access_denied.message') }}</p>
+    </div>
+</section>
 @endif
 
 @if(hasAdminAccess)
-<p>
-    Welcome to the administrator area.
-</p>
+<div class="dg-card-grid">
+    <section class="dg-card">
+        <div class="dg-card-header">
+            <h3 class="dg-card-title">{{ t('roles.manage') }}</h3>
+        </div>
+        <div class="dg-card-body">
+            <p class="dg-card-subtitle">{{ t('admin.roles.description') }}</p>
+        </div>
+        <div class="dg-card-footer">
+            <a class="dg-button" href="/roles">{{ t('admin.open') }}</a>
+        </div>
+    </section>
 
-<ul>
-    <li>
-        <a href="/roles">
-            {{ t('roles.manage') }}
-        </a>
-    </li>
-    <li>
-        <a href="/project-types">
-            {{ t('project_types.manage') }}
-        </a>
-    </li>
-    <li>
-        <a href="/__drogular">
-            {{ t('admin.diagnostics') }}
-        </a>
-    </li>
-</ul>
+    <section class="dg-card">
+        <div class="dg-card-header">
+            <h3 class="dg-card-title">{{ t('project_types.manage') }}</h3>
+        </div>
+        <div class="dg-card-body">
+            <p class="dg-card-subtitle">{{ t('admin.project_types.description') }}</p>
+        </div>
+        <div class="dg-card-footer">
+            <a class="dg-button" href="/project-types">{{ t('admin.open') }}</a>
+        </div>
+    </section>
+
+    <section class="dg-card">
+        <div class="dg-card-header">
+            <h3 class="dg-card-title">{{ t('admin.diagnostics') }}</h3>
+        </div>
+        <div class="dg-card-body">
+            <p class="dg-card-subtitle">{{ t('admin.diagnostics.description') }}</p>
+        </div>
+        <div class="dg-card-footer">
+            <a class="dg-button" href="/__drogular">{{ t('admin.open') }}</a>
+        </div>
+    </section>
+</div>
 @endif
