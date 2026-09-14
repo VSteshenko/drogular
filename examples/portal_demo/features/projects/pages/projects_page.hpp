@@ -165,7 +165,7 @@ public:
 
         addStatusOption(
             "",
-            "projects.query.status.all"
+            "projects.filter.status.all"
         );
         addStatusOption(
             "active",

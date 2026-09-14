@@ -22,6 +22,19 @@ TEST(UiResourcesTests, ShipsPresentationPrimitives) {
     EXPECT_NE(css.find(".dg-main"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-page"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-page-header"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-card-header"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-card-body"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-card-footer"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-field"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-input"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-select"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-form-actions"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-table-container"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-table"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-empty-state"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-stack"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-collapsible"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-card-summary"), std::string_view::npos);
     EXPECT_NE(
         css.find("[data-dg-connection-state=\"offline\"]"),
         std::string_view::npos

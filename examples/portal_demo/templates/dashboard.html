@@ -1,44 +1,48 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>
-    {{ t('auth.login_required.message') }}
-</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2>
+        <p>{{ t('auth.login_required.message') }}</p>
+        <p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></p>
+    </div>
+</section>
 @else
 @const(adminRoles = ["admin"])
-<p>
-    Welcome, {{ currentUsername }}.
-</p>
-
-<p>
-    Role: {{ currentRole }}
-</p>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <p class="dg-card-subtitle">Welcome, {{ currentUsername }}.</p>
+        <p><span class="dg-badge dg-badge-info">{{ currentRole }}</span></p>
+    </div>
+</section>
 
 <h3>{{ t('dashboard.quick_links') }}</h3>
+<div class="dg-card-grid">
 @foreach(section in dashboardSections where !section.adminOnly || currentRole in adminRoles)
 <section
+    class="dg-card"
     data-section-number="{{ loop.number }}"
     data-loop-depth="{{ loop.depth }}"
 >
-    <h4>{{ t(section.titleKey) }}</h4>
-    <ul>
-        @foreach(link in section.links where !link.adminOnly || currentRole in adminRoles)
-        <li
-            data-link-number="{{ loop.parent.number }}.{{ loop.number }}"
-            data-loop-depth="{{ loop.depth }}"
-        >
-            <a href="{{ link.url }}">{{ t(link.titleKey) }}</a>
-        </li>
-        @empty
-        <li>{{ t('dashboard.no_links') }}</li>
-        @endforeach
-    </ul>
+    <div class="dg-card-header">
+        <h4 class="dg-card-title">{{ t(section.titleKey) }}</h4>
+    </div>
+    <div class="dg-card-body">
+        <ul class="dg-link-list">
+            @foreach(link in section.links where !link.adminOnly || currentRole in adminRoles)
+            <li
+                data-link-number="{{ loop.parent.number }}.{{ loop.number }}"
+                data-loop-depth="{{ loop.depth }}"
+            >
+                <a href="{{ link.url }}">{{ t(link.titleKey) }}</a>
+            </li>
+            @empty
+            <li class="dg-empty-state">{{ t('dashboard.no_links') }}</li>
+            @endforeach
+        </ul>
+    </div>
 </section>
 @empty
-<p>{{ t('dashboard.no_links') }}</p>
+<p class="dg-empty-state">{{ t('dashboard.no_links') }}</p>
 @endforeach
+</div>
 @endif

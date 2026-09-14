@@ -105,6 +105,42 @@ TEST(PortalApplicationTests, DashboardRendersApplicationShellAndPrimaryNavigatio
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/dashboard")"));
 }
 
+TEST(PortalApplicationTests, DashboardUsesCardPrimitivesForQuickLinks) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDashboardPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-header")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-link-list")"));
+}
+
+TEST(PortalApplicationTests, ProjectsUsesFormAndTablePrimitives) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectsPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-form")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-form-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-field")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-table-container")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-table")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-pagination")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-stack")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-collapsible)"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-summary")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-badge-success)"));
+}
+
 TEST(PortalApplicationTests, DashboardFiltersAdminQuickLinksForRegularUser) {
     PortalApplicationTestHost app(
         DemoDataset::create()

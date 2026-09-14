@@ -1,13 +1,11 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>
-    {{ t('auth.login_required.message') }}
-</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2>
+        <p>{{ t('auth.login_required.message') }}</p>
+        <p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></p>
+    </div>
+</section>
 @else
 @if(hasProjectsError)
 @include("partials/alert_error.html")
@@ -17,178 +15,190 @@
 @include("partials/alert_success.html")
 @endif
 
-<form method="post" action="/projects/create">
-    <div>
-        <label>
-            {{ projectsTitleLabel }}
-            @if(projectTitleRequired):@endif
-        </label>
+<div class="dg-stack">
+<details class="dg-card dg-collapsible" open>
+    <summary class="dg-card-summary">
+        <span class="dg-card-title">{{ t('projects.create') }}</span>
+    </summary>
+    <div class="dg-card-body">
+        <form class="dg-form" method="post" action="/projects/create">
+            <div class="dg-form-grid">
+                <div class="dg-field">
+                    <label>
+                        {{ projectsTitleLabel }}
+                        @if(projectTitleRequired):@endif
+                    </label>
 
-        <input
-                name="title"
-                value="{{ createProjectTitle }}"
-                @if(projectTitleRequired)required@endif
+                    <input
+                            name="title"
+                            value="{{ createProjectTitle }}"
+                            @if(projectTitleRequired)required@endif
+                    />
+                </div>
+
+                <div class="dg-field">
+                    <label for="projectTypeId">
+                        {{ typeLabel }}
+                        @if(projectTypeRequired):@endif
+                    </label>
+
+                    <PortalSelect
+                            id="projectTypeId"
+                            name="projectTypeId"
+                            options="projectTypeOptions"
+                            required="{{ projectTypeRequired }}"
+                    />
+                </div>
+
+                <div class="dg-field">
+                    <label>
+                        {{ projectsStatusLabel }}
+                        @if(projectStatusRequired):@endif
+                    </label>
+
+                    <select
+                            name="status"
+                            @if(projectStatusRequired)required@endif
+                    >
+                        <option value="active">{{ t('projects.status.active') }}</option>
+                        <option value="paused">{{ t('projects.status.paused') }}</option>
+                        <option value="done">{{ t('projects.status.done') }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="dg-form-actions">
+                <button class="dg-button" type="submit">{{ t('projects.create') }}</button>
+            </div>
+        </form>
+    </div>
+</details>
+
+<details class="dg-card dg-collapsible" open>
+    <summary class="dg-card-summary">
+        <span class="dg-card-title">{{ t('projects.filters.title') }}</span>
+    </summary>
+    <div class="dg-card-body">
+        <form class="dg-form" method="get" action="/projects">
+            <fieldset class="dg-fieldset">
+
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="search">{{ t('projects.search.label') }}</label>
+                        <input
+                                id="search"
+                                name="search"
+                                value="{{ filters.search }}"
+                                type="search"
+                        />
+                    </div>
+
+                    <div class="dg-field">
+                        <label for="statusFilter">{{ t('projects.filter.status') }}</label>
+                        <PortalSelect
+                                id="statusFilter"
+                                name="status"
+                                options="filters.statusOptions"
+                        />
+                    </div>
+
+                    <div class="dg-field">
+                        <label for="projectTypeFilter">{{ t('projects.filter.type') }}</label>
+                        <PortalSelect
+                                id="projectTypeFilter"
+                                name="projectTypeId"
+                                options="filters.projectTypeOptions"
+                        />
+                    </div>
+
+                    <div class="dg-field">
+                        <label for="projectOwnerFilter">{{ t('projects.filter.owner') }}</label>
+                        <PortalSelect
+                                id="projectOwnerFilter"
+                                name="ownerId"
+                                options="filters.ownerOptions"
+                        />
+                    </div>
+
+                    <div class="dg-field">
+                        <label for="projectSort">{{ t('projects.sort.label') }}</label>
+                        <PortalSelect
+                                id="projectSort"
+                                name="sort"
+                                options="filters.sortOptions"
+                        />
+                    </div>
+
+                    <div class="dg-field">
+                        <label for="projectSortDirection">{{ t('projects.sort.direction') }}</label>
+                        <PortalSelect
+                                id="projectSortDirection"
+                                name="direction"
+                                options="filters.sortDirectionOptions"
+                        />
+                    </div>
+                </div>
+
+                <div class="dg-form-actions">
+                    <button class="dg-button" type="submit">{{ t('projects.search.button') }}</button>
+                    @if(filters.hasActiveFilters)
+                    <a class="dg-button" href="/projects">{{ t('projects.search.clear') }}</a>
+                    @endif
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</details>
+
+<details class="dg-card dg-collapsible" open>
+    <summary class="dg-card-summary">
+        <span class="dg-card-title">{{ t('projects.title') }}</span>
+    </summary>
+    <div class="dg-card-body">
+        <div class="dg-table-container">
+            <table class="dg-table">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ projectsTitleLabel }}</th>
+                        <th scope="col">{{ projectsStatusLabel }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(project in projects)
+                    <tr data-project-id="{{ project.id }}">
+                        <td>
+                            <a href="{{ project.detailsUrl }}">{{ project.title }}</a>
+                        </td>
+                        <td>
+                            @switch(project.status)
+                                @case("active")
+                                    <span class="dg-badge dg-badge-success">{{ t('projects.status.active') }}</span>
+                                @case("paused")
+                                    <span class="dg-badge dg-badge-warning">{{ t('projects.status.paused') }}</span>
+                                @case("done")
+                                    <span class="dg-badge dg-badge-neutral">{{ t('projects.status.done') }}</span>
+                                @default
+                                    <span class="dg-badge">{{ project.status }}</span>
+                            @endswitch
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td class="dg-empty-state" colspan="2">{{ t('projects.empty') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="dg-card-footer">
+        <PortalPagination
+                model="pagination"
+                ariaLabel="{{ t('projects.pagination.label') }}"
+                previousLabel="{{ t('projects.pagination.previous') }}"
+                nextLabel="{{ t('projects.pagination.next') }}"
         />
     </div>
-
-    <div>
-        <label for="projectTypeId">
-            {{ typeLabel }}
-            @if(projectTypeRequired):@endif
-        </label>
-
-        <PortalSelect
-                id="projectTypeId"
-                name="projectTypeId"
-                options="projectTypeOptions"
-                required="{{ projectTypeRequired }}"
-        />
-    </div>
-
-    <div>
-        <label>
-            {{ projectsStatusLabel }}
-            @if(projectStatusRequired):@endif
-        </label>
-
-        <select
-                name="status"
-                @if(projectStatusRequired)required@endif
-        >
-            <option value="active">{{ t('projects.status.active') }}</option>
-            <option value="paused">{{ t('projects.status.paused') }}</option>
-            <option value="done">{{ t('projects.status.done') }}</option>
-        </select>
-    </div>
-
-    <button class="dg-button" type="submit">{{ t('projects.create') }}</button>
-</form>
-
-<form method="get" action="/projects">
-    <fieldset>
-        <legend>
-            {{ t('projects.filters.title') }}
-        </legend>
-
-        <div>
-            <label for="search">
-                {{ t('projects.search.label') }}
-            </label>
-            <br />
-
-            <input
-                    id="search"
-                    name="search"
-                    value="{{ filters.search }}"
-                    type="search"
-            />
-        </div>
-
-        <div>
-            <label for="statusFilter">
-                {{ t('projects.filter.status') }}
-            </label>
-            <br />
-
-            <PortalSelect
-                    id="statusFilter"
-                    name="status"
-                    options="filters.statusOptions"
-            />
-        </div>
-
-        <div>
-            <label for="projectTypeFilter">
-                {{ t('projects.filter.type') }}
-            </label>
-            <br />
-
-            <PortalSelect
-                    id="projectTypeFilter"
-                    name="projectTypeId"
-                    options="filters.projectTypeOptions"
-            />
-        </div>
-
-        <div>
-            <label for="projectOwnerFilter">
-                {{ t('projects.filter.owner') }}
-            </label>
-            <br />
-
-            <PortalSelect
-                    id="projectOwnerFilter"
-                    name="ownerId"
-                    options="filters.ownerOptions"
-            />
-        </div>
-
-        <div>
-            <label for="projectSort">
-                {{ t('projects.sort.label') }}
-            </label>
-            <br />
-
-            <PortalSelect
-                    id="projectSort"
-                    name="sort"
-                    options="filters.sortOptions"
-            />
-        </div>
-
-        <div>
-            <label for="projectSortDirection">
-                {{ t('projects.sort.direction') }}
-            </label>
-            <br />
-
-            <PortalSelect
-                    id="projectSortDirection"
-                    name="direction"
-                    options="filters.sortDirectionOptions"
-            />
-        </div>
-
-        <div>
-            <button class="dg-button" type="submit">
-                {{ t('projects.search.button') }}
-            </button>
-
-            @if(filters.hasActiveFilters)
-            <a href="/projects">
-                {{ t('projects.search.clear') }}
-            </a>
-            @endif
-        </div>
-    </fieldset>
-</form>
-
-<ul>
-    @foreach(project in projects)
-    <li data-project-id="{{ project.id }}">
-        <a href="{{ project.detailsUrl }}">
-            {{ project.title }}
-        </a>
-        — @switch(project.status)
-            @case("active")
-                {{ t('projects.status.active') }}
-            @case("paused")
-                {{ t('projects.status.paused') }}
-            @case("done")
-                {{ t('projects.status.done') }}
-            @default
-                {{ project.status }}
-        @endswitch
-    </li>
-    @empty
-    <li>{{ t('projects.empty') }}</li>
-    @endforeach
-</ul>
-
-<PortalPagination
-        model="pagination"
-        ariaLabel="{{ t('projects.pagination.label') }}"
-        previousLabel="{{ t('projects.pagination.previous') }}"
-        nextLabel="{{ t('projects.pagination.next') }}"
-/>
+</details>
+</div>
 @endif

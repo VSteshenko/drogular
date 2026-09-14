@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-portal-demo-v4";
+const CACHE_NAME = "drogular-portal-demo-v6";
 
 const APP_SHELL = [
     "/",
