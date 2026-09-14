@@ -44,7 +44,7 @@ TEST(HardwareBoardAssetsTests, UsesServerRenderedHardwareFragmentAndBuiltInUi) {
     EXPECT_NE(fragment.find("panel dg-card board-interface-card"), std::string::npos);
 
     EXPECT_EQ(worker.find("/assets/board.js"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v21"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v22"), std::string::npos);
 
     EXPECT_NE(css.find(".board-header-map"), std::string::npos);
     EXPECT_NE(css.find(".hardware-summary-grid"), std::string::npos);

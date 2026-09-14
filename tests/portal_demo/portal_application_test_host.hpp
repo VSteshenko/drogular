@@ -250,7 +250,8 @@ public:
     template <typename TPage>
     std::string render(
         const std::unordered_map<std::string, std::string>& query = {},
-        const std::unordered_map<std::string, std::string>& routeParams = {}
+        const std::unordered_map<std::string, std::string>& routeParams = {},
+        const std::string& requestPath = "/"
     ) {
         static_assert(
             std::is_base_of_v<drogular::Page, TPage>,
@@ -259,6 +260,8 @@ public:
 
         auto request =
             createRequest(drogon::Get);
+
+        request->setPath(requestPath);
 
         for (const auto& [name, value] : query) {
             request->setParameter(name, value);

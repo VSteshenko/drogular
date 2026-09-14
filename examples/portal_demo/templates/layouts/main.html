@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ locale }}">
+<html lang="{{ locale }}" data-dg-theme="{{ theme }}">
 <head>
     <meta charset="utf-8">
     <title>{{ pageTitle }} — {{ t('app.title') }}</title>
@@ -13,13 +13,24 @@
     <script src="/__drogular/assets/interactions.js" defer></script>
 </head>
 <body>
-    @include("partials/header.html")
+    <div class="dg-shell">
+        @include("partials/header.html")
 
-    <main>
-        @content
-    </main>
+        <div class="dg-main">
+            <main class="dg-page">
+                <header class="dg-page-header">
+                    <p class="dg-page-kicker">{{ t('app.title') }}</p>
+                    <h1 class="dg-page-title">{{ pageTitle }}</h1>
+                </header>
 
-    @include("partials/footer.html")
+                <div class="dg-page-content">
+                    @content
+                </div>
+            </main>
+
+            @include("partials/footer.html")
+        </div>
+    </div>
 
     {{{ serviceWorkerRegistration }}}
 </body>

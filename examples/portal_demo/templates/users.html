@@ -3,8 +3,6 @@
 <p>{{ t('auth.login_required.message') }}</p>
 <p><a href="/login">{{ t('nav.login') }}</a></p>
 @else
-<h2>{{ pageTitle }}</h2>
-
 @if(isAdmin)
 @if(hasUsersError)
 @include("partials/alert_error.html")

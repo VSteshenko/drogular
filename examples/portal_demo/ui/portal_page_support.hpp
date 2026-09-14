@@ -35,10 +35,28 @@ public:
             : std::string("")
         );
         context.set("isAdmin", currentUser.has_value() && currentUser->role == "admin");
+        context.set(
+            "homeUrl",
+            currentUser.has_value()
+                ? std::string("/dashboard")
+                : std::string("/login")
+        );
 
         context.set(
             "locale",
             drogular::LocaleSupport::current(context)
         );
+
+        const auto requestedTheme =
+            context.cookie("dg_theme")
+                .value_or("system");
+
+        const auto theme =
+            requestedTheme == "light" ||
+            requestedTheme == "dark"
+                ? requestedTheme
+                : std::string("system");
+
+        context.set("theme", theme);
     }
 };

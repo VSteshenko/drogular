@@ -1,0 +1,41 @@
+#pragma once
+
+#include <drogular/action_handler.hpp>
+
+#include <string>
+
+class PortalThemeAction final
+    : public drogular::ActionHandler
+{
+public:
+    drogular::ActionResult handle(
+        drogular::ActionContext& context
+    ) override {
+        const auto requested =
+            context.requireForm<std::string>(
+                "theme"
+            );
+
+        const auto theme =
+            requested == "light" || requested == "dark"
+                ? requested
+                : std::string("system");
+
+        const auto redirect =
+            context.form<std::string>("redirect")
+                .value_or("/dashboard");
+
+        const auto safeRedirect =
+            redirect.starts_with("/") &&
+            !redirect.starts_with("//")
+                ? redirect
+                : std::string("/dashboard");
+
+        return drogular::ActionResult::redirect(
+            safeRedirect
+        ).cookie(
+            "dg_theme",
+            theme
+        );
+    }
+};

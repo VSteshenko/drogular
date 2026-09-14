@@ -9,8 +9,6 @@
     <a href="/login">{{ t('nav.login') }}</a>
 </p>
 @else
-<h2>{{ pageTitle }}</h2>
-
 @if(hasProjectsError)
 @include("partials/alert_error.html")
 @endif

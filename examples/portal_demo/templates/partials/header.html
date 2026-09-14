@@ -1,41 +1,101 @@
-<header>
-    <div class="dg-toolbar">
-        <h1>{{ t('app.title') }}</h1>
-    </div>
+<aside class="dg-sidebar">
+    <a class="dg-brand" href="{{ homeUrl }}">
+        <span class="dg-brand-mark" aria-hidden="true">DG</span>
+        <span>{{ t('app.title') }}</span>
+    </a>
 
     @if(isAuthenticated)
-        <nav>
-            <a href="/dashboard">{{ t('nav.dashboard') }}</a>
-            |
-            <a href="/users">{{ t('nav.users') }}</a>
-            |
-            <a href="/projects">{{ t('nav.projects') }}</a>
-            |
-            <a href="/departments">{{ t('nav.departments') }}</a>
-            @if(isAdmin)
-            |
-            <a href="/admin">{{ t('nav.admin') }}</a>
-            @endif
-            |
-            <form method="post" action="/logout" style="display:inline">
+    <nav class="dg-nav" aria-label="Primary">
+        <a class="dg-nav-item @if(currentPath == "/dashboard")is-active@endif"
+           href="/dashboard"
+           @if(currentPath == "/dashboard")aria-current="page"@endif>
+            {{ t('nav.dashboard') }}
+        </a>
+        <a class="dg-nav-item @if(currentPath == "/users")is-active@endif"
+           href="/users"
+           @if(currentPath == "/users")aria-current="page"@endif>
+            {{ t('nav.users') }}
+        </a>
+        <a class="dg-nav-item @if(currentPath == "/projects")is-active@endif"
+           href="/projects"
+           @if(currentPath == "/projects")aria-current="page"@endif>
+            {{ t('nav.projects') }}
+        </a>
+        <a class="dg-nav-item @if(currentPath == "/departments")is-active@endif"
+           href="/departments"
+           @if(currentPath == "/departments")aria-current="page"@endif>
+            {{ t('nav.departments') }}
+        </a>
+        @if(isAdmin)
+        <a class="dg-nav-item @if(currentPath == "/admin")is-active@endif"
+           href="/admin"
+           @if(currentPath == "/admin")aria-current="page"@endif>
+            {{ t('nav.admin') }}
+        </a>
+        @endif
+    </nav>
+
+    <div class="dg-sidebar-footer">
+        <div class="dg-sidebar-user">
+            {{ t('header.signed_in_as') }}
+            <strong>{{ currentUsername }}</strong>
+        </div>
+        <form method="post" action="/logout">
+            <button class="dg-button" type="submit">
+                {{ t('nav.logout') }}
+            </button>
+        </form>
+    </div>
+    @endif
+</aside>
+
+<header class="dg-topbar">
+    <div class="dg-topbar-context">
+        @if(isAuthenticated)
+            {{ currentRole }}
+        @else
+            {{ t('app.title') }}
+        @endif
+    </div>
+
+    <div class="dg-topbar-actions">
+        <div class="dg-segmented" aria-label="{{ t('theme.label') }}">
+            <form method="post" action="/theme">
+                <input type="hidden" name="theme" value="system">
+                <input type="hidden" name="redirect" value="{{ currentPath }}">
                 <button
-                        class="dg-button"
-                        type="submit">
-                    {{ t('nav.logout') }}
+                        class="dg-segmented-item @if(theme == "system")is-active@endif"
+                        type="submit"
+                        @if(theme == "system")disabled@endif>
+                    {{ t('theme.system') }}
                 </button>
             </form>
-        </nav>
-    @endif
 
-    <div class="dg-toolbar">
-        @if(isAuthenticated)
-            <small>
-                {{ t('header.signed_in_as') }}: {{ currentUsername }}
-            </small>
-        @endif
+            <form method="post" action="/theme">
+                <input type="hidden" name="theme" value="light">
+                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <button
+                        class="dg-segmented-item @if(theme == "light")is-active@endif"
+                        type="submit"
+                        @if(theme == "light")disabled@endif>
+                    {{ t('theme.light') }}
+                </button>
+            </form>
+
+            <form method="post" action="/theme">
+                <input type="hidden" name="theme" value="dark">
+                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <button
+                        class="dg-segmented-item @if(theme == "dark")is-active@endif"
+                        type="submit"
+                        @if(theme == "dark")disabled@endif>
+                    {{ t('theme.dark') }}
+                </button>
+            </form>
+        </div>
 
         <div class="dg-segmented" aria-label="Language">
-            <form method="post" action="/language" style="display:inline">
+            <form method="post" action="/language">
                 <input type="hidden" name="language" value="en">
                 <input type="hidden" name="redirect" value="{{ currentPath }}">
                 <button
@@ -46,7 +106,7 @@
                 </button>
             </form>
 
-            <form method="post" action="/language" style="display:inline">
+            <form method="post" action="/language">
                 <input type="hidden" name="language" value="de">
                 <input type="hidden" name="redirect" value="{{ currentPath }}">
                 <button
@@ -58,6 +118,4 @@
             </form>
         </div>
     </div>
-
-    <hr>
 </header>

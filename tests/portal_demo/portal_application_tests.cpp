@@ -76,6 +76,35 @@ TEST(PortalApplicationTests, DashboardUsesNestedLoopMetadataForQuickLinks) {
     );
 }
 
+TEST(PortalApplicationTests, DashboardRendersApplicationShellAndPrimaryNavigation) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDashboardPage>(
+        {},
+        {},
+        "/dashboard"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-sidebar")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-topbar")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-page")"));
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(class="dg-nav-item is-active"
+           href="/dashboard"
+           aria-current="page")"
+        )
+    );
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/projects")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/admin")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/dashboard")"));
+}
+
 TEST(PortalApplicationTests, DashboardFiltersAdminQuickLinksForRegularUser) {
     PortalApplicationTestHost app(
         DemoDataset::create()

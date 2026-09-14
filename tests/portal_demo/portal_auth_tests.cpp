@@ -4,6 +4,7 @@
 #include "data/demo_dataset.hpp"
 #include "features/auth/actions/login_action.hpp"
 #include "features/auth/actions/logout_action.hpp"
+#include "features/theme/actions/theme_action.hpp"
 #include "features/auth/pages/login_page.hpp"
 #include "features/auth/support/portal_auth_support.hpp"
 
@@ -115,6 +116,24 @@ TEST(PortalAuthTests, LoginPageRendersForm) {
         HtmlTestSupport::containsText(
             html,
             "/__drogular/assets/interactions.js"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "class=\"dg-shell\""
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "class=\"dg-page-header\""
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "href=\"/login\""
         )
     );
     EXPECT_FALSE(
@@ -373,4 +392,64 @@ TEST(PortalAuthTests, ActionContextRejectsSessionForUnknownUser) {
     EXPECT_FALSE(
         PortalAuthSupport::isAuthenticated(context)
     );
+}
+
+TEST(PortalThemeTests, LoginDefaultsToSystemThemeAndRendersSelector) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    const auto html = app.render<PortalLoginPage>();
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(data-dg-theme="system")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(action="/theme")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(name="theme" value="dark")"
+        )
+    );
+}
+
+TEST(PortalThemeTests, ThemeActionPersistsSupportedTheme) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    const auto result = app.post<PortalThemeAction>({
+        {"theme", "dark"},
+        {"redirect", "/login"}
+    });
+
+    ASSERT_EQ(result.type(), drogular::ActionResultType::Redirect);
+    EXPECT_EQ(result.location(), "/login");
+    ASSERT_EQ(result.cookies().size(), 1u);
+    EXPECT_EQ(result.cookies().front().name, "dg_theme");
+    EXPECT_EQ(result.cookies().front().value, "dark");
+}
+
+TEST(PortalThemeTests, ThemeActionFallsBackToSystemAndRejectsExternalRedirect) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    const auto result = app.post<PortalThemeAction>({
+        {"theme", "unknown"},
+        {"redirect", "//example.com"}
+    });
+
+    ASSERT_EQ(result.type(), drogular::ActionResultType::Redirect);
+    EXPECT_EQ(result.location(), "/dashboard");
+    ASSERT_EQ(result.cookies().size(), 1u);
+    EXPECT_EQ(result.cookies().front().value, "system");
 }

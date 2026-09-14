@@ -1,6 +1,7 @@
 #include "startup/portal_demo_startup.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/localization/actions/language_action.hpp"
+#include "features/theme/actions/theme_action.hpp"
 #include "features/diagnostics/portal_inspection_contributor.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
 #include "features/auth/pages/login_page.hpp"
@@ -230,6 +231,7 @@ int main(
     app.page<PortalProjectEditPage>("/projects/{id}/edit");
 
     app.action<PortalLanguageAction>("/language");
+    app.action<PortalThemeAction>("/theme");
     app.action<PortalLoginAction>("/login");
     app.action<PortalLogoutAction>("/logout");
     app.action<PortalCreateUserAction>("/users/create");
