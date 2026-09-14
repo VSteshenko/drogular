@@ -103,7 +103,40 @@ TEST(PortalApplicationTests, DashboardRendersApplicationShellAndPrimaryNavigatio
     );
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/projects")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/admin")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-nav-submenu")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/roles")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/project-types")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/__drogular")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/dashboard")"));
+}
+
+TEST(PortalApplicationTests, AdminSubmenuTracksNestedSectionActiveState) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalRolesPage>(
+        {},
+        {},
+        "/roles"
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(class="dg-nav-group is-active")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(class="dg-nav-subitem is-active"
+                   href="/roles"
+                   aria-current="page")"
+        )
+    );
 }
 
 TEST(PortalApplicationTests, DashboardUsesCardPrimitivesForQuickLinks) {

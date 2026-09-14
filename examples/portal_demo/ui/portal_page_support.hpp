@@ -58,5 +58,45 @@ public:
                 : std::string("system");
 
         context.set("theme", theme);
+
+        const auto currentPath =
+            context.get<std::string>("currentPath")
+                .value_or("/");
+
+        const auto startsWith = [](
+            const std::string& value,
+            const std::string& prefix
+        ) {
+            return value.rfind(prefix, 0) == 0;
+        };
+
+        const auto rolesNavigationActive =
+            startsWith(currentPath, "/roles");
+        const auto projectTypesNavigationActive =
+            startsWith(currentPath, "/project-types");
+        const auto diagnosticsNavigationActive =
+            startsWith(currentPath, "/__drogular");
+        const auto adminNavigationActive =
+            currentPath == "/admin" ||
+            rolesNavigationActive ||
+            projectTypesNavigationActive ||
+            diagnosticsNavigationActive;
+
+        context.set(
+            "adminNavigationActive",
+            adminNavigationActive
+        );
+        context.set(
+            "rolesNavigationActive",
+            rolesNavigationActive
+        );
+        context.set(
+            "projectTypesNavigationActive",
+            projectTypesNavigationActive
+        );
+        context.set(
+            "diagnosticsNavigationActive",
+            diagnosticsNavigationActive
+        );
     }
 };

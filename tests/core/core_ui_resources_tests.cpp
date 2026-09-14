@@ -18,6 +18,9 @@ TEST(UiResourcesTests, ShipsPresentationPrimitives) {
     EXPECT_NE(css.find(".dg-shell"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-sidebar"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-nav-item"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-nav-group"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-nav-submenu"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-nav-subitem"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-topbar"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-main"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-page"), std::string_view::npos);

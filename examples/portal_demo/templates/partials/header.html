@@ -27,11 +27,30 @@
             {{ t('nav.departments') }}
         </a>
         @if(isAdmin)
-        <a class="dg-nav-item @if(currentPath == "/admin")is-active@endif"
-           href="/admin"
-           @if(currentPath == "/admin")aria-current="page"@endif>
-            {{ t('nav.admin') }}
-        </a>
+        <div class="dg-nav-group @if(adminNavigationActive)is-active@endif">
+            <a class="dg-nav-item @if(adminNavigationActive)is-active@endif"
+               href="/admin"
+               @if(currentPath == "/admin")aria-current="page"@endif>
+                {{ t('nav.admin') }}
+            </a>
+            <div class="dg-nav-submenu" aria-label="{{ t('nav.admin') }}">
+                <a class="dg-nav-subitem @if(rolesNavigationActive)is-active@endif"
+                   href="/roles"
+                   @if(rolesNavigationActive)aria-current="page"@endif>
+                    {{ t('roles.page.title') }}
+                </a>
+                <a class="dg-nav-subitem @if(projectTypesNavigationActive)is-active@endif"
+                   href="/project-types"
+                   @if(projectTypesNavigationActive)aria-current="page"@endif>
+                    {{ t('project_types.page.title') }}
+                </a>
+                <a class="dg-nav-subitem @if(diagnosticsNavigationActive)is-active@endif"
+                   href="/__drogular"
+                   @if(diagnosticsNavigationActive)aria-current="page"@endif>
+                    {{ t('admin.diagnostics') }}
+                </a>
+            </div>
+        </div>
         @endif
     </nav>
 
