@@ -35,6 +35,10 @@ TEST(UiResourcesTests, ShipsPresentationPrimitives) {
     EXPECT_NE(css.find(".dg-table-container"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-table"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-empty-state"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-details"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-details-item"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-details-label"), std::string_view::npos);
+    EXPECT_NE(css.find(".dg-details-value"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-stack"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-collapsible"), std::string_view::npos);
     EXPECT_NE(css.find(".dg-card-summary"), std::string_view::npos);
@@ -85,10 +89,39 @@ TEST(UiResourcesTests, PrimitivesUseSemanticThemeTokens) {
     );
 }
 
+TEST(UiResourcesTests, CardFooterUsesCardSurface) {
+    const auto css = drogular::ui_resources::stylesheet();
+
+    const auto firstFooter = css.find(".dg-card-footer {");
+    ASSERT_NE(firstFooter, std::string_view::npos);
+    const auto footer = css.find(".dg-card-footer {", firstFooter + 1);
+    ASSERT_NE(footer, std::string_view::npos);
+    const auto footerEnd = css.find('}', footer);
+    ASSERT_NE(footerEnd, std::string_view::npos);
+    const auto block = css.substr(footer, footerEnd - footer);
+
+    EXPECT_NE(block.find("background: var(--dg-surface)"), std::string_view::npos);
+    EXPECT_EQ(block.find("background: var(--dg-surface-muted)"), std::string_view::npos);
+}
+
+TEST(UiResourcesTests, ShipsCollapsePersistenceRuntime) {
+    const auto script = drogular::ui_resources::script();
+
+    EXPECT_FALSE(script.empty());
+    EXPECT_NE(script.find("data-dg-collapse-key"), std::string_view::npos);
+    EXPECT_NE(script.find("localStorage"), std::string_view::npos);
+    EXPECT_NE(script.find("drogular.ui.collapse."), std::string_view::npos);
+    EXPECT_NE(script.find("HTMLDetailsElement"), std::string_view::npos);
+}
+
 TEST(UiResourcesTests, HasStableAssetPath) {
     EXPECT_EQ(
         drogular::ui_resources::StylesheetPath,
         "/__drogular/assets/ui.css"
+    );
+    EXPECT_EQ(
+        drogular::ui_resources::ScriptPath,
+        "/__drogular/assets/ui.js"
     );
 }
 

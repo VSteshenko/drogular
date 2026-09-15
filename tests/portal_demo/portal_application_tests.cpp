@@ -169,10 +169,31 @@ TEST(PortalApplicationTests, UsersUsesCardFormAndTablePrimitives) {
 
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-stack")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card dg-collapsible")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-dg-collapse-key="portal.users.filters")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-form-grid")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-table")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-badge dg-badge-info")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-footer")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(action="/users/create" autocomplete="off")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(name="newUserUsername" value="" autocomplete="off")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(name="newUserPassword" type="password" autocomplete="new-password")"));
+}
+
+TEST(PortalApplicationTests, DepartmentsRenderCreateSuccessMessage) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentsPage>(
+        {{"success", "created"}},
+        {},
+        "/departments"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Department created successfully."));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-status-success)"));
 }
 
 TEST(PortalApplicationTests, AdminUsesCardGridForDestinations) {
@@ -213,8 +234,87 @@ TEST(PortalApplicationTests, ProjectsUsesFormAndTablePrimitives) {
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-pagination")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-stack")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-collapsible)"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-dg-collapse-key="portal.projects.filters")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-summary")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-badge-success)"));
+}
+
+TEST(PortalApplicationTests, DepartmentsUseCardFormTableAndDetailsPrimitives) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto listHtml = app.render<PortalDepartmentsPage>(
+        {},
+        {},
+        "/departments"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(listHtml, R"(class="dg-stack")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(listHtml, R"(class="dg-form-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(listHtml, R"(class="dg-table")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(listHtml, R"(dg-collapsible)"));
+
+    const auto detailsHtml = app.render<PortalDepartmentDetailsPage>(
+        {},
+        {{"id", "1"}},
+        "/departments/1"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(detailsHtml, R"(class="dg-details")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(detailsHtml, R"(class="dg-details-item")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(detailsHtml, R"(class="dg-table")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(detailsHtml, R"(class="dg-badge dg-badge-success")"));
+}
+
+TEST(PortalApplicationTests, RolesAndProjectTypesUseSharedDataPrimitives) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto rolesHtml = app.render<PortalRolesPage>(
+        {},
+        {},
+        "/roles"
+    );
+    const auto projectTypesHtml = app.render<PortalProjectTypesPage>(
+        {},
+        {},
+        "/project-types"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(rolesHtml, R"(class="dg-form-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(rolesHtml, R"(class="dg-table")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(projectTypesHtml, R"(class="dg-form-grid")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(projectTypesHtml, R"(class="dg-table")"));
+}
+
+TEST(PortalApplicationTests, ProjectDetailsAndEditUseDetailsAndFormPrimitives) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto detailsHtml = app.render<PortalProjectDetailsPage>(
+        {},
+        {{"id", "1"}},
+        "/projects/1"
+    );
+    const auto editHtml = app.render<PortalProjectEditPage>(
+        {},
+        {{"id", "1"}},
+        "/projects/1/edit"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(detailsHtml, R"(class="dg-details")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(detailsHtml, R"(class="dg-details-label")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(editHtml, R"(class="dg-form")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(editHtml, R"(class="dg-form-grid")"));
 }
 
 TEST(PortalApplicationTests, DashboardFiltersAdminQuickLinksForRegularUser) {
@@ -496,8 +596,8 @@ TEST(PortalApplicationTests, AdminCreatesUser) {
 
     const auto result =
         app.post<PortalCreateUserAction>({
-            {"username", "new-user"},
-            {"password", "secret"},
+            {"newUserUsername", "new-user"},
+            {"newUserPassword", "secret"},
             {"role", "user"}
         });
 
@@ -527,8 +627,8 @@ TEST(PortalApplicationTests, GuestCannotCreateUser) {
 
     const auto result =
         app.post<PortalCreateUserAction>({
-            {"username", "john"},
-            {"password", "secret"},
+            {"newUserUsername", "john"},
+            {"newUserPassword", "secret"},
             {"role", "user"}
         });
 
@@ -552,8 +652,8 @@ TEST(PortalApplicationTests, UserCannotCreateUser) {
 
     const auto result =
         app.post<PortalCreateUserAction>({
-            {"username", "john"},
-            {"password", "secret"},
+            {"newUserUsername", "john"},
+            {"newUserPassword", "secret"},
             {"role", "user"}
         });
 

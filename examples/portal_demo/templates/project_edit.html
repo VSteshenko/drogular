@@ -1,69 +1,39 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-<p>{{ t('auth.login_required.message') }}</p>
-<p><a href="/login">{{ t('nav.login') }}</a></p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2><p>{{ t('auth.login_required.message') }}</p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></div></section>
 @else
-
 @if(projectNotFound)
-<h2>{{ t('projects.not_found.title') }}</h2>
-<p>{{ t('projects.not_found.message') }}</p>
-<p><a href="/projects">{{ t('projects.back') }}</a></p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('projects.not_found.title') }}</h2><p>{{ t('projects.not_found.message') }}</p><a class="dg-button" href="/projects">{{ t('projects.back') }}</a></div></section>
 @else
-
-@if(hasProjectsError)
-@include("partials/alert_error.html")
-@endif
-
-<form method="post" action="/projects/{{ projectId }}/update">
-    <div>
-        <label>
-            {{ projectsTitleLabel }}
-            @if(projectTitleRequired):@endif
-        </label>
-
-        <input
-                name="title"
-                value="{{ projectTitle }}"
-                @if(projectTitleRequired)required@endif
-        />
-    </div>
-
-    <div>
-        <label for="projectTypeId">
-            {{ typeLabel }}
-            @if(projectTypeRequired):@endif
-        </label>
-
-        <PortalSelect
-                id="projectTypeId"
-                name="projectTypeId"
-                options="projectTypeOptions"
-                required="{{ projectTypeRequired }}"
-        />
-    </div>
-
-    <div>
-        <label>
-            {{ projectsStatusLabel }}
-            @if(projectStatusRequired):@endif
-        </label>
-
-        <select
-                name="status"
-                @if(projectStatusRequired)required@endif
-        >
-            <option value="active" @if(isActive)selected@endif>{{ t('projects.status.active') }}</option>
-            <option value="paused" @if(isPaused)selected@endif>{{ t('projects.status.paused') }}</option>
-            <option value="done" @if(isDone)selected@endif>{{ t('projects.status.done') }}</option>
-        </select>
-    </div>
-
-    <button class="dg-button" type="submit">{{ t('projects.update') }}</button>
-</form>
-
-<p>
-    <a href="/projects/{{ projectId }}">{{ t('projects.back_to_details') }}</a>
-</p>
-
+<div class="dg-stack">
+    @if(hasProjectsError)@include("partials/alert_error.html")@endif
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <form class="dg-form" method="post" action="/projects/{{ projectId }}/update">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="projectTitle">{{ projectsTitleLabel }} @if(projectTitleRequired):@endif</label>
+                        <input id="projectTitle" name="title" value="{{ projectTitle }}" @if(projectTitleRequired)required@endif />
+                    </div>
+                    <div class="dg-field">
+                        <label for="projectTypeId">{{ typeLabel }} @if(projectTypeRequired):@endif</label>
+                        <PortalSelect id="projectTypeId" name="projectTypeId" options="projectTypeOptions" required="{{ projectTypeRequired }}" />
+                    </div>
+                    <div class="dg-field">
+                        <label for="projectStatus">{{ projectsStatusLabel }} @if(projectStatusRequired):@endif</label>
+                        <select id="projectStatus" name="status" @if(projectStatusRequired)required@endif>
+                            <option value="active" @if(isActive)selected@endif>{{ t('projects.status.active') }}</option>
+                            <option value="paused" @if(isPaused)selected@endif>{{ t('projects.status.paused') }}</option>
+                            <option value="done" @if(isDone)selected@endif>{{ t('projects.status.done') }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dg-form-actions">
+                    <button class="dg-button" type="submit">{{ t('projects.update') }}</button>
+                    <a class="dg-button" href="/projects/{{ projectId }}">{{ t('projects.back_to_details') }}</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 @endif
 @endif

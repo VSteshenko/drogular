@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-portal-demo-v6";
+const CACHE_NAME = "drogular-portal-demo-v9";
 
 const APP_SHELL = [
     "/",
@@ -9,6 +9,7 @@ const APP_SHELL = [
     "/service-worker.js",
     "/assets/favicon.ico",
     "/__drogular/assets/ui.css",
+    "/__drogular/assets/ui.js",
     "/__drogular/assets/interactions.js"
 ];
 

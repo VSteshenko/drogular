@@ -85,7 +85,7 @@ TEST(PortalAuthTests, LoginPageRendersForm) {
     EXPECT_TRUE(
         HtmlTestSupport::containsText(
             html,
-            "<form method=\"post\" action=\"/login\">"
+            "<form class=\"dg-form\" method=\"post\" action=\"/login\">"
         )
     );
     EXPECT_TRUE(
@@ -106,10 +106,19 @@ TEST(PortalAuthTests, LoginPageRendersForm) {
             "class=\"dg-button\""
         )
     );
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-form")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-field")"));
     EXPECT_TRUE(
         HtmlTestSupport::containsText(
             html,
             "/__drogular/assets/ui.css"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            "/__drogular/assets/ui.js"
         )
     );
     EXPECT_TRUE(

@@ -1,19 +1,18 @@
-@if(hasLoginError)
-@include("partials/alert_error.html")
-@endif
-
-<form method="post" action="/login">
-    <div>
-        <label for="username">{{ t('login.username') }}</label>
-        <input id="username" name="username" />
-    </div>
-
-    <div>
-        <label for="password">{{ t('login.password') }}</label>
-        <input id="password" name="password" type="password" />
-    </div>
-
-    <div>
-        <button class="dg-button" type="submit">{{ t('login.submit') }}</button>
-    </div>
-</form>
+<div class="dg-stack">
+    @if(hasLoginError)@include("partials/alert_error.html")@endif
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <form class="dg-form" method="post" action="/login">
+                <div class="dg-field">
+                    <label for="username">{{ t('login.username') }}</label>
+                    <input id="username" name="username" autocomplete="username" />
+                </div>
+                <div class="dg-field">
+                    <label for="password">{{ t('login.password') }}</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" />
+                </div>
+                <div class="dg-form-actions"><button class="dg-button" type="submit">{{ t('login.submit') }}</button></div>
+            </form>
+        </div>
+    </section>
+</div>

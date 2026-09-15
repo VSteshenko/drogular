@@ -1,78 +1,35 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>
-    {{ t('auth.login_required.message') }}
-</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2><p>{{ t('auth.login_required.message') }}</p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></div></section>
 @else
-
 @if(accessDenied)
-<h2>{{ t('auth.access_denied.title') }}</h2>
-
-<p>
-    {{ t('auth.access_denied.message') }}
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.access_denied.title') }}</h2><p>{{ t('auth.access_denied.message') }}</p></div></section>
 @else
-
 @if(userNotFound)
-<h2>{{ t('users.not_found.title') }}</h2>
-
-<p>{{ t('users.not_found.message') }}</p>
-
-<p>
-    <a href="/users">{{ t('users.back') }}</a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('users.not_found.title') }}</h2><p>{{ t('users.not_found.message') }}</p><a class="dg-button" href="/users">{{ t('users.back') }}</a></div></section>
 @else
-
-@if(hasUsersError)
-@include("partials/alert_error.html")
-@endif
-
-<form
-        method="post"
-        action="/users/{{ userId }}/update"
->
-    <div>
-        <label for="username">
-            {{ usernameLabel }}
-            @if(usernameRequired):@endif
-        </label>
-
-        <input
-                id="username"
-                name="username"
-                value="{{ username }}"
-                @if(usernameRequired)required@endif
-        />
-    </div>
-
-    <div>
-        <label for="role">
-            {{ roleLabel }}
-            @if(roleRequired):@endif
-        </label>
-
-        <PortalSelect
-                id="role"
-                name="role"
-                options="roleOptions"
-                required="{{ roleRequired }}"
-        />
-    </div>
-
-    <button class="dg-button" type="submit">
-        {{ t('users.update') }}
-    </button>
-</form>
-
-<p>
-    <a href="/users">{{ t('users.back') }}</a>
-</p>
-
+<div class="dg-stack">
+    @if(hasUsersError)@include("partials/alert_error.html")@endif
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <form class="dg-form" method="post" action="/users/{{ userId }}/update">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="username">{{ usernameLabel }} @if(usernameRequired):@endif</label>
+                        <input id="username" name="username" value="{{ username }}" @if(usernameRequired)required@endif />
+                    </div>
+                    <div class="dg-field">
+                        <label for="role">{{ roleLabel }} @if(roleRequired):@endif</label>
+                        <PortalSelect id="role" name="role" options="roleOptions" required="{{ roleRequired }}" />
+                    </div>
+                </div>
+                <div class="dg-form-actions">
+                    <button class="dg-button" type="submit">{{ t('users.update') }}</button>
+                    <a class="dg-button" href="/users">{{ t('users.back') }}</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 @endif
 @endif
 @endif

@@ -1,99 +1,58 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>{{ t('auth.login_required.message') }}</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2><p>{{ t('auth.login_required.message') }}</p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></div></section>
 @endif
-
 @if(accessDenied)
-<h2>{{ t('auth.access_denied.title') }}</h2>
-
-<p>{{ t('auth.access_denied.message') }}</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.access_denied.title') }}</h2><p>{{ t('auth.access_denied.message') }}</p></div></section>
 @endif
-
 @if(hasAdminAccess)
-<p>
-    <a href="/admin">
-        {{ t('roles.back_to_admin') }}
-    </a>
-</p>
+<div class="dg-stack">
+    @if(hasRolesError)@include("partials/alert_error.html")@endif
+    @if(hasRolesSuccess)@include("partials/alert_success.html")@endif
 
-@if(hasRolesError)
-@include("partials/alert_error.html")
-@endif
+    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.roles.create" open>
+        <summary class="dg-card-summary"><h2 class="dg-card-title">{{ t('roles.create') }}</h2></summary>
+        <div class="dg-card-body">
+            <form class="dg-form" method="post" action="/roles/create">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="code">{{ roleCodeLabel }} @if(roleCodeRequired):@endif</label>
+                        <input id="code" name="code" value="{{ createRoleCode }}" @if(roleCodeRequired)required@endif />
+                    </div>
+                    <div class="dg-field">
+                        <label for="title">{{ roleTitleLabel }} @if(roleTitleRequired):@endif</label>
+                        <input id="title" name="title" value="{{ createRoleTitle }}" @if(roleTitleRequired)required@endif />
+                    </div>
+                </div>
+                <div class="dg-form-actions"><button class="dg-button" type="submit">{{ t('roles.create') }}</button></div>
+            </form>
+        </div>
+    </details>
 
-@if(hasRolesSuccess)
-@include("partials/alert_success.html")
-@endif
-
-<form
-    method="post"
-    action="/roles/create"
->
-    <div>
-        <label for="code">
-            {{ roleCodeLabel }}
-            @if(roleCodeRequired):@endif
-        </label>
-
-        <input
-            id="code"
-            name="code"
-            value="{{ createRoleCode }}"
-            @if(roleCodeRequired)required@endif
-        />
-    </div>
-
-    <div>
-        <label for="title">
-            {{ roleTitleLabel }}
-            @if(roleTitleRequired):@endif
-        </label>
-
-        <input
-            id="title"
-            name="title"
-            value="{{ createRoleTitle }}"
-            @if(roleTitleRequired)required@endif
-        />
-    </div>
-
-    <button class="dg-button" type="submit">
-        {{ t('roles.create') }}
-    </button>
-</form>
-
-<ul>
-    @foreach(item in roles)
-    <li>
-        <strong>{{ item.title }}</strong>
-
-        <span>
-            {{ item.subtitle }}
-        </span>
-
-        <span>
-            ({{ item.count }} {{ item.countLabel }})
-        </span>
-
-        <a href="{{ item.editUrl }}">
-            {{ t('roles.edit') }}
-        </a>
-
-        @if(item.canDelete)
-        <form
-            method="post"
-            action="{{ item.deleteUrl }}"
-        >
-            <button class="dg-button" type="submit">
-                {{ t('roles.delete') }}
-            </button>
-        </form>
-        @endif
-    </li>
-    @endforeach
-</ul>
+    <section class="dg-card">
+        <div class="dg-card-header"><h2 class="dg-card-title">{{ t('roles.page.title') }}</h2></div>
+        <div class="dg-card-body">
+            <div class="dg-table-container">
+                <table class="dg-table">
+                    <thead><tr><th>{{ t('roles.title') }}</th><th>{{ t('roles.code') }}</th><th>{{ t('roles.users') }}</th><th>{{ t('roles.edit') }}</th></tr></thead>
+                    <tbody>
+                    @foreach(item in roles)
+                    <tr>
+                        <td>{{ item.title }}</td>
+                        <td><span class="dg-badge dg-badge-neutral">{{ item.subtitle }}</span></td>
+                        <td>{{ item.count }} {{ item.countLabel }}</td>
+                        <td><div class="dg-form-actions">
+                            <a class="dg-button" href="{{ item.editUrl }}">{{ t('roles.edit') }}</a>
+                            @if(item.canDelete)
+                            <form method="post" action="{{ item.deleteUrl }}"><button class="dg-button" type="submit">{{ t('roles.delete') }}</button></form>
+                            @endif
+                        </div></td>
+                    </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="dg-card-footer"><a class="dg-button" href="/admin">{{ t('roles.back_to_admin') }}</a></div>
+    </section>
+</div>
 @endif

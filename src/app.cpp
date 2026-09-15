@@ -228,6 +228,25 @@ App& App::ui() {
         {drogon::Get}
     );
 
+    drogon::app().registerHandler(
+        std::string(ui_resources::ScriptPath),
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response = drogon::HttpResponse::newHttpResponse();
+            response->addHeader(
+                "Content-Type",
+                "text/javascript; charset=utf-8"
+            );
+            response->setBody(
+                std::string(ui_resources::script())
+            );
+            callback(response);
+        },
+        {drogon::Get}
+    );
+
     uiEnabled_ = true;
     return *this;
 }

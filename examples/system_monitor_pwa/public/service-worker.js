@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-system-monitor-v24";
+const CACHE_NAME = "drogular-system-monitor-v25";
 
 const OFFLINE_PAGE = "/__offline";
 

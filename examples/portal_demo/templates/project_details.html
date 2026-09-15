@@ -1,90 +1,53 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>
-    {{ t('auth.login_required.message') }}
-</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2><p>{{ t('auth.login_required.message') }}</p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></div></section>
 @else
-
 @if(projectNotFound)
-<h2>{{ t('projects.not_found.title') }}</h2>
-
-<p>
-    {{ t('projects.not_found.message') }}</p>
-
-<p>
-    <a
-        id="projectsBackFromNotFoundLink"
-        href="{{ projectsBackUrl }}"
-    >
-        {{ t('projects.back') }}
-    </a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('projects.not_found.title') }}</h2><p>{{ t('projects.not_found.message') }}</p><a id="projectsBackFromNotFoundLink" class="dg-button" href="{{ projectsBackUrl }}">{{ t('projects.back') }}</a></div></section>
 @else
-
-<p>
-    <strong>{{ titleLabel }}:</strong>
-    {{ projectTitle }}
-</p>
-
-@if(hasProjectsSuccess)
-@include("partials/alert_success.html")
-@endif
-
-<p>
-    <strong>{{ idLabel }}:</strong> {{ projectId }}
-</p>
-
-<p>
-    <strong>{{ statusLabel }}:</strong>
-    @switch(projectStatus)
-            @case("active")
-                {{ t('projects.status.active') }}
-            @case("paused")
-                {{ t('projects.status.paused') }}
-            @case("done")
-                {{ t('projects.status.done') }}
-            @default
-                {{ projectStatus }}
-        @endswitch
-</p>
-
-@if(hasProjectOwner)
-<p>
-    <strong>{{ ownerLabel }}:</strong>
-    {{ projectOwnerName }}
-    @if(projectOwnerRole)
-    ({{ projectOwnerRole }})
-    @endif
-</p>
-@endif
-@if(hasProjectType)
-<p>
-    <strong>{{ typeLabel }}:</strong>
-    {{ projectTypeTitle }}
-</p>
-@endif
-
-<p>
-    <a href="/projects/{{ projectId }}/edit">{{ t('projects.update') }}</a>
-</p>
-
-<form method="post" action="/projects/{{ projectId }}/delete">
-    <button class="dg-button" type="submit">{{ t('projects.delete') }}</button>
-</form>
-
-<p>
-    <a
-        id="projectsBackFromDetailsLink"
-        href="{{ projectsBackUrl }}"
-    >
-        {{ t('projects.back') }}
-    </a>
-</p>
-
+<div class="dg-stack">
+    @if(hasProjectsSuccess)@include("partials/alert_success.html")@endif
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <dl class="dg-details">
+                <div class="dg-details-item"><dt class="dg-details-label">{{ titleLabel }}</dt><dd class="dg-details-value">{{ projectTitle }}</dd></div>
+                <div class="dg-details-item"><dt class="dg-details-label">{{ idLabel }}</dt><dd class="dg-details-value">{{ projectId }}</dd></div>
+                <div class="dg-details-item">
+                    <dt class="dg-details-label">{{ statusLabel }}</dt>
+                    <dd class="dg-details-value">
+                        @switch(projectStatus)
+                            @case("active")
+                                <span class="dg-badge dg-badge-success">{{ t('projects.status.active') }}</span>
+                            @case("paused")
+                                <span class="dg-badge dg-badge-warning">{{ t('projects.status.paused') }}</span>
+                            @case("done")
+                                <span class="dg-badge dg-badge-neutral">{{ t('projects.status.done') }}</span>
+                            @default
+                                <span class="dg-badge dg-badge-neutral">{{ projectStatus }}</span>
+                        @endswitch
+                    </dd>
+                </div>
+                @if(hasProjectOwner)
+                <div class="dg-details-item">
+                    <dt class="dg-details-label">{{ ownerLabel }}</dt>
+                    <dd class="dg-details-value">
+                        {{ projectOwnerName }}
+                        @if(projectOwnerRole)
+                        <span class="dg-badge dg-badge-info">{{ projectOwnerRole }}</span>
+                        @endif
+                    </dd>
+                </div>
+                @endif
+                @if(hasProjectType)
+                <div class="dg-details-item"><dt class="dg-details-label">{{ typeLabel }}</dt><dd class="dg-details-value">{{ projectTypeTitle }}</dd></div>
+                @endif
+            </dl>
+        </div>
+        <div class="dg-card-footer dg-form-actions">
+            <a class="dg-button" href="/projects/{{ projectId }}/edit">{{ t('projects.update') }}</a>
+            <form method="post" action="/projects/{{ projectId }}/delete"><button class="dg-button" type="submit">{{ t('projects.delete') }}</button></form>
+            <a id="projectsBackFromDetailsLink" class="dg-button" href="{{ projectsBackUrl }}">{{ t('projects.back') }}</a>
+        </div>
+    </section>
+</div>
 @endif
 @endif

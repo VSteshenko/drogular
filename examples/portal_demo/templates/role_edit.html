@@ -1,83 +1,39 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-
-<p>{{ t('auth.login_required.message') }}</p>
-
-<p>
-    <a href="/login">{{ t('nav.login') }}</a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2><p>{{ t('auth.login_required.message') }}</p><a class="dg-button" href="/login">{{ t('nav.login') }}</a></div></section>
 @endif
-
 @if(accessDenied)
-<h2>{{ t('auth.access_denied.title') }}</h2>
-
-<p>{{ t('auth.access_denied.message') }}</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.access_denied.title') }}</h2><p>{{ t('auth.access_denied.message') }}</p></div></section>
 @endif
-
 @if(roleNotFound)
-<h2>{{ t('roles.not_found.title') }}</h2>
-
-<p>{{ t('roles.not_found.message') }}</p>
-
-<p>
-    <a href="/roles">
-        {{ t('roles.back') }}
-    </a>
-</p>
+<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('roles.not_found.title') }}</h2><p>{{ t('roles.not_found.message') }}</p><a class="dg-button" href="/roles">{{ t('roles.back') }}</a></div></section>
 @endif
-
 @if(isAuthenticated)
 @if(isAdmin)
 @if(roleNotFound)
 @else
-
-@if(hasRolesError)
-@include("partials/alert_error.html")
-@endif
-
-<form
-    method="post"
-    action="/roles/{{ roleId }}/update"
->
-    <div>
-        <label for="code">
-            {{ roleCodeLabel }}
-            @if(roleCodeRequired):@endif
-        </label>
-
-        <input
-            id="code"
-            name="code"
-            value="{{ roleCode }}"
-            @if(roleCodeRequired)required@endif
-        />
-    </div>
-
-    <div>
-        <label for="title">
-            {{ roleTitleLabel }}
-            @if(roleTitleRequired):@endif
-        </label>
-
-        <input
-            id="title"
-            name="title"
-            value="{{ roleTitle }}"
-            @if(roleTitleRequired)required@endif
-        />
-    </div>
-
-    <button class="dg-button" type="submit">
-        {{ t('roles.update') }}
-    </button>
-</form>
-
-<p>
-    <a href="/roles">
-        {{ t('roles.back') }}
-    </a>
-</p>
-
+<div class="dg-stack">
+    @if(hasRolesError)@include("partials/alert_error.html")@endif
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <form class="dg-form" method="post" action="/roles/{{ roleId }}/update">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="code">{{ roleCodeLabel }} @if(roleCodeRequired):@endif</label>
+                        <input id="code" name="code" value="{{ roleCode }}" @if(roleCodeRequired)required@endif />
+                    </div>
+                    <div class="dg-field">
+                        <label for="title">{{ roleTitleLabel }} @if(roleTitleRequired):@endif</label>
+                        <input id="title" name="title" value="{{ roleTitle }}" @if(roleTitleRequired)required@endif />
+                    </div>
+                </div>
+                <div class="dg-form-actions">
+                    <button class="dg-button" type="submit">{{ t('roles.update') }}</button>
+                    <a class="dg-button" href="/roles">{{ t('roles.back') }}</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 @endif
 @endif
 @endif

@@ -1,56 +1,36 @@
 @if(departmentNotFound)
-<h2>{{ t('departments.not_found') }}
-</h2>
+<section class="dg-card"><div class="dg-card-body"><p>{{ t('departments.not_found') }}</p></div></section>
 @else
-<form method="post" action="/departments/{{ departmentId }}/update">
-    <div>
-        <label>
-            {{ t('departments.name') }}
-            <input
-                    name="name"
-                    value="{{ departmentName }}"
-                    required />
-        </label>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <form class="dg-form" method="post" action="/departments/{{ departmentId }}/update">
+            <div class="dg-form-grid">
+                <div class="dg-field">
+                    <label for="departmentName">{{ t('departments.name') }}</label>
+                    <input id="departmentName" name="name" value="{{ departmentName }}" required />
+                </div>
+                <div class="dg-field">
+                    <label for="departmentDescription">{{ t('departments.description') }}</label>
+                    <input id="departmentDescription" name="description" value="{{ departmentDescription }}" />
+                </div>
+                <div class="dg-field">
+                    <label for="departmentManager">{{ t('departments.manager') }}</label>
+                    <select id="departmentManager" name="managerId">
+                        @foreach(manager in departmentManagers)
+                        <option value="{{ manager.id }}" @if(manager.selected)selected@endif>{{ manager.name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <label class="dg-toolbar">
+                <input type="checkbox" name="isActive" @if(departmentActive)checked@endif />
+                {{ t('departments.active') }}
+            </label>
+            <div class="dg-form-actions">
+                <button class="dg-button" type="submit">{{ t('departments.save') }}</button>
+                <a class="dg-button" href="/departments/{{ departmentId }}">{{ t('departments.back') }}</a>
+            </div>
+        </form>
     </div>
-
-    <div>
-        <label>
-            {{ t('departments.description') }}
-            <input
-                    name="description"
-                    value="{{ departmentDescription }}" />
-        </label>
-    </div>
-
-    <div>
-        <label>
-            {{ t('departments.manager') }}
-            <select name="managerId">
-                @foreach(manager in departmentManagers)
-                <option
-                        value="{{ manager.id }}"
-                        @if(manager.selected)selected@endif
-                >
-                    {{ manager.name }}
-                </option>
-                @endforeach
-            </select>
-        </label>
-    </div>
-
-    <div>
-        <label>
-            <input
-                    type="checkbox"
-                    name="isActive"
-                    @if(departmentActive)checked@endif
-            />
-            {{ t('departments.active') }}
-        </label>
-    </div>
-
-    <div>
-        <button class="dg-button" type="submit">{{ t('departments.save') }}</button>
-    </div>
-</form>
+</section>
 @endif

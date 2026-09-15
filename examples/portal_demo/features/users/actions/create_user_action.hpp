@@ -33,15 +33,15 @@ public:
 
         const auto validation =
             drogular::FormValidator(context)
-                .required("username")
-                .minLength("username", 2)
-                .required("password")
-                .minLength("password", 3)
+                .required("newUserUsername")
+                .minLength("newUserUsername", 2)
+                .required("newUserPassword")
+                .minLength("newUserPassword", 3)
                 .required("role")
                 .validate();
 
         const auto username =
-            context.form<std::string>("username")
+            context.form<std::string>("newUserUsername")
                 .value_or("");
 
         if (!validation.valid()) {
@@ -53,7 +53,7 @@ public:
         }
 
         const auto password =
-            context.requireForm<std::string>("password");
+            context.requireForm<std::string>("newUserPassword");
 
         const auto role =
             context.requireForm<std::string>("role");
@@ -70,9 +70,9 @@ public:
 
         PortalUserCreate input;
         input.username =
-            context.requireForm<std::string>("username");
+            context.requireForm<std::string>("newUserUsername");
         input.password =
-            context.requireForm<std::string>("password");
+            context.requireForm<std::string>("newUserPassword");
         input.role =
             context.requireForm<std::string>("role");
 

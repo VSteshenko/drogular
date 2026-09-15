@@ -157,7 +157,7 @@ textarea {
 
 .dg-card-footer {
     border-top: 1px solid var(--dg-border);
-    background: var(--dg-surface-muted);
+    background: var(--dg-surface);
 }
 
 .dg-card-title {
@@ -389,6 +389,41 @@ textarea {
 .dg-table a {
     font-weight: 650;
     text-decoration: none;
+}
+
+.dg-details {
+    margin: 0;
+    display: grid;
+    gap: 0;
+}
+
+.dg-details-item {
+    display: grid;
+    grid-template-columns: minmax(8rem, .65fr) minmax(0, 1.35fr);
+    gap: 1rem;
+    padding: .8rem 0;
+    border-bottom: 1px solid var(--dg-border);
+}
+
+.dg-details-item:first-child {
+    padding-top: 0;
+}
+
+.dg-details-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.dg-details-label {
+    color: var(--dg-text-muted);
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.dg-details-value {
+    min-width: 0;
+    margin: 0;
+    color: var(--dg-text);
 }
 
 .dg-empty-state {
@@ -802,6 +837,11 @@ textarea {
 }
 
 @media (max-width: 760px) {
+    .dg-details-item {
+        grid-template-columns: 1fr;
+        gap: .3rem;
+    }
+
     .dg-shell {
         display: block;
     }
@@ -865,10 +905,84 @@ textarea {
 }
 )DROGULAR_CSS";
 
+constexpr std::string_view Script = R"DROGULAR_JS(
+(() => {
+    "use strict";
+
+    const StoragePrefix = "drogular.ui.collapse.";
+
+    const storageKey = element => {
+        const key = element.dataset.dgCollapseKey;
+        return key ? `${StoragePrefix}${key}` : null;
+    };
+
+    const readState = key => {
+        try {
+            return window.localStorage.getItem(key);
+        } catch (_) {
+            return null;
+        }
+    };
+
+    const writeState = (key, open) => {
+        try {
+            window.localStorage.setItem(key, open ? "open" : "closed");
+        } catch (_) {
+            // Storage can be unavailable in private or restricted contexts.
+        }
+    };
+
+    const restore = element => {
+        const key = storageKey(element);
+        if (!key) {
+            return;
+        }
+
+        const state = readState(key);
+        if (state === "open") {
+            element.open = true;
+        } else if (state === "closed") {
+            element.open = false;
+        }
+    };
+
+    const initialize = () => {
+        document
+            .querySelectorAll("details.dg-collapsible[data-dg-collapse-key]")
+            .forEach(restore);
+
+        document.addEventListener("toggle", event => {
+            const element = event.target;
+            if (!(element instanceof HTMLDetailsElement)) {
+                return;
+            }
+            if (!element.matches(".dg-collapsible[data-dg-collapse-key]")) {
+                return;
+            }
+
+            const key = storageKey(element);
+            if (key) {
+                writeState(key, element.open);
+            }
+        }, true);
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initialize, {once: true});
+    } else {
+        initialize();
+    }
+})();
+)DROGULAR_JS";
+
 } // namespace
 
 std::string_view stylesheet() {
     return Stylesheet;
+}
+
+std::string_view script() {
+    return Script;
 }
 
 } // namespace drogular::ui_resources

@@ -73,7 +73,7 @@ TEST(SystemMonitorLocalizationTests, ClientScriptsUseServerRenderedTranslations)
     EXPECT_NE(interactions.find("members.forEach((member) => refresh(member))"), std::string::npos);
     EXPECT_NE(interactions.find("document.querySelectorAll('[dg-resume]')"), std::string::npos);
     EXPECT_NE(interactions.find("new CustomEvent('dg:resume')"), std::string::npos);
-    EXPECT_NE(worker.find("drogular-system-monitor-v24"), std::string::npos);
+    EXPECT_NE(worker.find("drogular-system-monitor-v25"), std::string::npos);
     EXPECT_EQ(worker.find("/assets/board.js"), std::string::npos);
     EXPECT_NE(worker.find("fetch(OFFLINE_PAGE)"), std::string::npos);
 }

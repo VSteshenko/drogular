@@ -1,110 +1,112 @@
 @if(loginRequired)
-<h2>{{ t('auth.login_required.title') }}</h2>
-<p>
-    {{ t('auth.login_required.message') }}
-</p>
-<p>
-    <a href="/login">
-        {{ t('nav.login') }}
-    </a>
-</p>
+<section class="dg-card"><div class="dg-card-body">
+    <h2 class="dg-card-title">{{ t('auth.login_required.title') }}</h2>
+    <p>{{ t('auth.login_required.message') }}</p>
+    <a class="dg-button" href="/login">{{ t('nav.login') }}</a>
+</div></section>
 @else
 @if(departmentNotFound)
-<h2>{{ t('departments.not_found') }}</h2>
-<p>
-    <a href="{{ departmentsBackUrl }}">
-        {{ t('departments.back') }}
-    </a>
-</p>
+<section class="dg-card"><div class="dg-card-body">
+    <p>{{ t('departments.not_found') }}</p>
+    <a class="dg-button" href="{{ departmentsBackUrl }}">{{ t('departments.back') }}</a>
+</div></section>
 @else
-<p>
-    <strong>
-        {{ t('departments.name') }}:
-    </strong>
-    {{ departmentName }}
-</p>
+<div class="dg-stack">
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <dl class="dg-details">
+                <div class="dg-details-item">
+                    <dt class="dg-details-label">{{ t('departments.name') }}</dt>
+                    <dd class="dg-details-value">{{ departmentName }}</dd>
+                </div>
+                <div class="dg-details-item">
+                    <dt class="dg-details-label">{{ t('departments.description') }}</dt>
+                    <dd class="dg-details-value">{{ departmentDescription }}</dd>
+                </div>
+                <div class="dg-details-item">
+                    <dt class="dg-details-label">{{ t('departments.manager') }}</dt>
+                    <dd class="dg-details-value">{{ departmentManager }}</dd>
+                </div>
+                <div class="dg-details-item">
+                    <dt class="dg-details-label">{{ t('departments.status') }}</dt>
+                    <dd class="dg-details-value">
+                        @switch(departmentActive)
+                            @case(true)
+                                <span class="dg-badge dg-badge-success">{{ t('departments.active') }}</span>
+                            @default
+                                <span class="dg-badge dg-badge-neutral">{{ t('departments.inactive') }}</span>
+                        @endswitch
+                    </dd>
+                </div>
+            </dl>
+        </div>
+        <div class="dg-card-footer dg-form-actions">
+            @if(isAdmin)
+            <a class="dg-button" href="/departments/{{ departmentId }}/edit">{{ t('departments.edit') }}</a>
+            @endif
+            <a class="dg-button" href="{{ departmentsBackUrl }}">{{ t('departments.back') }}</a>
+        </div>
+    </section>
 
-<p>
-    <strong>
-        {{ t('departments.description') }}:
-    </strong>
-    {{ departmentDescription }}
-</p>
+    <section class="dg-card">
+        <div class="dg-card-header"><h2 class="dg-card-title">{{ t('departments.members') }}</h2></div>
+        <div class="dg-card-body">
+            <div class="dg-table-container">
+                <table class="dg-table">
+                    <thead>
+                    <tr>
+                        <th>{{ t('users.username') }}</th>
+                        <th>{{ t('users.role') }}</th>
+                        @if(isAdmin)
+                        <th>{{ t('departments.members.remove') }}</th>
+                        @endif
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach(member in departmentMembers)
+                    <tr>
+                        <td>{{ member.username }}</td>
+                        <td><span class="dg-badge dg-badge-info">{{ member.role }}</span></td>
+                        @if(isAdmin)
+                        <td>
+                            <form method="post" action="{{ member.removeUrl }}">
+                                <button class="dg-button" type="submit">{{ t('departments.members.remove') }}</button>
+                            </form>
+                        </td>
+                        @endif
+                    </tr>
+                    @empty
+                    <tr><td class="dg-empty-state" colspan="3">{{ t('departments.members.empty') }}</td></tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
-<p>
-    <strong>
-        {{ t('departments.manager') }}:
-    </strong>
-    {{ departmentManager }}
-</p>
-
-<p>
-    <strong>
-        {{ t('departments.status') }}:
-    </strong>
-    @switch(departmentActive)
-        @case(true)
-            {{ t('departments.active') }}
-        @default
-            {{ t('departments.inactive') }}
-    @endswitch
-</p>
-
-<h3>{{ t('departments.members') }}</h3>
-<ul>
-@foreach(member in departmentMembers)
-<li>
-    <strong>
-        {{ member.username }}
-    </strong>
-    ({{ member.role }})
     @if(isAdmin)
-    <form method="post" action="{{ member.removeUrl }}" style="display:inline">
-        <button class="dg-button" type="submit">
-            {{ t('departments.members.remove') }}
-        </button>
-    </form>
+    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.members.add" open>
+        <summary class="dg-card-summary"><h2 class="dg-card-title">{{ t('departments.members.add') }}</h2></summary>
+        <div class="dg-card-body">
+            @let(hasMemberCandidates = !departmentMemberCandidates.empty())
+            @if(hasMemberCandidates)
+            <form class="dg-form" method="post" action="/departments/{{ departmentId }}/members/add">
+                <div class="dg-field">
+                    <label for="departmentMemberUser">{{ t('users.username') }}</label>
+                    <select id="departmentMemberUser" name="userId" required>
+                        @foreach(user in departmentMemberCandidates)
+                        <option value="{{ user.id }}">{{ user.name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="dg-form-actions"><button class="dg-button" type="submit">{{ t('departments.members.add') }}</button></div>
+            </form>
+            @else
+            <div class="dg-empty-state">{{ t('departments.members.no_candidates') }}</div>
+            @endif
+        </div>
+    </details>
     @endif
-</li>
-@empty
-<li>{{ t('departments.members.empty') }}</li>
-@endforeach
-</ul>
-
-@if(isAdmin)
-<h3>{{ t('departments.members.add') }}</h3>
-@let(hasMemberCandidates = !departmentMemberCandidates.empty())
-@if(hasMemberCandidates)
-<form method="post" action="/departments/{{ departmentId }}/members/add">
-    <select
-            name="userId"
-            required
-    >
-    @foreach(user in departmentMemberCandidates)
-        <option value="{{ user.id }}">
-            {{ user.name }}
-        </option>
-    @endforeach
-    </select>
-    <button class="dg-button" type="submit">
-        {{ t('departments.members.add') }}
-    </button>
-</form>
-@else
-<p>
-    {{ t('departments.members.no_candidates') }}
-</p>
-@endif
-<p>
-    <a href="/departments/{{ departmentId }}/edit">
-        {{ t('departments.edit') }}
-    </a>
-</p>
-@endif
-<p>
-    <a href="{{ departmentsBackUrl }}">
-        {{ t('departments.back') }}
-    </a>
-</p>
+</div>
 @endif
 @endif

@@ -7,6 +7,7 @@
     </div>
 </section>
 @else
+<div class="dg-stack">
 @if(isAdmin)
 @if(hasUsersError)
 @include("partials/alert_error.html")
@@ -16,23 +17,22 @@
 @endif
 @endif
 
-<div class="dg-stack">
 @if(isAdmin)
-<details class="dg-card dg-collapsible" open>
+<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.create" open>
     <summary class="dg-card-summary">
         <span class="dg-card-title">{{ t('users.create') }}</span>
     </summary>
     <div class="dg-card-body">
-        <form class="dg-form" method="post" action="/users/create">
+        <form class="dg-form" method="post" action="/users/create" autocomplete="off">
             <div class="dg-form-grid">
                 <div class="dg-field">
                     <label>{{ usersUsername }}</label>
-                    <input name="username" value="{{ createUsername }}" />
+                    <input name="newUserUsername" value="{{ createUsername }}" autocomplete="off" />
                 </div>
 
                 <div class="dg-field">
                     <label>{{ usersPassword }}</label>
-                    <input name="password" type="password" />
+                    <input name="newUserPassword" type="password" autocomplete="new-password" />
                 </div>
 
                 <div class="dg-field">
@@ -54,7 +54,7 @@
 </details>
 @endif
 
-<details class="dg-card dg-collapsible" open>
+<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.filters" open>
     <summary class="dg-card-summary">
         <span class="dg-card-title">{{ t('users.filters.title') }}</span>
     </summary>
@@ -106,7 +106,7 @@
     </div>
 </details>
 
-<details class="dg-card dg-collapsible" open>
+<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.list" open>
     <summary class="dg-card-summary">
         <span class="dg-card-title">{{ t('users.title') }}</span>
     </summary>

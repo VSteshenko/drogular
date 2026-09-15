@@ -145,6 +145,41 @@ public:
         return "";
     }
 
+
+    static std::string departmentsError(
+        drogular::RenderContext& context,
+        const std::string& error
+    ) {
+        if (error == "validation") {
+            return context.translate("departments.error.validation");
+        }
+
+        if (error == "duplicate") {
+            return context.translate("departments.error.duplicate");
+        }
+
+        if (error == "access_denied") {
+            return context.translate("departments.error.access_denied");
+        }
+
+        return "";
+    }
+
+    static std::string departmentsSuccess(
+        drogular::RenderContext& context,
+        const std::string& success
+    ) {
+        if (success == "created") {
+            return context.translate("departments.success.created");
+        }
+
+        if (success == "updated") {
+            return context.translate("departments.success.updated");
+        }
+
+        return "";
+    }
+
     static std::string rolesError(
         drogular::RenderContext& context,
         const std::string& error
