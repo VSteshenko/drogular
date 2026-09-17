@@ -33,3 +33,47 @@ TEST(InteractionsResourcesTests, AppRegistrationIsIdempotent) {
     EXPECT_NO_THROW(app.interactions());
     EXPECT_NO_THROW(app.interactions());
 }
+
+TEST(CoreInteractionsResourcesTests, FormSubmitterContributesItsNameAndValue) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("submitter && submitter.name"), std::string_view::npos);
+    EXPECT_NE(script.find("event.submitter || null"), std::string_view::npos);
+    EXPECT_NE(
+        script.find("url.searchParams.set(submitter.name, submitter.value)"),
+        std::string_view::npos
+    );
+}
+
+TEST(CoreInteractionsResourcesTests, DeclarativeResetRestoresValuesAndRefreshesForm) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("[dg-reset-value]"), std::string_view::npos);
+    EXPECT_NE(script.find("element.reset()"), std::string_view::npos);
+    EXPECT_NE(
+        script.find("control.getAttribute('dg-reset-value')"),
+        std::string_view::npos
+    );
+    EXPECT_NE(script.find("[dg-reset]"), std::string_view::npos);
+    EXPECT_NE(script.find("resetForm(element)"), std::string_view::npos);
+    EXPECT_NE(script.find("refresh(element)"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResources, HistoryContractIsEmbedded) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("dg-history"), std::string_view::npos);
+    EXPECT_NE(script.find("dg-history-url"), std::string_view::npos);
+    EXPECT_NE(script.find("window.history.replaceState"), std::string_view::npos);
+    EXPECT_NE(script.find("window.history.pushState"), std::string_view::npos);
+    EXPECT_NE(script.find("syncHistory(element, url)"), std::string_view::npos);
+}
+TEST(CoreInteractionsResourcesTests, CurrentUrlControlsAreUpdatedBeforeSubmit) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("[dg-current-url]"), std::string_view::npos);
+    EXPECT_NE(script.find("window.location.pathname"), std::string_view::npos);
+    EXPECT_NE(script.find("window.location.search"), std::string_view::npos);
+    EXPECT_NE(script.find("window.location.hash"), std::string_view::npos);
+    EXPECT_NE(script.find("control.value = currentUrl"), std::string_view::npos);
+}

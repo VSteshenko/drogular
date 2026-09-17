@@ -143,3 +143,89 @@ TEST(HtmlTestSupportTests, DecodesHtmlEntities) {
         "/projects?search=port&status=active"
     );
 }
+
+TEST(HtmlTestSupportTests, MatchesAttributesOnTheSameElementRegardlessOfOrder) {
+    const std::string html =
+        R"(
+<input value="a" class="dg-input" name="search">
+<input name="page" value="2">
+)";
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "input",
+            {
+                {"name", "search"},
+                {"value", "a"}
+            }
+        )
+    );
+
+    EXPECT_FALSE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "input",
+            {
+                {"name", "search"},
+                {"value", "2"}
+            }
+        )
+    );
+}
+
+TEST(HtmlTestSupportTests, MatchesBooleanAttributeInsideSpecificParent) {
+    const std::string html =
+        R"(
+<select name="sort">
+    <option value="title" selected>Title</option>
+    <option value="id">ID</option>
+</select>
+<select name="direction">
+    <option value="asc">Ascending</option>
+    <option value="desc" selected>Descending</option>
+</select>
+)";
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementContainsElementWithAttributes(
+            html,
+            "select",
+            {{"name", "direction"}},
+            "option",
+            {
+                {"value", "desc"},
+                {"selected", ""}
+            }
+        )
+    );
+
+    EXPECT_FALSE(
+        HtmlTestSupport::elementContainsElementWithAttributes(
+            html,
+            "select",
+            {{"name", "sort"}},
+            "option",
+            {
+                {"value", "desc"},
+                {"selected", ""}
+            }
+        )
+    );
+}
+
+TEST(HtmlTestSupportTests, EmptyExpectedValueMatchesExplicitEmptyAttribute) {
+    const std::string html =
+        R"(<input name="search" dg-reset-value="">)";
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "input",
+            {
+                {"name", "search"},
+                {"dg-reset-value", ""}
+            }
+        )
+    );
+}

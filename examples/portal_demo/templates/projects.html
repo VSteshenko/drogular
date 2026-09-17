@@ -74,12 +74,18 @@
     </div>
 </details>
 
+<form class="dg-form"
+      method="get"
+      action="/projects"
+      dg-get="/fragments/projects"
+      dg-target="[data-projects-results]"
+      dg-trigger="input delay:300ms, change"
+      dg-history="replace">
 <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.projects.filters" open>
     <summary class="dg-card-summary">
         <span class="dg-card-title">{{ t('projects.filters.title') }}</span>
     </summary>
     <div class="dg-card-body">
-        <form class="dg-form" method="get" action="/projects">
             <fieldset class="dg-fieldset">
 
                 <div class="dg-form-grid">
@@ -89,6 +95,7 @@
                                 id="search"
                                 name="search"
                                 value="{{ filters.search }}"
+                                dg-reset-value=""
                                 type="search"
                         />
                     </div>
@@ -98,6 +105,7 @@
                         <PortalSelect
                                 id="statusFilter"
                                 name="status"
+                                resetValue=""
                                 options="filters.statusOptions"
                         />
                     </div>
@@ -107,6 +115,7 @@
                         <PortalSelect
                                 id="projectTypeFilter"
                                 name="projectTypeId"
+                                resetValue=""
                                 options="filters.projectTypeOptions"
                         />
                     </div>
@@ -116,6 +125,7 @@
                         <PortalSelect
                                 id="projectOwnerFilter"
                                 name="ownerId"
+                                resetValue=""
                                 options="filters.ownerOptions"
                         />
                     </div>
@@ -125,6 +135,7 @@
                         <PortalSelect
                                 id="projectSort"
                                 name="sort"
+                                resetValue="title"
                                 options="filters.sortOptions"
                         />
                     </div>
@@ -134,71 +145,22 @@
                         <PortalSelect
                                 id="projectSortDirection"
                                 name="direction"
+                                resetValue="asc"
                                 options="filters.sortDirectionOptions"
                         />
                     </div>
                 </div>
 
                 <div class="dg-form-actions">
-                    <button class="dg-button" type="submit">{{ t('projects.search.button') }}</button>
-                    @if(filters.hasActiveFilters)
-                    <a class="dg-button" href="/projects">{{ t('projects.search.clear') }}</a>
-                    @endif
+                    <button class="dg-button" type="button" dg-reset>{{ t('projects.search.clear') }}</button>
                 </div>
             </fieldset>
-        </form>
     </div>
 </details>
 
-<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.projects.list" open>
-    <summary class="dg-card-summary">
-        <span class="dg-card-title">{{ t('projects.title') }}</span>
-    </summary>
-    <div class="dg-card-body">
-        <div class="dg-table-container">
-            <table class="dg-table">
-                <thead>
-                    <tr>
-                        <th scope="col">{{ projectsTitleLabel }}</th>
-                        <th scope="col">{{ projectsStatusLabel }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(project in projects)
-                    <tr data-project-id="{{ project.id }}">
-                        <td>
-                            <a href="{{ project.detailsUrl }}">{{ project.title }}</a>
-                        </td>
-                        <td>
-                            @switch(project.status)
-                                @case("active")
-                                    <span class="dg-badge dg-badge-success">{{ t('projects.status.active') }}</span>
-                                @case("paused")
-                                    <span class="dg-badge dg-badge-warning">{{ t('projects.status.paused') }}</span>
-                                @case("done")
-                                    <span class="dg-badge dg-badge-neutral">{{ t('projects.status.done') }}</span>
-                                @default
-                                    <span class="dg-badge">{{ project.status }}</span>
-                            @endswitch
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td class="dg-empty-state" colspan="2">{{ t('projects.empty') }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+    <div data-projects-results>
+        @include("fragments/projects_results.html")
     </div>
-    <div class="dg-card-footer">
-        <PortalPagination
-                model="pagination"
-                ariaLabel="{{ t('projects.pagination.label') }}"
-                previousLabel="{{ t('projects.pagination.previous') }}"
-                nextLabel="{{ t('projects.pagination.next') }}"
-        />
-    </div>
-</details>
+</form>
 </div>
 @endif

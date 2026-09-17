@@ -13,10 +13,14 @@ public:
             input<std::string>("options").value_or("");
         const auto selectId =
             input<std::string>("id").value_or("");
+        const auto resetValue =
+            input<std::string>("resetValue");
 
         context.set("selectOptions", portal::ui::resolveJson(context, optionsPath));
         context.set("selectId", selectId);
         context.set("hasSelectId", !selectId.empty());
+        context.set("hasSelectResetValue", resetValue.has_value());
+        context.set("selectResetValue", resetValue.value_or(""));
         context.set(
             "selectRequired",
             portal::ui::inputFlag(*this, "required")

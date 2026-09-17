@@ -1,6 +1,7 @@
 <select
     @if(hasSelectId)id="{{ selectId }}"@endif
     name="{{ name }}"
+    @if(hasSelectResetValue)dg-reset-value="{{ selectResetValue }}"@endif
     @if(selectRequired)required@endif
     @if(selectDisabled)disabled@endif
 >

@@ -26,6 +26,7 @@
 #include "features/localization/support/portal_translations.hpp"
 #include "support/portal_expression_functions.hpp"
 #include "features/projects/actions/create_project_action.hpp"
+#include "features/projects/actions/projects_fragment_action.hpp"
 #include "features/projects/pages/projects_page.hpp"
 #include "features/projects/pages/project_details_page.hpp"
 #include "features/projects/pages/project_edit_page.hpp"
@@ -227,6 +228,7 @@ int main(
     app.page<PortalDepartmentDetailsPage>("/departments/{id}");
     app.page<PortalDepartmentEditPage>("/departments/{id}/edit");
     app.page<PortalProjectsPage>("/projects");
+    app.get<PortalProjectsFragmentAction>("/fragments/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");
     app.page<PortalProjectEditPage>("/projects/{id}/edit");
 

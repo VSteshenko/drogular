@@ -79,7 +79,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         return match ? Number(match[1]) : 0;
     };
 
-    const requestUrl = (element) => {
+    const requestUrl = (element, submitter = null) => {
         const source = element.getAttribute('dg-get');
         if (!source) return null;
 
@@ -90,7 +90,85 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             if ((control.type === 'checkbox' || control.type === 'radio') && !control.checked) continue;
             url.searchParams.set(control.name, control.value);
         }
+
+        if (submitter && submitter.name && !submitter.disabled) {
+            url.searchParams.set(submitter.name, submitter.value);
+        }
+
         return url;
+    };
+
+    const historyUrl = (element, request) => {
+        const mode = element.getAttribute('dg-history');
+        if (mode !== 'replace' && mode !== 'push') return null;
+
+        const source =
+            element.getAttribute('dg-history-url') ||
+            (element.tagName === 'FORM' ? element.getAttribute('action') : null) ||
+            window.location.pathname;
+
+        const url = new URL(source, window.location.origin);
+        url.search = '';
+
+        const controls = element.querySelectorAll(
+            'input[name], select[name], textarea[name]'
+        );
+
+        for (const control of controls) {
+            if (control.disabled || !control.name) continue;
+            if (
+                (control.type === 'checkbox' || control.type === 'radio') &&
+                !control.checked
+            ) {
+                continue;
+            }
+
+            const resetValue = control.getAttribute('dg-reset-value');
+            if (resetValue !== null && control.value === resetValue) continue;
+            if (control.value === '') continue;
+
+            url.searchParams.set(control.name, control.value);
+        }
+
+        for (const [name, value] of request.searchParams) {
+            if (url.searchParams.has(name) || value === '') continue;
+
+            const submitter = element.querySelector(
+                `[name="${CSS.escape(name)}"]`
+            );
+            if (
+                submitter &&
+                submitter.matches('button, input[type="submit"]')
+            ) {
+                url.searchParams.set(name, value);
+            }
+        }
+
+        return url;
+    };
+
+    const syncHistory = (element, request) => {
+        const url = historyUrl(element, request);
+        if (!url) return;
+
+        const mode = element.getAttribute('dg-history');
+        const next = `${url.pathname}${url.search}${url.hash}`;
+
+        if (mode === 'push') {
+            window.history.pushState(null, '', next);
+        } else {
+            window.history.replaceState(null, '', next);
+        }
+    };
+
+    const resetForm = (element) => {
+        if (element.tagName !== 'FORM') return;
+
+        element.reset();
+        element.querySelectorAll('[dg-reset-value]').forEach((control) => {
+            control.value = control.getAttribute('dg-reset-value') || '';
+        });
+        refresh(element);
     };
 
     const targetFor = (element) => {
@@ -182,7 +260,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         members.forEach((member) => refresh(member));
     };
 
-    refresh = async (element) => {
+    refresh = async (element, submitter = null) => {
         const state = requestState(element);
         if (state.paused) return;
         if (state.running) {
@@ -190,7 +268,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             return;
         }
 
-        const url = requestUrl(element);
+        const url = requestUrl(element, submitter);
         const target = targetFor(element);
         if (!url || !target) return;
 
@@ -214,6 +292,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                 setState(element, responseState(html));
                 state.failures = 0;
                 applyConnectionResponse(element, target);
+                syncHistory(element, url);
             }
         } catch (_) {
             setState(element, 'error');
@@ -276,12 +355,30 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         if (element.tagName === 'FORM') {
             element.addEventListener('submit', (event) => {
                 event.preventDefault();
-                refresh(element);
+                refresh(element, event.submitter || null);
+            });
+
+            element.querySelectorAll('[dg-reset]').forEach((control) => {
+                control.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    resetForm(element);
+                });
             });
         }
 
         element.addEventListener('dg:resume', () => resume(element));
     };
+
+    document.addEventListener('submit', (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const currentUrl =
+            `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        form.querySelectorAll('[dg-current-url]').forEach((control) => {
+            control.value = currentUrl;
+        });
+    }, true);
 
     document.querySelectorAll('[dg-get]').forEach(install);
     document.querySelectorAll('[dg-resume]').forEach((control) => {

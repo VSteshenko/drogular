@@ -1,0 +1,183 @@
+#pragma once
+
+#include "features/projects/providers/project_provider.hpp"
+#include "features/project_types/providers/project_type_provider.hpp"
+#include "features/users/providers/user_provider.hpp"
+#include "features/projects/ui/portal_project_query_parser.hpp"
+#include "features/projects/ui/portal_project_query_serializer.hpp"
+#include "features/projects/ui/portal_project_query_view_model.hpp"
+#include "data/portal_schema.hpp"
+
+#include <drogular/pagination_model.hpp>
+#include <drogular/render_context.hpp>
+#include <drogular/url.hpp>
+
+#include <algorithm>
+
+class PortalProjectsBrowserSupport {
+public:
+    static void apply(drogular::RenderContext& context) {
+        const auto request = context.request();
+        const auto schema = PortalSchema::projects();
+
+        context.set(
+            "projectsTitleLabel",
+            context.translate(schema.fieldLabelKey("title"))
+        );
+        context.set(
+            "projectsStatusLabel",
+            context.translate(schema.fieldLabelKey("status"))
+        );
+
+        const auto query = PortalProjectQueryParser::fromRequest(request);
+        const auto search = query.search.value_or("");
+        const auto status = query.status.value_or("");
+        const auto projectTypeId = query.projectTypeId;
+        const auto ownerId = query.ownerId;
+        const auto sort = query.sorting.empty()
+            ? PortalProjectSort{
+                  .field = "title",
+                  .direction = PortalSortDirection::Ascending
+              }
+            : query.sorting.front();
+        const auto& sortField = sort.field;
+        const auto sortDirection = sort.direction;
+
+        Json::Value statusOptions(Json::arrayValue);
+        const auto addStatusOption =
+            [&statusOptions, &status](
+                const std::string& value,
+                const std::string& labelKey
+            ) {
+                Json::Value option(Json::objectValue);
+                option["value"] = value;
+                option["labelKey"] = labelKey;
+                option["selected"] = status == value;
+                statusOptions.append(std::move(option));
+            };
+
+        addStatusOption("", "projects.filter.status.all");
+        addStatusOption("active", "projects.status.active");
+        addStatusOption("paused", "projects.status.paused");
+        addStatusOption("done", "projects.status.done");
+
+        auto projectTypes = context.requireService<PortalProjectTypeProvider>();
+        const auto allProjectTypes = projectTypes->all();
+        Json::Value projectTypeFilterOptions(Json::arrayValue);
+        {
+            Json::Value option(Json::objectValue);
+            option["value"] = "";
+            option["labelKey"] = "projects.filter.type.all";
+            option["selected"] = !projectTypeId.has_value();
+            projectTypeFilterOptions.append(std::move(option));
+        }
+        for (const auto& type : allProjectTypes) {
+            Json::Value option(Json::objectValue);
+            option["value"] = type.id;
+            option["label"] = type.title;
+            option["selected"] = projectTypeId.has_value() && *projectTypeId == type.id;
+            projectTypeFilterOptions.append(std::move(option));
+        }
+
+        auto users = context.requireService<PortalUserProvider>();
+        const auto allUsers = users->all();
+        Json::Value ownerFilterOptions(Json::arrayValue);
+        {
+            Json::Value option(Json::objectValue);
+            option["value"] = "";
+            option["labelKey"] = "projects.filter.owner.all";
+            option["selected"] = !ownerId.has_value();
+            ownerFilterOptions.append(std::move(option));
+        }
+        for (const auto& user : allUsers) {
+            Json::Value option(Json::objectValue);
+            option["value"] = user.id;
+            option["label"] = user.username;
+            option["selected"] = ownerId.has_value() && *ownerId == user.id;
+            ownerFilterOptions.append(std::move(option));
+        }
+
+        Json::Value sortOptions(Json::arrayValue);
+        const auto addSortOption =
+            [&sortOptions, &sortField](
+                const std::string& value,
+                const std::string& labelKey
+            ) {
+                Json::Value option(Json::objectValue);
+                option["value"] = value;
+                option["labelKey"] = labelKey;
+                option["selected"] = sortField == value;
+                sortOptions.append(std::move(option));
+            };
+        addSortOption("title", "projects.sort.title");
+        addSortOption("status", "projects.sort.status");
+        addSortOption("id", "projects.sort.id");
+
+        Json::Value directionOptions(Json::arrayValue);
+        const auto selectedDirection = toString(sortDirection);
+        const auto addDirectionOption =
+            [&directionOptions, &selectedDirection](
+                const std::string& value,
+                const std::string& labelKey
+            ) {
+                Json::Value option(Json::objectValue);
+                option["value"] = value;
+                option["labelKey"] = labelKey;
+                option["selected"] = selectedDirection == value;
+                directionOptions.append(std::move(option));
+            };
+        addDirectionOption("asc", "projects.sort.ascending");
+        addDirectionOption("desc", "projects.sort.descending");
+
+        portal::PortalProjectQueryViewModel filters;
+        filters.search = search;
+        filters.statusOptions = std::move(statusOptions);
+        filters.projectTypeOptions = std::move(projectTypeFilterOptions);
+        filters.ownerOptions = std::move(ownerFilterOptions);
+        filters.sortOptions = std::move(sortOptions);
+        filters.sortDirectionOptions = std::move(directionOptions);
+        filters.hasActiveFilters =
+            !search.empty() ||
+            !status.empty() ||
+            projectTypeId.has_value() ||
+            ownerId.has_value() ||
+            sortField != "title" ||
+            sort.direction != PortalSortDirection::Ascending;
+        context.setJson("filters", filters);
+
+        auto repository = context.requireService<PortalProjectProvider>();
+        const auto pageResult = repository->search(query);
+        const auto pageUrl = [&query](int page) {
+            auto pageQuery = query;
+            pageQuery.page = std::max(1, page);
+            return std::string("/projects") +
+                PortalProjectQuerySerializer::toQueryString(pageQuery);
+        };
+        const auto returnUrl = pageUrl(pageResult.page);
+
+        Json::Value projects(Json::arrayValue);
+        for (const auto& project : pageResult.items) {
+            Json::Value value;
+            value["id"] = project.id;
+            value["title"] = project.title;
+            value["status"] = project.status;
+            value["detailsUrl"] =
+                "/projects/" + std::to_string(project.id) +
+                "?returnUrl=" + drogular::Url::encode(returnUrl);
+            projects.append(std::move(value));
+        }
+
+        context.set("projects", projects);
+        context.setJson(
+            "pagination",
+            drogular::makePaginationModel(
+                pageResult.page,
+                pageResult.totalPages,
+                pageUrl
+            )
+        );
+        context.set("currentPage", pageResult.page);
+        context.set("totalPages", pageResult.totalPages);
+        context.set("totalItems", pageResult.totalItems);
+    }
+};

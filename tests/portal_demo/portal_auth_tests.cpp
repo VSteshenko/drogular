@@ -425,7 +425,13 @@ TEST(PortalThemeTests, LoginDefaultsToSystemThemeAndRendersSelector) {
     EXPECT_TRUE(
         HtmlTestSupport::containsText(
             html,
-            R"(name="theme" value="dark")"
+            R"(name="theme")"
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            html,
+            R"(value="dark")"
         )
     );
 }

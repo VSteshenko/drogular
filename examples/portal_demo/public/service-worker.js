@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-portal-demo-v9";
+const CACHE_NAME = "drogular-portal-demo-v10";
 
 const APP_SHELL = [
     "/",
@@ -37,6 +37,11 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
     if (event.request.method !== "GET") {
+        return;
+    }
+
+    const url = new URL(event.request.url);
+    if (url.pathname.startsWith("/fragments/")) {
         return;
     }
 

@@ -174,9 +174,37 @@ TEST(PortalApplicationTests, UsersUsesCardFormAndTablePrimitives) {
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-table")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-badge dg-badge-info")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-card-footer")"));
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(action="/users/create" autocomplete="off")"));
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(name="newUserUsername" value="" autocomplete="off")"));
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(name="newUserPassword" type="password" autocomplete="new-password")"));
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "form",
+            {
+                {"action", "/users/create"},
+                {"autocomplete", "off"}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "input",
+            {
+                {"name", "newUserUsername"},
+                {"autocomplete", "off"}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "input",
+            {
+                {"name", "newUserPassword"},
+                {"type", "password"},
+                {"autocomplete", "new-password"}
+            }
+        )
+    );
 }
 
 TEST(PortalApplicationTests, DepartmentsRenderCreateSuccessMessage) {
@@ -2108,6 +2136,7 @@ TEST(PortalApplicationTests, ProjectsPageSelectsDefaultSorting) {
             )
     );
 }
+
 TEST(PortalApplicationTests, ProjectsPageShowsPagination) {
     PortalApplicationTestHost app(
         DemoDataset::create()
@@ -2126,9 +2155,14 @@ TEST(PortalApplicationTests, ProjectsPageShowsPagination) {
     );
 
     EXPECT_TRUE(
-        HtmlTestSupport::containsText(
+        HtmlTestSupport::elementHasAttributes(
             html,
-            R"(href="/projects?page=2")"
+            "button",
+            {
+                {"type", "submit"},
+                {"name", "page"},
+                {"value", "2"}
+            }
         )
     );
 
@@ -2196,9 +2230,51 @@ TEST(PortalApplicationTests, ProjectPaginationPreservesFiltersAndSorting) {
         });
 
     EXPECT_TRUE(
-        HtmlTestSupport::containsText(
+        HtmlTestSupport::elementHasAttributes(
             html,
-            R"(href="/projects?search=a&amp;sort=id&amp;direction=desc&amp;page=2")"
+            "input",
+            {
+                {"name", "search"},
+                {"value", "a"}
+            }
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementContainsElementWithAttributes(
+            html,
+            "select",
+            {{"name", "sort"}},
+            "option",
+            {
+                {"value", "id"},
+                {"selected", ""}
+            }
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementContainsElementWithAttributes(
+            html,
+            "select",
+            {{"name", "direction"}},
+            "option",
+            {
+                {"value", "desc"},
+                {"selected", ""}
+            }
+        )
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "button",
+            {
+                {"type", "submit"},
+                {"name", "page"},
+                {"value", "2"}
+            }
         )
     );
 }
@@ -2482,4 +2558,83 @@ TEST(PortalApplicationTests, MissingDepartmentMemberCannotBeRemoved) {
         "/departments/1?error=member_not_found"
     );
     EXPECT_EQ(app.departmentMemberCount(), 4);
+}
+
+TEST(PortalApplicationTests, ProjectsUsesServerDrivenBrowserInteraction) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectsPage>({}, {}, "/projects");
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-get="/fragments/projects")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-target="[data-projects-results]")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-trigger="input delay:300ms, change")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-projects-results)"));
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "button",
+            {
+                {"type", "submit"},
+                {"name", "page"}
+            }
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectsUsesDeclarativeInteractionReset) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectsPage>(
+        {
+            {"search", "alpha"},
+            {"sort", "id"},
+            {"direction", "desc"}
+        },
+        {},
+        "/projects"
+    );
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "input",
+            {
+                {"name", "search"},
+                {"value", "alpha"},
+                {"dg-reset-value", ""}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "select",
+            {
+                {"name", "sort"},
+                {"dg-reset-value", "title"}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "select",
+            {
+                {"name", "direction"},
+                {"dg-reset-value", "asc"}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "button",
+            {
+                {"type", "button"},
+                {"dg-reset", ""}
+            }
+        )
+    );
 }

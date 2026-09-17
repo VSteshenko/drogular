@@ -1,0 +1,51 @@
+<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.projects.list" open>
+    <summary class="dg-card-summary">
+        <span class="dg-card-title">{{ t('projects.title') }}</span>
+    </summary>
+    <div class="dg-card-body">
+        <div class="dg-table-container">
+            <table class="dg-table">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ projectsTitleLabel }}</th>
+                        <th scope="col">{{ projectsStatusLabel }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(project in projects)
+                    <tr data-project-id="{{ project.id }}">
+                        <td>
+                            <a href="{{ project.detailsUrl }}">{{ project.title }}</a>
+                        </td>
+                        <td>
+                            @switch(project.status)
+                                @case("active")
+                                    <span class="dg-badge dg-badge-success">{{ t('projects.status.active') }}</span>
+                                @case("paused")
+                                    <span class="dg-badge dg-badge-warning">{{ t('projects.status.paused') }}</span>
+                                @case("done")
+                                    <span class="dg-badge dg-badge-neutral">{{ t('projects.status.done') }}</span>
+                                @default
+                                    <span class="dg-badge">{{ project.status }}</span>
+                            @endswitch
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td class="dg-empty-state" colspan="2">{{ t('projects.empty') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="dg-card-footer">
+        <PortalPagination
+                model="pagination"
+                ariaLabel="{{ t('projects.pagination.label') }}"
+                previousLabel="{{ t('projects.pagination.previous') }}"
+                nextLabel="{{ t('projects.pagination.next') }}"
+                submitName="page"
+        />
+    </div>
+</details>

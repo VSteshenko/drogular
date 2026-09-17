@@ -1,19 +1,31 @@
 @if(paginationModel.visible)
 <nav class="dg-pagination" aria-label="{{ ariaLabel }}">
     @if(paginationModel.hasPrevious)
+    @if(paginationUsesSubmit)
+    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ paginationModel.previousPage }}">{{ previousLabel }}</button>
+    @else
     <a href="{{ paginationModel.previousUrl }}">{{ previousLabel }}</a>
+    @endif
     @endif
 
     @foreach(item in paginationModel.pages)
     @if(item.current)
     <strong aria-current="page">{{ item.number }}</strong>
     @else
+    @if(paginationUsesSubmit)
+    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ item.number }}">{{ item.number }}</button>
+    @else
     <a href="{{ item.url }}">{{ item.number }}</a>
+    @endif
     @endif
     @endforeach
 
     @if(paginationModel.hasNext)
+    @if(paginationUsesSubmit)
+    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ paginationModel.nextPage }}">{{ nextLabel }}</button>
+    @else
     <a href="{{ paginationModel.nextUrl }}">{{ nextLabel }}</a>
+    @endif
     @endif
 </nav>
 @endif

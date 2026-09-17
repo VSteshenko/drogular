@@ -81,7 +81,7 @@
         <div class="dg-segmented" aria-label="{{ t('theme.label') }}">
             <form method="post" action="/theme">
                 <input type="hidden" name="theme" value="system">
-                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button
                         class="dg-segmented-item @if(theme == "system")is-active@endif"
                         type="submit"
@@ -92,7 +92,7 @@
 
             <form method="post" action="/theme">
                 <input type="hidden" name="theme" value="light">
-                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button
                         class="dg-segmented-item @if(theme == "light")is-active@endif"
                         type="submit"
@@ -103,7 +103,7 @@
 
             <form method="post" action="/theme">
                 <input type="hidden" name="theme" value="dark">
-                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button
                         class="dg-segmented-item @if(theme == "dark")is-active@endif"
                         type="submit"
@@ -116,7 +116,7 @@
         <div class="dg-segmented" aria-label="Language">
             <form method="post" action="/language">
                 <input type="hidden" name="language" value="en">
-                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button
                         class="dg-segmented-item @if(locale == "en")is-active@endif"
                         type="submit"
@@ -127,7 +127,7 @@
 
             <form method="post" action="/language">
                 <input type="hidden" name="language" value="de">
-                <input type="hidden" name="redirect" value="{{ currentPath }}">
+                <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button
                         class="dg-segmented-item @if(locale == "de")is-active@endif"
                         type="submit"
