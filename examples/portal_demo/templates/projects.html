@@ -8,73 +8,10 @@
 </section>
 @else
 <div class="dg-stack">
-@if(hasProjectsError)
-@include("partials/alert_error.html")
-@endif
-
-@if(hasProjectsSuccess)
-@include("partials/alert_success.html")
-@endif
-
-<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.projects.create" open>
-    <summary class="dg-card-summary">
-        <span class="dg-card-title">{{ t('projects.create') }}</span>
-    </summary>
-    <div class="dg-card-body">
-        <form class="dg-form" method="post" action="/projects/create">
-            <div class="dg-form-grid">
-                <div class="dg-field">
-                    <label>
-                        {{ projectsTitleLabel }}
-                        @if(projectTitleRequired):@endif
-                    </label>
-
-                    <input
-                            name="title"
-                            value="{{ createProjectTitle }}"
-                            @if(projectTitleRequired)required@endif
-                    />
-                </div>
-
-                <div class="dg-field">
-                    <label for="projectTypeId">
-                        {{ typeLabel }}
-                        @if(projectTypeRequired):@endif
-                    </label>
-
-                    <PortalSelect
-                            id="projectTypeId"
-                            name="projectTypeId"
-                            options="projectTypeOptions"
-                            required="{{ projectTypeRequired }}"
-                    />
-                </div>
-
-                <div class="dg-field">
-                    <label>
-                        {{ projectsStatusLabel }}
-                        @if(projectStatusRequired):@endif
-                    </label>
-
-                    <select
-                            name="status"
-                            @if(projectStatusRequired)required@endif
-                    >
-                        <option value="active">{{ t('projects.status.active') }}</option>
-                        <option value="paused">{{ t('projects.status.paused') }}</option>
-                        <option value="done">{{ t('projects.status.done') }}</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="dg-form-actions">
-                <button class="dg-button" type="submit">{{ t('projects.create') }}</button>
-            </div>
-        </form>
-    </div>
-</details>
+@include("fragments/project_create_form.html")
 
 <form class="dg-form"
+      data-projects-browser
       method="get"
       action="/projects"
       dg-get="/fragments/projects"

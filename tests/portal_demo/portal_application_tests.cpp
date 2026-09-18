@@ -571,6 +571,69 @@ TEST(PortalApplicationTests, AdminCreatesProject) {
     );
 }
 
+TEST(PortalApplicationTests, ProjectCreateFormUsesPostInteraction) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectsPage>({}, {}, "/projects");
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/projects/create"},
+            {"dg-post", "/projects/create"},
+            {"dg-target", "[data-project-create]"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectCreateInteractionReturnsValidationFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result = app.postInteraction<PortalCreateProjectAction>({
+        {"title", "x"},
+        {"projectTypeId", "2"},
+        {"status", "paused"}
+    });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), "data-project-create"));
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        result.body(), "input", {{"name", "title"}, {"value", "x"}}
+    ));
+    EXPECT_TRUE(HtmlTestSupport::elementContainsElementWithAttributes(
+        result.body(),
+        "select", {{"name", "projectTypeId"}},
+        "option", {{"value", "2"}, {"selected", ""}}
+    ));
+    EXPECT_TRUE(HtmlTestSupport::elementContainsElementWithAttributes(
+        result.body(),
+        "select", {{"name", "status"}},
+        "option", {{"value", "paused"}, {"selected", ""}}
+    ));
+    EXPECT_EQ(app.projectCount(), 20);
+}
+
+TEST(PortalApplicationTests, ProjectCreateInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result = app.postInteraction<PortalCreateProjectAction>({
+        {"title", "Interaction Project"},
+        {"projectTypeId", "2"},
+        {"status", "active"}
+    });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), "data-project-create"));
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        result.body(), "input", {{"name", "title"}, {"value", ""}}
+    ));
+    EXPECT_EQ(app.projectCount(), 21);
+}
+
 TEST(PortalApplicationTests, UsesDefaultStatusWhenCreateStatusIsMissing) {
     PortalApplicationTestHost app(
         DemoDataset::create()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogon/HttpTypes.h>
+
 #include <json/json.h>
 
 #include <string>
@@ -57,7 +59,10 @@ public:
 
     static ActionResult redirect(std::string location);
 
-    static ActionResult html(std::string html);
+    static ActionResult html(
+        std::string html,
+        drogon::HttpStatusCode status = drogon::k200OK
+    );
 
     static ActionResult json(Json::Value json);
 
@@ -66,6 +71,8 @@ public:
     const std::string& location() const;
 
     const std::string& body() const;
+
+    drogon::HttpStatusCode statusCode() const;
 
     const Json::Value& json() const;
 
@@ -99,6 +106,7 @@ private:
     ActionResultType type_ = ActionResultType::Empty;
     std::string location_;
     std::string body_;
+    drogon::HttpStatusCode statusCode_ = drogon::k200OK;
     Json::Value json_;
     std::vector<Cookie> cookies_;
     FileResponseInfo fileInfo_;

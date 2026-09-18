@@ -39,10 +39,9 @@ TEST(CoreInteractionsResourcesTests, FormSubmitterContributesItsNameAndValue) {
 
     EXPECT_NE(script.find("submitter && submitter.name"), std::string_view::npos);
     EXPECT_NE(script.find("event.submitter || null"), std::string_view::npos);
-    EXPECT_NE(
-        script.find("url.searchParams.set(submitter.name, submitter.value)"),
-        std::string_view::npos
-    );
+    EXPECT_NE(script.find("event.submitter"), std::string_view::npos);
+    EXPECT_NE(script.find("submitter.name"), std::string_view::npos);
+    EXPECT_NE(script.find("submitter.value"), std::string_view::npos);
 }
 
 TEST(CoreInteractionsResourcesTests, DeclarativeResetRestoresValuesAndRefreshesForm) {
@@ -76,4 +75,35 @@ TEST(CoreInteractionsResourcesTests, CurrentUrlControlsAreUpdatedBeforeSubmit) {
     EXPECT_NE(script.find("window.location.search"), std::string_view::npos);
     EXPECT_NE(script.find("window.location.hash"), std::string_view::npos);
     EXPECT_NE(script.find("control.value = currentUrl"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, SupportsPostInteractions) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("[dg-get], [dg-post]"), std::string_view::npos);
+    EXPECT_NE(script.find("element.getAttribute('dg-post')"), std::string_view::npos);
+    EXPECT_NE(script.find("method: 'POST'"), std::string_view::npos);
+    EXPECT_NE(script.find("X-Drogular-Interaction"), std::string_view::npos);
+    EXPECT_NE(script.find("requestParameters(element, submitter)"), std::string_view::npos);
+    EXPECT_NE(script.find("dg-on-success-refresh"), std::string_view::npos);
+    EXPECT_NE(script.find("document.querySelectorAll(successRefresh)"), std::string_view::npos);
+    EXPECT_NE(script.find("if (!response.ok && !postInteraction)"), std::string_view::npos);
+    EXPECT_NE(script.find("if (!response.ok)"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResources, PostInteractionsDoNotLoadAndReinstallRenderedInteractions) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(
+        script.find("(element.hasAttribute('dg-post') ? 'submit' : 'load')"),
+        std::string_view::npos
+    );
+    EXPECT_NE(
+        script.find("if (element.hasAttribute('data-dg-installed')) return"),
+        std::string_view::npos
+    );
+    EXPECT_NE(
+        script.find("target.querySelectorAll('[dg-get], [dg-post]').forEach(install)"),
+        std::string_view::npos
+    );
 }

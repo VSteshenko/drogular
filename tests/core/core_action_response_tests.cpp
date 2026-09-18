@@ -201,3 +201,16 @@ TEST(CoreActionResponseTests, ConvertsUnexpectedErrorToSafeInternalServerError) 
     EXPECT_EQ(response->body(), "Internal Server Error");
     EXPECT_EQ(response->body().find("password"), std::string::npos);
 }
+
+TEST(CoreActionResponseTests, AppliesHtmlStatusCode) {
+    const auto response = drogular::toHttpResponse(
+        drogular::ActionResult::html(
+            "<p>Invalid</p>",
+            drogon::k422UnprocessableEntity
+        )
+    );
+
+    ASSERT_NE(response, nullptr);
+    EXPECT_EQ(response->statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_EQ(response->body(), "<p>Invalid</p>");
+}

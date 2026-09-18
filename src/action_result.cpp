@@ -15,10 +15,14 @@ ActionResult ActionResult::redirect(std::string location) {
     return result;
 }
 
-ActionResult ActionResult::html(std::string html) {
+ActionResult ActionResult::html(
+    std::string html,
+    drogon::HttpStatusCode status
+) {
     ActionResult result;
     result.type_ = ActionResultType::Html;
     result.body_ = std::move(html);
+    result.statusCode_ = status;
     return result;
 }
 
@@ -39,6 +43,10 @@ const std::string& ActionResult::location() const {
 
 const std::string& ActionResult::body() const {
     return body_;
+}
+
+drogon::HttpStatusCode ActionResult::statusCode() const {
+    return statusCode_;
 }
 
 const Json::Value& ActionResult::json() const {

@@ -93,3 +93,13 @@ TEST(CoreActionResultTests, CreatesDownloadResult) {
         "sales-report.pdf"
     );
 }
+
+TEST(CoreActionResultTests, CreatesHtmlResultWithStatus) {
+    const auto result = drogular::ActionResult::html(
+        "<p>Invalid</p>",
+        drogon::k422UnprocessableEntity
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+}

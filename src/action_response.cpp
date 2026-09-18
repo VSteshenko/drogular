@@ -79,6 +79,7 @@ drogon::HttpResponsePtr toHttpResponse(
             );
 
             response->setBody(result.body());
+            response->setStatusCode(result.statusCode());
 
             applyCookies(result, response);
             return response;

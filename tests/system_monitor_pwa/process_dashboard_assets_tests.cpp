@@ -30,7 +30,7 @@ TEST(ProcessDashboardAssetsTests, ContainsReadOnlyProcessInventoryWithFilteringA
     EXPECT_NE(html.find("t(\"dashboard.process_note\")"), std::string::npos);
 
     const auto interactions = drogular::interactions_resources::script();
-    EXPECT_NE(interactions.find("document.querySelectorAll('[dg-get]')"), std::string::npos);
+    EXPECT_NE(interactions.find("document.querySelectorAll('[dg-get], [dg-post]')"), std::string::npos);
     EXPECT_NE(interactions.find("Accept': 'text/html"), std::string::npos);
     EXPECT_NE(interactions.find("setState(element, 'loading')"), std::string::npos);
     EXPECT_NE(interactions.find("setState(element, 'error')"), std::string::npos);

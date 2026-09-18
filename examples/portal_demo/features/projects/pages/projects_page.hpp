@@ -1,10 +1,8 @@
 #pragma once
 
-#include "features/project_types/providers/project_type_provider.hpp"
-#include "features/localization/support/portal_error_translator.hpp"
+#include "features/projects/ui/portal_project_create_form_support.hpp"
 #include "features/projects/ui/portal_projects_browser_support.hpp"
 #include "ui/portal_page_support.hpp"
-#include "data/portal_schema.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -41,80 +39,17 @@ public:
                 ? request->getParameter("title")
                 : std::string("");
 
-        const auto projectsError =
-            PortalErrorTranslator::projectsError(
-                context,
-                error
-            );
-
-        const auto projectsSuccess =
-            PortalErrorTranslator::projectsSuccess(
-                context,
-                success
-            );
-
-        context.set("hasProjectsError", !projectsError.empty());
-        context.set("hasProjectsSuccess", !projectsSuccess.empty());
-        context.set("alertMessage", !projectsError.empty() ? projectsError : projectsSuccess);
-        context.set("createProjectTitle", createTitle);
-
         if (!drogular::PageAuthSupport::requireAuthentication(context)) {
             return;
         }
 
-        const auto schema =
-            PortalSchema::projects();
-
-        context.set(
-            "projectTitleRequired",
-            schema.fieldRequired("title")
-        );
-
-        context.set(
-            "projectTypeRequired",
-            schema.fieldRequired("projectTypeId")
-        );
-
-        context.set(
-            "projectStatusRequired",
-            schema.fieldRequired("status")
-        );
-
-        auto projectTypes =
-            context.requireService<PortalProjectTypeProvider>();
-
-        const auto allProjectTypes =
-            projectTypes->all();
-
-        Json::Value options(Json::arrayValue);
-
-        for (const auto& type : allProjectTypes) {
-            Json::Value option(Json::objectValue);
-
-            option["value"] = type.id;
-            option["label"] = type.title;
-
-            options.append(
-                std::move(option)
-            );
-        }
-
-        context.set(
-            "projectTypeOptions",
-            options
-        );
-
-        context.set(
-            "projectsTitleLabel",
-            context.translate(schema.fieldLabelKey("title"))
-        );
-        context.set(
-            "typeLabel",
-            context.translate(schema.fieldLabelKey("projectTypeId"))
-        );
-        context.set(
-            "projectsStatusLabel",
-            context.translate(schema.fieldLabelKey("status"))
+        PortalProjectCreateFormSupport::apply(
+            context,
+            createTitle,
+            {},
+            "active",
+            error,
+            success
         );
 
         PortalProjectsBrowserSupport::apply(context);

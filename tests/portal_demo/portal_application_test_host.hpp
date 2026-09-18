@@ -202,6 +202,22 @@ public:
         );
     }
 
+    template <typename TAction>
+    drogular::ActionResult postInteraction(
+        const std::unordered_map<std::string, std::string>& form = {}
+    ) {
+        auto request = createRequest(drogon::Post);
+        request->addHeader("X-Drogular-Interaction", "true");
+
+        for (const auto& [name, value] : form) {
+            request->setParameter(name, value);
+        }
+
+        drogular::ActionContext context(request, &services_);
+        TAction action;
+        return action.handle(context);
+    }
+
     std::size_t projectCount() const {
         return dataset_->projects().size();
     }

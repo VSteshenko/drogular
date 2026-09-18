@@ -79,23 +79,64 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         return match ? Number(match[1]) : 0;
     };
 
-    const requestUrl = (element, submitter = null) => {
-        const source = element.getAttribute('dg-get');
-        if (!source) return null;
+    const requestParameters = (element, submitter = null) => {
+        const parameters = new URLSearchParams();
+        const controls = element.querySelectorAll(
+            'input[name], select[name], textarea[name]'
+        );
 
-        const url = new URL(source, window.location.origin);
-        const controls = element.querySelectorAll('input[name], select[name], textarea[name]');
         for (const control of controls) {
             if (control.disabled || !control.name) continue;
-            if ((control.type === 'checkbox' || control.type === 'radio') && !control.checked) continue;
-            url.searchParams.set(control.name, control.value);
+            if (
+                (control.type === 'checkbox' || control.type === 'radio') &&
+                !control.checked
+            ) {
+                continue;
+            }
+            parameters.set(control.name, control.value);
         }
 
         if (submitter && submitter.name && !submitter.disabled) {
-            url.searchParams.set(submitter.name, submitter.value);
+            parameters.set(submitter.name, submitter.value);
         }
 
+        return parameters;
+    };
+
+    const requestUrl = (element, submitter = null) => {
+        const source =
+            element.getAttribute('dg-get') ||
+            element.getAttribute('dg-post');
+        if (!source) return null;
+
+        const url = new URL(source, window.location.origin);
+        if (element.hasAttribute('dg-get')) {
+            const parameters = requestParameters(element, submitter);
+            for (const [name, value] of parameters) {
+                url.searchParams.set(name, value);
+            }
+        }
         return url;
+    };
+
+    const requestOptions = (element, submitter = null) => {
+        if (!element.hasAttribute('dg-post')) {
+            return {
+                headers: { 'Accept': 'text/html' },
+                cache: 'no-store',
+            };
+        }
+
+        return {
+            method: 'POST',
+            headers: {
+                'Accept': 'text/html',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-Drogular-Interaction': 'true',
+            },
+            body: requestParameters(element, submitter).toString(),
+            cache: 'no-store',
+        };
     };
 
     const historyUrl = (element, request) => {
@@ -275,24 +316,44 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         state.running = true;
         setState(element, 'loading');
         try {
-            const response = await fetch(url, {
-                headers: { 'Accept': 'text/html' },
-                cache: 'no-store',
-            });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const response = await fetch(
+                url,
+                requestOptions(element, submitter)
+            );
             const html = await response.text();
+            const postInteraction = element.hasAttribute('dg-post');
+
+            if (!response.ok && !postInteraction) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             if (state.paused) return;
             if (!state.pending) {
                 const openState = preservedOpenState(target);
                 target.innerHTML = html;
+                target.querySelectorAll('[dg-get], [dg-post]').forEach(install);
                 restoreOpenState(target, openState);
                 if (element.hasAttribute('dg-hide-on-unavailable')) {
                     element.hidden = target.querySelector('[data-dg-unavailable]') !== null;
                 }
+
+                if (!response.ok) {
+                    setState(element, 'error');
+                    return;
+                }
+
                 setState(element, responseState(html));
                 state.failures = 0;
                 applyConnectionResponse(element, target);
                 syncHistory(element, url);
+
+                const successRefresh =
+                    element.getAttribute('dg-on-success-refresh');
+                if (successRefresh) {
+                    document.querySelectorAll(successRefresh).forEach((root) => {
+                        if (root !== element) refresh(root);
+                    });
+                }
             }
         } catch (_) {
             setState(element, 'error');
@@ -319,8 +380,12 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     };
 
     const install = (element) => {
+        if (element.hasAttribute('data-dg-installed')) return;
+        element.setAttribute('data-dg-installed', 'true');
+
         const state = requestState(element);
-        const trigger = element.getAttribute('dg-trigger') || 'load';
+        const trigger = element.getAttribute('dg-trigger') ||
+            (element.hasAttribute('dg-post') ? 'submit' : 'load');
         const tokens = trigger.split(',').map((value) => value.trim()).filter(Boolean);
 
         for (const token of tokens) {
@@ -380,7 +445,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         });
     }, true);
 
-    document.querySelectorAll('[dg-get]').forEach(install);
+    document.querySelectorAll('[dg-get], [dg-post]').forEach(install);
     document.querySelectorAll('[dg-resume]').forEach((control) => {
         control.addEventListener('click', () => {
             const selector = control.getAttribute('dg-resume');
