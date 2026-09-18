@@ -2701,3 +2701,64 @@ TEST(PortalApplicationTests, ProjectsUsesDeclarativeInteractionReset) {
         )
     );
 }
+
+TEST(PortalApplicationTests, ProjectEditUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectEditPage>(
+        {},
+        {{"id", "1"}},
+        "/projects/1/edit"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-project-edit)"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-post="/projects/1/update")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-target="[data-project-edit]")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(dg-on-success-refresh="[data-projects-browser]")"
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectEditInteractionReturnsUpdatedFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result = app.postInteraction<PortalUpdateProjectAction>(
+        {
+            {"title", "Interaction update"},
+            {"projectTypeId", "1"},
+            {"status", "active"}
+        },
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), "Interaction update"));
+    EXPECT_TRUE(
+        HtmlTestSupport::containsText(
+            result.body(),
+            R"(data-project-edit)"
+        )
+    );
+}
+
+TEST(PortalApplicationTests, ProjectEditInteractionReturnsValidationFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result = app.postInteraction<PortalUpdateProjectAction>(
+        {
+            {"title", ""},
+            {"projectTypeId", "1"},
+            {"status", "active"}
+        },
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), R"(data-project-edit)"));
+}
