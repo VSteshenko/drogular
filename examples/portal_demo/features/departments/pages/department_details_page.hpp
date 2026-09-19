@@ -2,6 +2,7 @@
 
 #include "ui/portal_page_support.hpp"
 #include "features/departments/providers/department_provider.hpp"
+#include "features/departments/ui/portal_department_navigation_support.hpp"
 #include "features/department_members/providers/department_member_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 
@@ -36,7 +37,15 @@ public:
             >()->findById(id);
 
         context.set("departmentNotFound", !department.has_value());
-        context.set("departmentsBackUrl", "/departments");
+
+        const auto request = context.request();
+        const auto returnUrl =
+            PortalDepartmentNavigationSupport::departmentsReturnUrl(
+                request != nullptr
+                    ? request->getParameter("returnUrl")
+                    : std::string("")
+            );
+        context.set("departmentsBackUrl", returnUrl);
 
         if (!department) {
             return;

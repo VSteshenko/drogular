@@ -48,89 +48,63 @@
     </details>
     @endif
 
-    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.filters" open>
-        <summary class="dg-card-summary">
-            <h2 class="dg-card-title">{{ t('departments.filter.title') }}</h2>
-        </summary>
-        <div class="dg-card-body">
-            <form class="dg-form" method="get" action="/departments">
+    <form class="dg-form"
+          data-departments-browser
+          method="get"
+          action="/departments"
+          dg-get="/fragments/departments"
+          dg-target="[data-departments-results]"
+          dg-trigger="input delay:300ms, change"
+          dg-history="replace">
+        <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.filters" open>
+            <summary class="dg-card-summary">
+                <h2 class="dg-card-title">{{ t('departments.filter.title') }}</h2>
+            </summary>
+            <div class="dg-card-body">
                 <fieldset class="dg-fieldset">
                     <div class="dg-form-grid">
                         <div class="dg-field">
                             <label for="search">{{ t('departments.search') }}</label>
-                            <input id="search" type="search" name="search" value="{{ departmentSearch }}" />
+                            <input id="search"
+                                   type="search"
+                                   name="search"
+                                   value="{{ departmentSearch }}"
+                                   dg-reset-value="" />
                         </div>
                         <div class="dg-field">
                             <label for="status">{{ t('departments.filter.status') }}</label>
-                            <PortalSelect id="status" name="active" options="departmentActiveOptions" />
+                            <PortalSelect id="status"
+                                          name="active"
+                                          resetValue=""
+                                          options="departmentActiveOptions" />
                         </div>
                         <div class="dg-field">
                             <label for="sort">{{ t('departments.sort.label') }}</label>
-                            <PortalSelect id="sort" name="sort" options="departmentSortOptions" />
+                            <PortalSelect id="sort"
+                                          name="sort"
+                                          resetValue="name"
+                                          options="departmentSortOptions" />
                         </div>
                         <div class="dg-field">
                             <label for="direction">{{ t('departments.sort.direction.label') }}</label>
-                            <PortalSelect id="direction" name="direction" options="departmentDirectionOptions" />
+                            <PortalSelect id="direction"
+                                          name="direction"
+                                          resetValue="asc"
+                                          options="departmentDirectionOptions" />
                         </div>
                     </div>
                     <div class="dg-form-actions">
-                        <button class="dg-button" type="submit">{{ t('departments.apply') }}</button>
+                        <button class="dg-button" type="button" dg-reset>
+                            {{ t('departments.search.clear') }}
+                        </button>
                     </div>
                 </fieldset>
-            </form>
-        </div>
-    </details>
-
-    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.list" open>
-        <summary class="dg-card-summary">
-            <h2 class="dg-card-title">{{ t('departments.title') }}</h2>
-        </summary>
-        <div class="dg-card-body">
-            <div class="dg-table-container">
-                <table class="dg-table">
-                    <thead>
-                    <tr>
-                        <th>{{ t('departments.name') }}</th>
-                        <th>{{ t('departments.manager') }}</th>
-                        <th>{{ t('departments.status') }}</th>
-                        <th>{{ t('departments.description') }}</th>
-                        @if(isAdmin)
-                        <th>{{ t('departments.edit') }}</th>
-                        @endif
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach(department in departments)
-                    <tr>
-                        <td><a href="{{ department.detailsUrl }}">{{ department.name }}</a></td>
-                        <td>{{ department.manager }}</td>
-                        <td>
-                            @if(department.active)
-                            <span class="dg-badge dg-badge-success">{{ t('departments.active') }}</span>
-                            @else
-                            <span class="dg-badge dg-badge-neutral">{{ t('departments.inactive') }}</span>
-                            @endif
-                        </td>
-                        <td>{{ department.description }}</td>
-                        @if(isAdmin)
-                        <td><a class="dg-button" href="{{ department.editUrl }}">{{ t('departments.edit') }}</a></td>
-                        @endif
-                    </tr>
-                    @empty
-                    <tr><td class="dg-empty-state" colspan="5">{{ t('departments.empty') }}</td></tr>
-                    @endforeach
-                    </tbody>
-                </table>
             </div>
+        </details>
+
+        <div data-departments-results>
+            @include("fragments/departments_results.html")
         </div>
-        <div class="dg-card-footer">
-            <PortalPagination
-                model="pagination"
-                ariaLabel="{{ t('departments.pagination.label') }}"
-                previousLabel="{{ t('common.previous') }}"
-                nextLabel="{{ t('common.next') }}"
-            />
-        </div>
-    </details>
+    </form>
 </div>
 @endif

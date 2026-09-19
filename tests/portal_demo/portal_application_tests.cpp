@@ -2436,10 +2436,10 @@ TEST(PortalApplicationTests, DepartmentsPageRendersDepartmentData) {
         HtmlTestSupport::containsText(html, "Product and platform engineering")
     );
     EXPECT_TRUE(
-        HtmlTestSupport::containsText(html, R"(href="/departments/1")")
+        HtmlTestSupport::containsText(html, R"(href="/departments/1?returnUrl=%2Fdepartments")")
     );
     EXPECT_TRUE(
-        HtmlTestSupport::containsText(html, R"(href="/departments/1/edit")")
+        HtmlTestSupport::containsText(html, R"(href="/departments/1/edit?returnUrl=%2Fdepartments")")
     );
 }
 
@@ -2877,4 +2877,91 @@ TEST(PortalApplicationTests, ProjectNavigationRejectsNonProjectsReturnUrl) {
 
     ASSERT_TRUE(href.has_value());
     EXPECT_EQ(HtmlTestSupport::decodeEntities(*href), "/projects");
+}
+
+TEST(PortalApplicationTests, DepartmentsBrowserUsesGetInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentsPage>(
+        {},
+        {},
+        "/departments"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"data-departments-browser", ""},
+            {"dg-get", "/fragments/departments"},
+            {"dg-target", "[data-departments-results]"},
+            {"dg-trigger", "input delay:300ms, change"},
+            {"dg-history", "replace"}
+        }
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-reset-value="")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-reset)"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(
+        html,
+        R"(type="submit">{{ t('departments.apply') }})"
+    ));
+}
+
+TEST(PortalApplicationTests, DepartmentsBrowserPreservesReturnUrl) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentsPage>(
+        {
+            {"search", "Engineering"},
+            {"active", "true"},
+            {"sort", "id"},
+            {"direction", "desc"},
+            {"page", "1"}
+        },
+        {},
+        "/departments"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        "returnUrl=%2Fdepartments%3Fsearch%3DEngineering"
+    ));
+}
+
+
+TEST(PortalApplicationTests, DepartmentDetailsPreservesDepartmentsReturnUrl) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto returnUrl =
+        "/departments?search=Engineering&active=true&sort=id&direction=desc&page=2";
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {{"returnUrl", returnUrl}},
+        {{"id", "1"}},
+        "/departments/1"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(href="/departments?search=Engineering&amp;active=true&amp;sort=id&amp;direction=desc&amp;page=2")"
+    ));
+}
+
+TEST(PortalApplicationTests, DepartmentDetailsRejectsUnsafeReturnUrl) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {{"returnUrl", "https://example.com/evil"}},
+        {{"id", "1"}},
+        "/departments/1"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(href="/departments")"
+    ));
 }

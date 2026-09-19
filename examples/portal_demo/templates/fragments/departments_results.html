@@ -1,0 +1,52 @@
+<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.list" open>
+    <summary class="dg-card-summary">
+        <h2 class="dg-card-title">{{ t('departments.title') }}</h2>
+    </summary>
+    <div class="dg-card-body">
+        <div class="dg-table-container">
+            <table class="dg-table">
+                <thead>
+                <tr>
+                    <th>{{ t('departments.name') }}</th>
+                    <th>{{ t('departments.manager') }}</th>
+                    <th>{{ t('departments.status') }}</th>
+                    <th>{{ t('departments.description') }}</th>
+                    @if(isAdmin)
+                    <th>{{ t('departments.edit') }}</th>
+                    @endif
+                </tr>
+                </thead>
+                <tbody>
+                @foreach(department in departments)
+                <tr>
+                    <td><a href="{{ department.detailsUrl }}">{{ department.name }}</a></td>
+                    <td>{{ department.manager }}</td>
+                    <td>
+                        @if(department.active)
+                        <span class="dg-badge dg-badge-success">{{ t('departments.active') }}</span>
+                        @else
+                        <span class="dg-badge dg-badge-neutral">{{ t('departments.inactive') }}</span>
+                        @endif
+                    </td>
+                    <td>{{ department.description }}</td>
+                    @if(isAdmin)
+                    <td><a class="dg-button" href="{{ department.editUrl }}">{{ t('departments.edit') }}</a></td>
+                    @endif
+                </tr>
+                @empty
+                <tr><td class="dg-empty-state" colspan="5">{{ t('departments.empty') }}</td></tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="dg-card-footer">
+        <PortalPagination
+            model="pagination"
+            ariaLabel="{{ t('departments.pagination.label') }}"
+            previousLabel="{{ t('common.previous') }}"
+            nextLabel="{{ t('common.next') }}"
+            submitName="page"
+        />
+    </div>
+</details>

@@ -45,6 +45,7 @@
 #include "features/department_members/actions/add_department_member_action.hpp"
 #include "features/department_members/actions/remove_department_member_action.hpp"
 #include "features/departments/actions/create_department_action.hpp"
+#include "features/departments/actions/departments_fragment_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 #include "ui/components/portal_select_component.hpp"
 #include "ui/components/portal_pagination_component.hpp"
@@ -225,6 +226,7 @@ int main(
     app.action<PortalUpdateProjectTypeAction>("/project-types/{id}/update");
     app.action<PortalDeleteProjectTypeAction>("/project-types/{id}/delete");
     app.page<PortalDepartmentsPage>("/departments");
+    app.get<PortalDepartmentsFragmentAction>("/fragments/departments");
     app.page<PortalDepartmentDetailsPage>("/departments/{id}");
     app.page<PortalDepartmentEditPage>("/departments/{id}/edit");
     app.page<PortalProjectsPage>("/projects");
