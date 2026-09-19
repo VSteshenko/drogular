@@ -1,6 +1,7 @@
 #pragma once
 
 #include "features/projects/data/portal_project.hpp"
+#include "features/projects/ui/portal_project_navigation_support.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "features/localization/support/portal_error_translator.hpp"
 #include "data/portal_schema.hpp"
@@ -16,7 +17,8 @@ public:
         int projectTypeId,
         const std::string& status,
         const std::string& error = {},
-        const std::string& success = {}
+        const std::string& success = {},
+        const std::string& returnUrl = "/projects"
     ) {
         const auto schema = PortalSchema::projects();
         const auto projectsError =
@@ -31,9 +33,22 @@ public:
             !projectsError.empty() ? projectsError : projectsSuccess
         );
 
+        const auto safeReturnUrl =
+            PortalProjectNavigationSupport::projectsReturnUrl(
+                returnUrl
+            );
+
         context.set("projectId", project.id);
         context.set("projectTitle", title);
         context.set("projectStatus", status);
+        context.set("projectsReturnUrl", safeReturnUrl);
+        context.set(
+            "projectDetailsUrl",
+            PortalProjectNavigationSupport::detailsUrl(
+                project.id,
+                safeReturnUrl
+            )
+        );
 
         context.set("projectTitleRequired", schema.fieldRequired("title"));
         context.set("projectTypeRequired", schema.fieldRequired("projectTypeId"));

@@ -9,6 +9,7 @@
                   dg-post="/projects/{{ projectId }}/update"
                   dg-target="[data-project-edit]"
                   dg-on-success-refresh="[data-projects-browser]">
+                <input type="hidden" name="returnUrl" value="{{ projectsReturnUrl }}" />
                 <div class="dg-form-grid">
                     <div class="dg-field">
                         <label for="projectTitle">{{ projectsTitleLabel }} @if(projectTitleRequired):@endif</label>
@@ -29,7 +30,7 @@
                 </div>
                 <div class="dg-form-actions">
                     <button class="dg-button" type="submit">{{ t('projects.update') }}</button>
-                    <a class="dg-button" href="/projects/{{ projectId }}">{{ t('projects.back_to_details') }}</a>
+                    <a id="projectBackToDetailsLink" class="dg-button" href="{{ projectDetailsUrl }}">{{ t('projects.back_to_details') }}</a>
                 </div>
             </form>
         </div>

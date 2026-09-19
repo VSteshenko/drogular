@@ -814,7 +814,7 @@ TEST(PortalApplicationTests, UpdatesOnlyProvidedProjectFields) {
 
     EXPECT_EQ(
         result.location(),
-        "/projects/1?success=project_updated"
+        "/projects/1?returnUrl=%2Fprojects&success=project_updated"
     );
 
     const auto& after =
@@ -2761,4 +2761,120 @@ TEST(PortalApplicationTests, ProjectEditInteractionReturnsValidationFragment) {
     EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
     EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
     EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), R"(data-project-edit)"));
+}
+
+TEST(PortalApplicationTests, ProjectDetailsUsesTargetlessDeleteInteraction) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectDetailsPage>(
+        {},
+        {{"id", "1"}},
+        "/projects/1"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(dg-post="/projects/1/delete")"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(dg-on-success-navigate="/projects")"
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectDeleteInteractionReturnsEmptySuccess) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalDeleteProjectAction>(
+            {},
+            {{"id", "1"}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(result.body().empty());
+    EXPECT_EQ(app.projectCount(), 19);
+}
+
+TEST(PortalApplicationTests, ProjectDetailsForwardsReturnUrlToEdit) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto project = app.dataset().projects().front();
+    const auto returnUrl =
+        "/projects?search=port&status=active&page=2";
+
+    const auto html = app.render<PortalProjectDetailsPage>(
+        {{"returnUrl", returnUrl}},
+        {{"id", std::to_string(project.id)}}
+    );
+
+    const auto href = HtmlTestSupport::attributeValue(
+        html,
+        R"(id="projectEditLink")",
+        "href"
+    );
+
+    ASSERT_TRUE(href.has_value());
+    EXPECT_EQ(
+        HtmlTestSupport::decodeEntities(*href),
+        "/projects/" + std::to_string(project.id) +
+            "/edit?returnUrl=" + drogular::Url::encode(returnUrl)
+    );
+}
+
+TEST(PortalApplicationTests, ProjectEditPreservesProjectsReturnUrl) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto project = app.dataset().projects().front();
+    const auto returnUrl =
+        "/projects?search=port&status=active&page=2";
+
+    const auto html = app.render<PortalProjectEditPage>(
+        {{"returnUrl", returnUrl}},
+        {{"id", std::to_string(project.id)}},
+        "/projects/" + std::to_string(project.id) + "/edit"
+    );
+
+    const auto href = HtmlTestSupport::attributeValue(
+        html,
+        R"(id="projectBackToDetailsLink")",
+        "href"
+    );
+
+    ASSERT_TRUE(href.has_value());
+    EXPECT_EQ(
+        HtmlTestSupport::decodeEntities(*href),
+        "/projects/" + std::to_string(project.id) +
+            "?returnUrl=" + drogular::Url::encode(returnUrl)
+    );
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(name="returnUrl")"
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectNavigationRejectsNonProjectsReturnUrl) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto project = app.dataset().projects().front();
+
+    const auto html = app.render<PortalProjectDetailsPage>(
+        {{"returnUrl", "https://example.com/evil"}},
+        {{"id", std::to_string(project.id)}}
+    );
+
+    const auto href = HtmlTestSupport::attributeValue(
+        html,
+        R"(id="projectsBackFromDetailsLink")",
+        "href"
+    );
+
+    ASSERT_TRUE(href.has_value());
+    EXPECT_EQ(HtmlTestSupport::decodeEntities(*href), "/projects");
 }

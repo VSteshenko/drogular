@@ -43,8 +43,11 @@
             </dl>
         </div>
         <div class="dg-card-footer dg-form-actions">
-            <a class="dg-button" href="/projects/{{ projectId }}/edit">{{ t('projects.update') }}</a>
-            <form method="post" action="/projects/{{ projectId }}/delete"><button class="dg-button" type="submit">{{ t('projects.delete') }}</button></form>
+            <a id="projectEditLink" class="dg-button" href="{{ projectEditUrl }}">{{ t('projects.update') }}</a>
+            <form method="post"
+                  action="/projects/{{ projectId }}/delete"
+                  dg-post="/projects/{{ projectId }}/delete"
+                  dg-on-success-navigate="{{ projectsBackUrl }}"><button class="dg-button" type="submit">{{ t('projects.delete') }}</button></form>
             <a id="projectsBackFromDetailsLink" class="dg-button" href="{{ projectsBackUrl }}">{{ t('projects.back') }}</a>
         </div>
     </section>

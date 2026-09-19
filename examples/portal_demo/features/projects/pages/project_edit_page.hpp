@@ -2,6 +2,7 @@
 
 #include "features/projects/providers/project_provider.hpp"
 #include "features/projects/ui/portal_project_edit_form_support.hpp"
+#include "features/projects/ui/portal_project_navigation_support.hpp"
 #include "ui/portal_page_support.hpp"
 
 #include <drogular/page.hpp>
@@ -43,6 +44,12 @@ public:
             request != nullptr
                 ? request->getParameter("error")
                 : std::string("");
+        const auto returnUrl =
+            PortalProjectNavigationSupport::projectsReturnUrl(
+                request != nullptr
+                    ? request->getParameter("returnUrl")
+                    : std::string("")
+            );
 
         PortalProjectEditFormSupport::apply(
             context,
@@ -50,7 +57,9 @@ public:
             project->title,
             project->projectTypeId,
             project->status,
-            error
+            error,
+            "",
+            returnUrl
         );
     }
 

@@ -214,7 +214,10 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
     const targetFor = (element) => {
         const selector = element.getAttribute('dg-target');
-        if (!selector || selector === 'this') return element;
+        if (!selector) {
+            return element.hasAttribute('dg-post') ? null : element;
+        }
+        if (selector === 'this') return element;
         return element.querySelector(selector) || document.querySelector(selector);
     };
 
@@ -311,7 +314,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
         const url = requestUrl(element, submitter);
         const target = targetFor(element);
-        if (!url || !target) return;
+        if (!url) return;
 
         state.running = true;
         setState(element, 'loading');
@@ -329,12 +332,15 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
             if (state.paused) return;
             if (!state.pending) {
-                const openState = preservedOpenState(target);
-                target.innerHTML = html;
-                target.querySelectorAll('[dg-get], [dg-post]').forEach(install);
-                restoreOpenState(target, openState);
-                if (element.hasAttribute('dg-hide-on-unavailable')) {
-                    element.hidden = target.querySelector('[data-dg-unavailable]') !== null;
+                if (target) {
+                    const openState = preservedOpenState(target);
+                    target.innerHTML = html;
+                    target.querySelectorAll('[dg-get], [dg-post]').forEach(install);
+                    restoreOpenState(target, openState);
+                    if (element.hasAttribute('dg-hide-on-unavailable')) {
+                        element.hidden =
+                            target.querySelector('[data-dg-unavailable]') !== null;
+                    }
                 }
 
                 if (!response.ok) {
@@ -342,10 +348,17 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                     return;
                 }
 
-                setState(element, responseState(html));
+                setState(element, target ? responseState(html) : 'ready');
                 state.failures = 0;
-                applyConnectionResponse(element, target);
+                if (target) applyConnectionResponse(element, target);
                 syncHistory(element, url);
+
+                const successNavigate =
+                    element.getAttribute('dg-on-success-navigate');
+                if (successNavigate) {
+                    window.location.assign(successNavigate);
+                    return;
+                }
 
                 const successRefresh =
                     element.getAttribute('dg-on-success-refresh');

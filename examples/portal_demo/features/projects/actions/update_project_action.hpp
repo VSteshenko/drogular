@@ -2,6 +2,7 @@
 
 #include "features/projects/providers/project_provider.hpp"
 #include "features/projects/ui/portal_project_edit_form_support.hpp"
+#include "features/projects/ui/portal_project_navigation_support.hpp"
 #include "ui/portal_page_support.hpp"
 
 #include <drogular/action_auth_support.hpp>
@@ -42,6 +43,11 @@ public:
 
         const auto title =
             context.form<std::string>("title").value_or("");
+        const auto returnUrl =
+            PortalProjectNavigationSupport::projectsReturnUrl(
+                context.form<std::string>("returnUrl")
+                    .value_or("/projects")
+            );
 
         const auto validation =
             drogular::FormValidator(context)
@@ -60,6 +66,7 @@ public:
                         .value_or(project->status),
                     "validation",
                     "",
+                    returnUrl,
                     drogon::k422UnprocessableEntity
                 );
             }
@@ -67,7 +74,9 @@ public:
             return drogular::ActionResult::redirect(
                 "/projects/" + std::to_string(id) +
                 "/edit?error=validation&title=" +
-                drogular::Url::encode(title)
+                drogular::Url::encode(title) +
+                "&returnUrl=" +
+                drogular::Url::encode(returnUrl)
             );
         }
 
@@ -114,13 +123,16 @@ public:
                 updated.projectTypeId,
                 updated.status,
                 "",
-                "project_updated"
+                "project_updated",
+                returnUrl
             );
         }
 
         return drogular::ActionResult::redirect(
-            "/projects/" + std::to_string(id) +
-            "?success=project_updated"
+            PortalProjectNavigationSupport::detailsUrl(
+                id,
+                returnUrl
+            ) + "&success=project_updated"
         );
     }
 
@@ -150,6 +162,7 @@ private:
         const std::string& status,
         const std::string& error,
         const std::string& success,
+        const std::string& returnUrl,
         drogon::HttpStatusCode responseStatus = drogon::k200OK
     ) {
         drogular::RenderContext renderContext;
@@ -164,7 +177,8 @@ private:
             projectTypeId,
             status,
             error,
-            success
+            success,
+            returnUrl
         );
 
         EditFormComponent component;

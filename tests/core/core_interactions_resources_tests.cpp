@@ -107,3 +107,30 @@ TEST(CoreInteractionsResources, PostInteractionsDoNotLoadAndReinstallRenderedInt
         std::string_view::npos
     );
 }
+
+TEST(CoreInteractionsResourcesTests, PostInteractionMayOmitTarget) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(
+        script.find("element.hasAttribute('dg-post') ? null : element"),
+        std::string::npos
+    );
+    EXPECT_NE(script.find("if (!url) return;"), std::string::npos);
+    EXPECT_NE(
+        script.find("setState(element, target ? responseState(html) : 'ready')"),
+        std::string::npos
+    );
+}
+
+TEST(CoreInteractionsResourcesTests, SupportsSuccessNavigation) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(
+        script.find("dg-on-success-navigate"),
+        std::string_view::npos
+    );
+    EXPECT_NE(
+        script.find("window.location.assign(successNavigate)"),
+        std::string_view::npos
+    );
+}

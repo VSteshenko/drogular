@@ -37,8 +37,21 @@ public:
             );
         }
 
+        if (isInteraction(context)) {
+            return drogular::ActionResult::html("");
+        }
+
         return drogular::ActionResult::redirect(
             "/projects?success=project_deleted"
         );
+    }
+
+private:
+    static bool isInteraction(
+        const drogular::ActionContext& context
+    ) {
+        const auto request = context.request();
+        return request != nullptr &&
+            request->getHeader("X-Drogular-Interaction") == "true";
     }
 };

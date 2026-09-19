@@ -2,6 +2,7 @@
 
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
+#include "features/projects/ui/portal_project_navigation_support.hpp"
 #include "ui/portal_page_support.hpp"
 #include "features/roles/providers/role_provider.hpp"
 #include "data/portal_schema.hpp"
@@ -56,13 +57,17 @@ public:
                 : std::string("");
 
         const auto safeReturnUrl =
-            returnUrl.starts_with("/projects")
-                ? returnUrl
-                : std::string("/projects");
+            PortalProjectNavigationSupport::projectsReturnUrl(
+                returnUrl
+            );
 
+        context.set("projectsBackUrl", safeReturnUrl);
         context.set(
-            "projectsBackUrl",
-            safeReturnUrl
+            "projectEditUrl",
+            PortalProjectNavigationSupport::editUrl(
+                id,
+                safeReturnUrl
+            )
         );
 
         const auto success =
