@@ -2965,3 +2965,70 @@ TEST(PortalApplicationTests, DepartmentDetailsRejectsUnsafeReturnUrl) {
         R"(href="/departments")"
     ));
 }
+
+TEST(PortalApplicationTests, DepartmentCreateUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentsPage>(
+        {},
+        {},
+        "/departments"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/departments/create"},
+            {"dg-post", "/departments/create"},
+            {"dg-target", "[data-department-create]"},
+            {"dg-on-success-refresh", "[data-departments-browser]"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, DepartmentCreateInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalCreateDepartmentAction>({
+            {"name", "Quality Assurance"},
+            {"description", "Product quality and testing"},
+            {"managerId", "3"},
+            {"isActive", "on"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-create)"
+    ));
+    EXPECT_EQ(app.departmentCount(), 4);
+}
+
+TEST(PortalApplicationTests, DepartmentCreateInteractionReturnsValidationFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalCreateDepartmentAction>({
+            {"name", ""},
+            {"description", "Still here"},
+            {"managerId", "3"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-create)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Still here")"
+    ));
+    EXPECT_EQ(app.departmentCount(), 3);
+}

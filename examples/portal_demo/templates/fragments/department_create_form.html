@@ -1,0 +1,44 @@
+<div data-department-create class="dg-stack">
+    @if(hasDepartmentsError)@include("partials/alert_error.html")@endif
+    @if(hasDepartmentsSuccess)@include("partials/alert_success.html")@endif
+
+    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.create" open>
+        <summary class="dg-card-summary">
+            <h2 class="dg-card-title">{{ t('departments.create') }}</h2>
+        </summary>
+        <div class="dg-card-body">
+            <form class="dg-form"
+                  method="post"
+                  action="/departments/create"
+                  dg-post="/departments/create"
+                  dg-target="[data-department-create]"
+                  dg-on-success-refresh="[data-departments-browser]">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="departmentName">{{ t('departments.name') }}</label>
+                        <input id="departmentName" name="name" value="{{ createDepartmentName }}" required />
+                    </div>
+                    <div class="dg-field">
+                        <label for="departmentDescription">{{ t('departments.description') }}</label>
+                        <input id="departmentDescription" name="description" value="{{ createDepartmentDescription }}" />
+                    </div>
+                    <div class="dg-field">
+                        <label for="departmentManager">{{ t('departments.manager') }}</label>
+                        <select id="departmentManager" name="managerId" required>
+                            @foreach(manager in departmentManagers)
+                            <option value="{{ manager.id }}" @if(manager.selected)selected@endif>{{ manager.name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <label class="dg-toolbar">
+                    <input type="checkbox" name="isActive" @if(createDepartmentActive)checked@endif />
+                    {{ t('departments.active') }}
+                </label>
+                <div class="dg-form-actions">
+                    <button class="dg-button" type="submit">{{ t('departments.create') }}</button>
+                </div>
+            </form>
+        </div>
+    </details>
+</div>

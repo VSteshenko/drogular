@@ -2,7 +2,7 @@
 
 #include "ui/portal_page_support.hpp"
 #include "features/departments/ui/portal_departments_browser_support.hpp"
-#include "features/localization/support/portal_error_translator.hpp"
+#include "features/departments/ui/portal_department_create_form_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -24,30 +24,22 @@ public:
             return;
         }
 
-        const auto request =
-            context.request();
+        const auto request = context.request();
 
-        const auto error = request != nullptr
-            ? request->getParameter("error")
-            : std::string();
-        const auto success = request != nullptr
-            ? request->getParameter("success")
-            : std::string();
-        const auto name = request != nullptr
-            ? request->getParameter("name")
-            : std::string();
-
-        const auto departmentsError =
-            PortalErrorTranslator::departmentsError(context, error);
-        const auto departmentsSuccess =
-            PortalErrorTranslator::departmentsSuccess(context, success);
-
-        context.set("createDepartmentName", name);
-        context.set("hasDepartmentsError", !departmentsError.empty());
-        context.set("hasDepartmentsSuccess", !departmentsSuccess.empty());
-        context.set(
-            "alertMessage",
-            !departmentsError.empty() ? departmentsError : departmentsSuccess
+        PortalDepartmentCreateFormSupport::apply(
+            context,
+            request != nullptr
+                ? request->getParameter("name")
+                : std::string(),
+            "",
+            "",
+            true,
+            request != nullptr
+                ? request->getParameter("error")
+                : std::string(),
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string()
         );
 
         PortalDepartmentsBrowserSupport::apply(context);
