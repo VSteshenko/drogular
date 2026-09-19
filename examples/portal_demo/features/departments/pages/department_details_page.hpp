@@ -3,14 +3,13 @@
 #include "ui/portal_page_support.hpp"
 #include "features/departments/providers/department_provider.hpp"
 #include "features/departments/ui/portal_department_navigation_support.hpp"
-#include "features/department_members/providers/department_member_provider.hpp"
+#include "features/department_members/ui/portal_department_members_support.hpp"
 #include "features/users/providers/user_provider.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
 #include <cstdlib>
-#include <unordered_set>
 
 class PortalDepartmentDetailsPage final
     : public drogular::TemplatePage
@@ -85,46 +84,22 @@ public:
             : "#" + std::to_string(department->managerId)
         );
 
-        std::unordered_set<int> memberIds;
-        Json::Value members(Json::arrayValue);
-        for (const auto& membership : memberships) {
-            memberIds.insert(membership.userId);
+        const auto error =
+            request != nullptr
+                ? request->getParameter("error")
+                : std::string("");
+        const auto success =
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string("");
 
-            const auto user = userById(membership.userId);
-            if (!user) {
-                continue;
-            }
-
-            Json::Value item(Json::objectValue);
-
-            item["userId"] = user->id;
-            item["username"] = user->username;
-            item["role"] = user->role;
-            item["removeUrl"] =
-                "/departments/" +
-                std::to_string(id) +
-                "/members/" +
-                std::to_string(user->id) +
-                "/remove";
-
-            members.append(std::move(item));
-        }
-        context.set("departmentMembers", members);
-
-        Json::Value candidates(Json::arrayValue);
-        for (const auto& user : users) {
-            if (memberIds.contains(user.id)) {
-                continue;
-            }
-
-            Json::Value item(Json::objectValue);
-
-            item["id"] = user.id;
-            item["name"] = user.username;
-
-            candidates.append(std::move(item));
-        }
-        context.set("departmentMemberCandidates", candidates);
+        PortalDepartmentMembersSupport::apply(
+            context,
+            id,
+            returnUrl,
+            error,
+            success
+        );
     }
 
     std::string templatePath() const override {

@@ -180,6 +180,47 @@ public:
         return "";
     }
 
+    static std::string departmentMembersError(
+        drogular::RenderContext& context,
+        const std::string& error
+    ) {
+        if (error == "invalid_member") {
+            return context.translate(
+                "departments.members.error.invalid"
+            );
+        }
+        if (error == "duplicate_member") {
+            return context.translate(
+                "departments.members.error.duplicate"
+            );
+        }
+        if (error == "member_not_found") {
+            return context.translate(
+                "departments.members.error.not_found"
+            );
+        }
+
+        return "";
+    }
+
+    static std::string departmentMembersSuccess(
+        drogular::RenderContext& context,
+        const std::string& success
+    ) {
+        if (success == "member_added") {
+            return context.translate(
+                "departments.members.success.added"
+            );
+        }
+        if (success == "member_removed") {
+            return context.translate(
+                "departments.members.success.removed"
+            );
+        }
+
+        return "";
+    }
+
     static std::string rolesError(
         drogular::RenderContext& context,
         const std::string& error

@@ -48,65 +48,7 @@
         </div>
     </section>
 
-    <section class="dg-card">
-        <div class="dg-card-header"><h2 class="dg-card-title">{{ t('departments.members') }}</h2></div>
-        <div class="dg-card-body">
-            <div class="dg-table-container">
-                <table class="dg-table">
-                    <thead>
-                    <tr>
-                        <th>{{ t('users.username') }}</th>
-                        <th>{{ t('users.role') }}</th>
-                        @if(isAdmin)
-                        <th>{{ t('departments.members.remove') }}</th>
-                        @endif
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach(member in departmentMembers)
-                    <tr>
-                        <td>{{ member.username }}</td>
-                        <td><span class="dg-badge dg-badge-info">{{ member.role }}</span></td>
-                        @if(isAdmin)
-                        <td>
-                            <form method="post" action="{{ member.removeUrl }}">
-                                <button class="dg-button" type="submit">{{ t('departments.members.remove') }}</button>
-                            </form>
-                        </td>
-                        @endif
-                    </tr>
-                    @empty
-                    <tr><td class="dg-empty-state" colspan="3">{{ t('departments.members.empty') }}</td></tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    @if(isAdmin)
-    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.departments.members.add" open>
-        <summary class="dg-card-summary"><h2 class="dg-card-title">{{ t('departments.members.add') }}</h2></summary>
-        <div class="dg-card-body">
-            @let(hasMemberCandidates = !departmentMemberCandidates.empty())
-            @if(hasMemberCandidates)
-            <form class="dg-form" method="post" action="/departments/{{ departmentId }}/members/add">
-                <div class="dg-field">
-                    <label for="departmentMemberUser">{{ t('users.username') }}</label>
-                    <select id="departmentMemberUser" name="userId" required>
-                        @foreach(user in departmentMemberCandidates)
-                        <option value="{{ user.id }}">{{ user.name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="dg-form-actions"><button class="dg-button" type="submit">{{ t('departments.members.add') }}</button></div>
-            </form>
-            @else
-            <div class="dg-empty-state">{{ t('departments.members.no_candidates') }}</div>
-            @endif
-        </div>
-    </details>
-    @endif
+    @include("fragments/department_members.html")
 </div>
 @endif
 @endif

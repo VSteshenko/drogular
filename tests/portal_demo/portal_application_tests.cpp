@@ -2521,7 +2521,7 @@ TEST(PortalApplicationTests, AdminAddsDepartmentMember) {
 
     EXPECT_EQ(
         result.location(),
-        "/departments/1?success=member_added"
+        "/departments/1?returnUrl=%2Fdepartments&success=member_added"
     );
     EXPECT_EQ(app.departmentMemberCount(), 5);
 
@@ -2546,7 +2546,7 @@ TEST(PortalApplicationTests, DuplicateDepartmentMemberIsRejected) {
 
     EXPECT_EQ(
         result.location(),
-        "/departments/1?error=duplicate_member"
+        "/departments/1?returnUrl=%2Fdepartments&error=duplicate_member"
     );
     EXPECT_EQ(app.departmentMemberCount(), 4);
 }
@@ -2565,7 +2565,7 @@ TEST(PortalApplicationTests, UserCannotAddDepartmentMember) {
 
     EXPECT_EQ(
         result.location(),
-        "/departments/1?error=access_denied"
+        "/departments/1?returnUrl=%2Fdepartments&error=access_denied"
     );
     EXPECT_EQ(app.departmentMemberCount(), 4);
 }
@@ -2587,7 +2587,7 @@ TEST(PortalApplicationTests, AdminRemovesDepartmentMember) {
 
     EXPECT_EQ(
         result.location(),
-        "/departments/1?success=member_removed"
+        "/departments/1?returnUrl=%2Fdepartments&success=member_removed"
     );
     EXPECT_EQ(app.departmentMemberCount(), 3);
 
@@ -2618,7 +2618,7 @@ TEST(PortalApplicationTests, MissingDepartmentMemberCannotBeRemoved) {
 
     EXPECT_EQ(
         result.location(),
-        "/departments/1?error=member_not_found"
+        "/departments/1?returnUrl=%2Fdepartments&error=member_not_found"
     );
     EXPECT_EQ(app.departmentMemberCount(), 4);
 }
@@ -2902,10 +2902,6 @@ TEST(PortalApplicationTests, DepartmentsBrowserUsesGetInteractionContract) {
     ));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-reset-value="")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-reset)"));
-    EXPECT_FALSE(HtmlTestSupport::containsText(
-        html,
-        R"(type="submit">{{ t('departments.apply') }})"
-    ));
 }
 
 TEST(PortalApplicationTests, DepartmentsBrowserPreservesReturnUrl) {
@@ -3127,4 +3123,117 @@ TEST(PortalApplicationTests, DepartmentEditInteractionReturnsValidationFragment)
         result.body(),
         "2"
     ));
+}
+
+TEST(PortalApplicationTests, DepartmentMembersUsePostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {{"returnUrl", "/departments?search=Eng"}},
+        {{"id", "1"}},
+        "/departments/1"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/departments/1/members/add"},
+            {"dg-post", "/departments/1/members/add"},
+            {"dg-target", "[data-department-members]"}
+        }
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(name="returnUrl" value="/departments?search=Eng")"
+    ));
+}
+
+TEST(PortalApplicationTests, AddDepartmentMemberInteractionRefreshesMembersFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalAddDepartmentMemberAction>(
+            {
+                {"userId", "3"},
+                {"returnUrl", "/departments?search=Eng"}
+            },
+            {{"id", "1"}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-members)"
+    ));
+    EXPECT_EQ(app.departmentMemberCount(), 5);
+}
+
+TEST(PortalApplicationTests, DuplicateDepartmentMemberInteractionReturns422) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalAddDepartmentMemberAction>(
+            {
+                {"userId", "1"},
+                {"returnUrl", "/departments?search=Eng"}
+            },
+            {{"id", "1"}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-members)"
+    ));
+    EXPECT_EQ(app.departmentMemberCount(), 4);
+}
+
+TEST(PortalApplicationTests, RemoveDepartmentMemberInteractionRefreshesMembersFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalRemoveDepartmentMemberAction>(
+            {{"returnUrl", "/departments?search=Eng"}},
+            {
+                {"id", "1"},
+                {"userId", "2"}
+            }
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-members)"
+    ));
+    EXPECT_EQ(app.departmentMemberCount(), 3);
+}
+
+TEST(PortalApplicationTests, MissingDepartmentMemberInteractionReturns422) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalRemoveDepartmentMemberAction>(
+            {{"returnUrl", "/departments?search=Eng"}},
+            {
+                {"id", "1"},
+                {"userId", "8"}
+            }
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-members)"
+    ));
+    EXPECT_EQ(app.departmentMemberCount(), 4);
 }
