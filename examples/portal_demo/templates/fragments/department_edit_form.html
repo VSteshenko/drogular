@@ -1,0 +1,37 @@
+<div data-department-edit class="dg-stack">
+    @if(hasDepartmentsError)@include("partials/alert_error.html")@endif
+    @if(hasDepartmentsSuccess)@include("partials/alert_success.html")@endif
+    <section class="dg-card"><div class="dg-card-body">
+        <form class="dg-form" method="post" action="/departments/{{ departmentId }}/update"
+              dg-post="/departments/{{ departmentId }}/update"
+              dg-target="[data-department-edit]"
+              dg-on-success-refresh="[data-departments-browser]">
+            <input type="hidden" name="returnUrl" value="{{ departmentsReturnUrl }}" />
+            <div class="dg-form-grid">
+                <div class="dg-field">
+                    <label for="departmentName">{{ t('departments.name') }}</label>
+                    <input id="departmentName" name="name" value="{{ departmentName }}" required />
+                </div>
+                <div class="dg-field">
+                    <label for="departmentDescription">{{ t('departments.description') }}</label>
+                    <input id="departmentDescription" name="description" value="{{ departmentDescription }}" />
+                </div>
+                <div class="dg-field">
+                    <label for="departmentManager">{{ t('departments.manager') }}</label>
+                    <select id="departmentManager" name="managerId" required>
+                    @foreach(manager in departmentManagers)
+                        <option value="{{ manager.id }}" @if(manager.selected)selected@endif>{{ manager.name }}</option>
+                    @endforeach
+                    </select>
+                </div>
+            </div>
+            <label class="dg-toolbar">
+                <input type="checkbox" name="isActive" @if(departmentActive)checked@endif /> {{ t('departments.active') }}
+            </label>
+            <div class="dg-form-actions">
+                <button class="dg-button" type="submit">{{ t('departments.save') }}</button>
+                <a id="departmentBackToDetailsLink" class="dg-button" href="{{ departmentDetailsUrl }}">{{ t('departments.back') }}</a>
+            </div>
+        </form>
+    </div></section>
+</div>

@@ -46,6 +46,10 @@ public:
                     : std::string("")
             );
         context.set("departmentsBackUrl", returnUrl);
+        context.set(
+            "departmentEditUrl",
+            PortalDepartmentNavigationSupport::editUrl(id, returnUrl)
+        );
 
         if (!department) {
             return;

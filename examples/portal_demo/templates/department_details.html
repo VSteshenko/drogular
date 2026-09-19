@@ -42,7 +42,7 @@
         </div>
         <div class="dg-card-footer dg-form-actions">
             @if(isAdmin)
-            <a class="dg-button" href="/departments/{{ departmentId }}/edit">{{ t('departments.edit') }}</a>
+            <a class="dg-button" href="{{ departmentEditUrl }}">{{ t('departments.edit') }}</a>
             @endif
             <a class="dg-button" href="{{ departmentsBackUrl }}">{{ t('departments.back') }}</a>
         </div>

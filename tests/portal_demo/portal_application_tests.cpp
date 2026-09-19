@@ -2408,7 +2408,7 @@ TEST(PortalApplicationTests, AdminUpdatesDepartment) {
 
     EXPECT_EQ(
         result.location(),
-        "/departments?success=updated"
+        "/departments/1?returnUrl=%2Fdepartments&success=updated"
     );
 
     const auto& department =
@@ -3031,4 +3031,100 @@ TEST(PortalApplicationTests, DepartmentCreateInteractionReturnsValidationFragmen
         R"(value="Still here")"
     ));
     EXPECT_EQ(app.departmentCount(), 3);
+}
+
+TEST(PortalApplicationTests, DepartmentDetailsForwardsReturnUrlToEdit) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentDetailsPage>(
+        {{"returnUrl", "/departments?search=Eng&active=true"}},
+        {{"id", "1"}},
+        "/departments/1"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(href="/departments/1/edit?returnUrl=%2Fdepartments%3Fsearch%3DEng%26active%3Dtrue")"
+    ));
+}
+
+TEST(PortalApplicationTests, DepartmentEditUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDepartmentEditPage>(
+        {{"returnUrl", "/departments?search=Eng"}},
+        {{"id", "1"}},
+        "/departments/1/edit"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,"form",
+        {
+            {"action","/departments/1/update"},
+            {"dg-post","/departments/1/update"},
+            {"dg-target","[data-department-edit]"},
+            {"dg-on-success-refresh", "[data-departments-browser]"}
+        }
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        html,
+        R"(name="returnUrl" value="/departments?search=Eng")"
+    ));
+}
+
+TEST(PortalApplicationTests, DepartmentEditInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result = app.postInteraction<PortalUpdateDepartmentAction>(
+        {
+            {"name", "Engineering Updated"},
+            {"description", "Updated description"},
+            {"managerId", "2"},
+            {"isActive", "on"},
+            {"returnUrl", "/departments?search=Engineering"}
+        },
+        {{"id", "1"}}
+    );
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-edit)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Engineering Updated")"
+    ));
+}
+
+TEST(PortalApplicationTests, DepartmentEditInteractionReturnsValidationFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto result = app.postInteraction<PortalUpdateDepartmentAction>(
+        {
+            {"name", ""},
+            {"description", "Preserved description"},
+            {"managerId", "2"},
+            {"returnUrl", "/departments?search=Engineering"}
+        },
+        {{"id", "1"}}
+    );
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-department-edit)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved description")"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::optionSelected(
+        result.body(),
+        "2"
+    ));
 }
