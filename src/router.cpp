@@ -10,6 +10,7 @@
 #include <drogular/component_renderer.hpp>
 #include <drogular/route_pattern.hpp>
 #include <drogular/error.hpp>
+#include <drogular/detail/request_context_state.hpp>
 
 #include <drogon/drogon.h>
 
@@ -69,9 +70,11 @@ void Router::page(
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
-            RenderContext context;
-            context.setServices(services);
-            context.setRequest(request);
+            auto state =
+                std::make_shared<detail::RequestContextState>(
+                    request,
+                    services
+                );
 
             std::unordered_map<std::string, std::string> routeParams;
 
@@ -81,11 +84,13 @@ void Router::page(
             );
 
             for (const auto& [name, value] : routeParams) {
-                context.setRouteParam(
+                state->setRouteParam(
                     name,
                     value
                 );
             }
+
+            RenderContext context(state);
 
             auto page = factory();
 
@@ -127,10 +132,11 @@ void Router::action(
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
-            ActionContext context(
-                request,
-                services
-            );
+            auto state =
+                std::make_shared<detail::RequestContextState>(
+                    request,
+                    services
+                );
 
             std::unordered_map<std::string, std::string> routeParams;
 
@@ -140,11 +146,13 @@ void Router::action(
             );
 
             for (const auto& [name, value] : routeParams) {
-                context.setRouteParam(
+                state->setRouteParam(
                     name,
                     value
                 );
             }
+
+            ActionContext context(state);
 
             try {
                 auto action = factory();

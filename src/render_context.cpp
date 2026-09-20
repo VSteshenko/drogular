@@ -60,6 +60,12 @@ RenderContext::RenderContext()
       ) {
 }
 
+RenderContext::RenderContext(
+    std::shared_ptr<detail::RequestContextState> state
+)
+    : state_(std::move(state)) {
+}
+
 RenderContext::RenderContext(const RenderContext* parent)
     : parent_(parent),
       state_(

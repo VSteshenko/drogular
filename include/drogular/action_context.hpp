@@ -22,6 +22,8 @@ namespace drogular {
  * Provides access to request data and application services
  * during action execution.
  */
+class Router;
+
 class ActionContext {
 public:
     ActionContext(
@@ -197,6 +199,12 @@ public:
     ) const;
 
 private:
+    friend class Router;
+
+    explicit ActionContext(
+        std::shared_ptr<detail::RequestContextState> state
+    );
+
     std::shared_ptr<detail::RequestContextState> state_;
 };
 

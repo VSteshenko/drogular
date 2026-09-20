@@ -93,6 +93,8 @@ private:
     std::unordered_map<std::string, std::any> values_;
 };
 
+class Router;
+
 /**
  * Provides data and services needed during rendering.
  */
@@ -377,6 +379,12 @@ public:
     ) const;
 
 private:
+    friend class Router;
+
+    explicit RenderContext(
+        std::shared_ptr<detail::RequestContextState> state
+    );
+
     const RenderContext* parent_ = nullptr;
     std::unordered_map<std::string, std::any> values_;
     GraphQLClient* graphqlClient_ = nullptr;

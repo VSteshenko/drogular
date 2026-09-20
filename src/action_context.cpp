@@ -15,6 +15,12 @@ ActionContext::ActionContext(
       ) {
 }
 
+ActionContext::ActionContext(
+    std::shared_ptr<detail::RequestContextState> state
+)
+    : state_(std::move(state)) {
+}
+
 const drogon::HttpRequestPtr& ActionContext::request() const {
     return state_->request();
 }
