@@ -1,0 +1,29 @@
+<div data-project-type-edit class="dg-stack">
+    @if(hasProjectTypesError)@include("partials/alert_error.html")@endif
+    @if(hasProjectTypesSuccess)@include("partials/alert_success.html")@endif
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <form class="dg-form"
+                  method="post"
+                  action="/project-types/{{ projectTypeId }}/update"
+                  dg-post="/project-types/{{ projectTypeId }}/update"
+                  dg-target="[data-project-type-edit]"
+                  dg-on-success-refresh="[data-project-types-list]">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="code">{{ projectTypeCodeLabel }} @if(projectTypeCodeRequired):@endif</label>
+                        <input id="code" name="code" value="{{ projectTypeCode }}" @if(projectTypeCodeRequired)required@endif />
+                    </div>
+                    <div class="dg-field">
+                        <label for="title">{{ projectTypeTitleLabel }} @if(projectTypeTitleRequired):@endif</label>
+                        <input id="title" name="title" value="{{ projectTypeTitle }}" @if(projectTypeTitleRequired)required@endif />
+                    </div>
+                </div>
+                <div class="dg-form-actions">
+                    <button class="dg-button" type="submit">{{ t('project_types.update') }}</button>
+                    <a class="dg-button" href="/project-types">{{ t('project_types.back') }}</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

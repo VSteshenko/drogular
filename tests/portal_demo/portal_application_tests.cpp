@@ -3629,3 +3629,195 @@ TEST(PortalApplicationTests, DuplicateProjectTypeCreateInteractionReturns422) {
     ));
     EXPECT_EQ(app.dataset().projectTypes().size(), before);
 }
+
+TEST(PortalApplicationTests, ProjectTypeEditUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto projectType = app.dataset().projectTypes().front();
+    const auto html = app.render<PortalProjectTypeEditPage>(
+        {},
+        {{"id", std::to_string(projectType.id)}}
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/project-types/" + std::to_string(projectType.id) + "/update"},
+            {"dg-post", "/project-types/" + std::to_string(projectType.id) + "/update"},
+            {"dg-target", "[data-project-type-edit]"},
+            {"dg-on-success-refresh", "[data-project-types-list]"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectTypeUpdateInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto before = app.dataset().projectTypes().front();
+
+    const auto result =
+        app.postInteraction<PortalUpdateProjectTypeAction>(
+            {
+                {"code", before.code},
+                {"title", "Updated interaction type"}
+            },
+            {{"id", std::to_string(before.id)}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-project-type-edit)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Updated interaction type")"
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectTypeUpdateInteractionPreservesInvalidValues) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto projectType = app.dataset().projectTypes().front();
+
+    const auto result =
+        app.postInteraction<PortalUpdateProjectTypeAction>(
+            {
+                {"code", "x"},
+                {"title", "Preserved title"}
+            },
+            {{"id", std::to_string(projectType.id)}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-project-type-edit)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="x")"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved title")"
+    ));
+}
+
+TEST(PortalApplicationTests, DuplicateProjectTypeUpdateInteractionReturns422) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto projectTypes = app.dataset().projectTypes();
+    ASSERT_GE(projectTypes.size(), 2u);
+
+    const auto result =
+        app.postInteraction<PortalUpdateProjectTypeAction>(
+            {
+                {"code", projectTypes[1].code},
+                {"title", "Duplicate interaction type"}
+            },
+            {{"id", std::to_string(projectTypes[0].id)}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Duplicate interaction type")"
+    ));
+}
+
+TEST(PortalApplicationTests, UnusedProjectTypeDeleteUsesPostInteractionContract) {
+    auto dataset = DemoDataset::create();
+    dataset.addProjectType({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(std::move(dataset));
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectTypesPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/project-types/99/delete"},
+            {"dg-post", "/project-types/99/delete"},
+            {"dg-target", "[data-project-types-list]"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectTypeDeleteInteractionReturnsUpdatedList) {
+    auto dataset = DemoDataset::create();
+    dataset.addProjectType({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(std::move(dataset));
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalDeleteProjectTypeAction>(
+            {},
+            {{"id", "99"}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-project-types-list)"
+    ));
+    EXPECT_FALSE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(/project-types/99/delete)"
+    ));
+    EXPECT_TRUE(std::none_of(
+        app.dataset().projectTypes().begin(),
+        app.dataset().projectTypes().end(),
+        [](const PortalProjectType& type) {
+            return type.id == 99;
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, UsedProjectTypeDeleteInteractionReturns422List) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto usedId =
+        app.dataset().projects().front().projectTypeId;
+
+    const auto result =
+        app.postInteraction<PortalDeleteProjectTypeAction>(
+            {},
+            {{"id", std::to_string(usedId)}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-project-types-list)"
+    ));
+    EXPECT_TRUE(std::any_of(
+        app.dataset().projectTypes().begin(),
+        app.dataset().projectTypes().end(),
+        [usedId](const PortalProjectType& type) {
+            return type.id == usedId;
+        }
+    ));
+}

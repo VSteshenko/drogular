@@ -1,7 +1,6 @@
 #pragma once
 
-#include "data/portal_schema.hpp"
-#include "features/localization/support/portal_error_translator.hpp"
+#include "features/project_types/ui/portal_project_type_edit_form_support.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "ui/portal_page_support.hpp"
 
@@ -67,62 +66,18 @@ public:
                 ? request->getParameter("error")
                 : std::string("");
 
-        const auto projectTypesError =
-            PortalErrorTranslator::projectTypesError(
-                context,
-                error
-            );
+        const auto success =
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string("");
 
-        const auto schema =
-            PortalSchema::projectTypes();
-
-        context.set(
-            "projectTypeCodeLabel",
-            context.translate(
-                schema.fieldLabelKey("code")
-            )
-        );
-
-        context.set(
-            "projectTypeTitleLabel",
-            context.translate(
-                schema.fieldLabelKey("title")
-            )
-        );
-
-        context.set(
-            "projectTypeCodeRequired",
-            schema.fieldRequired("code")
-        );
-
-        context.set(
-            "projectTypeTitleRequired",
-            schema.fieldRequired("title")
-        );
-
-        context.set(
-            "hasProjectTypesError",
-            !projectTypesError.empty()
-        );
-
-        context.set(
-            "alertMessage",
-            projectTypesError
-        );
-
-        context.set(
-            "projectTypeId",
-            projectType->id
-        );
-
-        context.set(
-            "projectTypeCode",
-            projectType->code
-        );
-
-        context.set(
-            "projectTypeTitle",
-            projectType->title
+        PortalProjectTypeEditFormSupport::apply(
+            context,
+            projectType->id,
+            projectType->code,
+            projectType->title,
+            error,
+            success
         );
     }
 

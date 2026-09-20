@@ -2,10 +2,14 @@
 
 #include "features/project_types/data/portal_project_type_update.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
+#include "features/project_types/ui/portal_project_type_edit_form_support.hpp"
+#include "ui/portal_page_support.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
+#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 
 #include <algorithm>
 #include <cstdlib>
@@ -62,6 +66,18 @@ public:
             validator.validate();
 
         if (!validation.valid()) {
+            if (isInteraction(context)) {
+                return renderForm(
+                    context,
+                    id,
+                    code.value_or(""),
+                    title.value_or(""),
+                    "validation",
+                    "",
+                    drogon::k422UnprocessableEntity
+                );
+            }
+
             return drogular::ActionResult::redirect(
                 "/project-types/" +
                 std::to_string(id) +
@@ -90,6 +106,18 @@ public:
             );
 
         if (duplicate) {
+            if (isInteraction(context)) {
+                return renderForm(
+                    context,
+                    id,
+                    code.value_or(""),
+                    title.value_or(""),
+                    "duplicate_code",
+                    "",
+                    drogon::k422UnprocessableEntity
+                );
+            }
+
             return drogular::ActionResult::redirect(
                 "/project-types/" +
                 std::to_string(id) +
@@ -117,8 +145,74 @@ public:
             );
         }
 
+        if (isInteraction(context)) {
+            return renderForm(
+                context,
+                updated.id,
+                updated.code,
+                updated.title,
+                "",
+                "project_type_updated"
+            );
+        }
+
         return drogular::ActionResult::redirect(
             "/project-types?success=project_type_updated"
+        );
+    }
+
+private:
+    static bool isInteraction(
+        const drogular::ActionContext& context
+    ) {
+        const auto request = context.request();
+        return request != nullptr &&
+            request->getHeader("X-Drogular-Interaction") == "true";
+    }
+
+    class EditFormComponent final
+        : public drogular::TemplateComponent
+    {
+    public:
+        std::string templatePath() const override {
+            return "fragments/project_type_edit_form.html";
+        }
+    };
+
+    static drogular::ActionResult renderForm(
+        drogular::ActionContext& context,
+        int projectTypeId,
+        const std::string& code,
+        const std::string& title,
+        const std::string& error,
+        const std::string& success,
+        drogon::HttpStatusCode status = drogon::k200OK
+    ) {
+        drogular::RenderContext renderContext;
+        renderContext.setServices(context.services());
+        renderContext.setRequest(context.request());
+
+        PortalPageSupport::apply(
+            renderContext,
+            "project_types.edit_page.title"
+        );
+        PortalProjectTypeEditFormSupport::apply(
+            renderContext,
+            projectTypeId,
+            code,
+            title,
+            error,
+            success
+        );
+
+        EditFormComponent component;
+        component.onInit(renderContext);
+        auto html = component.render(renderContext);
+        component.onDestroy(renderContext);
+
+        return drogular::ActionResult::html(
+            std::move(html),
+            status
         );
     }
 };
