@@ -1,5 +1,6 @@
 #pragma once
 
+#include "features/localization/support/portal_error_translator.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
 
@@ -11,8 +12,30 @@
 class PortalProjectTypesListSupport final {
 public:
     static void apply(
-        drogular::RenderContext& context
+        drogular::RenderContext& context,
+        const std::string& error = {},
+        const std::string& success = {}
     ) {
+        const auto projectTypesError =
+            PortalErrorTranslator::projectTypesError(context, error);
+        const auto projectTypesSuccess =
+            PortalErrorTranslator::projectTypesSuccess(context, success);
+
+        context.set(
+            "hasProjectTypesListError",
+            !projectTypesError.empty()
+        );
+        context.set(
+            "hasProjectTypesListSuccess",
+            !projectTypesSuccess.empty()
+        );
+        context.set(
+            "projectTypesListAlertMessage",
+            !projectTypesError.empty()
+                ? projectTypesError
+                : projectTypesSuccess
+        );
+
         auto projectTypes =
             context.requireService<PortalProjectTypeProvider>();
         auto projects =

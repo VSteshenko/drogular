@@ -2,6 +2,12 @@
          data-project-types-list
          dg-get="/fragments/project-types"
          dg-trigger="refresh">
+    @if(hasProjectTypesListError)
+    <div class="dg-alert dg-alert-error">{{ projectTypesListAlertMessage }}</div>
+    @endif
+    @if(hasProjectTypesListSuccess)
+    <div class="dg-alert dg-alert-success">{{ projectTypesListAlertMessage }}</div>
+    @endif
     <div class="dg-card-header"><h2 class="dg-card-title">{{ t('project_types.page.title') }}</h2></div>
     <div class="dg-card-body">
         <div class="dg-table-container">
@@ -16,7 +22,10 @@
                     <td><div class="dg-form-actions">
                         <a class="dg-button" href="{{ item.editUrl }}">{{ t('project_types.edit') }}</a>
                         @if(item.canDelete)
-                        <form method="post" action="{{ item.deleteUrl }}"><button class="dg-button" type="submit">{{ t('project_types.delete') }}</button></form>
+                        <form method="post"
+                              action="{{ item.deleteUrl }}"
+                              dg-post="{{ item.deleteUrl }}"
+                              dg-target="[data-project-types-list]"><button class="dg-button" type="submit">{{ t('project_types.delete') }}</button></form>
                         @endif
                     </div></td>
                 </tr>
