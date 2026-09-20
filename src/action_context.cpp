@@ -7,26 +7,30 @@ ActionContext::ActionContext(
     drogon::HttpRequestPtr request,
     ApplicationServices* services
 )
-    : request_(std::move(request)),
-      services_(services) {
+    : state_(
+          std::make_shared<detail::RequestContextState>(
+              std::move(request),
+              services
+          )
+      ) {
 }
 
 const drogon::HttpRequestPtr& ActionContext::request() const {
-    return request_;
+    return state_->request();
 }
 
 ApplicationServices* ActionContext::services() {
-    return services_;
+    return state_->services();
 }
 
 const ApplicationServices* ActionContext::services() const {
-    return services_;
+    return state_->services();
 }
 
 std::optional<std::string> ActionContext::formValue(
     const std::string& name
 ) const {
-    const auto value = request_->getParameter(name);
+    const auto value = request()->getParameter(name);
 
     if (value.empty()) {
         return std::nullopt;
@@ -53,7 +57,7 @@ std::optional<std::string> ActionContext::cookie(
     const std::string& name
 ) const {
     const auto value =
-        request_->getCookie(name);
+        request()->getCookie(name);
 
     if (value.empty()) {
         return std::nullopt;
@@ -63,12 +67,14 @@ std::optional<std::string> ActionContext::cookie(
 }
 
 std::shared_ptr<Session> ActionContext::existingSession() const {
-    if (services_ == nullptr) {
+    const auto* applicationServices = services();
+
+    if (applicationServices == nullptr) {
         return nullptr;
     }
 
     auto store =
-        services_->service<SessionStore>();
+        applicationServices->service<SessionStore>();
 
     if (store == nullptr) {
         return nullptr;
@@ -88,20 +94,13 @@ void ActionContext::setRouteParam(
     const std::string& name,
     const std::string& value
 ) {
-    routeParams_[name] = value;
+    state_->setRouteParam(name, value);
 }
 
 std::optional<std::string> ActionContext::routeParam(
     const std::string& name
 ) const {
-    const auto found =
-        routeParams_.find(name);
-
-    if (found == routeParams_.end()) {
-        return std::nullopt;
-    }
-
-    return found->second;
+    return state_->routeParam(name);
 }
 
 std::string ActionContext::requireRouteParam(
@@ -120,12 +119,14 @@ std::string ActionContext::requireRouteParam(
 }
 
 std::shared_ptr<Session> ActionContext::session() {
-    if (services_ == nullptr) {
+    auto* applicationServices = services();
+
+    if (applicationServices == nullptr) {
         return nullptr;
     }
 
     auto store =
-        services_->requireService<SessionStore>();
+        applicationServices->requireService<SessionStore>();
 
     if (const auto existing = existingSession()) {
         return existing;

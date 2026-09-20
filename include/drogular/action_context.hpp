@@ -4,6 +4,7 @@
 #include <drogular/session.hpp>
 #include <drogular/action_validation_error.hpp>
 #include <drogular/action_context_error.hpp>
+#include <drogular/detail/request_context_state.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -36,11 +37,15 @@ public:
 
     template <typename T>
     std::shared_ptr<T> service() {
-        if (services_ == nullptr) {
+        auto* applicationServices = state_->services();
+
+        if (applicationServices == nullptr) {
             return nullptr;
         }
 
-        return services_->service<T>(*serviceScope_);
+        return applicationServices->service<T>(
+            state_->serviceScope()
+        );
     }
 
     template <typename T>
@@ -192,10 +197,7 @@ public:
     ) const;
 
 private:
-    drogon::HttpRequestPtr request_;
-    ApplicationServices* services_ = nullptr;
-    std::shared_ptr<ServiceScope> serviceScope_ = std::make_shared<ServiceScope>();
-    std::unordered_map<std::string, std::string> routeParams_;
+    std::shared_ptr<detail::RequestContextState> state_;
 };
 
 } // namespace drogular

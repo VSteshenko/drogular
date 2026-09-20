@@ -368,3 +368,29 @@ TEST(CoreActionContextTests, ScopedServiceCreatesNewInstanceForNewRequestContext
     EXPECT_NE(first.get(), second.get());
     EXPECT_EQ(ActionScopedCounterService::createdCount, 2);
 }
+
+TEST(CoreActionContextTests, RouteParamsAndScopedServicesShareActionRequestState) {
+    ActionScopedCounterService::createdCount = 0;
+
+    drogular::ApplicationServices services;
+    services.addScoped<ActionScopedCounterService>([]() {
+        return std::make_shared<ActionScopedCounterService>();
+    });
+
+    auto request = drogon::HttpRequest::newHttpRequest();
+    drogular::ActionContext context(request, &services);
+
+    context.setRouteParam("id", "42");
+
+    const auto first =
+        context.requireService<ActionScopedCounterService>();
+    const auto second =
+        context.requireService<ActionScopedCounterService>();
+
+    ASSERT_TRUE(context.routeParam("id").has_value());
+    EXPECT_EQ(context.requireRouteParam("id"), "42");
+    EXPECT_EQ(context.request(), request);
+    EXPECT_EQ(context.services(), &services);
+    EXPECT_EQ(first.get(), second.get());
+    EXPECT_EQ(ActionScopedCounterService::createdCount, 1);
+}
