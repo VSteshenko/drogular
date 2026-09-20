@@ -2,11 +2,24 @@
          data-roles-list
          dg-get="/fragments/roles"
          dg-trigger="refresh">
+    @if(hasRolesListError)
+    <div class="dg-alert dg-alert-error">{{ rolesListAlertMessage }}</div>
+    @endif
+    @if(hasRolesListSuccess)
+    <div class="dg-alert dg-alert-success">{{ rolesListAlertMessage }}</div>
+    @endif
     <div class="dg-card-header"><h2 class="dg-card-title">{{ t('roles.page.title') }}</h2></div>
     <div class="dg-card-body">
         <div class="dg-table-container">
             <table class="dg-table">
-                <thead><tr><th>{{ t('roles.title') }}</th><th>{{ t('roles.code') }}</th><th>{{ t('roles.users') }}</th><th>{{ t('roles.edit') }}</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>{{ t('roles.title') }}</th>
+                        <th>{{ t('roles.code') }}</th>
+                        <th>{{ t('roles.users') }}</th>
+                        <th>{{ t('roles.edit') }}</th>
+                    </tr>
+                </thead>
                 <tbody>
                 @foreach(item in roles)
                 <tr>
@@ -16,7 +29,12 @@
                     <td><div class="dg-form-actions">
                         <a class="dg-button" href="{{ item.editUrl }}">{{ t('roles.edit') }}</a>
                         @if(item.canDelete)
-                        <form method="post" action="{{ item.deleteUrl }}"><button class="dg-button" type="submit">{{ t('roles.delete') }}</button></form>
+                        <form method="post"
+                              action="{{ item.deleteUrl }}"
+                              dg-post="{{ item.deleteUrl }}"
+                              dg-target="[data-roles-list]">
+                            <button class="dg-button" type="submit">{{ t('roles.delete') }}</button>
+                        </form>
                         @endif
                     </div></td>
                 </tr>

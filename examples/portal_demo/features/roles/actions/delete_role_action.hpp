@@ -1,9 +1,13 @@
 #pragma once
 
 #include "features/roles/providers/role_provider.hpp"
+#include "features/roles/ui/portal_roles_list_support.hpp"
+#include "ui/portal_page_support.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 
 #include <cstdlib>
 
@@ -40,13 +44,79 @@ public:
             context.requireService<PortalRoleProvider>();
 
         if (!roles->remove(id)) {
+            if (isInteraction(context)) {
+                return renderList(
+                    context,
+                    "role_in_use",
+                    "",
+                    drogon::k422UnprocessableEntity
+                );
+            }
+
             return drogular::ActionResult::redirect(
                 "/roles?error=role_in_use"
             );
         }
 
+        if (isInteraction(context)) {
+            return renderList(
+                context,
+                "",
+                "role_deleted"
+            );
+        }
+
         return drogular::ActionResult::redirect(
             "/roles?success=role_deleted"
+        );
+    }
+
+private:
+    static bool isInteraction(
+        const drogular::ActionContext& context
+    ) {
+        const auto request = context.request();
+        return request != nullptr &&
+            request->getHeader("X-Drogular-Interaction") == "true";
+    }
+
+    class RolesListComponent final
+        : public drogular::TemplateComponent
+    {
+    public:
+        std::string templatePath() const override {
+            return "fragments/roles_list.html";
+        }
+    };
+
+    static drogular::ActionResult renderList(
+        drogular::ActionContext& context,
+        const std::string& error,
+        const std::string& success,
+        drogon::HttpStatusCode status = drogon::k200OK
+    ) {
+        drogular::RenderContext renderContext;
+        renderContext.setServices(context.services());
+        renderContext.setRequest(context.request());
+
+        PortalPageSupport::apply(
+            renderContext,
+            "roles.page.title"
+        );
+        PortalRolesListSupport::apply(
+            renderContext,
+            error,
+            success
+        );
+
+        RolesListComponent component;
+        component.onInit(renderContext);
+        auto html = component.render(renderContext);
+        component.onDestroy(renderContext);
+
+        return drogular::ActionResult::html(
+            std::move(html),
+            status
         );
     }
 };

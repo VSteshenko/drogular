@@ -3438,3 +3438,98 @@ TEST(PortalApplicationTests, DuplicateRoleUpdateInteractionReturns422) {
         R"(value="Duplicate interaction role")"
     ));
 }
+
+TEST(PortalApplicationTests, UnusedRoleDeleteUsesPostInteractionContract) {
+    auto dataset = DemoDataset::create();
+    dataset.addRole({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(std::move(dataset));
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalRolesPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/roles/99/delete"},
+            {"dg-post", "/roles/99/delete"},
+            {"dg-target", "[data-roles-list]"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, RoleDeleteInteractionReturnsUpdatedList) {
+    auto dataset = DemoDataset::create();
+    dataset.addRole({
+        .id = 99,
+        .code = "unused",
+        .title = "Unused"
+    });
+
+    PortalApplicationTestHost app(std::move(dataset));
+    app.loginAsAdmin();
+
+    const auto result =
+        app.postInteraction<PortalDeleteRoleAction>(
+            {},
+            {{"id", "99"}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-roles-list)"
+    ));
+    EXPECT_FALSE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(/roles/99/delete)"
+    ));
+    EXPECT_TRUE(std::none_of(
+        app.dataset().roles().begin(),
+        app.dataset().roles().end(),
+        [](const PortalRole& role) {
+            return role.id == 99;
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, UsedRoleDeleteInteractionReturns422List) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto usedCode = app.dataset().users().front().role;
+    const auto role = std::find_if(
+        app.dataset().roles().begin(),
+        app.dataset().roles().end(),
+        [&usedCode](const PortalRole& item) {
+            return item.code == usedCode;
+        }
+    );
+    ASSERT_NE(role, app.dataset().roles().end());
+
+    const auto result =
+        app.postInteraction<PortalDeleteRoleAction>(
+            {},
+            {{"id", std::to_string(role->id)}}
+        );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-roles-list)"
+    ));
+    EXPECT_TRUE(std::any_of(
+        app.dataset().roles().begin(),
+        app.dataset().roles().end(),
+        [id = role->id](const PortalRole& item) {
+            return item.id == id;
+        }
+    ));
+}

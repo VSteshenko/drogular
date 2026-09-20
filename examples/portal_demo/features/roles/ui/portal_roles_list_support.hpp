@@ -1,5 +1,6 @@
 #pragma once
 
+#include "features/localization/support/portal_error_translator.hpp"
 #include "features/roles/providers/role_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 
@@ -11,8 +12,22 @@
 class PortalRolesListSupport final {
 public:
     static void apply(
-        drogular::RenderContext& context
+        drogular::RenderContext& context,
+        const std::string& error = {},
+        const std::string& success = {}
     ) {
+        const auto rolesError =
+            PortalErrorTranslator::rolesError(context, error);
+        const auto rolesSuccess =
+            PortalErrorTranslator::rolesSuccess(context, success);
+
+        context.set("hasRolesListError", !rolesError.empty());
+        context.set("hasRolesListSuccess", !rolesSuccess.empty());
+        context.set(
+            "rolesListAlertMessage",
+            !rolesError.empty() ? rolesError : rolesSuccess
+        );
+
         auto roles =
             context.requireService<PortalRoleProvider>();
         auto users =
