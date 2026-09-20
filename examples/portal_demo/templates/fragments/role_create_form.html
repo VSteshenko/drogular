@@ -1,0 +1,28 @@
+<div data-role-create class="dg-stack">
+    @if(hasRolesError)@include("partials/alert_error.html")@endif
+    @if(hasRolesSuccess)@include("partials/alert_success.html")@endif
+
+    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.roles.create" open>
+        <summary class="dg-card-summary"><h2 class="dg-card-title">{{ t('roles.create') }}</h2></summary>
+        <div class="dg-card-body">
+            <form class="dg-form"
+                  method="post"
+                  action="/roles/create"
+                  dg-post="/roles/create"
+                  dg-target="[data-role-create]"
+                  dg-on-success-refresh="[data-roles-list]">
+                <div class="dg-form-grid">
+                    <div class="dg-field">
+                        <label for="code">{{ roleCodeLabel }} @if(roleCodeRequired):@endif</label>
+                        <input id="code" name="code" value="{{ createRoleCode }}" @if(roleCodeRequired)required@endif />
+                    </div>
+                    <div class="dg-field">
+                        <label for="title">{{ roleTitleLabel }} @if(roleTitleRequired):@endif</label>
+                        <input id="title" name="title" value="{{ createRoleTitle }}" @if(roleTitleRequired)required@endif />
+                    </div>
+                </div>
+                <div class="dg-form-actions"><button class="dg-button" type="submit">{{ t('roles.create') }}</button></div>
+            </form>
+        </div>
+    </details>
+</div>

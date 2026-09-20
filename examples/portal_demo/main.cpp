@@ -11,6 +11,7 @@
 #include "features/users/pages/user_edit_page.hpp"
 #include "features/roles/pages/role_edit_page.hpp"
 #include "features/roles/actions/create_role_action.hpp"
+#include "features/roles/actions/roles_fragment_action.hpp"
 #include "features/roles/actions/update_role_action.hpp"
 #include "features/roles/actions/delete_role_action.hpp"
 #include "features/roles/pages/roles_page.hpp"
@@ -217,6 +218,7 @@ int main(
     app.page<PortalUsersPage>("/users");
     app.page<PortalUserEditPage>("/users/{id}/edit");
     app.page<PortalRolesPage>("/roles");
+    app.get<PortalRolesFragmentAction>("/fragments/roles");
     app.page<PortalRoleEditPage>("/roles/{id}/edit");
     app.action<PortalUpdateRoleAction>("/roles/{id}/update");
     app.action<PortalDeleteRoleAction>("/roles/{id}/delete");

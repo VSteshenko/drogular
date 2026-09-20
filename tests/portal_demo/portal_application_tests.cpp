@@ -3237,3 +3237,103 @@ TEST(PortalApplicationTests, MissingDepartmentMemberInteractionReturns422) {
     ));
     EXPECT_EQ(app.departmentMemberCount(), 4);
 }
+
+TEST(PortalApplicationTests, RoleCreateUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalRolesPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/roles/create"},
+            {"dg-post", "/roles/create"},
+            {"dg-target", "[data-role-create]"},
+            {"dg-on-success-refresh", "[data-roles-list]"}
+        }
+    ));
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "section",
+        {
+            {"data-roles-list", ""},
+            {"dg-get", "/fragments/roles"},
+            {"dg-trigger", "refresh"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, RoleCreateInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto before = app.dataset().roles().size();
+
+    const auto result =
+        app.postInteraction<PortalCreateRoleAction>({
+            {"code", "manager"},
+            {"title", "Manager"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-role-create)"
+    ));
+    EXPECT_EQ(app.dataset().roles().size(), before + 1);
+}
+
+TEST(PortalApplicationTests, RoleCreateInteractionReturnsValidationFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto before = app.dataset().roles().size();
+
+    const auto result =
+        app.postInteraction<PortalCreateRoleAction>({
+            {"code", ""},
+            {"title", "Preserved title"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-role-create)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved title")"
+    ));
+    EXPECT_EQ(app.dataset().roles().size(), before);
+}
+
+TEST(PortalApplicationTests, DuplicateRoleCreateInteractionReturns422) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto existing = app.dataset().roles().front();
+    const auto before = app.dataset().roles().size();
+
+    const auto result =
+        app.postInteraction<PortalCreateRoleAction>({
+            {"code", existing.code},
+            {"title", "Preserved duplicate title"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-role-create)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved duplicate title")"
+    ));
+    EXPECT_EQ(app.dataset().roles().size(), before);
+}
