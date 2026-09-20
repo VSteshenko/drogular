@@ -54,27 +54,32 @@ RenderContextError::RenderContextError(const std::string& message)
     : DrogularError(message) {
 }
 
+RenderContext::RenderContext()
+    : state_(
+          std::make_shared<detail::RequestContextState>()
+      ) {
+}
+
 RenderContext::RenderContext(const RenderContext* parent)
     : parent_(parent),
-      serviceScope_(
+      state_(
           parent != nullptr
-              ? parent->serviceScope_
-              : std::make_shared<ServiceScope>()
+              ? parent->state_
+              : std::make_shared<detail::RequestContextState>()
       ) {
 }
 
 ApplicationServices* RenderContext::services() {
-    return services_;
+    return state_->services();
 }
 
 const ApplicationServices* RenderContext::services() const {
-    return services_;
+    return state_->services();
 }
 
 RenderContext RenderContext::createChild() const {
     RenderContext child(this);
 
-    child.setServices(services_);
     child.setGraphQLClient(graphqlClient_);
 
     return child;
@@ -92,9 +97,13 @@ void RenderContext::executeGraphQL(
     const gql::Query& query,
     const GraphQLVariables& variables
 ) {
-    if (services_ != nullptr && services_->graphQLClient() != nullptr) {
+    auto* applicationServices = services();
+
+    if (applicationServices != nullptr &&
+        applicationServices->graphQLClient() != nullptr
+    ) {
         mergeGraphQL(
-            services_->graphQLClient()->execute(
+            applicationServices->graphQLClient()->execute(
                 query,
                 variables
             )
@@ -121,9 +130,13 @@ void RenderContext::executeGraphQL(
     const gql::Mutation& mutation,
     const GraphQLVariables& variables
 ) {
-    if (services_ != nullptr && services_->graphQLClient() != nullptr) {
+    auto* applicationServices = services();
+
+    if (applicationServices != nullptr &&
+        applicationServices->graphQLClient() != nullptr
+    ) {
         mergeGraphQL(
-            services_->graphQLClient()->execute(
+            applicationServices->graphQLClient()->execute(
                 mutation,
                 variables
             )
@@ -147,11 +160,11 @@ void RenderContext::executeGraphQL(
 }
 
 void RenderContext::setServices(ApplicationServices* services) {
-    services_ = services;
+    state_->setServices(services);
 }
 
 bool RenderContext::hasServices() const {
-    return services_ != nullptr;
+    return state_->services() != nullptr;
 }
 
 GraphQLResult& RenderContext::graphql() {
@@ -169,22 +182,24 @@ void RenderContext::mergeGraphQL(GraphQLResult result) {
 void RenderContext::setRequest(
     const drogon::HttpRequestPtr& request
 ) {
-    request_ = request;
+    state_->setRequest(request);
 }
 
 drogon::HttpRequestPtr RenderContext::request() const {
-    return request_;
+    return state_->request();
 }
 
 std::optional<std::string> RenderContext::cookie(
     const std::string& name
 ) const {
-    if (request_ == nullptr) {
+    const auto currentRequest = request();
+
+    if (currentRequest == nullptr) {
         return std::nullopt;
     }
 
     const auto value =
-        request_->getCookie(name);
+        currentRequest->getCookie(name);
 
     if (value.empty()) {
         return std::nullopt;
@@ -229,20 +244,13 @@ void RenderContext::setRouteParam(
     const std::string& name,
     const std::string& value
 ) {
-    routeParams_[name] = value;
+    state_->setRouteParam(name, value);
 }
 
 std::optional<std::string> RenderContext::routeParam(
     const std::string& name
 ) const {
-    const auto found =
-        routeParams_.find(name);
-
-    if (found == routeParams_.end()) {
-        return std::nullopt;
-    }
-
-    return found->second;
+    return state_->routeParam(name);
 }
 
 std::string RenderContext::requireRouteParam(

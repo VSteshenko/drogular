@@ -43,7 +43,7 @@ public:
         return services_;
     }
 
-    const ApplicationServices* services() const {
+    ApplicationServices* services() const {
         return services_;
     }
 

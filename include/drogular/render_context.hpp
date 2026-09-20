@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/detail/request_context_state.hpp>
 #include <drogular/graphql_variables.hpp>
 #include <drogular/json_conversion.hpp>
 #include <drogular/error.hpp>
@@ -97,7 +98,7 @@ private:
  */
 class RenderContext {
 public:
-    RenderContext() = default;
+    RenderContext();
     explicit RenderContext(const RenderContext* parent);
 
     /**
@@ -112,11 +113,15 @@ public:
 
     template <typename T>
     std::shared_ptr<T> service() {
-        if (services_ == nullptr) {
+        auto* applicationServices = state_->services();
+
+        if (applicationServices == nullptr) {
             return nullptr;
         }
 
-        return services_->service<T>(*serviceScope_);
+        return applicationServices->service<T>(
+            state_->serviceScope()
+        );
     }
 
     template <typename T>
@@ -135,13 +140,17 @@ public:
 
     template <typename T>
     std::shared_ptr<T> requireService() const {
-        if (services_ == nullptr) {
+        auto* applicationServices = state_->services();
+
+        if (applicationServices == nullptr) {
             throw RenderContextError(
                 "ApplicationServices not set"
             );
         }
 
-        auto resolved = services_->service<T>(*serviceScope_);
+        auto resolved = applicationServices->service<T>(
+            state_->serviceScope()
+        );
 
         if (resolved == nullptr) {
             throw RenderContextError(
@@ -371,12 +380,8 @@ private:
     const RenderContext* parent_ = nullptr;
     std::unordered_map<std::string, std::any> values_;
     GraphQLClient* graphqlClient_ = nullptr;
-    ApplicationServices* services_ = nullptr;
-    std::shared_ptr<ServiceScope> serviceScope_ =
-        std::make_shared<ServiceScope>();
+    std::shared_ptr<detail::RequestContextState> state_;
     GraphQLResult graphql_;
-    drogon::HttpRequestPtr request_;
-    std::unordered_map<std::string, std::string> routeParams_;
 };
 
 } // namespace drogular

@@ -218,6 +218,23 @@ TEST(CoreRenderContextTests, ChildContextOverridesParentValue) {
     EXPECT_EQ(parent.require<std::string>("title"), "Parent");
 }
 
+TEST(CoreRenderContextTests, ChildContextSharesRequestState) {
+    drogular::ApplicationServices services;
+    auto request = drogon::HttpRequest::newHttpRequest();
+
+    drogular::RenderContext parent;
+    parent.setServices(&services);
+    parent.setRequest(request);
+    parent.setRouteParam("id", "42");
+
+    auto child = parent.createChild();
+
+    EXPECT_EQ(child.services(), &services);
+    EXPECT_EQ(child.request(), request);
+    ASSERT_TRUE(child.routeParam("id").has_value());
+    EXPECT_EQ(child.requireRouteParam("id"), "42");
+}
+
 TEST(CoreRenderContextTests, ChildContextContainsParentValue) {
     drogular::RenderContext parent;
 
