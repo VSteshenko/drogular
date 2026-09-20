@@ -3337,3 +3337,104 @@ TEST(PortalApplicationTests, DuplicateRoleCreateInteractionReturns422) {
     ));
     EXPECT_EQ(app.dataset().roles().size(), before);
 }
+
+TEST(PortalApplicationTests, RoleEditUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto role = app.dataset().roles().front();
+    const auto html = app.render<PortalRoleEditPage>(
+        {},
+        {{"id", std::to_string(role.id)}}
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/roles/" + std::to_string(role.id) + "/update"},
+            {"dg-post", "/roles/" + std::to_string(role.id) + "/update"},
+            {"dg-target", "[data-role-edit]"},
+            {"dg-on-success-refresh", "[data-roles-list]"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, RoleUpdateInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto before = app.dataset().roles().front();
+
+    const auto result = app.postInteraction<PortalUpdateRoleAction>(
+        {
+            {"code", before.code},
+            {"title", "Updated interaction role"}
+        },
+        {{"id", std::to_string(before.id)}}
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-role-edit)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Updated interaction role")"
+    ));
+}
+
+TEST(PortalApplicationTests, RoleUpdateInteractionPreservesInvalidValues) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto role = app.dataset().roles().front();
+
+    const auto result = app.postInteraction<PortalUpdateRoleAction>(
+        {
+            {"code", "x"},
+            {"title", "Preserved title"}
+        },
+        {{"id", std::to_string(role.id)}}
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-role-edit)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved title")"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="x")"
+    ));
+}
+
+TEST(PortalApplicationTests, DuplicateRoleUpdateInteractionReturns422) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto roles = app.dataset().roles();
+    ASSERT_GE(roles.size(), 2u);
+
+    const auto result = app.postInteraction<PortalUpdateRoleAction>(
+        {
+            {"code", roles[1].code},
+            {"title", "Duplicate interaction role"}
+        },
+        {{"id", std::to_string(roles[0].id)}}
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Duplicate interaction role")"
+    ));
+}

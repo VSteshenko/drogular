@@ -1,7 +1,6 @@
 #pragma once
 
-#include "data/portal_schema.hpp"
-#include "features/localization/support/portal_error_translator.hpp"
+#include "features/roles/ui/portal_role_edit_form_support.hpp"
 #include "features/roles/providers/role_provider.hpp"
 #include "ui/portal_page_support.hpp"
 
@@ -62,62 +61,18 @@ public:
                 ? request->getParameter("error")
                 : std::string("");
 
-        const auto rolesError =
-            PortalErrorTranslator::rolesError(
-                context,
-                error
-            );
+        const auto success =
+            request != nullptr
+                ? request->getParameter("success")
+                : std::string("");
 
-        const auto schema =
-            PortalSchema::roles();
-
-        context.set(
-            "roleCodeLabel",
-            context.translate(
-                schema.fieldLabelKey("code")
-            )
-        );
-
-        context.set(
-            "roleTitleLabel",
-            context.translate(
-                schema.fieldLabelKey("title")
-            )
-        );
-
-        context.set(
-            "roleCodeRequired",
-            schema.fieldRequired("code")
-        );
-
-        context.set(
-            "roleTitleRequired",
-            schema.fieldRequired("title")
-        );
-
-        context.set(
-            "hasRolesError",
-            !rolesError.empty()
-        );
-
-        context.set(
-            "alertMessage",
-            rolesError
-        );
-
-        context.set(
-            "roleId",
-            role->id
-        );
-
-        context.set(
-            "roleCode",
-            role->code
-        );
-
-        context.set(
-            "roleTitle",
-            role->title
+        PortalRoleEditFormSupport::apply(
+            context,
+            role->id,
+            role->code,
+            role->title,
+            error,
+            success
         );
     }
 
