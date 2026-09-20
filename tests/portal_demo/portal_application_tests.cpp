@@ -3533,3 +3533,99 @@ TEST(PortalApplicationTests, UsedRoleDeleteInteractionReturns422List) {
         }
     ));
 }
+
+TEST(PortalApplicationTests, ProjectTypeCreateUsesPostInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalProjectTypesPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"action", "/project-types/create"},
+            {"dg-post", "/project-types/create"},
+            {"dg-target", "[data-project-type-create]"},
+            {"dg-on-success-refresh", "[data-project-types-list]"}
+        }
+    ));
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "section",
+        {
+            {"data-project-types-list", ""},
+            {"dg-get", "/fragments/project-types"},
+            {"dg-trigger", "refresh"}
+        }
+    ));
+}
+
+TEST(PortalApplicationTests, ProjectTypeCreateInteractionReturnsSuccessFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto before = app.dataset().projectTypes().size();
+
+    const auto result =
+        app.postInteraction<PortalCreateProjectTypeAction>({
+            {"code", "support"},
+            {"title", "Support"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k200OK);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-project-type-create)"
+    ));
+    EXPECT_EQ(app.dataset().projectTypes().size(), before + 1);
+}
+
+TEST(PortalApplicationTests, ProjectTypeCreateInteractionReturnsValidationFragment) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto before = app.dataset().projectTypes().size();
+
+    const auto result =
+        app.postInteraction<PortalCreateProjectTypeAction>({
+            {"code", "x"},
+            {"title", "Preserved title"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(data-project-type-create)"
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved title")"
+    ));
+    EXPECT_EQ(app.dataset().projectTypes().size(), before);
+}
+
+TEST(PortalApplicationTests, DuplicateProjectTypeCreateInteractionReturns422) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto existing = app.dataset().projectTypes().front();
+    const auto before = app.dataset().projectTypes().size();
+
+    const auto result =
+        app.postInteraction<PortalCreateProjectTypeAction>({
+            {"code", existing.code},
+            {"title", "Preserved duplicate title"}
+        });
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(
+        result.body(),
+        R"(value="Preserved duplicate title")"
+    ));
+    EXPECT_EQ(app.dataset().projectTypes().size(), before);
+}

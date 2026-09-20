@@ -18,6 +18,7 @@
 #include "features/admin/pages/admin_page.hpp"
 #include "features/project_types/pages/project_types_page.hpp"
 #include "features/project_types/actions/create_project_type_action.hpp"
+#include "features/project_types/actions/project_types_fragment_action.hpp"
 #include "features/project_types/actions/delete_project_type_action.hpp"
 #include "features/project_types/actions/update_project_type_action.hpp"
 #include "features/project_types/pages/project_type_edit_page.hpp"
@@ -224,6 +225,7 @@ int main(
     app.action<PortalDeleteRoleAction>("/roles/{id}/delete");
     app.page<PortalAdminPage>("/admin");
     app.page<PortalProjectTypesPage>("/project-types");
+    app.get<PortalProjectTypesFragmentAction>("/fragments/project-types");
     app.page<PortalProjectTypeEditPage>("/project-types/{id}/edit");
     app.action<PortalUpdateProjectTypeAction>("/project-types/{id}/update");
     app.action<PortalDeleteProjectTypeAction>("/project-types/{id}/delete");

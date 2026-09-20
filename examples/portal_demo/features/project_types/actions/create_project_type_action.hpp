@@ -2,10 +2,14 @@
 
 #include "features/project_types/data/portal_project_type_create.hpp"
 #include "features/project_types/providers/project_type_provider.hpp"
+#include "features/project_types/ui/portal_project_type_create_form_support.hpp"
+#include "ui/portal_page_support.hpp"
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/form_validator.hpp>
+#include <drogular/component.hpp>
+#include <drogular/render_context.hpp>
 #include <drogular/url.hpp>
 
 class PortalCreateProjectTypeAction final
@@ -49,6 +53,17 @@ public:
                 .value_or("");
 
         if (!validation.valid()) {
+            if (isInteraction(context)) {
+                return renderForm(
+                    context,
+                    code,
+                    title,
+                    "validation",
+                    "",
+                    drogon::k422UnprocessableEntity
+                );
+            }
+
             return drogular::ActionResult::redirect(
                 "/project-types?error=validation"
                 "&code=" +
@@ -76,6 +91,17 @@ public:
             );
 
         if (duplicate) {
+            if (isInteraction(context)) {
+                return renderForm(
+                    context,
+                    code,
+                    title,
+                    "duplicate_code",
+                    "",
+                    drogon::k422UnprocessableEntity
+                );
+            }
+
             return drogular::ActionResult::redirect(
                 "/project-types?error=duplicate_code"
                 "&code=" +
@@ -95,8 +121,71 @@ public:
 
         projectTypes->create(input);
 
+        if (isInteraction(context)) {
+            return renderForm(
+                context,
+                "",
+                "",
+                "",
+                "project_type_created"
+            );
+        }
+
         return drogular::ActionResult::redirect(
             "/project-types?success=project_type_created"
+        );
+    }
+
+private:
+    static bool isInteraction(
+        const drogular::ActionContext& context
+    ) {
+        const auto request = context.request();
+        return request != nullptr &&
+            request->getHeader("X-Drogular-Interaction") == "true";
+    }
+
+    class CreateFormComponent final
+        : public drogular::TemplateComponent
+    {
+    public:
+        std::string templatePath() const override {
+            return "fragments/project_type_create_form.html";
+        }
+    };
+
+    static drogular::ActionResult renderForm(
+        drogular::ActionContext& context,
+        const std::string& code,
+        const std::string& title,
+        const std::string& error,
+        const std::string& success,
+        drogon::HttpStatusCode status = drogon::k200OK
+    ) {
+        drogular::RenderContext renderContext;
+        renderContext.setServices(context.services());
+        renderContext.setRequest(context.request());
+
+        PortalPageSupport::apply(
+            renderContext,
+            "project_types.page.title"
+        );
+        PortalProjectTypeCreateFormSupport::apply(
+            renderContext,
+            code,
+            title,
+            error,
+            success
+        );
+
+        CreateFormComponent component;
+        component.onInit(renderContext);
+        auto html = component.render(renderContext);
+        component.onDestroy(renderContext);
+
+        return drogular::ActionResult::html(
+            std::move(html),
+            status
         );
     }
 };
