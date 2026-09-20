@@ -14,11 +14,14 @@
 #include <unordered_map>
 #include <stdexcept>
 #include <memory>
-#include <typeindex>
 #include <initializer_list>
 #include <utility>
 
 namespace drogular {
+
+namespace detail {
+class RequestContextBridge;
+}
 
 class GraphQLClient;
 class ApplicationServices;
@@ -380,6 +383,7 @@ public:
 
 private:
     friend class Router;
+    friend class detail::RequestContextBridge;
 
     explicit RenderContext(
         std::shared_ptr<detail::RequestContextState> state

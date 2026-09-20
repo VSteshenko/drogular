@@ -77,6 +77,7 @@ add_executable(drogular_tests
     core/core_route_pattern_tests.cpp
     core/core_json_conversion_tests.cpp
     core/core_request_context_state_tests.cpp
+    core/core_request_context_bridge_tests.cpp
     support/html_test_support_tests.cpp
     # todo_pwa
     ../examples/todo_pwa/todo_page.cpp

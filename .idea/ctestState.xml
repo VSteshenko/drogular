@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CidrCTestProjectState">
+    <ctestState>
+      <lineNumber testId="path:tests/CMakeLists.txt test:drogular_generated_minimal_smoke" value="299" />
+      <lineNumber testId="path:tests/CMakeLists.txt test:drogular_generated_pwa_smoke" value="299" />
+    </ctestState>
+  </component>
+</project>

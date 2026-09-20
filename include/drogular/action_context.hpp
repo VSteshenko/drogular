@@ -14,9 +14,14 @@
 #include <type_traits>
 #include <charconv>
 #include <exception>
-#include <unordered_map>
 
 namespace drogular {
+
+namespace detail {
+
+class RequestContextBridge;
+
+} // namespace detail
 
 /**
  * Provides access to request data and application services
@@ -200,6 +205,7 @@ public:
 
 private:
     friend class Router;
+    friend class detail::RequestContextBridge;
 
     explicit ActionContext(
         std::shared_ptr<detail::RequestContextState> state
