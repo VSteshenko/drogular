@@ -5,8 +5,8 @@
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 class PortalRolesFragmentAction final
     : public drogular::ActionHandler
@@ -31,19 +31,18 @@ public:
             return *result;
         }
 
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(renderContext, "roles.page.title");
-        PortalRolesListSupport::apply(renderContext);
-
-        RolesListComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(std::move(html));
+        return drogular::ActionRenderer::render<
+            RolesListComponent
+        >(
+            context,
+            [](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "roles.page.title"
+                );
+                PortalRolesListSupport::apply(renderContext);
+            }
+        );
     }
 
 private:
