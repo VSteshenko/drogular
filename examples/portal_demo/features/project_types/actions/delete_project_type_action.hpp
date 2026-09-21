@@ -6,8 +6,8 @@
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 #include <cstdlib>
 #include <string>
@@ -98,27 +98,21 @@ private:
         const std::string& success,
         drogon::HttpStatusCode status = drogon::k200OK
     ) {
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(
-            renderContext,
-            "project_types.page.title"
-        );
-        PortalProjectTypesListSupport::apply(
-            renderContext,
-            error,
-            success
-        );
-
-        ProjectTypesListComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(
-            std::move(html),
+        return drogular::ActionRenderer::render<
+            ProjectTypesListComponent
+        >(
+            context,
+            [&](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "project_types.page.title"
+                );
+                PortalProjectTypesListSupport::apply(
+                    renderContext,
+                    error,
+                    success
+                );
+            },
             status
         );
     }

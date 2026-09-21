@@ -5,11 +5,11 @@
 #include "ui/portal_page_support.hpp"
 
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/action_auth_support.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/url.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 class PortalCreateDepartmentAction final
     : public drogular::ActionHandler
@@ -147,28 +147,25 @@ private:
         const std::string& success,
         drogon::HttpStatusCode responseStatus = drogon::k200OK
     ) {
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(renderContext, "departments.title");
-        PortalDepartmentCreateFormSupport::apply(
-            renderContext,
-            name,
-            description,
-            managerId,
-            isActive,
-            error,
-            success
-        );
-
-        CreateFormComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(
-            std::move(html),
+        return drogular::ActionRenderer::render<
+            CreateFormComponent
+        >(
+            context,
+            [&](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "departments.title"
+                );
+                PortalDepartmentCreateFormSupport::apply(
+                    renderContext,
+                    name,
+                    description,
+                    managerId,
+                    isActive,
+                    error,
+                    success
+                );
+            },
             responseStatus
         );
     }

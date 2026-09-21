@@ -4,8 +4,8 @@
 #include "ui/portal_page_support.hpp"
 
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 class PortalDepartmentMembersInteractionSupport final {
 public:
@@ -25,31 +25,24 @@ public:
         const std::string& success = {},
         drogon::HttpStatusCode status = drogon::k200OK
     ) {
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(
-            renderContext,
-            "departments.details.title"
-        );
-        renderContext.set("departmentId", departmentId);
-
-        PortalDepartmentMembersSupport::apply(
-            renderContext,
-            departmentId,
-            returnUrl,
-            error,
-            success
-        );
-
-        MembersComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(
-            std::move(html),
+        return drogular::ActionRenderer::render<
+            MembersComponent
+        >(
+            context,
+            [&](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "departments.details.title"
+                );
+                renderContext.set("departmentId", departmentId);
+                PortalDepartmentMembersSupport::apply(
+                    renderContext,
+                    departmentId,
+                    returnUrl,
+                    error,
+                    success
+                );
+            },
             status
         );
     }

@@ -7,9 +7,9 @@
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 #include <drogular/url.hpp>
 
 class PortalCreateProjectTypeAction final
@@ -162,29 +162,23 @@ private:
         const std::string& success,
         drogon::HttpStatusCode status = drogon::k200OK
     ) {
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(
-            renderContext,
-            "project_types.page.title"
-        );
-        PortalProjectTypeCreateFormSupport::apply(
-            renderContext,
-            code,
-            title,
-            error,
-            success
-        );
-
-        CreateFormComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(
-            std::move(html),
+        return drogular::ActionRenderer::render<
+            CreateFormComponent
+        >(
+            context,
+            [&](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "project_types.page.title"
+                );
+                PortalProjectTypeCreateFormSupport::apply(
+                    renderContext,
+                    code,
+                    title,
+                    error,
+                    success
+                );
+            },
             status
         );
     }

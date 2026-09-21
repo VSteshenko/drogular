@@ -6,10 +6,10 @@
 #include "ui/portal_page_support.hpp"
 
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/action_auth_support.hpp>
 #include <drogular/form_validator.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 #include <cstdlib>
 #include <string>
@@ -151,28 +151,28 @@ private:
         const std::string& returnUrl,
         drogon::HttpStatusCode status = drogon::k200OK
     ) {
-        drogular::RenderContext rc;
-        rc.setServices(context.services());
-        rc.setRequest(context.request());
-
-        PortalPageSupport::apply(rc, "departments.edit.title");
-        PortalDepartmentEditFormSupport::apply(
-            rc,
-            department,
-            name,
-            description,
-            managerId,
-            isActive,
-            error,
-            success,
-            returnUrl
+        return drogular::ActionRenderer::render<
+            EditFormComponent
+        >(
+            context,
+            [&](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "departments.edit.title"
+                );
+                PortalDepartmentEditFormSupport::apply(
+                    renderContext,
+                    department,
+                    name,
+                    description,
+                    managerId,
+                    isActive,
+                    error,
+                    success,
+                    returnUrl
+                );
+            },
+            status
         );
-
-        EditFormComponent c;
-        c.onInit(rc);
-        auto html = c.render(rc);
-        c.onDestroy(rc);
-
-        return drogular::ActionResult::html(std::move(html), status);
     }
 };

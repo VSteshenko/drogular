@@ -5,8 +5,8 @@
 
 #include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 class PortalProjectTypesFragmentAction final
     : public drogular::ActionHandler
@@ -31,22 +31,18 @@ public:
             return *result;
         }
 
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(
-            renderContext,
-            "project_types.page.title"
+        return drogular::ActionRenderer::render<
+            ProjectTypesListComponent
+        >(
+            context,
+            [&](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "project_types.page.title"
+                );
+                PortalProjectTypesListSupport::apply(renderContext);
+            }
         );
-        PortalProjectTypesListSupport::apply(renderContext);
-
-        ProjectTypesListComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(std::move(html));
     }
 
 private:
