@@ -39,6 +39,40 @@ Returns the underlying Drogon request.
 
 ---
 
+## Interaction Requests
+
+### `isInteraction()`
+
+```cpp
+bool isInteraction() const;
+```
+
+Returns `true` when the request contains the Drogular Interactions marker:
+
+```text
+X-Drogular-Interaction: true
+```
+
+Use this when one Action supports both normal browser submission and progressively enhanced fragment submission. A common pattern is to redirect after a normal POST, but render a validation or success fragment for an interaction request.
+
+```cpp
+if (context.isInteraction()) {
+    return drogular::ActionRenderer::render<MyFormFragment>(
+        context,
+        [&](drogular::RenderContext& renderContext) {
+            renderContext.set("error", message);
+        },
+        drogon::k400BadRequest
+    );
+}
+
+return drogular::ActionResult::redirect("/projects");
+```
+
+The browser runtime adds this header to both `dg-get` and `dg-post` requests.
+
+---
+
 ## Application Services
 
 ### `services()`

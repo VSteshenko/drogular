@@ -1,6 +1,6 @@
 # Actions
 
-The Actions API handles application commands submitted through POST routes.
+The Actions API handles request-oriented endpoints that return `ActionResult`. POST actions are the normal command/mutation path, while GET actions are available for read-only endpoints that need the Action API rather than Page rendering.
 
 An action receives an `ActionContext`, reads request data or application services, performs application logic, and returns an `ActionResult`. The router converts that result into a Drogon HTTP response.
 
@@ -11,6 +11,7 @@ An action receives an `ActionContext`, reads request data or application service
 - [`ActionHandler`](action-handler.md) — base class for application action handlers.
 - [`ActionContext`](action-context.md) — request and service context passed to an action.
 - [`ActionResult`](action-result.md) — describes the response produced by an action.
+- [`ActionRenderer`](action-renderer.md) — renders a Component into an HTML `ActionResult` while preserving request-bound context.
 - [`ActionResultType`](action-result-type.md) — identifies the response variant stored in an `ActionResult`.
 - [`Cookie`](cookie.md) — cookie metadata and security attributes attached to an action result.
 - [`CookieOptions`](cookie.md) — options for Path, HttpOnly, Secure, SameSite, and Max-Age.
@@ -24,7 +25,7 @@ An action receives an `ActionContext`, reads request data or application service
 ## Typical Flow
 
 ```text
-POST Request
+GET / POST Request
      │
      ▼
    Router
@@ -50,7 +51,7 @@ toHttpResponse()
 HTTP Response
 ```
 
-Actions are registered through `App::action<ActionType>()` and currently accept POST requests only.
+Register POST actions with `App::action<ActionType>()`. Register read-only GET actions with `App::get<ActionType>()`.
 
 ---
 

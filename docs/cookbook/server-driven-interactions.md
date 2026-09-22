@@ -187,6 +187,64 @@ refreshed lists.
 
 ---
 
+## 7. Submit commands with `dg-post`
+
+Use a normal HTML form as the progressive-enhancement baseline:
+
+```html
+<form method="post"
+      action="/projects/create"
+      dg-post="/projects/create"
+      dg-target="[data-project-form]"
+      dg-on-success-refresh="[data-projects-browser]">
+    <input name="name" required>
+    <button type="submit">Create</button>
+    <div data-project-form></div>
+</form>
+```
+
+Without the runtime, the browser submits normally. With Drogular Interactions, the same form is encoded as `application/x-www-form-urlencoded`, marked with `X-Drogular-Interaction: true`, and submitted without full-page navigation.
+
+The Action can distinguish the enhanced path:
+
+```cpp
+if (context.isInteraction()) {
+    return drogular::ActionRenderer::render<ProjectFormFragment>(
+        context,
+        [&](drogular::RenderContext& renderContext) {
+            renderContext.set("validation", validation);
+        },
+        drogon::k400BadRequest
+    );
+}
+
+return drogular::ActionResult::redirect("/projects/new");
+```
+
+`ActionRenderer` reuses the request-bound rendering state from `ActionContext`; do not construct an unrelated `RenderContext` for the fragment. Successful commands can use `dg-on-success-refresh` to refresh another interaction root or `dg-on-success-navigate` to navigate.
+
+---
+
+## 8. Keep filters in browser history
+
+A GET interaction can synchronize its current controls into the visible URL:
+
+```html
+<form dg-get="/projects/fragments/browser"
+      dg-target="[data-projects-results]"
+      dg-history="replace"
+      dg-history-url="/projects">
+    <input name="search" dg-reset-value="">
+    <select name="sort" dg-reset-value="title">...</select>
+    <button type="button" dg-reset>Clear</button>
+    <div data-projects-results></div>
+</form>
+```
+
+`dg-reset-value` supplies both the reset value and the default omitted from the synchronized query string. `dg-reset` restores those values and refreshes the interaction.
+
+---
+
 ## Design guidance
 
 Prefer server-driven fragments when the server already owns the data transformation

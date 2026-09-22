@@ -230,14 +230,16 @@ Drogular 0.23 is turning the successful System Monitor experiments into reusable
 
 **Drogular Interactions**
 
-- Declarative fragment requests with `dg-get`, `dg-target`, and `dg-trigger`
+- Declarative fragment requests and form commands with `dg-get`, `dg-post`, `dg-target`, and `dg-trigger`
 - Load, polling, change, and debounced input triggers
 - Standard loading, ready, empty, and error states
 - Polling groups for coordinated live UI
 - Failure limits with pause and explicit resume
 - Framework-served `/__drogular/assets/interactions.js` via opt-in `app.interactions()`
 - Interaction runtime separated from application-specific connection/status markup through `data-dg-connection-*`
-- First-class Component / Fragment rendering from Actions *(planned)*
+- First-class Component / Fragment rendering from Actions with `ActionRenderer`
+- Interaction-aware Actions through `ActionContext::isInteraction()`
+- URL/history synchronization plus success refresh/navigation for mutation flows
 
 **Drogular UI**
 

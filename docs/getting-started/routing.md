@@ -6,6 +6,7 @@ For the high-level application API, the common split is:
 
 - `app.page<T>(path)` for GET page rendering
 - `app.action<T>(path)` for POST mutations and user intent
+- `app.get<T>(path)` for read-only endpoints that return `ActionResult`
 
 ---
 
@@ -46,14 +47,20 @@ Pages normally prepare render data in `onInit(RenderContext&)` and render HTML t
 
 # Actions
 
-Actions are POST request handlers:
+Actions are request handlers that return `ActionResult`. The normal command path uses POST:
 
 ```cpp
 app.action<LoginAction>("/login");
 app.action<CreateTodoAction>("/todos/create");
 ```
 
-Drogular also creates a fresh Action instance for each request. Actions receive an `ActionContext`, read form/request data, resolve services, and return an `ActionResult`.
+For read-only endpoints that benefit from the Action API, register the same handler model as GET:
+
+```cpp
+app.get<ProjectsFragmentAction>("/fragments/projects");
+```
+
+Drogular creates a fresh Action instance for each request. Actions receive an `ActionContext`, read request data, resolve services, and return an `ActionResult`.
 
 Use Pages for presentation and Actions for mutations rather than putting POST handling into a UI component.
 

@@ -6,7 +6,7 @@
 
 ## Purpose
 
-`ActionHandler` is the base class for application commands mounted to POST routes.
+`ActionHandler` is the base class for request handlers that return `ActionResult`. It is normally used for POST commands, and can also serve read-only GET endpoints.
 
 A concrete action implements `handle(ActionContext&)`, performs its application work, and returns an `ActionResult` describing the HTTP response.
 
@@ -16,7 +16,7 @@ A concrete action implements `handle(ActionContext&)`, performs its application 
 
 `ActionHandler` is the command-side counterpart to `Page`.
 
-Pages render GET requests. Actions process POST requests and normally modify application state, call repositories or services, manage sessions, and then redirect or return another response type.
+Pages render full GET presentation. POST Actions normally modify application state, call repositories or services, manage sessions, and then redirect or return another response type. GET Actions are available for read-only endpoints such as HTML fragments or JSON responses.
 
 ```text
                  HTTP Request
@@ -72,7 +72,7 @@ app.action<CreateTodoAction>("/todos/create");
 - inherit from `drogular::ActionHandler`;
 - be default-constructible.
 
-The current router registers action routes for POST requests only.
+`App::action<ActionType>()` registers POST. `App::get<ActionType>()` registers the same handler model for GET.
 
 ---
 
@@ -96,7 +96,7 @@ Return an [`ActionResult`](action-result.md) to describe the response.
 
 ## Lifetime and Thread Safety
 
-A new action instance is created for each matching POST request. Action instance members are therefore request-local and are not shared between concurrent requests.
+A new action instance is created for each matching action request. Action instance members are therefore request-local and are not shared between concurrent requests.
 
 ```cpp
 class CreateTodoAction final : public drogular::ActionHandler {

@@ -31,7 +31,7 @@ It also records route metadata used by application inspection and Developer Tool
 RenderContext  ActionContext
 ```
 
-[`App`](../application/app.md) owns a router internally and exposes the normal registration surface through `App::page()`, `App::action()`, static-file configuration, and PWA configuration.
+[`App`](../application/app.md) owns a router internally and exposes the normal registration surface through `App::page()`, `App::action()`, `App::get()`, static-file configuration, and PWA configuration.
 
 Application code therefore rarely needs to construct or operate a `Router` directly.
 
@@ -57,7 +57,8 @@ public:
     void action(
         const std::string& path,
         ActionFactory factory,
-        std::string target
+        std::string target,
+        ActionMethod method = ActionMethod::Post
     );
 
     void staticFiles(
@@ -169,7 +170,7 @@ void action(
 );
 ```
 
-Registers an [`ActionHandler`](../actions/action-handler.md) factory for POST requests. `target` is recorded as route-inspection metadata.
+Registers an [`ActionHandler`](../actions/action-handler.md) factory. `ActionMethod::Post` is the default; `ActionMethod::Get` registers the same handler model for a read-only GET endpoint. `target` is recorded as route-inspection metadata.
 
 For each matching request, the router:
 
@@ -194,6 +195,16 @@ router.action(
 ```
 
 Each request receives a new action object, so action members are not shared between concurrent requests.
+
+### GET Actions
+
+At application level, `App::get<ActionType>()` delegates to the same router method with `ActionMethod::Get`.
+
+```cpp
+app.get<ProjectsFragmentAction>("/fragments/projects");
+```
+
+GET Actions are intended for read-only endpoints that return `ActionResult`, such as server-rendered fragments or JSON API responses. Full HTML presentation should normally remain a Page.
 
 ---
 

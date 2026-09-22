@@ -91,7 +91,7 @@ Generate PWA metadata and browser scripts, publish a root service worker, and in
 
 ## Drogular Interactions
 
-Add optional declarative GET-based HTML fragment updates, polling, request state, retry/offline behavior, and connection-state coordination.
+Add optional declarative GET fragment queries and POST form commands, fragment replacement, URL/history synchronization, request state, success refresh/navigation, polling, retry/offline behavior, and connection-state coordination.
 
 - [Drogular Interactions](interactions/README.md)
 
