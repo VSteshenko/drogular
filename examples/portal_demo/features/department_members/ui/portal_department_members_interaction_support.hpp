@@ -9,14 +9,6 @@
 
 class PortalDepartmentMembersInteractionSupport final {
 public:
-    static bool isInteraction(
-        const drogular::ActionContext& context
-    ) {
-        const auto request = context.request();
-        return request != nullptr &&
-            request->getHeader("X-Drogular-Interaction") == "true";
-    }
-
     static drogular::ActionResult render(
         drogular::ActionContext& context,
         int departmentId,

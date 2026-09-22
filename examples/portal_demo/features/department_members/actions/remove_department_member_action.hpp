@@ -49,9 +49,7 @@ public:
 
         if (!context.requireService<PortalDepartmentMemberProvider>()
                 ->removeMember(departmentId, userId)) {
-            if (PortalDepartmentMembersInteractionSupport::isInteraction(
-                context
-            )) {
+            if (context.isInteraction()) {
                 return PortalDepartmentMembersInteractionSupport::render(
                     context,
                     departmentId,
@@ -66,9 +64,7 @@ public:
             );
         }
 
-        if (PortalDepartmentMembersInteractionSupport::isInteraction(
-            context
-        )) {
+        if (context.isInteraction()) {
             return PortalDepartmentMembersInteractionSupport::render(
                 context,
                 departmentId,

@@ -54,9 +54,7 @@ public:
             !context.requireService<PortalUserProvider>()
                 ->findById(*userId)
         ) {
-            if (PortalDepartmentMembersInteractionSupport::isInteraction(
-                context
-            )) {
+            if (context.isInteraction()) {
                 return PortalDepartmentMembersInteractionSupport::render(
                     context,
                     departmentId,
@@ -75,9 +73,7 @@ public:
         auto memberships =
             context.requireService<PortalDepartmentMemberProvider>();
         if (memberships->find(departmentId, *userId)) {
-            if (PortalDepartmentMembersInteractionSupport::isInteraction(
-                context
-            )) {
+            if (context.isInteraction()) {
                 return PortalDepartmentMembersInteractionSupport::render(
                     context,
                     departmentId,
@@ -95,9 +91,7 @@ public:
 
         memberships->addMember(departmentId, *userId);
 
-        if (PortalDepartmentMembersInteractionSupport::isInteraction(
-            context
-        )) {
+        if (context.isInteraction()) {
             return PortalDepartmentMembersInteractionSupport::render(
                 context,
                 departmentId,

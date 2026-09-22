@@ -22,6 +22,23 @@ TEST(CoreActionContextTests, ReturnsRequest) {
     EXPECT_EQ(context.request(), request);
 }
 
+TEST(CoreActionContextTests, DetectsInteractionRequest) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+    request->addHeader("X-Drogular-Interaction", "true");
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_TRUE(context.isInteraction());
+}
+
+TEST(CoreActionContextTests, NormalRequestIsNotInteraction) {
+    auto request = drogon::HttpRequest::newHttpRequest();
+
+    drogular::ActionContext context(request, nullptr);
+
+    EXPECT_FALSE(context.isInteraction());
+}
+
 TEST(CoreActionContextTests, ResolvesService) {
     auto request = drogon::HttpRequest::newHttpRequest();
 

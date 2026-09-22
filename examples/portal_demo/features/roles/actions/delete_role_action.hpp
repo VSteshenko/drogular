@@ -44,7 +44,7 @@ public:
             context.requireService<PortalRoleProvider>();
 
         if (!roles->remove(id)) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderList(
                     context,
                     "role_in_use",
@@ -58,7 +58,7 @@ public:
             );
         }
 
-        if (isInteraction(context)) {
+        if (context.isInteraction()) {
             return renderList(
                 context,
                 "",
@@ -72,14 +72,6 @@ public:
     }
 
 private:
-    static bool isInteraction(
-        const drogular::ActionContext& context
-    ) {
-        const auto request = context.request();
-        return request != nullptr &&
-            request->getHeader("X-Drogular-Interaction") == "true";
-    }
-
     class RolesListComponent final
         : public drogular::TemplateComponent
     {

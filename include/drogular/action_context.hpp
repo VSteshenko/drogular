@@ -38,6 +38,11 @@ public:
 
     const drogon::HttpRequestPtr& request() const;
 
+    /**
+     * Returns true when the request was issued by Drogular Interactions.
+     */
+    bool isInteraction() const;
+
     ApplicationServices* services();
 
     const ApplicationServices* services() const;

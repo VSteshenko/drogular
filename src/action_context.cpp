@@ -25,6 +25,13 @@ const drogon::HttpRequestPtr& ActionContext::request() const {
     return state_->request();
 }
 
+bool ActionContext::isInteraction() const {
+    const auto& httpRequest = request();
+
+    return httpRequest != nullptr &&
+        httpRequest->getHeader("X-Drogular-Interaction") == "true";
+}
+
 ApplicationServices* ActionContext::services() {
     return state_->services();
 }

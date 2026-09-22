@@ -50,7 +50,7 @@ public:
             context.form<std::string>("isActive").value_or("") == "on";
 
         if (!validation.valid()) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     name,
@@ -75,7 +75,7 @@ public:
             >();
 
         if (provider->exists(name)) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     name,
@@ -102,7 +102,7 @@ public:
 
         provider->create(input);
 
-        if (isInteraction(context)) {
+        if (context.isInteraction()) {
             return renderForm(
                 context,
                 "",
@@ -120,14 +120,6 @@ public:
     }
 
 private:
-    static bool isInteraction(
-        const drogular::ActionContext& context
-    ) {
-        const auto request = context.request();
-        return request != nullptr &&
-            request->getHeader("X-Drogular-Interaction") == "true";
-    }
-
     class CreateFormComponent final
         : public drogular::TemplateComponent
     {

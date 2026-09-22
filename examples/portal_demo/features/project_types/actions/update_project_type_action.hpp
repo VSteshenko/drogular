@@ -66,7 +66,7 @@ public:
             validator.validate();
 
         if (!validation.valid()) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     id,
@@ -106,7 +106,7 @@ public:
             );
 
         if (duplicate) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     id,
@@ -145,7 +145,7 @@ public:
             );
         }
 
-        if (isInteraction(context)) {
+        if (context.isInteraction()) {
             return renderForm(
                 context,
                 updated.id,
@@ -162,14 +162,6 @@ public:
     }
 
 private:
-    static bool isInteraction(
-        const drogular::ActionContext& context
-    ) {
-        const auto request = context.request();
-        return request != nullptr &&
-            request->getHeader("X-Drogular-Interaction") == "true";
-    }
-
     class EditFormComponent final
         : public drogular::TemplateComponent
     {

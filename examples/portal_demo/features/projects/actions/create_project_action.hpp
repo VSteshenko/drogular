@@ -63,7 +63,7 @@ public:
                 .value_or("active");
 
         if (!validation.valid()) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     title,
@@ -94,7 +94,7 @@ public:
             currentUser->id
         );
 
-        if (isInteraction(context)) {
+        if (context.isInteraction()) {
             return renderForm(
                 context,
                 "",
@@ -111,14 +111,6 @@ public:
     }
 
 private:
-    static bool isInteraction(
-        const drogular::ActionContext& context
-    ) {
-        const auto request = context.request();
-        return request != nullptr &&
-            request->getHeader("X-Drogular-Interaction") == "true";
-    }
-
     static drogular::ActionResult renderForm(
         drogular::ActionContext& context,
         const std::string& title,

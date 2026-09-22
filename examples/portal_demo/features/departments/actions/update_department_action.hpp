@@ -52,7 +52,7 @@ public:
             .required("managerId")
             .validate();
         if (!validation.valid()) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     *department,
@@ -71,7 +71,7 @@ public:
             );
         }
         if (provider->exists(name, id)) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderForm(
                     context,
                     *department,
@@ -105,7 +105,7 @@ public:
                 "/departments?error=not_found"
             );
         }
-        if (isInteraction(context)) {
+        if (context.isInteraction()) {
             return renderForm(
                 context,
                 *updated,
@@ -125,11 +125,6 @@ public:
     }
 
 private:
-    static bool isInteraction(const drogular::ActionContext& context) {
-        const auto r = context.request();
-        return r && r->getHeader("X-Drogular-Interaction")=="true";
-    }
-
     class EditFormComponent final
         : public drogular::TemplateComponent
     {

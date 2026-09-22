@@ -47,7 +47,7 @@ public:
             >();
 
         if (!projectTypes->remove(id)) {
-            if (isInteraction(context)) {
+            if (context.isInteraction()) {
                 return renderList(
                     context,
                     "project_type_in_use",
@@ -61,7 +61,7 @@ public:
             );
         }
 
-        if (isInteraction(context)) {
+        if (context.isInteraction()) {
             return renderList(
                 context,
                 "",
@@ -75,14 +75,6 @@ public:
     }
 
 private:
-    static bool isInteraction(
-        const drogular::ActionContext& context
-    ) {
-        const auto request = context.request();
-        return request != nullptr &&
-            request->getHeader("X-Drogular-Interaction") == "true";
-    }
-
     class ProjectTypesListComponent final
         : public drogular::TemplateComponent
     {
