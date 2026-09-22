@@ -122,7 +122,10 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     const requestOptions = (element, submitter = null) => {
         if (!element.hasAttribute('dg-post')) {
             return {
-                headers: { 'Accept': 'text/html' },
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Drogular-Interaction': 'true',
+                },
                 cache: 'no-store',
             };
         }
@@ -323,6 +326,12 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                 url,
                 requestOptions(element, submitter)
             );
+
+            if (response.redirected) {
+                window.location.assign(response.url);
+                return;
+            }
+
             const html = await response.text();
             const postInteraction = element.hasAttribute('dg-post');
 

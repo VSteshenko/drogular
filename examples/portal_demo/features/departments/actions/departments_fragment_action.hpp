@@ -3,10 +3,10 @@
 #include "features/departments/ui/portal_departments_browser_support.hpp"
 #include "ui/portal_page_support.hpp"
 
+#include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/component.hpp>
-#include <drogular/page_auth_support.hpp>
-#include <drogular/render_context.hpp>
 
 class PortalDepartmentsFragmentComponent final
     : public drogular::TemplateComponent
@@ -24,24 +24,22 @@ public:
     drogular::ActionResult handle(
         drogular::ActionContext& context
     ) override {
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(renderContext, "departments.title");
-        if (!drogular::PageAuthSupport::requireAuthentication(renderContext)) {
-            return drogular::ActionResult::html(
-                "<div class=\"dg-empty-state\">Authentication required.</div>"
-            );
+        if (const auto result =
+                drogular::ActionAuthSupport::requireAuthentication(context)) {
+            return *result;
         }
 
-        PortalDepartmentsBrowserSupport::apply(renderContext);
-
-        PortalDepartmentsFragmentComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-
-        return drogular::ActionResult::html(std::move(html));
+        return drogular::ActionRenderer::render<
+            PortalDepartmentsFragmentComponent
+        >(
+            context,
+            [](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "departments.title"
+                );
+                PortalDepartmentsBrowserSupport::apply(renderContext);
+            }
+        );
     }
 };

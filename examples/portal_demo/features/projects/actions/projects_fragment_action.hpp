@@ -2,11 +2,11 @@
 
 #include "features/projects/ui/portal_projects_browser_support.hpp"
 #include "ui/portal_page_support.hpp"
-#include <drogular/page_auth_support.hpp>
 
+#include <drogular/action_auth_support.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/action_renderer.hpp>
 #include <drogular/component.hpp>
-#include <drogular/render_context.hpp>
 
 class PortalProjectsFragmentComponent final : public drogular::TemplateComponent {
 public:
@@ -18,23 +18,22 @@ public:
 class PortalProjectsFragmentAction final : public drogular::ActionHandler {
 public:
     drogular::ActionResult handle(drogular::ActionContext& context) override {
-        drogular::RenderContext renderContext;
-        renderContext.setServices(context.services());
-        renderContext.setRequest(context.request());
-
-        PortalPageSupport::apply(renderContext, "projects.title");
-        if (!drogular::PageAuthSupport::requireAuthentication(renderContext)) {
-            return drogular::ActionResult::html(
-                "<div class=\"dg-empty-state\">Authentication required.</div>"
-            );
+        if (const auto result =
+                drogular::ActionAuthSupport::requireAuthentication(context)) {
+            return *result;
         }
 
-        PortalProjectsBrowserSupport::apply(renderContext);
-
-        PortalProjectsFragmentComponent component;
-        component.onInit(renderContext);
-        auto html = component.render(renderContext);
-        component.onDestroy(renderContext);
-        return drogular::ActionResult::html(std::move(html));
+        return drogular::ActionRenderer::render<
+            PortalProjectsFragmentComponent
+        >(
+            context,
+            [](drogular::RenderContext& renderContext) {
+                PortalPageSupport::apply(
+                    renderContext,
+                    "projects.title"
+                );
+                PortalProjectsBrowserSupport::apply(renderContext);
+            }
+        );
     }
 };

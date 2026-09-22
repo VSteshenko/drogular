@@ -91,6 +91,50 @@ TEST(CoreInteractionsResourcesTests, SupportsPostInteractions) {
     EXPECT_NE(script.find("if (!response.ok)"), std::string_view::npos);
 }
 
+TEST(CoreInteractionsResourcesTests, MarksGetAndPostRequestsAsInteractions) {
+    const auto script = drogular::interactions_resources::script();
+
+    const auto requestOptions = script.find("const requestOptions");
+    ASSERT_NE(requestOptions, std::string_view::npos);
+
+    const auto postBranch = script.find("method: 'POST'", requestOptions);
+    ASSERT_NE(postBranch, std::string_view::npos);
+
+    const auto getInteractionHeader = script.find(
+        "'X-Drogular-Interaction': 'true'",
+        requestOptions
+    );
+    ASSERT_NE(getInteractionHeader, std::string_view::npos);
+    EXPECT_LT(getInteractionHeader, postBranch);
+
+    const auto postInteractionHeader = script.find(
+        "'X-Drogular-Interaction': 'true'",
+        postBranch
+    );
+    EXPECT_NE(postInteractionHeader, std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, RedirectedResponsesNavigateTheWholePage) {
+    const auto script = drogular::interactions_resources::script();
+
+    const auto redirected = script.find("if (response.redirected)");
+    ASSERT_NE(redirected, std::string_view::npos);
+
+    const auto navigate = script.find(
+        "window.location.assign(response.url)",
+        redirected
+    );
+    ASSERT_NE(navigate, std::string_view::npos);
+
+    const auto readBody = script.find(
+        "const html = await response.text()",
+        redirected
+    );
+    ASSERT_NE(readBody, std::string_view::npos);
+
+    EXPECT_LT(navigate, readBody);
+}
+
 TEST(CoreInteractionsResources, PostInteractionsDoNotLoadAndReinstallRenderedInteractions) {
     const auto script = drogular::interactions_resources::script();
 
