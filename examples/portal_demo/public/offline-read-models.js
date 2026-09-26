@@ -41,12 +41,17 @@
         return value;
     };
 
+    const locale = () => document.documentElement.lang || "en";
+
     const normalizedKey = (url) => {
         const normalized = new URL(url, window.location.origin);
         normalized.hash = "";
         normalized.searchParams.sort();
-        return `${scope()}|GET|${normalized.pathname}${normalized.search}`;
+        return `${scope()}|${locale()}|GET|${normalized.pathname}${normalized.search}`;
     };
+
+    const message = (name, fallback) =>
+        document.querySelector("[data-dg-offline-read-i18n]")?.getAttribute(`data-${name}`) || fallback;
 
     const eligibleElement = (url) => {
         const requestUrl = new URL(url, window.location.origin);
@@ -75,6 +80,7 @@
         const record = {
             key: normalizedKey(url),
             url: new URL(url, window.location.origin).toString(),
+            locale: locale(),
             storedAt: new Date().toISOString(),
             contentType: response.headers.get("Content-Type") || "text/html;charset=UTF-8",
             html,
@@ -144,7 +150,7 @@
         }
         return parts.length
             ? parts.join(" · ")
-            : (element.getAttribute("dg-offline-read-empty-label") || "All items");
+            : (element.getAttribute("dg-offline-read-empty-label") || message("empty-label", "All items"));
     };
 
     const applyHistoryRecord = (element, record) => {
@@ -163,14 +169,14 @@
 
     const relativeAge = (storedAt) => {
         const ageSeconds = Math.max(0, Math.floor((Date.now() - new Date(storedAt).getTime()) / 1000));
-        if (!Number.isFinite(ageSeconds)) return "cached";
-        if (ageSeconds < 60) return "cached just now";
+        if (!Number.isFinite(ageSeconds)) return message("cached", "cached");
+        if (ageSeconds < 60) return message("cached-just-now", "cached just now");
         const minutes = Math.floor(ageSeconds / 60);
-        if (minutes < 60) return `cached ${minutes} min ago`;
+        if (minutes < 60) return message("cached-minutes", "cached {count} min ago").replace("{count}", minutes);
         const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `cached ${hours} h ago`;
+        if (hours < 24) return message("cached-hours", "cached {count} h ago").replace("{count}", hours);
         const days = Math.floor(hours / 24);
-        return `cached ${days} d ago`;
+        return message("cached-days", "cached {count} d ago").replace("{count}", days);
     };
 
     const historyFor = (element) => {
@@ -182,7 +188,7 @@
         history.setAttribute("data-dg-offline-read-history", "");
         history.innerHTML = `
             <summary class="dg-card-summary">
-                <span class="dg-card-title">Cached filters</span>
+                <span class="dg-card-title">${message("history-title", "Cached filters")}</span>
             </summary>
             <div class="dg-card-body">
                 <div class="dg-stack" data-dg-offline-read-history-items></div>
@@ -202,7 +208,8 @@
         const source = element.getAttribute("dg-get");
         const sourcePath = source ? new URL(source, window.location.origin).pathname : "";
         const records = (await readRepresentations())
-            .filter((record) => record.key.startsWith(`${scope()}|GET|`))
+            .filter((record) => record.key.startsWith(`${scope()}|${locale()}|GET|`))
+            .filter((record) => record.locale === locale())
             .filter((record) => new URL(record.url).pathname === sourcePath)
             .sort((left, right) => right.storedAt.localeCompare(left.storedAt));
 
@@ -229,9 +236,11 @@
 
             const label = historyLabel(element, group.newest);
             const pageCount = new Set(group.records.map((record) => new URL(record.url).searchParams.get("page") || "1")).size;
-            const pages = `${pageCount} ${pageCount === 1 ? "page" : "pages"}`;
+            const pages = `${pageCount} ${pageCount === 1
+                ? message("page", "page")
+                : message("pages", "pages")}`;
             button.textContent = `${label} · ${pages} · ${relativeAge(group.newest.storedAt)}`;
-            button.title = `Saved ${new Date(group.newest.storedAt).toLocaleString()}`;
+            button.title = `${message("saved", "Saved")} ${new Date(group.newest.storedAt).toLocaleString()}`;
             button.addEventListener("click", () => applyHistoryRecord(element, group.newest));
             items.append(button);
         }
@@ -271,7 +280,10 @@
         const status = statusFor(element);
         const date = new Date(storedAt);
         const time = Number.isNaN(date.getTime()) ? storedAt : date.toLocaleString();
-        status.textContent = `Offline · Read only · Last updated ${time}`;
+        status.textContent = message(
+            "status",
+            "Offline · Read only · Last updated {time}"
+        ).replace("{time}", time);
         status.hidden = false;
     };
 

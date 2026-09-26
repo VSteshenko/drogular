@@ -15,6 +15,18 @@
     <script src="/__drogular/assets/interactions.js" defer></script>
 </head>
 <body>
+    <div data-dg-offline-read-i18n
+         data-history-title="{{ t('offline.cached_filters') }}"
+         data-page="{{ t('offline.page') }}"
+         data-pages="{{ t('offline.pages') }}"
+         data-cached="{{ t('offline.cached') }}"
+         data-cached-just-now="{{ t('offline.cached_just_now') }}"
+         data-cached-minutes="{{ t('offline.cached_minutes') }}"
+         data-cached-hours="{{ t('offline.cached_hours') }}"
+         data-cached-days="{{ t('offline.cached_days') }}"
+         data-saved="{{ t('offline.saved') }}"
+         data-status="{{ t('offline.read_only_status') }}"
+         hidden></div>
     <div class="dg-shell">
         @include("partials/header.html")
 
