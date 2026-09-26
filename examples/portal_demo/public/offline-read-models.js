@@ -142,7 +142,9 @@
             else if (name === "sort" || name === "direction") parts.push(`${fieldLabel(element, name)}: ${label}`);
             else parts.push(label);
         }
-        return parts.length ? parts.join(" · ") : "All projects";
+        return parts.length
+            ? parts.join(" · ")
+            : (element.getAttribute("dg-offline-read-empty-label") || "All items");
     };
 
     const applyHistoryRecord = (element, record) => {
