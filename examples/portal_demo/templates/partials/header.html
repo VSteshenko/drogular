@@ -59,7 +59,7 @@
             {{ t('header.signed_in_as') }}
             <strong>{{ currentUsername }}</strong>
         </div>
-        <form method="post" action="/logout">
+        <form method="post" action="/logout" data-dg-offline-clear>
             <button class="dg-button" type="submit">
                 {{ t('nav.logout') }}
             </button>
