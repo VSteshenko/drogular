@@ -15,34 +15,37 @@
     <script src="/__drogular/assets/interactions.js" defer></script>
 </head>
 <body>
-    <div data-dg-offline-read-i18n
-         data-history-title="{{ t('offline.cached_filters') }}"
-         data-page="{{ t('offline.page') }}"
-         data-pages="{{ t('offline.pages') }}"
-         data-cached="{{ t('offline.cached') }}"
-         data-cached-just-now="{{ t('offline.cached_just_now') }}"
-         data-cached-minutes="{{ t('offline.cached_minutes') }}"
-         data-cached-hours="{{ t('offline.cached_hours') }}"
-         data-cached-days="{{ t('offline.cached_days') }}"
-         data-saved="{{ t('offline.saved') }}"
-         data-status="{{ t('offline.read_only_status') }}"
-         hidden></div>
-    <div class="dg-shell">
-        @include("partials/header.html")
+    <div data-dg-offline-shell>
+        <div data-dg-offline-read-i18n
+             data-history-title="{{ t('offline.cached_filters') }}"
+             data-page="{{ t('offline.page') }}"
+             data-pages="{{ t('offline.pages') }}"
+             data-cached="{{ t('offline.cached') }}"
+             data-cached-just-now="{{ t('offline.cached_just_now') }}"
+             data-cached-minutes="{{ t('offline.cached_minutes') }}"
+             data-cached-hours="{{ t('offline.cached_hours') }}"
+             data-cached-days="{{ t('offline.cached_days') }}"
+             data-saved="{{ t('offline.saved') }}"
+             data-status="{{ t('offline.read_only_status') }}"
+             hidden>
+        </div>
+        <div class="dg-shell">
+            @include("partials/header.html")
 
-        <div class="dg-main">
-            <main class="dg-page">
-                <header class="dg-page-header">
-                    <p class="dg-page-kicker">{{ t('app.title') }}</p>
-                    <h1 class="dg-page-title">{{ pageTitle }}</h1>
-                </header>
+            <div class="dg-main">
+                <main class="dg-page">
+                    <header class="dg-page-header">
+                        <p class="dg-page-kicker">{{ t('app.title') }}</p>
+                        <h1 class="dg-page-title">{{ pageTitle }}</h1>
+                    </header>
 
-                <div class="dg-page-content">
-                    @content
-                </div>
-            </main>
+                    <div class="dg-page-content">
+                        @content
+                    </div>
+                </main>
 
-            @include("partials/footer.html")
+                @include("partials/footer.html")
+            </div>
         </div>
     </div>
 

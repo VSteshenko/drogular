@@ -114,7 +114,7 @@
         </div>
 
         <div class="dg-segmented" aria-label="Language">
-            <form method="post" action="/language">
+            <form method="post" action="/language" data-dg-offline-language>
                 <input type="hidden" name="language" value="en">
                 <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button
@@ -125,7 +125,7 @@
                 </button>
             </form>
 
-            <form method="post" action="/language">
+            <form method="post" action="/language" data-dg-offline-language>
                 <input type="hidden" name="language" value="de">
                 <input type="hidden" name="redirect" value="{{ currentPath }}" dg-current-url>
                 <button

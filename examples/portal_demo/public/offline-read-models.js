@@ -43,12 +43,17 @@
 
     const locale = () => document.documentElement.lang || "en";
 
-    const normalizedKey = (url) => {
+    const normalizedKeyForLocale = (url, representationLocale) => {
         const normalized = new URL(url, window.location.origin);
         normalized.hash = "";
         normalized.searchParams.sort();
-        return `${scope()}|${locale()}|GET|${normalized.pathname}${normalized.search}`;
+        return `${scope()}|${representationLocale}|GET|${normalized.pathname}${normalized.search}`;
     };
+
+    const normalizedKey = (url) => normalizedKeyForLocale(url, locale());
+
+    const shellKey = (representationLocale, path = window.location.pathname) =>
+        `${scope()}|${representationLocale}|SHELL|${new URL(path, window.location.origin).pathname}`;
 
     const message = (name, fallback) =>
         document.querySelector("[data-dg-offline-read-i18n]")?.getAttribute(`data-${name}`) || fallback;
@@ -92,6 +97,26 @@
 
     const readRepresentation = (url) =>
         withStore("readonly", (store) => store.get(normalizedKey(url)));
+
+    const readRepresentationForLocale = (url, representationLocale) =>
+        withStore("readonly", (store) => store.get(normalizedKeyForLocale(url, representationLocale)));
+
+    const storeCurrentShell = async () => {
+        const shell = document.querySelector("[data-dg-offline-shell]");
+        if (!shell) return;
+        const representationLocale = locale();
+        await withStore("readwrite", (store) => store.put({
+            key: shellKey(representationLocale),
+            kind: "shell",
+            locale: representationLocale,
+            path: window.location.pathname,
+            storedAt: new Date().toISOString(),
+            html: shell.outerHTML,
+        }));
+    };
+
+    const readShell = (representationLocale) =>
+        withStore("readonly", (store) => store.get(shellKey(representationLocale)));
 
     const readRepresentations = () =>
         withStore("readonly", (store) => store.getAll());
@@ -287,6 +312,66 @@
         status.hidden = false;
     };
 
+    const formState = (element) => {
+        if (!(element instanceof HTMLFormElement)) return null;
+        const parameters = new URLSearchParams(new FormData(element));
+        return parameters;
+    };
+
+    const applyFormState = (element, parameters) => {
+        if (!(element instanceof HTMLFormElement) || !parameters) return;
+        element.querySelectorAll("input[name], select[name], textarea[name]").forEach((control) => {
+            if (control.type === "checkbox" || control.type === "radio") {
+                control.checked = parameters.getAll(control.name).includes(control.value);
+                return;
+            }
+            if (parameters.has(control.name)) control.value = parameters.get(control.name);
+        });
+    };
+
+    const requestUrlFor = (element) => {
+        const source = element?.getAttribute("dg-get");
+        if (!source) return null;
+        const url = new URL(source, window.location.origin);
+        url.search = window.location.search;
+        return url.toString();
+    };
+
+    const restoreOfflineLocale = async (targetLocale) => {
+        const currentReader = document.querySelector("[dg-get][dg-offline-read]");
+        const state = formState(currentReader);
+        const shellRecord = await readShell(targetLocale);
+        if (!shellRecord) return false;
+
+        const template = document.createElement("template");
+        template.innerHTML = shellRecord.html.trim();
+        const replacement = template.content.firstElementChild;
+        const currentShell = document.querySelector("[data-dg-offline-shell]");
+        if (!replacement || !currentShell) return false;
+
+        currentShell.replaceWith(replacement);
+        document.documentElement.lang = targetLocale;
+
+        const reader = document.querySelector("[dg-get][dg-offline-read]");
+        applyFormState(reader, state);
+
+        if (reader) {
+            const url = requestUrlFor(reader);
+            const record = url ? await readRepresentationForLocale(url, targetLocale) : null;
+            const targetSelector = reader.getAttribute("dg-target");
+            const target = targetSelector ? reader.querySelector(targetSelector) : null;
+            if (record && target) {
+                target.innerHTML = record.html;
+                setCached(reader, record.storedAt);
+            } else {
+                document.documentElement.setAttribute("data-dg-data-state", "cached");
+                document.documentElement.setAttribute("data-dg-mode", "read-only");
+            }
+            renderHistory(reader).catch(() => {});
+        }
+        return true;
+    };
+
     const cachedResponse = (record) => new Response(record.html, {
         status: 200,
         headers: {
@@ -307,6 +392,7 @@
             const response = await nativeFetch(input, init);
             if (response.ok && !response.redirected) {
                 storeRepresentation(url, response).catch(() => {});
+                setConnectionState("live");
                 if (element) setLive(element);
             }
             return response;
@@ -314,6 +400,7 @@
             try {
                 const record = await readRepresentation(url);
                 if (record) {
+                    setConnectionState("offline");
                     if (element) setCached(element, record.storedAt);
                     return cachedResponse(record);
                 }
@@ -324,14 +411,29 @@
         }
     };
 
+    const setConnectionState = (state) =>
+        document.documentElement.setAttribute("data-dg-connection-state", state);
+
+    window.addEventListener("offline", () => {
+        setConnectionState("offline");
+        document.documentElement.setAttribute("data-dg-mode", "read-only");
+    });
+
     window.addEventListener("online", () => {
-        if (document.documentElement.getAttribute("data-dg-data-state") !== "cached") return;
+        setConnectionState("reconnecting");
+        if (document.documentElement.getAttribute("data-dg-data-state") !== "cached") {
+            setConnectionState("live");
+            document.documentElement.setAttribute("data-dg-mode", "read-write");
+            return;
+        }
         document.querySelectorAll("[dg-get][dg-offline-read]").forEach((element) => {
             if (element instanceof HTMLFormElement) element.requestSubmit();
         });
     });
 
     document.addEventListener("DOMContentLoaded", () => {
+        setConnectionState("live");
+        storeCurrentShell().catch(() => {});
         document.querySelectorAll("[dg-get][dg-offline-read]").forEach((element) => {
             renderHistory(element).catch(() => {});
         });
@@ -346,8 +448,19 @@
             return;
         }
 
-        if (
-            document.documentElement.getAttribute("data-dg-mode") === "read-only" &&
+        if (form.hasAttribute("data-dg-offline-language") &&
+            document.documentElement.getAttribute("data-dg-connection-state") === "offline"
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            const targetLocale = new FormData(form).get("language");
+            if (typeof targetLocale === "string" && targetLocale) {
+                restoreOfflineLocale(targetLocale).catch(() => {});
+            }
+            return;
+        }
+
+        if (document.documentElement.getAttribute("data-dg-mode") === "read-only" &&
             form.method.toUpperCase() !== "GET"
         ) {
             event.preventDefault();
