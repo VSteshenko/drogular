@@ -337,6 +337,8 @@
         return url.toString();
     };
 
+    let offlineSelectedLocale = null;
+
     const restoreOfflineLocale = async (targetLocale) => {
         const currentReader = document.querySelector("[dg-get][dg-offline-read]");
         const state = formState(currentReader);
@@ -351,6 +353,7 @@
 
         currentShell.replaceWith(replacement);
         document.documentElement.lang = targetLocale;
+        offlineSelectedLocale = targetLocale;
 
         const reader = document.querySelector("[dg-get][dg-offline-read]");
         applyFormState(reader, state);
@@ -419,8 +422,44 @@
         document.documentElement.setAttribute("data-dg-mode", "read-only");
     });
 
+    const reconcileOfflineLocale = async () => {
+        if (!offlineSelectedLocale) return false;
+
+        const redirect = `${window.location.pathname}${window.location.search}`;
+        const body = new URLSearchParams({
+            language: offlineSelectedLocale,
+            redirect,
+        });
+
+        try {
+            await nativeFetch("/language", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+                },
+                body,
+                redirect: "manual",
+            });
+        } catch (_) {
+            setConnectionState("offline");
+            return false;
+        }
+
+        // The server has accepted the user's last offline locale choice. A normal
+        // navigation now lets the server render the authoritative representation.
+        window.location.assign(redirect);
+        return true;
+    };
+
     window.addEventListener("online", () => {
         setConnectionState("reconnecting");
+        if (offlineSelectedLocale) {
+            reconcileOfflineLocale().catch(() => {
+                setConnectionState("offline");
+            });
+            return;
+        }
         if (document.documentElement.getAttribute("data-dg-data-state") !== "cached") {
             setConnectionState("live");
             document.documentElement.setAttribute("data-dg-mode", "read-write");
