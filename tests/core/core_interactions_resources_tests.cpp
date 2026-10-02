@@ -214,3 +214,36 @@ TEST(CoreInteractionsResourcesTests, OfflineReadFallbackIsExactAndGetOnly) {
     EXPECT_NE(script.find("kind: 'session'"), std::string_view::npos);
     EXPECT_NE(script.find("if (!representation) throw error"), std::string_view::npos);
 }
+
+TEST(CoreInteractionsResourcesTests, OfflineRuntimeOwnsIndependentLifecycleState) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("const offlineState = {"), std::string_view::npos);
+    EXPECT_NE(script.find("connection: 'live'"), std::string_view::npos);
+    EXPECT_NE(script.find("data: 'live'"), std::string_view::npos);
+    EXPECT_NE(script.find("capability: 'read-write'"), std::string_view::npos);
+    EXPECT_NE(script.find("data-dg-connection-state"), std::string_view::npos);
+    EXPECT_NE(script.find("data-dg-data-state"), std::string_view::npos);
+    EXPECT_NE(script.find("data-dg-mode"), std::string_view::npos);
+    EXPECT_NE(script.find("dg:offline-state"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineLifecycleSeparatesConnectivityFromData) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("window.addEventListener('offline'"), std::string_view::npos);
+    EXPECT_NE(script.find("window.addEventListener('online'"), std::string_view::npos);
+    EXPECT_NE(script.find("connection: 'reconnecting'"), std::string_view::npos);
+    EXPECT_NE(script.find("markCachedRepresentation()"), std::string_view::npos);
+    EXPECT_NE(script.find("markNetworkRepresentation()"), std::string_view::npos);
+    EXPECT_NE(script.find("offlineState.data === 'cached'"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, ReadOnlyCapabilityBlocksMutations) {
+    const auto script = drogular::interactions_resources::script();
+
+    const auto readOnly = script.find("offlineState.capability === 'read-only'");
+    ASSERT_NE(readOnly, std::string_view::npos);
+    EXPECT_NE(script.find("form.method.toUpperCase() !== 'GET'", readOnly), std::string_view::npos);
+    EXPECT_NE(script.find("event.stopImmediatePropagation()", readOnly), std::string_view::npos);
+}

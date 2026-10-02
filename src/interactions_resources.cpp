@@ -10,6 +10,41 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         globalThis.__drogularOfflineReadModelsEnabled === true;
     const stateClasses = ['dg-loading', 'dg-ready', 'dg-empty', 'dg-error'];
 
+    const offlineState = {
+        connection: 'live',
+        data: 'live',
+        capability: 'read-write',
+    };
+
+    const publishOfflineState = () => {
+        if (!offlineReadModelsEnabled) return;
+        const root = document.documentElement;
+        root.setAttribute('data-dg-connection-state', offlineState.connection);
+        root.setAttribute('data-dg-data-state', offlineState.data);
+        root.setAttribute('data-dg-mode', offlineState.capability);
+    };
+
+    const updateOfflineState = (next) => {
+        if (!offlineReadModelsEnabled) return;
+        Object.assign(offlineState, next);
+        publishOfflineState();
+        document.dispatchEvent(new CustomEvent('dg:offline-state', {
+            detail: { ...offlineState },
+        }));
+    };
+
+    const markNetworkRepresentation = () => updateOfflineState({
+        connection: 'live',
+        data: 'live',
+        capability: 'read-write',
+    });
+
+    const markCachedRepresentation = () => updateOfflineState({
+        connection: 'offline',
+        data: 'cached',
+        capability: 'read-only',
+    });
+
     const representationKey = (identity) => {
         const dimensions = Object.entries(identity.context?.dimensions || {})
             .sort(([left], [right]) => left.localeCompare(right));
@@ -522,15 +557,17 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            if (offlineReadEnabled(element) &&
-                result.network === true &&
-                response.ok
-            ) {
-                await representationStore.put({
-                    identity: result.identity,
-                    html,
-                    contentType: response.headers.get('Content-Type') || 'text/html',
-                });
+            if (offlineReadEnabled(element) && response.ok) {
+                if (result.network === true) {
+                    await representationStore.put({
+                        identity: result.identity,
+                        html,
+                        contentType: response.headers.get('Content-Type') || 'text/html',
+                    });
+                    markNetworkRepresentation();
+                } else if (result.network === false) {
+                    markCachedRepresentation();
+                }
             }
 
             if (state.paused) return;
@@ -650,9 +687,38 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         element.addEventListener('dg:resume', () => resume(element));
     };
 
+    window.addEventListener('offline', () => {
+        updateOfflineState({
+            connection: 'offline',
+            capability: 'read-only',
+        });
+    });
+
+    window.addEventListener('online', () => {
+        if (!offlineReadModelsEnabled) return;
+        updateOfflineState({
+            connection: 'reconnecting',
+            capability: offlineState.data === 'cached' ? 'read-only' : offlineState.capability,
+        });
+        if (offlineState.data === 'cached') {
+            document.querySelectorAll('[dg-get][dg-offline-read]').forEach((element) => {
+                refresh(element);
+            });
+        }
+    });
+
     document.addEventListener('submit', (event) => {
         const form = event.target;
         if (!(form instanceof HTMLFormElement)) return;
+
+        if (offlineReadModelsEnabled &&
+            offlineState.capability === 'read-only' &&
+            form.method.toUpperCase() !== 'GET'
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+        }
 
         const currentUrl =
             `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -661,6 +727,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         });
     }, true);
 
+    publishOfflineState();
     document.querySelectorAll('[dg-get], [dg-post]').forEach(install);
     document.querySelectorAll('[dg-resume]').forEach((control) => {
         control.addEventListener('click', () => {
