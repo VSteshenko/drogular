@@ -8,6 +8,116 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     const requestStates = new WeakMap();
     const stateClasses = ['dg-loading', 'dg-ready', 'dg-empty', 'dg-error'];
 
+    // Offline representation storage is deliberately separate from the
+    // interaction pipeline for now. Stage 2 establishes the browser-side
+    // storage contract; a later stage will route dg-offline-read requests
+    // through it.
+    const representationKey = (identity) => {
+        const dimensions = Object.entries(identity.context?.dimensions || {})
+            .sort(([left], [right]) => left.localeCompare(right));
+        return JSON.stringify([
+            identity.kind,
+            identity.requestKey,
+            identity.context?.locale || '',
+            dimensions,
+            identity.scope?.kind,
+            identity.scope?.key || '',
+        ]);
+    };
+
+    const sameRepresentationScope = (left, right) =>
+        left?.kind === right?.kind && left?.key === right?.key;
+
+    const createIndexedDbRepresentationStore = ({
+        databaseName = 'drogular-offline-representations',
+        storeName = 'representations',
+    } = {}) => {
+        let databasePromise = null;
+
+        const database = () => {
+            if (databasePromise) return databasePromise;
+            databasePromise = new Promise((resolve, reject) => {
+                const request = window.indexedDB.open(databaseName, 1);
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        db.createObjectStore(storeName, { keyPath: 'key' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+            return databasePromise;
+        };
+
+        const transaction = async (mode, operation) => {
+            const db = await database();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, mode);
+                const store = tx.objectStore(storeName);
+                let result;
+                try {
+                    result = operation(store);
+                } catch (error) {
+                    reject(error);
+                    return;
+                }
+                tx.oncomplete = () => resolve(result);
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error);
+            });
+        };
+
+        const get = async (identity) => {
+            const key = representationKey(identity);
+            const db = await database();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readonly');
+                const request = tx.objectStore(storeName).get(key);
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => reject(request.error);
+            });
+        };
+
+        const put = async (representation) => {
+            const record = {
+                ...representation,
+                key: representationKey(representation.identity),
+                storedAt: representation.storedAt || Date.now(),
+            };
+            await transaction('readwrite', (store) => store.put(record));
+            return record;
+        };
+
+        const removeScope = async (scope) => {
+            const db = await database();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                const request = store.openCursor();
+                request.onsuccess = () => {
+                    const cursor = request.result;
+                    if (!cursor) return;
+                    if (sameRepresentationScope(cursor.value.identity?.scope, scope)) {
+                        cursor.delete();
+                    }
+                    cursor.continue();
+                };
+                request.onerror = () => reject(request.error);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error);
+            });
+        };
+
+        const clear = async () =>
+            transaction('readwrite', (store) => store.clear());
+
+        return Object.freeze({ get, put, removeScope, clear });
+    };
+
+    const representationStore = createIndexedDbRepresentationStore();
+
     const createRequestState = () => ({
         running: false,
         pending: false,

@@ -178,3 +178,27 @@ TEST(CoreInteractionsResourcesTests, SupportsSuccessNavigation) {
         std::string_view::npos
     );
 }
+
+TEST(CoreInteractionsResourcesTests, EmbedsOfflineRepresentationStoreContract) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("const representationKey = (identity)"), std::string_view::npos);
+    EXPECT_NE(script.find("identity.context?.locale"), std::string_view::npos);
+    EXPECT_NE(script.find("identity.context?.dimensions"), std::string_view::npos);
+    EXPECT_NE(script.find("identity.scope?.kind"), std::string_view::npos);
+    EXPECT_NE(script.find("identity.scope?.key"), std::string_view::npos);
+    EXPECT_NE(script.find("createIndexedDbRepresentationStore"), std::string_view::npos);
+    EXPECT_NE(script.find("window.indexedDB.open"), std::string_view::npos);
+    EXPECT_NE(script.find("Object.freeze({ get, put, removeScope, clear })"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineStoreIsNotYetInInteractionPipeline) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(
+        script.find("const representationStore = createIndexedDbRepresentationStore()"),
+        std::string_view::npos
+    );
+    EXPECT_EQ(script.find("representationStore.get("), std::string_view::npos);
+    EXPECT_EQ(script.find("representationStore.put("), std::string_view::npos);
+}
