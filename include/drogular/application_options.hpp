@@ -2,6 +2,7 @@
 
 #include <drogular/static_file_mapping.hpp>
 #include <drogular/static_file_cache_profile.hpp>
+#include <drogular/offline.hpp>
 
 #include <string>
 #include <vector>
@@ -208,6 +209,20 @@ public:
     }
 
     /**
+     * Enables the Offline Read Models interaction capability.
+     *
+     * Stage 1 only records framework configuration. Browser storage and
+     * interaction-pipeline integration are provided by later stages.
+     */
+    void setOfflineReadModelsEnabled(bool enabled) {
+        offlineReadModelsEnabled_ = enabled;
+    }
+
+    bool offlineReadModelsEnabled() const {
+        return offlineReadModelsEnabled_;
+    }
+
+    /**
      * Sets the service worker file served from /service-worker.js.
      *
      * Service workers must usually be served from the application
@@ -236,6 +251,7 @@ private:
     bool staticFileEtagEnabled_ = true;
     bool staticFileLastModifiedEnabled_ = true;
     std::optional<std::filesystem::path> serviceWorkerPath_;
+    bool offlineReadModelsEnabled_ = false;
 };
 
 } // namespace drogular

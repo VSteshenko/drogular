@@ -204,6 +204,11 @@ App& App::interactions() {
     return *this;
 }
 
+App& App::offlineReadModels() {
+    options_.setOfflineReadModelsEnabled(true);
+    return interactions();
+}
+
 App& App::ui() {
     if (uiEnabled_) {
         return *this;
