@@ -6,12 +6,10 @@ namespace {
 
 constexpr std::string_view Script = R"DROGULAR_JS((() => {
     const requestStates = new WeakMap();
+    const offlineReadModelsEnabled =
+        globalThis.__drogularOfflineReadModelsEnabled === true;
     const stateClasses = ['dg-loading', 'dg-ready', 'dg-empty', 'dg-error'];
 
-    // Offline representation storage is deliberately separate from the
-    // interaction pipeline for now. Stage 2 establishes the browser-side
-    // storage contract; a later stage will route dg-offline-read requests
-    // through it.
     const representationKey = (identity) => {
         const dimensions = Object.entries(identity.context?.dimensions || {})
             .sort(([left], [right]) => left.localeCompare(right));
@@ -117,6 +115,79 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     };
 
     const representationStore = createIndexedDbRepresentationStore();
+
+    const offlineReadEnabled = (element) =>
+        offlineReadModelsEnabled &&
+        element.hasAttribute('dg-get') &&
+        element.hasAttribute('dg-offline-read');
+
+    const normalizedRequestKey = (url) => {
+        const normalized = new URL(url.toString());
+        const entries = Array.from(normalized.searchParams.entries())
+            .sort(([leftName, leftValue], [rightName, rightValue]) => {
+                const nameOrder = leftName.localeCompare(rightName);
+                return nameOrder || leftValue.localeCompare(rightValue);
+            });
+        normalized.search = '';
+        for (const [name, value] of entries) {
+            normalized.searchParams.append(name, value);
+        }
+        return `${normalized.pathname}${normalized.search}`;
+    };
+
+    const sessionScopeKey = () => {
+        const storageKey = 'drogular.offline.scope';
+        let key = window.sessionStorage.getItem(storageKey);
+        if (!key) {
+            key = window.crypto.randomUUID();
+            window.sessionStorage.setItem(storageKey, key);
+        }
+        return key;
+    };
+
+    const representationIdentity = (url) => ({
+        kind: 'fragment',
+        requestKey: normalizedRequestKey(url),
+        context: {
+            locale: document.documentElement.lang || '',
+            dimensions: {},
+        },
+        scope: {
+            kind: 'session',
+            key: sessionScopeKey(),
+        },
+    });
+
+    const cachedResponse = (representation) => new Response(
+        representation.html,
+        {
+            status: 200,
+            headers: {
+                'Content-Type': representation.contentType || 'text/html',
+                'X-Drogular-Offline-Representation': 'cached',
+            },
+        }
+    );
+
+    const interactionResponse = async (element, url, options) => {
+        if (!offlineReadEnabled(element)) {
+            return fetch(url, options);
+        }
+
+        const identity = representationIdentity(url);
+        try {
+            const response = await fetch(url, options);
+            return { response, identity, network: true };
+        } catch (error) {
+            const representation = await representationStore.get(identity);
+            if (!representation) throw error;
+            return {
+                response: cachedResponse(representation),
+                identity,
+                network: false,
+            };
+        }
+    };
 
     const createRequestState = () => ({
         running: false,
@@ -432,10 +503,12 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         state.running = true;
         setState(element, 'loading');
         try {
-            const response = await fetch(
+            const result = await interactionResponse(
+                element,
                 url,
                 requestOptions(element, submitter)
             );
+            const response = result.response || result;
 
             if (response.redirected) {
                 window.location.assign(response.url);
@@ -447,6 +520,17 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
             if (!response.ok && !postInteraction) {
                 throw new Error(`HTTP ${response.status}`);
+            }
+
+            if (offlineReadEnabled(element) &&
+                result.network === true &&
+                response.ok
+            ) {
+                await representationStore.put({
+                    identity: result.identity,
+                    html,
+                    contentType: response.headers.get('Content-Type') || 'text/html',
+                });
             }
 
             if (state.paused) return;

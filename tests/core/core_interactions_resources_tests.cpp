@@ -192,13 +192,25 @@ TEST(CoreInteractionsResourcesTests, EmbedsOfflineRepresentationStoreContract) {
     EXPECT_NE(script.find("Object.freeze({ get, put, removeScope, clear })"), std::string_view::npos);
 }
 
-TEST(CoreInteractionsResourcesTests, OfflineStoreIsNotYetInInteractionPipeline) {
+TEST(CoreInteractionsResourcesTests, OfflineStoreIsIntegratedIntoGetPipeline) {
     const auto script = drogular::interactions_resources::script();
 
-    EXPECT_NE(
-        script.find("const representationStore = createIndexedDbRepresentationStore()"),
-        std::string_view::npos
-    );
-    EXPECT_EQ(script.find("representationStore.get("), std::string_view::npos);
-    EXPECT_EQ(script.find("representationStore.put("), std::string_view::npos);
+    EXPECT_NE(script.find("__drogularOfflineReadModelsEnabled"), std::string_view::npos);
+    EXPECT_NE(script.find("element.hasAttribute('dg-offline-read')"), std::string_view::npos);
+    EXPECT_NE(script.find("const normalizedRequestKey = (url)"), std::string_view::npos);
+    EXPECT_NE(script.find("document.documentElement.lang"), std::string_view::npos);
+    EXPECT_NE(script.find("window.sessionStorage"), std::string_view::npos);
+    EXPECT_NE(script.find("representationStore.get(identity)"), std::string_view::npos);
+    EXPECT_NE(script.find("representationStore.put({"), std::string_view::npos);
+    EXPECT_NE(script.find("X-Drogular-Offline-Representation"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineReadFallbackIsExactAndGetOnly) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("element.hasAttribute('dg-get')"), std::string_view::npos);
+    EXPECT_NE(script.find("requestKey: normalizedRequestKey(url)"), std::string_view::npos);
+    EXPECT_NE(script.find("kind: 'fragment'"), std::string_view::npos);
+    EXPECT_NE(script.find("kind: 'session'"), std::string_view::npos);
+    EXPECT_NE(script.find("if (!representation) throw error"), std::string_view::npos);
 }

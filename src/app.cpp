@@ -183,7 +183,7 @@ App& App::interactions() {
 
     drogon::app().registerHandler(
         std::string(interactions_resources::ScriptPath),
-        [](
+        [this](
             const drogon::HttpRequestPtr&,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
@@ -192,7 +192,11 @@ App& App::interactions() {
                 "Content-Type",
                 "text/javascript; charset=utf-8"
             );
+            const auto offlineEnabled =
+                options_.offlineReadModelsEnabled() ? "true" : "false";
             response->setBody(
+                "globalThis.__drogularOfflineReadModelsEnabled = " +
+                std::string(offlineEnabled) + ";\n" +
                 std::string(interactions_resources::script())
             );
             callback(response);
