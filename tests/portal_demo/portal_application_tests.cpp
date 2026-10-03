@@ -2897,6 +2897,7 @@ TEST(PortalApplicationTests, DepartmentsBrowserUsesGetInteractionContract) {
             {"data-departments-browser", ""},
             {"dg-get", "/fragments/departments"},
             {"dg-offline-read", ""},
+            {"dg-offline-runtime", "framework"},
             {"dg-offline-read-empty-label", "All departments"},
             {"dg-target", "[data-departments-results]"},
             {"dg-trigger", "input delay:300ms, change"},
