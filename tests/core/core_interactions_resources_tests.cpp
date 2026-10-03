@@ -209,8 +209,9 @@ TEST(CoreInteractionsResourcesTests, OfflineReadFallbackIsExactAndGetOnly) {
     const auto script = drogular::interactions_resources::script();
 
     EXPECT_NE(script.find("element.hasAttribute('dg-get')"), std::string_view::npos);
-    EXPECT_NE(script.find("requestKey: normalizedRequestKey(url)"), std::string_view::npos);
-    EXPECT_NE(script.find("kind: 'fragment'"), std::string_view::npos);
+    EXPECT_NE(script.find("kind = 'fragment'"), std::string_view::npos);
+    EXPECT_NE(script.find("requestKey: kind === 'shell'"), std::string_view::npos);
+    EXPECT_NE(script.find(": normalizedRequestKey(url)"), std::string_view::npos);
     EXPECT_NE(script.find("kind: 'session'"), std::string_view::npos);
     EXPECT_NE(script.find("if (!representation) throw error"), std::string_view::npos);
 }
@@ -246,4 +247,37 @@ TEST(CoreInteractionsResourcesTests, ReadOnlyCapabilityBlocksMutations) {
     ASSERT_NE(readOnly, std::string_view::npos);
     EXPECT_NE(script.find("form.method.toUpperCase() !== 'GET'", readOnly), std::string_view::npos);
     EXPECT_NE(script.find("event.stopImmediatePropagation()", readOnly), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineRepresentationContextIncludesServerRenderedDimensions) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("const representationContext = (locale"), std::string_view::npos);
+    EXPECT_NE(script.find("data-dg-context-"), std::string_view::npos);
+    EXPECT_NE(script.find("document.documentElement.lang"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineShellUsesSameRepresentationStore) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("[dg-offline-shell]"), std::string_view::npos);
+    EXPECT_NE(script.find("'shell'"), std::string_view::npos);
+    EXPECT_NE(script.find("html: shell.outerHTML"), std::string_view::npos);
+    EXPECT_NE(script.find("void storeCurrentShell()"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineLocaleRestoreIsCacheOnly) {
+    const auto script = drogular::interactions_resources::script();
+
+    const auto restore = script.find("const restoreOfflineLocale = async (locale)");
+    ASSERT_NE(restore, std::string_view::npos);
+
+    const auto install = script.find("    const install = (element)", restore);
+    ASSERT_NE(install, std::string_view::npos);
+
+    const auto body = script.substr(restore, install - restore);
+    EXPECT_NE(body.find("representationStore.get(identity)"), std::string_view::npos);
+    EXPECT_NE(body.find("restoreOfflineReadElement"), std::string_view::npos);
+    EXPECT_EQ(body.find("fetch("), std::string_view::npos);
+    EXPECT_NE(script.find("form.hasAttribute('dg-offline-locale')"), std::string_view::npos);
 }

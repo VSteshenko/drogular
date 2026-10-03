@@ -180,18 +180,46 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         return key;
     };
 
-    const representationIdentity = (url) => ({
-        kind: 'fragment',
-        requestKey: normalizedRequestKey(url),
-        context: {
-            locale: document.documentElement.lang || '',
-            dimensions: {},
-        },
+    const representationContext = (locale = document.documentElement.lang || '') => {
+        const dimensions = {};
+        for (const attribute of document.documentElement.attributes) {
+            if (!attribute.name.startsWith('data-dg-context-')) continue;
+            dimensions[attribute.name.slice('data-dg-context-'.length)] = attribute.value;
+        }
+        return { locale, dimensions };
+    };
+
+    const representationIdentity = (
+        url,
+        kind = 'fragment',
+        context = representationContext()
+    ) => ({
+        kind,
+        requestKey: kind === 'shell'
+            ? new URL(url.toString()).pathname
+            : normalizedRequestKey(url),
+        context,
         scope: {
             kind: 'session',
             key: sessionScopeKey(),
         },
     });
+
+    const shellElement = () => document.querySelector('[dg-offline-shell]');
+
+    const storeCurrentShell = async () => {
+        if (!offlineReadModelsEnabled) return;
+        const shell = shellElement();
+        if (!shell) return;
+        await representationStore.put({
+            identity: representationIdentity(
+                new URL(window.location.href),
+                'shell'
+            ),
+            html: shell.outerHTML,
+            contentType: 'text/html',
+        });
+    };
 
     const cachedResponse = (representation) => new Response(
         representation.html,
@@ -632,6 +660,56 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         }
     };
 
+    const restoreOfflineReadElement = async (element) => {
+        if (!offlineReadEnabled(element)) return false;
+        const url = requestUrl(element);
+        const target = targetFor(element);
+        if (!url || !target) return false;
+
+        const representation = await representationStore.get(
+            representationIdentity(url)
+        );
+        if (!representation) {
+            setState(element, 'error');
+            return false;
+        }
+
+        const openState = preservedOpenState(target);
+        target.innerHTML = representation.html;
+        target.querySelectorAll('[dg-get], [dg-post]').forEach(install);
+        restoreOpenState(target, openState);
+        setState(element, responseState(representation.html));
+        return true;
+    };
+
+    const restoreOfflineLocale = async (locale) => {
+        const current = shellElement();
+        if (!current || !locale) return false;
+
+        const identity = representationIdentity(
+            new URL(window.location.href),
+            'shell',
+            representationContext(locale)
+        );
+        const representation = await representationStore.get(identity);
+        if (!representation) return false;
+
+        current.outerHTML = representation.html;
+        document.documentElement.lang = locale;
+
+        const restored = shellElement();
+        if (!restored) return false;
+        restored.querySelectorAll('[dg-get], [dg-post]').forEach(install);
+        for (const element of restored.querySelectorAll('[dg-get][dg-offline-read]')) {
+            await restoreOfflineReadElement(element);
+        }
+        markCachedRepresentation();
+        document.dispatchEvent(new CustomEvent('dg:offline-context-restored', {
+            detail: { locale },
+        }));
+        return true;
+    };
+
     const install = (element) => {
         if (element.hasAttribute('data-dg-installed')) return;
         element.setAttribute('data-dg-installed', 'true');
@@ -713,6 +791,16 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
         if (offlineReadModelsEnabled &&
             offlineState.capability === 'read-only' &&
+            form.hasAttribute('dg-offline-locale')
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            void restoreOfflineLocale(form.getAttribute('dg-offline-locale'));
+            return;
+        }
+
+        if (offlineReadModelsEnabled &&
+            offlineState.capability === 'read-only' &&
             form.method.toUpperCase() !== 'GET'
         ) {
             event.preventDefault();
@@ -728,6 +816,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     }, true);
 
     publishOfflineState();
+    void storeCurrentShell();
     document.querySelectorAll('[dg-get], [dg-post]').forEach(install);
     document.querySelectorAll('[dg-resume]').forEach((control) => {
         control.addEventListener('click', () => {
