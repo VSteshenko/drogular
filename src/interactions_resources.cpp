@@ -6,6 +6,7 @@ namespace {
 
 constexpr std::string_view Script = R"DROGULAR_JS((() => {
     const requestStates = new WeakMap();
+    const currentOfflineReadRequests = new WeakMap();
     const offlineReadModelsEnabled =
         globalThis.__drogularOfflineReadModelsEnabled === true;
     const stateClasses = ['dg-loading', 'dg-ready', 'dg-empty', 'dg-error'];
@@ -15,6 +16,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         data: 'live',
         capability: 'read-write',
     };
+    let pendingOfflineContextReconciliation = null;
 
     const publishOfflineState = () => {
         if (!offlineReadModelsEnabled) return;
@@ -575,6 +577,9 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         const url = requestUrl(element, submitter);
         const target = targetFor(element);
         if (!url) return;
+        if (frameworkOfflineReadEnabled(element)) {
+            currentOfflineReadRequests.set(element, new URL(url.toString()));
+        }
 
         state.running = true;
         setState(element, 'loading');
@@ -684,17 +689,18 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             html: target.innerHTML,
             contentType: 'text/html',
         });
+        currentOfflineReadRequests.set(element, new URL(url.toString()));
         return true;
     };
 
-    const restoreOfflineReadElement = async (element) => {
+    const restoreOfflineReadElement = async (element, identity = null) => {
         if (!frameworkOfflineReadEnabled(element)) return false;
         const url = requestUrl(element);
         const target = targetFor(element);
         if (!url || !target) return false;
 
         const representation = await representationStore.get(
-            representationIdentity(url)
+            identity || representationIdentity(url)
         );
         if (!representation) {
             setState(element, 'error');
@@ -713,6 +719,16 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         const current = shellElement();
         if (!current || !locale) return false;
 
+        const readers = Array.from(current.querySelectorAll(
+            '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+        )).map((element) => ({
+            source: element.getAttribute('dg-get'),
+            request: currentOfflineReadRequests.get(element) || requestUrl(element),
+            fields: element instanceof HTMLFormElement
+                ? Array.from(new FormData(element).entries())
+                : [],
+        }));
+
         const identity = representationIdentity(
             new URL(window.location.href),
             'shell',
@@ -727,13 +743,71 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         const restored = shellElement();
         if (!restored) return false;
         restored.querySelectorAll('[dg-get], [dg-post]').forEach(install);
-        for (const element of restored.querySelectorAll('[dg-get][dg-offline-read]')) {
-            await restoreOfflineReadElement(element);
+
+        const restoredReaders = Array.from(restored.querySelectorAll(
+            '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+        ));
+        for (const snapshot of readers) {
+            const element = restoredReaders.find(
+                (candidate) => candidate.getAttribute('dg-get') === snapshot.source
+            );
+            if (!element) continue;
+
+            if (element instanceof HTMLFormElement) {
+                for (const [name, value] of snapshot.fields) {
+                    const controls = Array.from(element.elements).filter(
+                        (control) => control.name === name
+                    );
+                    for (const control of controls) {
+                        if (control.type === 'checkbox' || control.type === 'radio') {
+                            control.checked = control.value === value;
+                        } else {
+                            control.value = value;
+                        }
+                    }
+                }
+            }
+
+            if (!snapshot.request) continue;
+            const request = new URL(snapshot.request.toString());
+            currentOfflineReadRequests.set(element, request);
+            await restoreOfflineReadElement(
+                element,
+                representationIdentity(request, 'fragment', representationContext(locale))
+            );
         }
+
         markCachedRepresentation();
         document.dispatchEvent(new CustomEvent('dg:offline-context-restored', {
             detail: { locale },
         }));
+        return true;
+    };
+
+    const reconcileOfflineContext = async () => {
+        const pending = pendingOfflineContextReconciliation;
+        if (!pending) return false;
+
+        try {
+            await window.fetch(pending.action, {
+                method: pending.method,
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body: new URLSearchParams(pending.body),
+                redirect: 'manual',
+            });
+        } catch (_) {
+            updateOfflineState({
+                connection: 'offline',
+                capability: 'read-only',
+            });
+            return false;
+        }
+
+        pendingOfflineContextReconciliation = null;
+        window.location.assign(pending.redirect);
         return true;
     };
 
@@ -805,6 +879,10 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             connection: 'reconnecting',
             capability: offlineState.data === 'cached' ? 'read-only' : offlineState.capability,
         });
+        if (pendingOfflineContextReconciliation) {
+            void reconcileOfflineContext();
+            return;
+        }
         if (offlineState.data === 'cached') {
             document.querySelectorAll(
                 '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
@@ -818,12 +896,24 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         const form = event.target;
         if (!(form instanceof HTMLFormElement)) return;
 
+        const currentUrl =
+            `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        form.querySelectorAll('[dg-current-url]').forEach((control) => {
+            control.value = currentUrl;
+        });
+
         if (offlineReadModelsEnabled &&
             offlineState.capability === 'read-only' &&
             form.hasAttribute('dg-offline-locale')
         ) {
             event.preventDefault();
             event.stopImmediatePropagation();
+            pendingOfflineContextReconciliation = {
+                action: form.action,
+                method: form.method.toUpperCase() || 'POST',
+                body: Array.from(new FormData(form).entries()),
+                redirect: currentUrl,
+            };
             void restoreOfflineLocale(form.getAttribute('dg-offline-locale'));
             return;
         }
@@ -836,12 +926,6 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             event.stopImmediatePropagation();
             return;
         }
-
-        const currentUrl =
-            `${window.location.pathname}${window.location.search}${window.location.hash}`;
-        form.querySelectorAll('[dg-current-url]').forEach((control) => {
-            control.value = currentUrl;
-        });
     }, true);
 
     publishOfflineState();

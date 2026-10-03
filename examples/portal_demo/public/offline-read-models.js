@@ -2,79 +2,10 @@
     // Portal Demo experiment: exact-request Offline Read Models.
     // This intentionally lives outside Drogular Interactions until the
     // behavior has been validated by more than one Portal feature.
-    const DB_NAME = "drogular-portal-offline-read-models";
-    const DB_VERSION = 1;
-    const STORE_NAME = "representations";
-    const nativeFetch = window.fetch.bind(window);
-
-    const openDatabase = () => new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = () => {
-            const database = request.result;
-            if (!database.objectStoreNames.contains(STORE_NAME)) {
-                database.createObjectStore(STORE_NAME, { keyPath: "key" });
-            }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-
-    const withStore = async (mode, operation) => {
-        const database = await openDatabase();
-        return new Promise((resolve, reject) => {
-            const transaction = database.transaction(STORE_NAME, mode);
-            const store = transaction.objectStore(STORE_NAME);
-            const request = operation(store);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-            transaction.oncomplete = () => database.close();
-            transaction.onabort = () => database.close();
-        });
-    };
-
-    const scope = () => {
-        let value = sessionStorage.getItem("dg.portal.offlineScope");
-        if (!value) {
-            value = crypto.randomUUID();
-            sessionStorage.setItem("dg.portal.offlineScope", value);
-        }
-        return value;
-    };
-
     const locale = () => document.documentElement.lang || "en";
-
-    const normalizedKeyForLocale = (url, representationLocale) => {
-        const normalized = new URL(url, window.location.origin);
-        normalized.hash = "";
-        normalized.searchParams.sort();
-        return `${scope()}|${representationLocale}|GET|${normalized.pathname}${normalized.search}`;
-    };
-
-    const shellKey = (representationLocale, path = window.location.pathname) =>
-        `${scope()}|${representationLocale}|SHELL|${new URL(path, window.location.origin).pathname}`;
 
     const message = (name, fallback) =>
         document.querySelector("[data-dg-offline-read-i18n]")?.getAttribute(`data-${name}`) || fallback;
-
-    const readRepresentationForLocale = (url, representationLocale) =>
-        withStore("readonly", (store) => store.get(normalizedKeyForLocale(url, representationLocale)));
-
-    const storeCurrentShell = async () => {
-        const shell = document.querySelector("[data-dg-offline-shell]");
-        if (!shell) return;
-        const representationLocale = locale();
-        await withStore("readwrite", (store) => store.put({
-            key: shellKey(representationLocale),
-            kind: "shell",
-            locale: representationLocale,
-            path: window.location.pathname,
-            storedAt: new Date().toISOString(),
-            html: shell.outerHTML,
-        }));
-    };
-
-    const readShell = (representationLocale) =>
-        withStore("readonly", (store) => store.get(shellKey(representationLocale)));
 
     // Temporary Portal migration bridge: framework-owned readers keep their UX
     // here while request/cache lifecycle ownership stays in Drogular Interactions.
@@ -263,11 +194,22 @@
     };
 
     const clearRepresentations = async () => {
-        try {
-            await withStore("readwrite", (store) => store.clear());
-        } finally {
-            sessionStorage.removeItem("dg.portal.offlineScope");
-        }
+        const request = indexedDB.open("drogular-offline-representations", 1);
+        await new Promise((resolve, reject) => {
+            request.onsuccess = () => {
+                const database = request.result;
+                const transaction = database.transaction("representations", "readwrite");
+                transaction.objectStore("representations").clear();
+                transaction.oncomplete = () => {
+                    database.close();
+                    resolve();
+                };
+                transaction.onerror = () => reject(transaction.error);
+                transaction.onabort = () => reject(transaction.error);
+            };
+            request.onerror = () => reject(request.error);
+        });
+        sessionStorage.removeItem("drogular.offline.scope");
     };
 
     const statusFor = (element) => {
@@ -325,122 +267,7 @@
         renderFrameworkOfflineState(event.detail || {}).catch(() => {});
     });
 
-    const formState = (element) => {
-        if (!(element instanceof HTMLFormElement)) return null;
-        const parameters = new URLSearchParams(new FormData(element));
-        return parameters;
-    };
-
-    const applyFormState = (element, parameters) => {
-        if (!(element instanceof HTMLFormElement) || !parameters) return;
-        element.querySelectorAll("input[name], select[name], textarea[name]").forEach((control) => {
-            if (control.type === "checkbox" || control.type === "radio") {
-                control.checked = parameters.getAll(control.name).includes(control.value);
-                return;
-            }
-            if (parameters.has(control.name)) control.value = parameters.get(control.name);
-        });
-    };
-
-    const requestUrlFor = (element) => {
-        const source = element?.getAttribute("dg-get");
-        if (!source) return null;
-        const url = new URL(source, window.location.origin);
-        url.search = window.location.search;
-        return url.toString();
-    };
-
-    let offlineSelectedLocale = null;
-
-    const restoreOfflineLocale = async (targetLocale) => {
-        const currentReader = document.querySelector("[dg-get][dg-offline-read]");
-        const state = formState(currentReader);
-        const shellRecord = await readShell(targetLocale);
-        if (!shellRecord) return false;
-
-        const template = document.createElement("template");
-        template.innerHTML = shellRecord.html.trim();
-        const replacement = template.content.firstElementChild;
-        const currentShell = document.querySelector("[data-dg-offline-shell]");
-        if (!replacement || !currentShell) return false;
-
-        currentShell.replaceWith(replacement);
-        document.documentElement.lang = targetLocale;
-        offlineSelectedLocale = targetLocale;
-
-        const reader = document.querySelector("[dg-get][dg-offline-read]");
-        applyFormState(reader, state);
-
-        if (reader) {
-            const url = requestUrlFor(reader);
-            const record = url ? await readRepresentationForLocale(url, targetLocale) : null;
-            const targetSelector = reader.getAttribute("dg-target");
-            const target = targetSelector ? reader.querySelector(targetSelector) : null;
-            if (record && target) {
-                target.innerHTML = record.html;
-                setCached(reader, record.storedAt);
-            } else {
-                document.documentElement.setAttribute("data-dg-data-state", "cached");
-                document.documentElement.setAttribute("data-dg-mode", "read-only");
-            }
-            renderHistory(reader).catch(() => {});
-        }
-        return true;
-    };
-
-    const setConnectionState = (state) =>
-        document.documentElement.setAttribute("data-dg-connection-state", state);
-
-    window.addEventListener("offline", () => {
-        setConnectionState("offline");
-        document.documentElement.setAttribute("data-dg-mode", "read-only");
-    });
-
-    const reconcileOfflineLocale = async () => {
-        if (!offlineSelectedLocale) return false;
-
-        const redirect = `${window.location.pathname}${window.location.search}`;
-        const body = new URLSearchParams({
-            language: offlineSelectedLocale,
-            redirect,
-        });
-
-        try {
-            await nativeFetch("/language", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-                },
-                body,
-                redirect: "manual",
-            });
-        } catch (_) {
-            setConnectionState("offline");
-            return false;
-        }
-
-        // The server has accepted the user's last offline locale choice. A normal
-        // navigation now lets the server render the authoritative representation.
-        window.location.assign(redirect);
-        return true;
-    };
-
-    window.addEventListener("online", () => {
-        setConnectionState("reconnecting");
-        if (offlineSelectedLocale) {
-            reconcileOfflineLocale().catch(() => {
-                setConnectionState("offline");
-            });
-            return;
-        }
-        // Framework-owned readers reconcile their own connection/data state.
-        // The legacy bridge only keeps locale reconciliation here.
-    });
-
     document.addEventListener("DOMContentLoaded", () => {
-        setConnectionState("live");
-        storeCurrentShell().catch(() => {});
         document.querySelectorAll("[dg-get][dg-offline-read]").forEach((element) => {
             renderHistory(element).catch(() => {});
         });
@@ -455,20 +282,9 @@
             return;
         }
 
-        if (form.hasAttribute("data-dg-offline-language") &&
-            document.documentElement.getAttribute("data-dg-connection-state") === "offline"
-        ) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            const targetLocale = new FormData(form).get("language");
-            if (typeof targetLocale === "string" && targetLocale) {
-                restoreOfflineLocale(targetLocale).catch(() => {});
-            }
-            return;
-        }
-
         if (document.documentElement.getAttribute("data-dg-mode") === "read-only" &&
-            form.method.toUpperCase() !== "GET"
+            form.method.toUpperCase() !== "GET" &&
+            !form.hasAttribute("dg-offline-locale")
         ) {
             event.preventDefault();
             event.stopImmediatePropagation();

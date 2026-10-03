@@ -282,14 +282,26 @@ TEST(CoreInteractionsResourcesTests, OfflineLocaleRestoreIsCacheOnly) {
     const auto restore = script.find("const restoreOfflineLocale = async (locale)");
     ASSERT_NE(restore, std::string_view::npos);
 
-    const auto install = script.find("    const install = (element)", restore);
-    ASSERT_NE(install, std::string_view::npos);
+    const auto reconcile = script.find("const reconcileOfflineContext = async ()", restore);
+    ASSERT_NE(reconcile, std::string_view::npos);
 
-    const auto body = script.substr(restore, install - restore);
+    const auto body = script.substr(restore, reconcile - restore);
     EXPECT_NE(body.find("representationStore.get(identity)"), std::string_view::npos);
     EXPECT_NE(body.find("restoreOfflineReadElement"), std::string_view::npos);
     EXPECT_EQ(body.find("fetch("), std::string_view::npos);
     EXPECT_NE(script.find("form.hasAttribute('dg-offline-locale')"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, OfflineLocaleChoiceReconcilesBeforeLiveRefresh) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("let pendingOfflineContextReconciliation = null"), std::string_view::npos);
+    EXPECT_NE(script.find("pendingOfflineContextReconciliation = {"), std::string_view::npos);
+    EXPECT_NE(script.find("body: Array.from(new FormData(form).entries())"), std::string_view::npos);
+    EXPECT_NE(script.find("const reconcileOfflineContext = async ()"), std::string_view::npos);
+    EXPECT_NE(script.find("await window.fetch(pending.action"), std::string_view::npos);
+    EXPECT_NE(script.find("window.location.assign(pending.redirect)"), std::string_view::npos);
+    EXPECT_NE(script.find("if (pendingOfflineContextReconciliation)"), std::string_view::npos);
 }
 
 TEST(CoreInteractionsResourcesTests, SeedsInitialServerRenderedOfflineRepresentation) {
