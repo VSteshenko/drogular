@@ -50,53 +50,11 @@
         return `${scope()}|${representationLocale}|GET|${normalized.pathname}${normalized.search}`;
     };
 
-    const normalizedKey = (url) => normalizedKeyForLocale(url, locale());
-
     const shellKey = (representationLocale, path = window.location.pathname) =>
         `${scope()}|${representationLocale}|SHELL|${new URL(path, window.location.origin).pathname}`;
 
     const message = (name, fallback) =>
         document.querySelector("[data-dg-offline-read-i18n]")?.getAttribute(`data-${name}`) || fallback;
-
-    const eligibleElement = (url) => {
-        const requestUrl = new URL(url, window.location.origin);
-        return Array.from(document.querySelectorAll("[dg-get][dg-offline-read]:not([dg-offline-runtime=\"framework\"])"))
-            .find((element) => {
-                const source = element.getAttribute("dg-get");
-                if (!source) return false;
-                return new URL(source, window.location.origin).pathname === requestUrl.pathname;
-            }) || null;
-    };
-
-    const isEligibleRequest = (input, init = {}) => {
-        const request = input instanceof Request ? input : null;
-        const method = (init.method || request?.method || "GET").toUpperCase();
-        if (method !== "GET") return false;
-
-        const headers = new Headers(init.headers || request?.headers || {});
-        if (headers.get("X-Drogular-Interaction") !== "true") return false;
-
-        const url = request?.url || input;
-        return eligibleElement(url) !== null;
-    };
-
-    const storeRepresentation = async (url, response) => {
-        const html = await response.clone().text();
-        const record = {
-            key: normalizedKey(url),
-            url: new URL(url, window.location.origin).toString(),
-            locale: locale(),
-            storedAt: new Date().toISOString(),
-            contentType: response.headers.get("Content-Type") || "text/html;charset=UTF-8",
-            html,
-        };
-        await withStore("readwrite", (store) => store.put(record));
-        const element = eligibleElement(url);
-        if (element) renderHistory(element).catch(() => {});
-    };
-
-    const readRepresentation = (url) =>
-        withStore("readonly", (store) => store.get(normalizedKey(url)));
 
     const readRepresentationForLocale = (url, representationLocale) =>
         withStore("readonly", (store) => store.get(normalizedKeyForLocale(url, representationLocale)));
@@ -118,9 +76,6 @@
     const readShell = (representationLocale) =>
         withStore("readonly", (store) => store.get(shellKey(representationLocale)));
 
-    const readRepresentations = () =>
-        withStore("readonly", (store) => store.getAll());
-
     // Temporary Portal migration bridge: framework-owned readers keep their UX
     // here while request/cache lifecycle ownership stays in Drogular Interactions.
     // This bridge is presentation-only and never intercepts framework requests.
@@ -137,9 +92,6 @@
         };
         request.onerror = () => reject(request.error);
     });
-
-    const isFrameworkReader = (element) =>
-        element.getAttribute("dg-offline-runtime") === "framework";
 
     const frameworkRecordsFor = async (element) => {
         const source = element.getAttribute("dg-get");
@@ -273,12 +225,8 @@
 
         const source = element.getAttribute("dg-get");
         const sourcePath = source ? new URL(source, window.location.origin).pathname : "";
-        const records = (isFrameworkReader(element)
-            ? await frameworkRecordsFor(element)
-            : (await readRepresentations())
-                .filter((record) => record.key.startsWith(`${scope()}|${locale()}|GET|`))
-                .filter((record) => record.locale === locale())
-                .filter((record) => new URL(record.url).pathname === sourcePath))
+        const records = (await frameworkRecordsFor(element))
+            .filter((record) => new URL(record.url).pathname === sourcePath)
             .sort((left, right) => right.storedAt.localeCompare(left.storedAt));
 
         const groups = new Map();
@@ -333,13 +281,6 @@
         status.hidden = true;
         element.prepend(status);
         return status;
-    };
-
-    const setLive = (element) => {
-        document.documentElement.setAttribute("data-dg-data-state", "live");
-        document.documentElement.setAttribute("data-dg-mode", "read-write");
-        element.querySelector("[data-dg-offline-read-status]")?.remove();
-        renderHistory(element).catch(() => {});
     };
 
     const setCached = (element, storedAt) => {
@@ -447,45 +388,6 @@
         return true;
     };
 
-    const cachedResponse = (record) => new Response(record.html, {
-        status: 200,
-        headers: {
-            "Content-Type": record.contentType,
-            "X-Drogular-Offline-Read-Model": "cached",
-        },
-    });
-
-    window.fetch = async (input, init = {}) => {
-        if (!isEligibleRequest(input, init)) {
-            return nativeFetch(input, init);
-        }
-
-        const url = input instanceof Request ? input.url : input;
-        const element = eligibleElement(url);
-
-        try {
-            const response = await nativeFetch(input, init);
-            if (response.ok && !response.redirected) {
-                storeRepresentation(url, response).catch(() => {});
-                setConnectionState("live");
-                if (element) setLive(element);
-            }
-            return response;
-        } catch (error) {
-            try {
-                const record = await readRepresentation(url);
-                if (record) {
-                    setConnectionState("offline");
-                    if (element) setCached(element, record.storedAt);
-                    return cachedResponse(record);
-                }
-            } catch (_) {
-                // Preserve the original network failure when storage is unavailable.
-            }
-            throw error;
-        }
-    };
-
     const setConnectionState = (state) =>
         document.documentElement.setAttribute("data-dg-connection-state", state);
 
@@ -532,14 +434,8 @@
             });
             return;
         }
-        if (document.documentElement.getAttribute("data-dg-data-state") !== "cached") {
-            setConnectionState("live");
-            document.documentElement.setAttribute("data-dg-mode", "read-write");
-            return;
-        }
-        document.querySelectorAll("[dg-get][dg-offline-read]:not([dg-offline-runtime=\"framework\"])").forEach((element) => {
-            if (element instanceof HTMLFormElement) element.requestSubmit();
-        });
+        // Framework-owned readers reconcile their own connection/data state.
+        // The legacy bridge only keeps locale reconciliation here.
     });
 
     document.addEventListener("DOMContentLoaded", () => {
