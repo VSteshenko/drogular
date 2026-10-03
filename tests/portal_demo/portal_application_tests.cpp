@@ -2630,6 +2630,7 @@ TEST(PortalApplicationTests, ProjectsUsesServerDrivenBrowserInteraction) {
     const auto html = app.render<PortalProjectsPage>({}, {}, "/projects");
 
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-get="/fragments/projects")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-offline-runtime="framework")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-target="[data-projects-results]")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-trigger="input delay:300ms, change")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-projects-results)"));

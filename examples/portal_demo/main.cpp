@@ -93,7 +93,7 @@ int main(
     drogular::App app;
 
     app.ui()
-       .interactions()
+       .offlineReadModels()
        .templateRoot(
            "examples/portal_demo/templates"
        )

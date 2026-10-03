@@ -151,10 +151,18 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
     const representationStore = createIndexedDbRepresentationStore();
 
-    const offlineReadEnabled = (element) =>
+    const putRepresentation = async (representation) => {
+        await representationStore.put(representation);
+        document.dispatchEvent(new CustomEvent('dg:offline-representation-stored', {
+            detail: { identity: representation.identity },
+        }));
+    };
+
+    const frameworkOfflineReadEnabled = (element) =>
         offlineReadModelsEnabled &&
         element.hasAttribute('dg-get') &&
-        element.hasAttribute('dg-offline-read');
+        element.hasAttribute('dg-offline-read') &&
+        element.getAttribute('dg-offline-runtime') === 'framework';
 
     const normalizedRequestKey = (url) => {
         const normalized = new URL(url.toString());
@@ -211,7 +219,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         if (!offlineReadModelsEnabled) return;
         const shell = shellElement();
         if (!shell) return;
-        await representationStore.put({
+        await putRepresentation({
             identity: representationIdentity(
                 new URL(window.location.href),
                 'shell'
@@ -233,7 +241,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     );
 
     const interactionResponse = async (element, url, options) => {
-        if (!offlineReadEnabled(element)) {
+        if (!frameworkOfflineReadEnabled(element)) {
             return fetch(url, options);
         }
 
@@ -341,7 +349,12 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         }
 
         if (submitter && submitter.name && !submitter.disabled) {
-            parameters.set(submitter.name, submitter.value);
+            const defaultValue = submitter.getAttribute('dg-default-value');
+            if (defaultValue !== null && submitter.value === defaultValue) {
+                parameters.delete(submitter.name);
+            } else {
+                parameters.set(submitter.name, submitter.value);
+            }
         }
 
         return parameters;
@@ -585,9 +598,9 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            if (offlineReadEnabled(element) && response.ok) {
+            if (frameworkOfflineReadEnabled(element) && response.ok) {
                 if (result.network === true) {
-                    await representationStore.put({
+                    await putRepresentation({
                         identity: result.identity,
                         html,
                         contentType: response.headers.get('Content-Type') || 'text/html',
@@ -660,8 +673,22 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         }
     };
 
+    const seedInitialOfflineRepresentation = async (element) => {
+        if (!frameworkOfflineReadEnabled(element)) return false;
+        const url = requestUrl(element);
+        const target = targetFor(element);
+        if (!url || !target) return false;
+
+        await putRepresentation({
+            identity: representationIdentity(url),
+            html: target.innerHTML,
+            contentType: 'text/html',
+        });
+        return true;
+    };
+
     const restoreOfflineReadElement = async (element) => {
-        if (!offlineReadEnabled(element)) return false;
+        if (!frameworkOfflineReadEnabled(element)) return false;
         const url = requestUrl(element);
         const target = targetFor(element);
         if (!url || !target) return false;
@@ -779,7 +806,9 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             capability: offlineState.data === 'cached' ? 'read-only' : offlineState.capability,
         });
         if (offlineState.data === 'cached') {
-            document.querySelectorAll('[dg-get][dg-offline-read]').forEach((element) => {
+            document.querySelectorAll(
+                '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+            ).forEach((element) => {
                 refresh(element);
             });
         }
@@ -818,6 +847,11 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     publishOfflineState();
     void storeCurrentShell();
     document.querySelectorAll('[dg-get], [dg-post]').forEach(install);
+    document.querySelectorAll(
+        '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+    ).forEach((element) => {
+        void seedInitialOfflineRepresentation(element);
+    });
     document.querySelectorAll('[dg-resume]').forEach((control) => {
         control.addEventListener('click', () => {
             const selector = control.getAttribute('dg-resume');

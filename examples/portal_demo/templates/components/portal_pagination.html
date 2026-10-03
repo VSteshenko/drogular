@@ -2,7 +2,7 @@
 <nav class="dg-pagination" aria-label="{{ ariaLabel }}">
     @if(paginationModel.hasPrevious)
     @if(paginationUsesSubmit)
-    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ paginationModel.previousPage }}">{{ previousLabel }}</button>
+    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ paginationModel.previousPage }}" @if(paginationModel.previousPage == 1)dg-default-value="1"@endif>{{ previousLabel }}</button>
     @else
     <a href="{{ paginationModel.previousUrl }}">{{ previousLabel }}</a>
     @endif
@@ -13,7 +13,7 @@
     <strong aria-current="page">{{ item.number }}</strong>
     @else
     @if(paginationUsesSubmit)
-    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ item.number }}">{{ item.number }}</button>
+    <button class="dg-button" type="submit" name="{{ paginationSubmitName }}" value="{{ item.number }}" @if(item.number == 1)dg-default-value="1"@endif>{{ item.number }}</button>
     @else
     <a href="{{ item.url }}">{{ item.number }}</a>
     @endif

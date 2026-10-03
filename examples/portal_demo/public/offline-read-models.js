@@ -60,7 +60,7 @@
 
     const eligibleElement = (url) => {
         const requestUrl = new URL(url, window.location.origin);
-        return Array.from(document.querySelectorAll("[dg-get][dg-offline-read]"))
+        return Array.from(document.querySelectorAll("[dg-get][dg-offline-read]:not([dg-offline-runtime=\"framework\"])"))
             .find((element) => {
                 const source = element.getAttribute("dg-get");
                 if (!source) return false;
@@ -120,6 +120,47 @@
 
     const readRepresentations = () =>
         withStore("readonly", (store) => store.getAll());
+
+    // Temporary Portal migration bridge: framework-owned readers keep their UX
+    // here while request/cache lifecycle ownership stays in Drogular Interactions.
+    // This bridge is presentation-only and never intercepts framework requests.
+    const readFrameworkRepresentations = () => new Promise((resolve, reject) => {
+        const request = indexedDB.open("drogular-offline-representations", 1);
+        request.onsuccess = () => {
+            const database = request.result;
+            const transaction = database.transaction("representations", "readonly");
+            const storeRequest = transaction.objectStore("representations").getAll();
+            storeRequest.onsuccess = () => resolve(storeRequest.result);
+            storeRequest.onerror = () => reject(storeRequest.error);
+            transaction.oncomplete = () => database.close();
+            transaction.onabort = () => database.close();
+        };
+        request.onerror = () => reject(request.error);
+    });
+
+    const isFrameworkReader = (element) =>
+        element.getAttribute("dg-offline-runtime") === "framework";
+
+    const frameworkRecordsFor = async (element) => {
+        const source = element.getAttribute("dg-get");
+        if (!source) return [];
+        const sourcePath = new URL(source, window.location.origin).pathname;
+        const frameworkScope = sessionStorage.getItem("drogular.offline.scope");
+        if (!frameworkScope) return [];
+
+        return (await readFrameworkRepresentations())
+            .filter((record) => record.identity?.kind === "fragment")
+            .filter((record) => record.identity?.scope?.kind === "session")
+            .filter((record) => record.identity?.scope?.key === frameworkScope)
+            .filter((record) => (record.identity?.context?.locale || "") === locale())
+            .filter((record) => new URL(record.identity.requestKey, window.location.origin).pathname === sourcePath)
+            .map((record) => ({
+                ...record,
+                url: new URL(record.identity.requestKey, window.location.origin).toString(),
+                locale: record.identity.context?.locale || "",
+                storedAt: new Date(record.storedAt).toISOString(),
+            }));
+    };
 
     const filterParameters = (record) => {
         const url = new URL(record.url);
@@ -232,10 +273,12 @@
 
         const source = element.getAttribute("dg-get");
         const sourcePath = source ? new URL(source, window.location.origin).pathname : "";
-        const records = (await readRepresentations())
-            .filter((record) => record.key.startsWith(`${scope()}|${locale()}|GET|`))
-            .filter((record) => record.locale === locale())
-            .filter((record) => new URL(record.url).pathname === sourcePath)
+        const records = (isFrameworkReader(element)
+            ? await frameworkRecordsFor(element)
+            : (await readRepresentations())
+                .filter((record) => record.key.startsWith(`${scope()}|${locale()}|GET|`))
+                .filter((record) => record.locale === locale())
+                .filter((record) => new URL(record.url).pathname === sourcePath))
             .sort((left, right) => right.storedAt.localeCompare(left.storedAt));
 
         const groups = new Map();
@@ -311,6 +354,35 @@
         ).replace("{time}", time);
         status.hidden = false;
     };
+
+    const renderFrameworkOfflineState = async (state) => {
+        const readers = document.querySelectorAll(
+            '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+        );
+        for (const element of readers) {
+            renderHistory(element).catch(() => {});
+            if (state.data !== "cached" || state.capability !== "read-only") {
+                element.querySelector("[data-dg-offline-read-status]")?.remove();
+                continue;
+            }
+            const records = await frameworkRecordsFor(element);
+            const newest = records.sort((left, right) =>
+                right.storedAt.localeCompare(left.storedAt))[0];
+            if (newest) setCached(element, newest.storedAt);
+        }
+    };
+
+    document.addEventListener("dg:offline-representation-stored", () => {
+        document.querySelectorAll(
+            '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+        ).forEach((element) => {
+            renderHistory(element).catch(() => {});
+        });
+    });
+
+    document.addEventListener("dg:offline-state", (event) => {
+        renderFrameworkOfflineState(event.detail || {}).catch(() => {});
+    });
 
     const formState = (element) => {
         if (!(element instanceof HTMLFormElement)) return null;
@@ -465,7 +537,7 @@
             document.documentElement.setAttribute("data-dg-mode", "read-write");
             return;
         }
-        document.querySelectorAll("[dg-get][dg-offline-read]").forEach((element) => {
+        document.querySelectorAll("[dg-get][dg-offline-read]:not([dg-offline-runtime=\"framework\"])").forEach((element) => {
             if (element instanceof HTMLFormElement) element.requestSubmit();
         });
     });

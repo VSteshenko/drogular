@@ -197,12 +197,22 @@ TEST(CoreInteractionsResourcesTests, OfflineStoreIsIntegratedIntoGetPipeline) {
 
     EXPECT_NE(script.find("__drogularOfflineReadModelsEnabled"), std::string_view::npos);
     EXPECT_NE(script.find("element.hasAttribute('dg-offline-read')"), std::string_view::npos);
+    EXPECT_NE(script.find("element.getAttribute('dg-offline-runtime') === 'framework'"), std::string_view::npos);
     EXPECT_NE(script.find("const normalizedRequestKey = (url)"), std::string_view::npos);
     EXPECT_NE(script.find("document.documentElement.lang"), std::string_view::npos);
     EXPECT_NE(script.find("window.sessionStorage"), std::string_view::npos);
     EXPECT_NE(script.find("representationStore.get(identity)"), std::string_view::npos);
-    EXPECT_NE(script.find("representationStore.put({"), std::string_view::npos);
+    EXPECT_NE(script.find("representationStore.put(representation)"), std::string_view::npos);
+    EXPECT_NE(script.find("putRepresentation({"), std::string_view::npos);
     EXPECT_NE(script.find("X-Drogular-Offline-Representation"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, RequestParametersCanOmitDeclaredDefaultSubmitterValue) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("submitter.getAttribute('dg-default-value')"), std::string_view::npos);
+    EXPECT_NE(script.find("parameters.delete(submitter.name)"), std::string_view::npos);
+    EXPECT_NE(script.find("parameters.set(submitter.name, submitter.value)"), std::string_view::npos);
 }
 
 TEST(CoreInteractionsResourcesTests, OfflineReadFallbackIsExactAndGetOnly) {
@@ -280,4 +290,14 @@ TEST(CoreInteractionsResourcesTests, OfflineLocaleRestoreIsCacheOnly) {
     EXPECT_NE(body.find("restoreOfflineReadElement"), std::string_view::npos);
     EXPECT_EQ(body.find("fetch("), std::string_view::npos);
     EXPECT_NE(script.find("form.hasAttribute('dg-offline-locale')"), std::string_view::npos);
+}
+
+TEST(CoreInteractionsResourcesTests, SeedsInitialServerRenderedOfflineRepresentation) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("const seedInitialOfflineRepresentation = async (element)"), std::string_view::npos);
+    EXPECT_NE(script.find("identity: representationIdentity(url)"), std::string_view::npos);
+    EXPECT_NE(script.find("html: target.innerHTML"), std::string_view::npos);
+    EXPECT_NE(script.find("dg:offline-representation-stored"), std::string_view::npos);
+    EXPECT_NE(script.find("void seedInitialOfflineRepresentation(element)"), std::string_view::npos);
 }
