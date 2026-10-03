@@ -1,28 +1,16 @@
 (() => {
-    // Portal Demo experiment: exact-request Offline Read Models.
-    // This intentionally lives outside Drogular Interactions until the
-    // behavior has been validated by more than one Portal feature.
+    // Portal Demo presentation for framework-owned Offline Read Models.
+    // Storage, request fallback, lifecycle, shell and locale reconciliation
+    // are owned by Drogular Interactions; this file renders Portal-specific UX.
     const locale = () => document.documentElement.lang || "en";
 
     const message = (name, fallback) =>
         document.querySelector("[data-dg-offline-read-i18n]")?.getAttribute(`data-${name}`) || fallback;
 
-    // Temporary Portal migration bridge: framework-owned readers keep their UX
-    // here while request/cache lifecycle ownership stays in Drogular Interactions.
-    // This bridge is presentation-only and never intercepts framework requests.
-    const readFrameworkRepresentations = () => new Promise((resolve, reject) => {
-        const request = indexedDB.open("drogular-offline-representations", 1);
-        request.onsuccess = () => {
-            const database = request.result;
-            const transaction = database.transaction("representations", "readonly");
-            const storeRequest = transaction.objectStore("representations").getAll();
-            storeRequest.onsuccess = () => resolve(storeRequest.result);
-            storeRequest.onerror = () => reject(storeRequest.error);
-            transaction.oncomplete = () => database.close();
-            transaction.onabort = () => database.close();
-        };
-        request.onerror = () => reject(request.error);
-    });
+    const frameworkRepresentations = async () => {
+        const api = globalThis.drogularOfflineReadModels;
+        return api ? api.representations() : [];
+    };
 
     const frameworkRecordsFor = async (element) => {
         const source = element.getAttribute("dg-get");
@@ -31,7 +19,7 @@
         const frameworkScope = sessionStorage.getItem("drogular.offline.scope");
         if (!frameworkScope) return [];
 
-        return (await readFrameworkRepresentations())
+        return (await frameworkRepresentations())
             .filter((record) => record.identity?.kind === "fragment")
             .filter((record) => record.identity?.scope?.kind === "session")
             .filter((record) => record.identity?.scope?.key === frameworkScope)
@@ -193,25 +181,6 @@
         }
     };
 
-    const clearRepresentations = async () => {
-        const request = indexedDB.open("drogular-offline-representations", 1);
-        await new Promise((resolve, reject) => {
-            request.onsuccess = () => {
-                const database = request.result;
-                const transaction = database.transaction("representations", "readwrite");
-                transaction.objectStore("representations").clear();
-                transaction.oncomplete = () => {
-                    database.close();
-                    resolve();
-                };
-                transaction.onerror = () => reject(transaction.error);
-                transaction.onabort = () => reject(transaction.error);
-            };
-            request.onerror = () => reject(request.error);
-        });
-        sessionStorage.removeItem("drogular.offline.scope");
-    };
-
     const statusFor = (element) => {
         let status = element.querySelector("[data-dg-offline-read-status]");
         if (status) return status;
@@ -273,21 +242,5 @@
         });
     });
 
-    document.addEventListener("submit", (event) => {
-        const form = event.target;
-        if (!(form instanceof HTMLFormElement)) return;
 
-        if (form.hasAttribute("data-dg-offline-clear")) {
-            clearRepresentations().catch(() => {});
-            return;
-        }
-
-        if (document.documentElement.getAttribute("data-dg-mode") === "read-only" &&
-            form.method.toUpperCase() !== "GET" &&
-            !form.hasAttribute("dg-offline-locale")
-        ) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-        }
-    }, true);
 })();

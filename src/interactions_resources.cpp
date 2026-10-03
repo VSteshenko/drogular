@@ -145,13 +145,34 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             });
         };
 
+        const all = async () => {
+            const db = await database();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readonly');
+                const request = tx.objectStore(storeName).getAll();
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
+            });
+        };
+
         const clear = async () =>
             transaction('readwrite', (store) => store.clear());
 
-        return Object.freeze({ get, put, removeScope, clear });
+        return Object.freeze({ get, put, removeScope, all, clear });
     };
 
     const representationStore = createIndexedDbRepresentationStore();
+
+    if (offlineReadModelsEnabled) {
+        globalThis.drogularOfflineReadModels = Object.freeze({
+            representations: () => representationStore.all(),
+            clear: async () => {
+                await representationStore.clear();
+                window.sessionStorage.removeItem('drogular.offline.scope');
+            },
+            state: () => ({ ...offlineState }),
+        });
+    }
 
     const putRepresentation = async (representation) => {
         await representationStore.put(representation);
@@ -895,6 +916,10 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     document.addEventListener('submit', (event) => {
         const form = event.target;
         if (!(form instanceof HTMLFormElement)) return;
+
+        if (offlineReadModelsEnabled && form.hasAttribute('data-dg-offline-clear')) {
+            void globalThis.drogularOfflineReadModels?.clear();
+        }
 
         const currentUrl =
             `${window.location.pathname}${window.location.search}${window.location.hash}`;

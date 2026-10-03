@@ -189,7 +189,7 @@ TEST(CoreInteractionsResourcesTests, EmbedsOfflineRepresentationStoreContract) {
     EXPECT_NE(script.find("identity.scope?.key"), std::string_view::npos);
     EXPECT_NE(script.find("createIndexedDbRepresentationStore"), std::string_view::npos);
     EXPECT_NE(script.find("window.indexedDB.open"), std::string_view::npos);
-    EXPECT_NE(script.find("Object.freeze({ get, put, removeScope, clear })"), std::string_view::npos);
+    EXPECT_NE(script.find("Object.freeze({ get, put, removeScope, all, clear })"), std::string_view::npos);
 }
 
 TEST(CoreInteractionsResourcesTests, OfflineStoreIsIntegratedIntoGetPipeline) {
@@ -237,6 +237,9 @@ TEST(CoreInteractionsResourcesTests, OfflineRuntimeOwnsIndependentLifecycleState
     EXPECT_NE(script.find("data-dg-data-state"), std::string_view::npos);
     EXPECT_NE(script.find("data-dg-mode"), std::string_view::npos);
     EXPECT_NE(script.find("dg:offline-state"), std::string_view::npos);
+    EXPECT_NE(script.find("globalThis.drogularOfflineReadModels"), std::string_view::npos);
+    EXPECT_NE(script.find("representations: () => representationStore.all()"), std::string_view::npos);
+    EXPECT_NE(script.find("form.hasAttribute('data-dg-offline-clear')"), std::string_view::npos);
 }
 
 TEST(CoreInteractionsResourcesTests, OfflineLifecycleSeparatesConnectivityFromData) {
