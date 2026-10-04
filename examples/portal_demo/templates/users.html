@@ -59,6 +59,9 @@
       method="get"
       action="/users"
       dg-get="/fragments/users"
+      dg-offline-read
+      dg-offline-runtime="framework"
+      dg-offline-read-empty-label="{{ t('offline.all_users') }}"
       dg-target="[data-users-results]"
       dg-trigger="input delay:300ms, change"
       dg-history="replace">

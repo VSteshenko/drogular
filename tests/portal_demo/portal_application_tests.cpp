@@ -225,6 +225,9 @@ TEST(PortalApplicationTests, UsersBrowserUsesGetInteractionContract) {
         {
             {"data-users-browser", ""},
             {"dg-get", "/fragments/users"},
+            {"dg-offline-read", ""},
+            {"dg-offline-runtime", "framework"},
+            {"dg-offline-read-empty-label", "All users"},
             {"dg-target", "[data-users-results]"},
             {"dg-trigger", "input delay:300ms, change"},
             {"dg-history", "replace"}
