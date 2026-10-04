@@ -61,8 +61,21 @@ jobs:
       - name: Install macOS dependencies
         if: runner.os == 'macOS'
         run: |
-          brew update
-          brew install drogon
+          brew install cmake jsoncpp openssl@3 c-ares
+
+      - name: Install Drogon on macOS
+        if: runner.os == 'macOS'
+        run: |
+          git clone --depth 1 https://github.com/drogonframework/drogon.git
+          cd drogon
+          git submodule update --init --recursive --depth 1
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_CTL=OFF \
+            -DBUILD_ORM=OFF
+          cmake --build build
+          sudo cmake --install build
 
       - name: Configure CMake
         run: |
