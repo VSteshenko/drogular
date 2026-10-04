@@ -54,104 +54,59 @@
 </details>
 @endif
 
-<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.filters" open>
-    <summary class="dg-card-summary">
-        <span class="dg-card-title">{{ t('users.filters.title') }}</span>
-    </summary>
-    <div class="dg-card-body">
-        <form class="dg-form" method="get" action="/users">
+<form class="dg-form"
+      data-users-browser
+      method="get"
+      action="/users"
+      dg-get="/fragments/users"
+      dg-target="[data-users-results]"
+      dg-trigger="input delay:300ms, change"
+      dg-history="replace">
+    <details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.filters" open>
+        <summary class="dg-card-summary">
+            <span class="dg-card-title">{{ t('users.filters.title') }}</span>
+        </summary>
+        <div class="dg-card-body">
             <fieldset class="dg-fieldset">
                 <div class="dg-form-grid">
                     <div class="dg-field">
                         <label for="userSearch">{{ t('users.search.label') }}</label>
-                        <input id="userSearch" name="search" value="{{ userSearch }}" type="search" />
+                        <input id="userSearch" name="search" value="{{ userSearch }}" type="search" dg-reset-value="" />
                     </div>
-
                     <div class="dg-field">
                         <label for="userRoleFilter">{{ t('users.filter.role.label') }}</label>
                         <PortalSelect
                                 id="userRoleFilter"
                                 name="role"
+                                resetValue=""
                                 options="userRoleFilterOptions"
                         />
                     </div>
-
                     <div class="dg-field">
                         <label for="userSort">{{ t('users.sort.label') }}</label>
                         <PortalSelect
                                 id="userSort"
                                 name="sort"
+                                resetValue="username"
                                 options="userSortOptions"
                         />
                     </div>
-
                     <div class="dg-field">
                         <label for="userSortDirection">{{ t('users.sort.direction.label') }}</label>
-                        <PortalSelect
-                                id="userSortDirection"
-                                name="direction"
-                                options="userSortDirectionOptions"
-                        />
+                        <PortalSelect id="userSortDirection" name="direction" resetValue="asc" options="userSortDirectionOptions" />
                     </div>
                 </div>
-
                 <div class="dg-form-actions">
                     <button class="dg-button" type="submit">{{ t('users.search.button') }}</button>
-                    @if(hasActiveUserFilters)
-                    <a class="dg-button" href="/users">{{ t('users.search.clear') }}</a>
-                    @endif
+                    <button class="dg-button" type="button" dg-reset>{{ t('users.search.clear') }}</button>
                 </div>
             </fieldset>
-        </form>
-    </div>
-</details>
-
-<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.list" open>
-    <summary class="dg-card-summary">
-        <span class="dg-card-title">{{ t('users.title') }}</span>
-    </summary>
-    <div class="dg-card-body">
-        <div class="dg-table-container">
-            <table class="dg-table">
-                <thead>
-                    <tr>
-                        <th scope="col">{{ usersUsername }}</th>
-                        <th scope="col">{{ usersRole }}</th>
-                        @if(isAdmin)
-                        <th scope="col">{{ t('users.edit') }}</th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(user in users)
-                    <tr>
-                        <td><strong>{{ user.username }}</strong></td>
-                        <td><span class="dg-badge dg-badge-info">{{ user.role }}</span></td>
-                        @if(isAdmin)
-                        <td><a href="{{ user.editUrl }}">{{ t('users.edit') }}</a></td>
-                        @endif
-                    </tr>
-                    @empty
-                    <tr>
-                        @if(isAdmin)
-                        <td class="dg-empty-state" colspan="3">{{ t('users.empty') }}</td>
-                        @else
-                        <td class="dg-empty-state" colspan="2">{{ t('users.empty') }}</td>
-                        @endif
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
         </div>
+    </details>
+
+    <div data-users-results>
+        @include("fragments/users_results.html")
     </div>
-    <div class="dg-card-footer">
-        <PortalPagination
-            model="pagination"
-            ariaLabel="{{ t('users.pagination.label') }}"
-            previousLabel="{{ t('users.pagination.previous') }}"
-            nextLabel="{{ t('users.pagination.next') }}"
-        />
-    </div>
-</details>
+</form>
 </div>
 @endif

@@ -24,6 +24,7 @@
 #include "features/project_types/pages/project_type_edit_page.hpp"
 #include "features/users/actions/create_user_action.hpp"
 #include "features/users/actions/update_user_action.hpp"
+#include "features/users/actions/users_fragment_action.hpp"
 #include "features/offline/pages/offline_page.hpp"
 #include "features/localization/support/portal_translations.hpp"
 #include "support/portal_expression_functions.hpp"
@@ -217,6 +218,7 @@ int main(
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
     app.page<PortalUsersPage>("/users");
+    app.get<PortalUsersFragmentAction>("/fragments/users");
     app.page<PortalUserEditPage>("/users/{id}/edit");
     app.page<PortalRolesPage>("/roles");
     app.get<PortalRolesFragmentAction>("/fragments/roles");

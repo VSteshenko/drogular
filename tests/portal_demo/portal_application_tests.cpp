@@ -5,6 +5,7 @@
 #include "data/demo_dataset.hpp"
 #include "features/users/actions/create_user_action.hpp"
 #include "features/users/actions/update_user_action.hpp"
+#include "features/users/actions/users_fragment_action.hpp"
 #include "features/projects/actions/update_project_action.hpp"
 #include "features/projects/actions/delete_project_action.hpp"
 #include "features/projects/pages/projects_page.hpp"
@@ -205,6 +206,46 @@ TEST(PortalApplicationTests, UsersUsesCardFormAndTablePrimitives) {
             }
         )
     );
+}
+
+
+TEST(PortalApplicationTests, UsersBrowserUsesGetInteractionContract) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalUsersPage>(
+        {},
+        {},
+        "/users"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::elementHasAttributes(
+        html,
+        "form",
+        {
+            {"data-users-browser", ""},
+            {"dg-get", "/fragments/users"},
+            {"dg-target", "[data-users-results]"},
+            {"dg-trigger", "input delay:300ms, change"},
+            {"dg-history", "replace"}
+        }
+    ));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-reset-value="")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-reset)"));
+}
+
+TEST(PortalApplicationTests, UsersPageRendersFilteredResultsAndPagination) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalUsersPage>(
+        {{"search", "admin"}},
+        {},
+        "/users"
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-table")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "admin"));
 }
 
 TEST(PortalApplicationTests, DepartmentsRenderCreateSuccessMessage) {

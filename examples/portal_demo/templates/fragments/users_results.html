@@ -1,0 +1,48 @@
+<details class="dg-card dg-collapsible" data-dg-collapse-key="portal.users.list" open>
+    <summary class="dg-card-summary">
+        <span class="dg-card-title">{{ t('users.title') }}</span>
+    </summary>
+    <div class="dg-card-body">
+        <div class="dg-table-container">
+            <table class="dg-table">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ usersUsername }}</th>
+                        <th scope="col">{{ usersRole }}</th>
+                        @if(isAdmin)
+                        <th scope="col">{{ t('users.edit') }}</th>
+                        @endif
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(user in users)
+                    <tr>
+                        <td><strong>{{ user.username }}</strong></td>
+                        <td><span class="dg-badge dg-badge-info">{{ user.role }}</span></td>
+                        @if(isAdmin)
+                        <td><a href="{{ user.editUrl }}">{{ t('users.edit') }}</a></td>
+                        @endif
+                    </tr>
+                    @empty
+                    <tr>
+                        @if(isAdmin)
+                        <td class="dg-empty-state" colspan="3">{{ t('users.empty') }}</td>
+                        @else
+                        <td class="dg-empty-state" colspan="2">{{ t('users.empty') }}</td>
+                        @endif
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="dg-card-footer">
+        <PortalPagination
+            model="pagination"
+            ariaLabel="{{ t('users.pagination.label') }}"
+            previousLabel="{{ t('users.pagination.previous') }}"
+            nextLabel="{{ t('users.pagination.next') }}"
+            submitName="page"
+        />
+    </div>
+</details>
