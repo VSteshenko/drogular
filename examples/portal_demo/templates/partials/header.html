@@ -13,16 +13,19 @@
         </a>
         <a class="dg-nav-item @if(currentPath == "/users")is-active@endif"
            href="/users"
+           dg-offline-navigation
            @if(currentPath == "/users")aria-current="page"@endif>
             {{ t('nav.users') }}
         </a>
         <a class="dg-nav-item @if(currentPath == "/projects")is-active@endif"
            href="/projects"
+           dg-offline-navigation
            @if(currentPath == "/projects")aria-current="page"@endif>
             {{ t('nav.projects') }}
         </a>
         <a class="dg-nav-item @if(currentPath == "/departments")is-active@endif"
            href="/departments"
+           dg-offline-navigation
            @if(currentPath == "/departments")aria-current="page"@endif>
             {{ t('nav.departments') }}
         </a>

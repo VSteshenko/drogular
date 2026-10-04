@@ -249,6 +249,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             ),
             html: shell.outerHTML,
             contentType: 'text/html',
+            title: document.title,
         });
     };
 
@@ -736,6 +737,56 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         return true;
     };
 
+    const restoreOfflineShell = async (url, { pushHistory = false } = {}) => {
+        const targetUrl = new URL(url, window.location.origin);
+        if (targetUrl.origin !== window.location.origin) return false;
+
+        const current = shellElement();
+        if (!current) return false;
+
+        const identity = representationIdentity(targetUrl, 'shell');
+        const representation = await representationStore.get(identity);
+        if (!representation) {
+            updateOfflineState({ data: 'unavailable', capability: 'read-only' });
+            document.dispatchEvent(new CustomEvent('dg:offline-navigation-unavailable', {
+                detail: { url: targetUrl.pathname },
+            }));
+            return false;
+        }
+
+        current.outerHTML = representation.html;
+        if (representation.title) document.title = representation.title;
+        if (pushHistory) {
+            window.history.pushState({}, '', `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`);
+        }
+
+        const restored = shellElement();
+        if (!restored) return false;
+        restored.querySelectorAll('[dg-get], [dg-post]').forEach(install);
+
+        let restoredAny = false;
+        const readers = Array.from(restored.querySelectorAll(
+            '[dg-get][dg-offline-read][dg-offline-runtime="framework"]'
+        ));
+        for (const element of readers) {
+            const request = requestUrl(element);
+            if (!request) continue;
+            currentOfflineReadRequests.set(element, new URL(request.toString()));
+            restoredAny = await restoreOfflineReadElement(element) || restoredAny;
+        }
+
+        if (readers.length > 0 && !restoredAny) {
+            updateOfflineState({ data: 'unavailable', capability: 'read-only' });
+            return false;
+        }
+
+        markCachedRepresentation();
+        document.dispatchEvent(new CustomEvent('dg:offline-navigation-restored', {
+            detail: { url: targetUrl.pathname },
+        }));
+        return true;
+    };
+
     const restoreOfflineLocale = async (locale) => {
         const current = shellElement();
         if (!current || !locale) return false;
@@ -759,6 +810,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         if (!representation) return false;
 
         current.outerHTML = representation.html;
+        if (representation.title) document.title = representation.title;
         document.documentElement.lang = locale;
 
         const restored = shellElement();
@@ -911,6 +963,29 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                 refresh(element);
             });
         }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!offlineReadModelsEnabled || offlineState.capability !== 'read-only') return;
+
+        const target = event.target instanceof Element
+            ? event.target.closest('a[dg-offline-navigation]')
+            : null;
+        if (!(target instanceof HTMLAnchorElement)) return;
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (target.target && target.target !== '_self') return;
+
+        const url = new URL(target.href, window.location.origin);
+        if (url.origin !== window.location.origin) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void restoreOfflineShell(url, { pushHistory: true });
+    }, true);
+
+    window.addEventListener('popstate', () => {
+        if (!offlineReadModelsEnabled || offlineState.capability !== 'read-only') return;
+        void restoreOfflineShell(new URL(window.location.href));
     });
 
     document.addEventListener('submit', (event) => {

@@ -102,7 +102,12 @@ TEST(PortalApplicationTests, DashboardRendersApplicationShellAndPrimaryNavigatio
            aria-current="page")"
         )
     );
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/projects")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/users"
+           dg-offline-navigation)"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/projects"
+           dg-offline-navigation)"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/departments"
+           dg-offline-navigation)"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/admin")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-nav-submenu")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/roles")"));

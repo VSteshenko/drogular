@@ -295,6 +295,24 @@ TEST(CoreInteractionsResourcesTests, OfflineLocaleRestoreIsCacheOnly) {
     EXPECT_NE(script.find("form.hasAttribute('dg-offline-locale')"), std::string_view::npos);
 }
 
+TEST(CoreInteractionsResourcesTests, OfflineNavigationRestoresCachedShellWithoutNetwork) {
+    const auto script = drogular::interactions_resources::script();
+
+    const auto restore = script.find("const restoreOfflineShell = async (url");
+    ASSERT_NE(restore, std::string_view::npos);
+
+    const auto localeRestore = script.find("const restoreOfflineLocale = async (locale)", restore);
+    ASSERT_NE(localeRestore, std::string_view::npos);
+
+    const auto body = script.substr(restore, localeRestore - restore);
+    EXPECT_NE(body.find("representationStore.get(identity)"), std::string_view::npos);
+    EXPECT_NE(body.find("restoreOfflineReadElement"), std::string_view::npos);
+    EXPECT_NE(body.find("window.history.pushState"), std::string_view::npos);
+    EXPECT_EQ(body.find("fetch("), std::string_view::npos);
+    EXPECT_NE(script.find("a[dg-offline-navigation]"), std::string_view::npos);
+    EXPECT_NE(script.find("window.addEventListener('popstate'"), std::string_view::npos);
+}
+
 TEST(CoreInteractionsResourcesTests, OfflineLocaleChoiceReconcilesBeforeLiveRefresh) {
     const auto script = drogular::interactions_resources::script();
 
