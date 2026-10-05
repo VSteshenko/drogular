@@ -103,7 +103,9 @@ class Router;
  */
 class RenderContext {
 public:
-    RenderContext();
+    explicit RenderContext(
+        RuntimeDiagnostics* diagnostics = nullptr
+    );
     explicit RenderContext(const RenderContext* parent);
 
     /**
@@ -115,6 +117,8 @@ public:
      * Returns read-only application services.
      */
     const ApplicationServices* services() const;
+
+    RuntimeDiagnostics* runtimeDiagnostics() const noexcept;
 
     template <typename T>
     std::shared_ptr<T> service() {

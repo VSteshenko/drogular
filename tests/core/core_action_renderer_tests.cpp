@@ -1,5 +1,6 @@
 #include <drogular/action_renderer.hpp>
 #include <drogular/services.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -152,4 +153,47 @@ TEST(
 
     EXPECT_EQ(LifecycleComponent::initCount, 1);
     EXPECT_EQ(LifecycleComponent::destroyCount, 1);
+}
+
+TEST(
+    CoreActionRendererTests,
+    RecordsSuccessfulRenderedAction
+) {
+    drogular::RuntimeDiagnostics diagnostics;
+    auto request = drogon::HttpRequest::newHttpRequest();
+    drogular::ActionContext actionContext(
+        request,
+        nullptr,
+        &diagnostics
+    );
+
+    const auto result =
+        drogular::ActionRenderer::render<PlainComponent>(
+            actionContext
+        );
+
+    EXPECT_EQ(result.body(), "<span>plain</span>");
+    EXPECT_EQ(diagnostics.snapshot().requests.renderedActions, 1u);
+}
+
+TEST(
+    CoreActionRendererTests,
+    DoesNotRecordRenderedActionWhenRenderingFails
+) {
+    drogular::RuntimeDiagnostics diagnostics;
+    auto request = drogon::HttpRequest::newHttpRequest();
+    drogular::ActionContext actionContext(
+        request,
+        nullptr,
+        &diagnostics
+    );
+
+    EXPECT_THROW(
+        drogular::ActionRenderer::render<LifecycleComponent>(
+            actionContext
+        ),
+        std::runtime_error
+    );
+
+    EXPECT_EQ(diagnostics.snapshot().requests.renderedActions, 0u);
 }

@@ -4,6 +4,7 @@
 #include <drogular/services.hpp>
 #include <drogular/page.hpp>
 #include <drogular/router.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
 #include <drogular/application_profile.hpp>
@@ -418,7 +419,8 @@ public:
 private:
     ApplicationOptions options_;
     ApplicationServices services_;
-    Router router_{&services_};
+    RuntimeDiagnostics runtimeDiagnostics_;
+    Router router_{&services_, &runtimeDiagnostics_};
     std::optional<std::string> offlinePageRoute_;
     std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;
     ApplicationProfile profile_ = ApplicationProfile::Production;

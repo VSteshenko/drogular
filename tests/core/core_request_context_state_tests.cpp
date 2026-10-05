@@ -75,3 +75,52 @@ TEST(RequestContextStateTests, DifferentStatesHaveDifferentServiceScopes) {
     ASSERT_NE(second, nullptr);
     EXPECT_NE(first, second);
 }
+
+TEST(RequestContextStateTests, WiresRuntimeDiagnosticsIntoServiceScope) {
+    drogular::ApplicationServices services;
+    drogular::RuntimeDiagnostics diagnostics;
+
+    services.addScoped<ScopedProbe>(
+        [] {
+            return std::make_shared<ScopedProbe>();
+        }
+    );
+
+    drogular::detail::RequestContextState state(
+        nullptr,
+        &services,
+        &diagnostics
+    );
+
+    auto first =
+        services.service<ScopedProbe>(state.serviceScope());
+    auto second =
+        services.service<ScopedProbe>(state.serviceScope());
+
+    ASSERT_NE(first, nullptr);
+    EXPECT_EQ(first, second);
+
+    const auto snapshot = diagnostics.snapshot();
+    EXPECT_EQ(snapshot.serviceScopes.resolutions, 2u);
+    EXPECT_EQ(snapshot.serviceScopes.cacheHits, 1u);
+    EXPECT_EQ(snapshot.serviceScopes.servicesCreated, 1u);
+}
+
+TEST(RequestContextStateTests, RuntimeDiagnosticsRemainOptional) {
+    drogular::ApplicationServices services;
+    services.addScoped<ScopedProbe>(
+        [] {
+            return std::make_shared<ScopedProbe>();
+        }
+    );
+
+    drogular::detail::RequestContextState state(
+        nullptr,
+        &services
+    );
+
+    EXPECT_NE(
+        services.service<ScopedProbe>(state.serviceScope()),
+        nullptr
+    );
+}

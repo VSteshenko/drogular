@@ -34,6 +34,21 @@ TEST(DiagnosticsPageTests, ShipsBrowserAssets) {
     EXPECT_NE(script.find("import(moduleUrl)"), std::string_view::npos);
 }
 
+TEST(DiagnosticsPageTests, ShipsBuiltInRuntimeDiagnosticsRenderers) {
+    const auto css =
+        drogular::diagnostics_resources::stylesheet();
+    const auto script =
+        drogular::diagnostics_resources::script();
+
+    EXPECT_NE(script.find("drogular.runtime"), std::string_view::npos);
+    EXPECT_NE(script.find("drogular.interactions"), std::string_view::npos);
+    EXPECT_NE(script.find("drogular.service-scopes"), std::string_view::npos);
+    EXPECT_NE(script.find("metricCards"), std::string_view::npos);
+    EXPECT_NE(script.find("metricGroup"), std::string_view::npos);
+    EXPECT_NE(css.find(".metric-grid"), std::string_view::npos);
+    EXPECT_NE(css.find(".metric-card"), std::string_view::npos);
+}
+
 TEST(DiagnosticsPageTests, EnablingPageAlsoEnablesInspectionContract) {
     drogular::App app;
 

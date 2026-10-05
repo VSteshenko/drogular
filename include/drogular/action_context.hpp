@@ -33,7 +33,8 @@ class ActionContext {
 public:
     ActionContext(
         drogon::HttpRequestPtr request,
-        ApplicationServices* services
+        ApplicationServices* services,
+        RuntimeDiagnostics* diagnostics = nullptr
     );
 
     const drogon::HttpRequestPtr& request() const;
@@ -46,6 +47,8 @@ public:
     ApplicationServices* services();
 
     const ApplicationServices* services() const;
+
+    RuntimeDiagnostics* runtimeDiagnostics() const noexcept;
 
     template <typename T>
     std::shared_ptr<T> service() {

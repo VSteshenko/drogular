@@ -54,9 +54,15 @@ RenderContextError::RenderContextError(const std::string& message)
     : DrogularError(message) {
 }
 
-RenderContext::RenderContext()
+RenderContext::RenderContext(
+    RuntimeDiagnostics* diagnostics
+)
     : state_(
-          std::make_shared<detail::RequestContextState>()
+          std::make_shared<detail::RequestContextState>(
+              nullptr,
+              nullptr,
+              diagnostics
+          )
       ) {
 }
 
@@ -81,6 +87,10 @@ ApplicationServices* RenderContext::services() {
 
 const ApplicationServices* RenderContext::services() const {
     return state_->services();
+}
+
+RuntimeDiagnostics* RenderContext::runtimeDiagnostics() const noexcept {
+    return state_->runtimeDiagnostics();
 }
 
 RenderContext RenderContext::createChild() const {

@@ -106,10 +106,15 @@ std::string renderAttributeValue(
 
 } // namespace
 
-std::string renderComponentTree(
+std::string renderComponentTreeImpl(
     Component& component,
-    RenderContext& context
+    RenderContext& context,
+    std::size_t depth
 ) {
+    if (auto* diagnostics = context.runtimeDiagnostics()) {
+        diagnostics->recordComponentRendered(depth);
+    }
+
     component.onInit(context);
 
     try {
@@ -124,7 +129,11 @@ std::string renderComponentTree(
 
         for (const auto& child : component.children()) {
             auto childContext = context.createChild();
-            const auto childHtml = renderComponentTree(*child, childContext);
+            const auto childHtml = renderComponentTreeImpl(
+                *child,
+                childContext,
+                depth + 1
+            );
 
             if (child->slot().empty()) {
                 defaultChildrenHtml += childHtml;
@@ -153,6 +162,25 @@ std::string renderComponentTree(
         return html;
     } catch (...) {
         component.onDestroy(context);
+        throw;
+    }
+}
+
+std::string renderComponentTree(
+    Component& component,
+    RenderContext& context
+) {
+    try {
+        return renderComponentTreeImpl(
+            component,
+            context,
+            1
+        );
+    } catch (...) {
+        if (auto* diagnostics = context.runtimeDiagnostics()) {
+            diagnostics->recordRenderFailure();
+        }
+
         throw;
     }
 }

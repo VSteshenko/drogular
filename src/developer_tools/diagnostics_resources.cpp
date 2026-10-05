@@ -274,6 +274,43 @@ code, .badge {
     margin: 0 0 12px;
     color: #f7c873;
 }
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
+.metric-group + .metric-group {
+    margin-top: 18px;
+}
+
+.metric-group h3 {
+    margin: 0 0 10px;
+    color: #aab4cc;
+    font-size: .78rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.metric-card {
+    border: 1px solid rgba(151,166,205,.13);
+    border-radius: 12px;
+    padding: 14px;
+    background: rgba(10, 16, 34, .34);
+}
+
+.metric-card span {
+    display: block;
+    color: #97a3bd;
+    font-size: .76rem;
+}
+
+.metric-card strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 1.35rem;
+}
 )DROGULAR_CSS";
 
 constexpr std::string_view Script = R"DROGULAR_JS(const inspectionEndpoint = document.body.dataset.inspectionEndpoint || '/__drogular/inspection';
@@ -307,6 +344,21 @@ const table = (columns, rows) => {
     </table>
 </div>`;
 };
+
+const metricCards = (metrics) => `
+<div class="metric-grid">
+    ${metrics.map(([label, value]) => `
+    <article class="metric-card">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value ?? 0)}</strong>
+    </article>`).join('')}
+</div>`;
+
+const metricGroup = (title, metrics) => `
+<section class="metric-group">
+    <h3>${escapeHtml(title)}</h3>
+    ${metricCards(metrics)}
+</section>`;
 
 const builtInRenderers = new Map([
     ['drogular.routes', (container, section) => {
@@ -349,6 +401,43 @@ const builtInRenderers = new Map([
 </p>` : ''}
 </article>`).join('')
             : '<p class="empty">No diagnostics reported.</p>';
+    }]
+,
+    ['drogular.runtime', (container, section) => {
+        const data = section.data && typeof section.data === 'object' ? section.data : {};
+        const requests = data.requests && typeof data.requests === 'object' ? data.requests : {};
+        const rendering = data.rendering && typeof data.rendering === 'object' ? data.rendering : {};
+        container.innerHTML =
+            metricGroup('Requests', [
+                ['Requests', requests.requests],
+                ['Actions', requests.actions],
+                ['Rendered actions', requests.renderedActions],
+                ['Redirects', requests.redirects]
+            ]) +
+            metricGroup('Rendering', [
+                ['Components rendered', rendering.componentsRendered],
+                ['Render failures', rendering.renderFailures],
+                ['Maximum depth', rendering.maximumDepth]
+            ]);
+    }],
+    ['drogular.interactions', (container, section) => {
+        const data = section.data && typeof section.data === 'object' ? section.data : {};
+        container.innerHTML = metricCards([
+            ['Requests', data.requests],
+            ['GET requests', data.getRequests],
+            ['POST requests', data.postRequests],
+            ['Successful responses', data.successfulResponses],
+            ['Client errors', data.clientErrorResponses],
+            ['Redirects', data.redirects]
+        ]);
+    }],
+    ['drogular.service-scopes', (container, section) => {
+        const data = section.data && typeof section.data === 'object' ? section.data : {};
+        container.innerHTML = metricCards([
+            ['Resolutions', data.resolutions],
+            ['Cache hits', data.cacheHits],
+            ['Services created', data.servicesCreated]
+        ]);
     }]
 ]);
 

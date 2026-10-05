@@ -43,10 +43,47 @@ bool isInsideDirectory(
            );
 }
 
+void recordActionResponseDiagnostics(
+    RuntimeDiagnostics* diagnostics,
+    bool interaction,
+    const drogon::HttpResponsePtr& response
+) {
+    if (diagnostics == nullptr || response == nullptr) {
+        return;
+    }
+
+    const auto status =
+        static_cast<int>(response->statusCode());
+
+    if (status >= 300 && status < 400) {
+        diagnostics->recordRedirect();
+
+        if (interaction) {
+            diagnostics->recordInteractionRedirect();
+        }
+
+        return;
+    }
+
+    if (!interaction) {
+        return;
+    }
+
+    if (status >= 200 && status < 300) {
+        diagnostics->recordInteractionSuccessfulResponse();
+    } else if (status >= 400 && status < 500) {
+        diagnostics->recordInteractionClientErrorResponse();
+    }
+}
+
 } // namespace
 
-Router::Router(ApplicationServices* services)
-    : services_(services) {
+Router::Router(
+    ApplicationServices* services,
+    RuntimeDiagnostics* diagnostics
+)
+    : services_(services),
+      diagnostics_(diagnostics) {
 }
 
 void Router::page(
@@ -62,18 +99,24 @@ void Router::page(
     });
 
     auto* services = services_;
+    auto* diagnostics = diagnostics_;
     const RoutePattern pattern(path);
 
     drogon::app().registerHandler(
         path,
-        [factory = std::move(factory), services, pattern](
+        [factory = std::move(factory), services, diagnostics, pattern](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
+            if (diagnostics != nullptr) {
+                diagnostics->recordRequest();
+            }
+
             auto state =
                 std::make_shared<detail::RequestContextState>(
                     request,
-                    services
+                    services,
+                    diagnostics
                 );
 
             std::unordered_map<std::string, std::string> routeParams;
@@ -124,18 +167,25 @@ void Router::action(
     });
 
     auto* services = services_;
+    auto* diagnostics = diagnostics_;
     const RoutePattern pattern(path);
 
     drogon::app().registerHandler(
         path,
-        [factory = std::move(factory), services, pattern](
+        [factory = std::move(factory), services, diagnostics, pattern, method](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
+            if (diagnostics != nullptr) {
+                diagnostics->recordRequest();
+                diagnostics->recordAction();
+            }
+
             auto state =
                 std::make_shared<detail::RequestContextState>(
                     request,
-                    services
+                    services,
+                    diagnostics
                 );
 
             std::unordered_map<std::string, std::string> routeParams;
@@ -153,6 +203,17 @@ void Router::action(
             }
 
             ActionContext context(state);
+            const auto interaction = context.isInteraction();
+
+            if (interaction && diagnostics != nullptr) {
+                diagnostics->recordInteractionRequest();
+
+                if (method == ActionMethod::Get) {
+                    diagnostics->recordInteractionGetRequest();
+                } else {
+                    diagnostics->recordInteractionPostRequest();
+                }
+            }
 
             try {
                 auto action = factory();
@@ -166,15 +227,39 @@ void Router::action(
                 const auto result =
                     action->handle(context);
 
-                callback(
-                    toHttpResponse(result)
+                auto response = toHttpResponse(result);
+
+                recordActionResponseDiagnostics(
+                    diagnostics,
+                    interaction,
+                    response
                 );
+
+                callback(response);
             } catch (const std::exception& error) {
                 LOG_ERROR << "Drogular action failed: " << error.what();
-                callback(toHttpErrorResponse(error));
+
+                auto response = toHttpErrorResponse(error);
+
+                recordActionResponseDiagnostics(
+                    diagnostics,
+                    interaction,
+                    response
+                );
+
+                callback(response);
             } catch (...) {
                 LOG_ERROR << "Drogular action failed with an unknown exception";
-                callback(toHttpErrorResponse());
+
+                auto response = toHttpErrorResponse();
+
+                recordActionResponseDiagnostics(
+                    diagnostics,
+                    interaction,
+                    response
+                );
+
+                callback(response);
             }
         },
         {drogonMethod}

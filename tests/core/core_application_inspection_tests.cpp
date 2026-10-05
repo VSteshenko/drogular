@@ -2,6 +2,7 @@
 #include <drogular/component.hpp>
 #include <drogular/page.hpp>
 #include <drogular/action_handler.hpp>
+#include <drogular/developer_tools/runtime_diagnostics_contributor.hpp>
 
 #include <gtest/gtest.h>
 
@@ -152,15 +153,15 @@ TEST(ApplicationInspectionTests, CollectsExtensionSectionsFromDiContributors) {
     );
 
     const auto inspection = app.inspect();
-    ASSERT_EQ(inspection.sections.size(), 1u);
-    EXPECT_EQ(inspection.sections.front().id, "authentication");
+    ASSERT_EQ(inspection.sections.size(), 4u);
+    EXPECT_EQ(inspection.sections.back().id, "authentication");
 
     const auto json = drogular::toJson(inspection);
     EXPECT_EQ(json["schemaVersion"].asInt(), 3);
-    ASSERT_EQ(json["sections"].size(), 5u);
-    EXPECT_EQ(json["sections"][4]["id"].asString(), "authentication");
-    EXPECT_EQ(json["sections"][4]["component"].asString(), "example.authentication");
-    EXPECT_TRUE(json["sections"][4]["data"]["enabled"].asBool());
+    ASSERT_EQ(json["sections"].size(), 8u);
+    EXPECT_EQ(json["sections"][7]["id"].asString(), "authentication");
+    EXPECT_EQ(json["sections"][7]["component"].asString(), "example.authentication");
+    EXPECT_TRUE(json["sections"][7]["data"]["enabled"].asBool());
 }
 
 TEST(ApplicationInspectionTests, ReplacesSectionWithSameId) {
@@ -194,4 +195,65 @@ TEST(ApplicationInspectionTests, ReportsGetActionMethod) {
     EXPECT_EQ(inspection.routes.front().kind, drogular::RouteKind::Action);
     EXPECT_EQ(inspection.routes.front().method, "GET");
     EXPECT_EQ(inspection.routes.front().path, "/api/status");
+}
+
+TEST(ApplicationInspectionTests, ReportsRuntimeDiagnosticsSections) {
+    drogular::RuntimeDiagnostics diagnostics;
+    diagnostics.recordRequest();
+    diagnostics.recordAction();
+    diagnostics.recordRenderedAction();
+    diagnostics.recordRedirect();
+    diagnostics.recordInteractionRequest();
+    diagnostics.recordInteractionGetRequest();
+    diagnostics.recordInteractionSuccessfulResponse();
+    diagnostics.recordComponentRendered(3);
+    diagnostics.recordRenderFailure();
+    diagnostics.recordServiceScopeResolution();
+    diagnostics.recordServiceScopeCacheHit();
+    diagnostics.recordServiceScopeServiceCreated();
+
+    drogular::ApplicationInspection inspection;
+    drogular::RuntimeDiagnosticsContributor contributor(diagnostics);
+    contributor.contribute(inspection);
+
+    ASSERT_EQ(inspection.sections.size(), 3u);
+
+    const auto& runtime = inspection.sections[0];
+    EXPECT_EQ(runtime.id, "runtime");
+    EXPECT_EQ(runtime.component, "drogular.runtime");
+    EXPECT_EQ(runtime.data["requests"]["requests"].asUInt64(), 1u);
+    EXPECT_EQ(runtime.data["requests"]["actions"].asUInt64(), 1u);
+    EXPECT_EQ(runtime.data["requests"]["renderedActions"].asUInt64(), 1u);
+    EXPECT_EQ(runtime.data["requests"]["redirects"].asUInt64(), 1u);
+    EXPECT_EQ(runtime.data["rendering"]["componentsRendered"].asUInt64(), 1u);
+    EXPECT_EQ(runtime.data["rendering"]["renderFailures"].asUInt64(), 1u);
+    EXPECT_EQ(runtime.data["rendering"]["maximumDepth"].asUInt64(), 3u);
+
+    const auto& interactions = inspection.sections[1];
+    EXPECT_EQ(interactions.id, "interactions");
+    EXPECT_EQ(interactions.component, "drogular.interactions");
+    EXPECT_EQ(interactions.data["requests"].asUInt64(), 1u);
+    EXPECT_EQ(interactions.data["getRequests"].asUInt64(), 1u);
+    EXPECT_EQ(interactions.data["postRequests"].asUInt64(), 0u);
+    EXPECT_EQ(interactions.data["successfulResponses"].asUInt64(), 1u);
+    EXPECT_EQ(interactions.data["clientErrorResponses"].asUInt64(), 0u);
+    EXPECT_EQ(interactions.data["redirects"].asUInt64(), 0u);
+
+    const auto& scopes = inspection.sections[2];
+    EXPECT_EQ(scopes.id, "service-scopes");
+    EXPECT_EQ(scopes.component, "drogular.service-scopes");
+    EXPECT_EQ(scopes.data["resolutions"].asUInt64(), 1u);
+    EXPECT_EQ(scopes.data["cacheHits"].asUInt64(), 1u);
+    EXPECT_EQ(scopes.data["servicesCreated"].asUInt64(), 1u);
+}
+
+TEST(ApplicationInspectionTests, AppInspectionIncludesRuntimeDiagnosticsSections) {
+    drogular::App app;
+
+    const auto inspection = app.inspect();
+
+    ASSERT_EQ(inspection.sections.size(), 3u);
+    EXPECT_EQ(inspection.sections[0].id, "runtime");
+    EXPECT_EQ(inspection.sections[1].id, "interactions");
+    EXPECT_EQ(inspection.sections[2].id, "service-scopes");
 }

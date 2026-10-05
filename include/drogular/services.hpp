@@ -4,6 +4,7 @@
 #include <drogular/dependency_graph.hpp>
 #include <drogular/application_options.hpp>
 #include <drogular/template_source_cache.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 #include <drogular/template/expression/functions.hpp>
 
 #include <memory>
@@ -55,24 +56,44 @@ private:
 
 class ServiceScope {
 public:
+    explicit ServiceScope(
+        RuntimeDiagnostics* diagnostics = nullptr
+    ) noexcept
+        : diagnostics_(diagnostics) {
+    }
+
     std::shared_ptr<void> resolve(
         std::type_index type,
         const std::function<std::shared_ptr<void>()>& factory
     ) {
         std::lock_guard lock(mutex_);
 
+        if (diagnostics_ != nullptr) {
+            diagnostics_->recordServiceScopeResolution();
+        }
+
         const auto it = services_.find(type);
 
         if (it != services_.end()) {
+            if (diagnostics_ != nullptr) {
+                diagnostics_->recordServiceScopeCacheHit();
+            }
+
             return it->second;
         }
 
         auto service = factory();
         services_[type] = service;
+
+        if (diagnostics_ != nullptr) {
+            diagnostics_->recordServiceScopeServiceCreated();
+        }
+
         return service;
     }
 
 private:
+    RuntimeDiagnostics* diagnostics_ = nullptr;
     std::mutex mutex_;
     std::unordered_map<std::type_index, std::shared_ptr<void>> services_;
 };

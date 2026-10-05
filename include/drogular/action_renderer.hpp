@@ -40,11 +40,19 @@ public:
 
         ComponentType component;
 
-        return ActionResult::html(
+        auto html =
             component_renderer::renderComponentTree(
                 component,
                 renderContext
-            ),
+            );
+
+        if (auto* diagnostics =
+                actionContext.runtimeDiagnostics()) {
+            diagnostics->recordRenderedAction();
+        }
+
+        return ActionResult::html(
+            std::move(html),
             status
         );
     }

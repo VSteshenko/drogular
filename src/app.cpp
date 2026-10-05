@@ -2,6 +2,7 @@
 #include <drogular/developer_tools_component_registry.hpp>
 #include <drogular/developer_tools/diagnostics_page.hpp>
 #include <drogular/developer_tools/diagnostics_resources.hpp>
+#include <drogular/developer_tools/runtime_diagnostics_contributor.hpp>
 #include <drogular/interactions_resources.hpp>
 #include <drogular/ui_resources.hpp>
 
@@ -122,6 +123,8 @@ ApplicationInspection App::inspect() const {
             "DeveloperToolsComponentRegistry"
         });
     }
+
+    RuntimeDiagnosticsContributor(runtimeDiagnostics_).contribute(result);
 
     const auto contributors =
         services_.service<DeveloperToolsContributors>();

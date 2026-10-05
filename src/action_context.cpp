@@ -5,12 +5,14 @@ namespace drogular {
 
 ActionContext::ActionContext(
     drogon::HttpRequestPtr request,
-    ApplicationServices* services
+    ApplicationServices* services,
+    RuntimeDiagnostics* diagnostics
 )
     : state_(
           std::make_shared<detail::RequestContextState>(
               std::move(request),
-              services
+              services,
+              diagnostics
           )
       ) {
 }
@@ -38,6 +40,10 @@ ApplicationServices* ActionContext::services() {
 
 const ApplicationServices* ActionContext::services() const {
     return state_->services();
+}
+
+RuntimeDiagnostics* ActionContext::runtimeDiagnostics() const noexcept {
+    return state_->runtimeDiagnostics();
 }
 
 std::optional<std::string> ActionContext::formValue(

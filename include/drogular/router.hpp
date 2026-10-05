@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/developer_tools/application_inspection.hpp>
 
@@ -27,7 +28,10 @@ public:
     using ActionFactory = std::function<std::shared_ptr<ActionHandler>()>;
 
     Router() = default;
-    explicit Router(ApplicationServices* services = nullptr);
+    explicit Router(
+        ApplicationServices* services = nullptr,
+        RuntimeDiagnostics* diagnostics = nullptr
+    );
 
     /**
      * Registers a page factory for the given path.
@@ -77,6 +81,7 @@ public:
 
 private:
     ApplicationServices* services_ = nullptr;
+    RuntimeDiagnostics* diagnostics_ = nullptr;
     std::vector<RouteInspection> routes_;
 };
 

@@ -2,12 +2,17 @@
 #include <drogular/component_registry.hpp>
 #include <drogular/component.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 
 #include <drogon/HttpRequest.h>
 
 #include <gtest/gtest.h>
 
 #include <json/json.h>
+
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
 class CoreCardComponent final : public drogular::Component {
 public:
@@ -403,4 +408,77 @@ TEST(CoreComponentRendererTests, RegisteredComponentHasNoDiagnostics) {
         );
 
     EXPECT_TRUE(result.diagnostics.empty());
+}
+
+namespace {
+
+class RuntimeDiagnosticsLeaf final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        return "<span>leaf</span>";
+    }
+};
+
+class RuntimeDiagnosticsRoot final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        return "<div><slot/></div>";
+    }
+
+    std::vector<std::shared_ptr<drogular::Component>> children() override {
+        return {std::make_shared<RuntimeDiagnosticsLeaf>()};
+    }
+};
+
+class RuntimeDiagnosticsFailing final : public drogular::Component {
+public:
+    std::string render(drogular::RenderContext&) override {
+        throw std::runtime_error("render failed");
+    }
+};
+
+} // namespace
+
+TEST(
+    CoreComponentRendererTests,
+    RecordsRenderedComponentsAndMaximumDepth
+) {
+    drogular::RuntimeDiagnostics diagnostics;
+    drogular::RenderContext context(&diagnostics);
+    RuntimeDiagnosticsRoot component;
+
+    const auto html =
+        drogular::component_renderer::renderComponentTree(
+            component,
+            context
+        );
+
+    EXPECT_EQ(html, "<div><span>leaf</span></div>");
+
+    const auto snapshot = diagnostics.snapshot();
+    EXPECT_EQ(snapshot.rendering.componentsRendered, 2u);
+    EXPECT_EQ(snapshot.rendering.renderFailures, 0u);
+    EXPECT_EQ(snapshot.rendering.maximumDepth, 2u);
+}
+
+TEST(
+    CoreComponentRendererTests,
+    RecordsRenderFailureOncePerFailedTree
+) {
+    drogular::RuntimeDiagnostics diagnostics;
+    drogular::RenderContext context(&diagnostics);
+    RuntimeDiagnosticsFailing component;
+
+    EXPECT_THROW(
+        drogular::component_renderer::renderComponentTree(
+            component,
+            context
+        ),
+        std::runtime_error
+    );
+
+    const auto snapshot = diagnostics.snapshot();
+    EXPECT_EQ(snapshot.rendering.componentsRendered, 1u);
+    EXPECT_EQ(snapshot.rendering.renderFailures, 1u);
+    EXPECT_EQ(snapshot.rendering.maximumDepth, 1u);
 }

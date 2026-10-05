@@ -530,3 +530,47 @@ TEST(CoreServicesTests, ValidatesCircularDependencies) {
     ASSERT_EQ(result.errors().size(), 1);
     EXPECT_EQ(result.errors()[0], "Circular dependency detected");
 }
+
+TEST(CoreServicesTests, ServiceScopeRecordsRuntimeDiagnostics) {
+    drogular::RuntimeDiagnostics diagnostics;
+    drogular::ServiceScope scope(&diagnostics);
+    drogular::ApplicationServices services;
+
+    services.addFactory<CoreDefaultService>(
+        drogular::ServiceLifetime::Scoped,
+        []() {
+            return std::make_shared<CoreDefaultService>();
+        }
+    );
+
+    const auto first = services.service<CoreDefaultService>(scope);
+    const auto second = services.service<CoreDefaultService>(scope);
+
+    ASSERT_NE(first, nullptr);
+    ASSERT_NE(second, nullptr);
+    EXPECT_EQ(first, second);
+
+    const auto snapshot = diagnostics.snapshot();
+
+    EXPECT_EQ(snapshot.serviceScopes.resolutions, 2u);
+    EXPECT_EQ(snapshot.serviceScopes.cacheHits, 1u);
+    EXPECT_EQ(snapshot.serviceScopes.servicesCreated, 1u);
+}
+
+TEST(CoreServicesTests, ServiceScopeDiagnosticsAreOptional) {
+    drogular::ServiceScope scope;
+    drogular::ApplicationServices services;
+
+    services.addFactory<CoreDefaultService>(
+        drogular::ServiceLifetime::Scoped,
+        []() {
+            return std::make_shared<CoreDefaultService>();
+        }
+    );
+
+    const auto first = services.service<CoreDefaultService>(scope);
+    const auto second = services.service<CoreDefaultService>(scope);
+
+    ASSERT_NE(first, nullptr);
+    EXPECT_EQ(first, second);
+}
