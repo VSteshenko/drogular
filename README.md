@@ -252,11 +252,27 @@ A small optional UI foundation rather than a full CSS framework:
 - `dg-badge`
 - `dg-segmented`
 - Semantic variants: `neutral`, `info`, `success`, `warning`, and `danger`
-- Framework-served `/__drogular/assets/ui.css` via opt-in `app.ui()`
+- Responsive shell, navigation, form, table, details, pagination, and empty-state primitives
+- Persistent `dg-collapsible` state through the optional framework UI script
+- Framework-served `/__drogular/assets/ui.css` and `/__drogular/assets/ui.js` via opt-in `app.ui()`
 
 The System Monitor reference application also validates a server-driven presentation model: C++ Components choose semantic state and UI variants, templates compose the primitives, and Drogular UI owns the shared visual treatment. Application-specific layout, branding, and domain presentation remain application-owned.
 
 Drogular UI and Drogular Interactions are intentionally independent: applications can use either one alone or combine them. The goal is to remove repeated presentation boilerplate without turning Drogular into a general-purpose CSS framework.
+
+**Offline Read Models**
+
+The Interactions runtime now also has an opt-in read-only offline representation layer through `app.offlineReadModels()`:
+
+- Exact cached GET representations backed by IndexedDB
+- Representation identity includes request, locale/context, and scope
+- Cached application shells and same-origin offline navigation
+- Independent connection, data, and interaction-capability state
+- Explicit read-only mode that blocks mutations instead of queueing writes
+- Cache-only locale switching with server reconciliation after reconnect
+- PortalDemo validation across cached Projects, Departments, and Users
+
+Offline Read Models preserve server-rendered HTML rather than introducing a second client-side domain model.
 
 **Template Engine cleanup**
 

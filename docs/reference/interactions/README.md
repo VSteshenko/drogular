@@ -164,6 +164,31 @@ A server fragment may provide `data-dg-connection-state`, `data-dg-connection-la
 
 `data-dg-preserve-key` preserves open/closed state for keyed native `<details>` across replacement. `dg-hide-on-unavailable` hides a root when the returned fragment contains `data-dg-unavailable`.
 
+## Offline Read Models
+
+`app.offlineReadModels()` extends this runtime with exact cached GET representations and automatically enables Interactions.
+A read root opts in explicitly:
+
+```html
+<section dg-get="/fragments/projects"
+         dg-target="[data-projects]"
+         dg-offline-read
+         dg-offline-runtime="framework">
+    <div data-projects></div>
+</section>
+```
+
+The runtime stores successful server-rendered representations in IndexedDB and uses a cached response only when the 
+network request fails and the exact representation identity matches. Identity includes normalized request parameters, 
+locale/application rendering context, and the current session scope.
+
+Offline state is published independently as connection, data, and capability state. When cached data is active, capability 
+becomes `read-only` and non-GET form submissions are blocked rather than queued.
+
+Framework-owned offline markup also includes `dg-offline-shell`, `dg-offline-navigation`, `dg-offline-locale`, 
+and `data-dg-offline-clear`. See the [Offline Read Models Reference](../offline/README.md) for their exact contracts 
+and boundaries.
+
 ## Resource API
 
 ```cpp

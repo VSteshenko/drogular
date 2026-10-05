@@ -35,6 +35,7 @@ Pages and Actions are created per request. Long-lived application services are r
 - [Data Provider Architecture](data-providers.md) — how Pages and Actions depend on application-facing provider interfaces instead of transports.
 - [Template Rendering Pipeline](template_rendering_pipeline.md) — the shared pipeline used by `TemplatePage` and `TemplateComponent`.
 - [Template Expression Engine](template_expression_engine.md) — expression values, AST, parser/evaluator boundaries, iterable expressions, lists, ranges, and operators.
+- [Offline Read Models](offline-read-models.md) — exact representation identity, IndexedDB storage, read-only capability, cached shells, locale/context dimensions, and security scope.
 - [Portal Feature Validation](portal_feature_validation_report.md) — what Projects, Users, and Departments currently prove, and which abstractions are still intentionally deferred.
 
 ## Architecture versus API Reference

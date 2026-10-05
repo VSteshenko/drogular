@@ -1,11 +1,11 @@
 # Drogular UI
 
-Drogular UI is a small optional stylesheet containing reusable presentation
-primitives for server-rendered Drogular applications.
+Drogular UI is an optional presentation foundation for server-rendered Drogular applications. It provides shared design 
+tokens, layout/form/table/navigation primitives, semantic state variants, and one small browser behavior for persistent 
+collapsible panels.
 
-It is intentionally not a complete CSS framework. Applications keep ownership of
-layout, branding, typography, and domain-specific presentation while Drogular UI
-provides a shared visual base for common controls and semantic states.
+It is intentionally not a complete CSS or client framework. Applications keep ownership of branding, domain presentation, 
+and application-specific behavior.
 
 Enable it explicitly:
 
@@ -13,50 +13,130 @@ Enable it explicitly:
 app.ui();
 ```
 
-Then load the built-in stylesheet:
+This publishes two resources:
 
 ```html
 <link rel="stylesheet" href="/__drogular/assets/ui.css">
+<script src="/__drogular/assets/ui.js" defer></script>
 ```
 
-`App::ui()` is idempotent. It does not enable Drogular Interactions and does not
-inject a `<link>` tag automatically.
+`App::ui()` is idempotent. It does not enable Drogular Interactions and does not inject either resource into a layout 
+automatically. The script is needed only when using the persistent collapsible behavior described below; the stylesheet
+can be used independently.
 
----
+## Design tokens and themes
 
-## Primitives
+Drogular UI defines `--dg-*` custom properties for background/surfaces, text, borders, accent/focus colors, semantic colors,
+shadows, and radii.
 
-### `dg-card`
+The stylesheet recognizes:
 
-A reusable bordered surface for grouping content.
+```text
+data-dg-theme="light"
+data-dg-theme="dark"
+data-dg-theme="system"
+```
+
+`system` follows `prefers-color-scheme`. Applications may compose these tokens with their own CSS rather than duplicating 
+framework colors and spacing decisions.
+
+## Cards and composition
+
+Core card primitives:
+
+```text
+dg-card
+dg-card-header
+dg-card-body
+dg-card-footer
+dg-card-title
+dg-card-subtitle
+dg-card-grid
+dg-card-summary
+dg-stack
+dg-link-list
+```
+
+Example:
 
 ```html
-<section class="dg-card dashboard-panel">
-    ...
+<section class="dg-card project-summary">
+    <header class="dg-card-header">
+        <h2 class="dg-card-title">Project</h2>
+        <p class="dg-card-subtitle">Current status</p>
+    </header>
+    <div class="dg-card-body">...</div>
 </section>
 ```
 
-### `dg-button`
+Application-owned classes such as `project-summary` remain the correct place for domain-specific layout or branding.
 
-A shared base for links or buttons used as application controls.
+## Persistent collapsible cards
+
+Use native `<details>` with `dg-collapsible`:
 
 ```html
-<button class="dg-button">Retry</button>
+<details class="dg-card dg-collapsible" data-dg-collapse-key="projects.filters">
+    <summary class="dg-card-summary">Filters</summary>
+    <div class="dg-card-body">...</div>
+</details>
 ```
+
+When `/__drogular/assets/ui.js` is loaded, `data-dg-collapse-key` persists the `open`/`closed` state in `localStorage` 
+under a Drogular-owned key prefix. Storage failures are ignored, so the native `<details>` behavior still works in 
+restricted/private contexts.
+
+Use stable, application-unique collapse keys. This UI persistence is independent from Interactions' `data-dg-preserve-key`, 
+which preserves disclosure state across fragment replacement in memory.
+
+## Forms
+
+Form primitives:
+
+```text
+dg-form
+dg-form-grid
+dg-field
+dg-label
+dg-input
+dg-select
+dg-form-actions
+dg-fieldset
+dg-fieldset-legend
+```
+
+They style native controls while preserving ordinary HTML form semantics, making them suitable for progressively enhanced 
+`dg-post` forms.
+
+## Tables, details, empty states, and pagination
+
+```text
+dg-table-container
+dg-table
+dg-details
+dg-details-item
+dg-details-label
+dg-details-value
+dg-empty-state
+dg-pagination
+```
+
+These are presentation primitives only. Pagination parameters and server-side data selection remain application/framework
+request logic rather than UI behavior.
+
+## Controls and semantic state
+
+### `dg-button`
+
+Shared base for button and link controls.
 
 ### `dg-toolbar`
 
-A horizontal flex container for compact groups of controls.
-
-```html
-<div class="dg-toolbar">
-    ...
-</div>
-```
+Horizontal flex container for compact related controls.
 
 ### `dg-status`
 
-A pill-shaped status surface. Semantic variants are available through:
+Status surface with semantic variants:
 
 ```text
 dg-status-neutral
@@ -66,81 +146,80 @@ dg-status-warning
 dg-status-danger
 ```
 
-When used with Drogular Interactions, `dg-status` also recognizes standard
-`data-dg-connection-state` values:
+It also recognizes Interactions connection state on the same element:
 
-- `idle` → neutral
-- `connecting` → info
-- `live` → success
-- `stale` / `reconnecting` → warning
-- `offline` → danger
-
-This is the only deliberate integration point between the two optional modules;
-Drogular Interactions itself does not require Drogular UI.
+```text
+data-dg-connection-state="idle|connecting|live|stale|reconnecting|offline"
+```
 
 ### `dg-badge`
 
-A compact semantic label. Variants:
-
-```text
-dg-badge-neutral
-dg-badge-info
-dg-badge-success
-dg-badge-warning
-dg-badge-danger
-```
-
-```html
-<span class="dg-badge dg-badge-success">Available</span>
-```
+Compact label with `neutral`, `info`, `success`, `warning`, and `danger` variants.
 
 ### `dg-segmented`
 
-A shared container for compact mutually related controls. Child controls use
-`dg-segmented-item`; the selected item uses `is-active`.
+Container for related controls. Children use `dg-segmented-item`; the selected item uses `is-active`.
 
-```html
-<div class="dg-segmented">
-    <button class="dg-segmented-item is-active">All</button>
-    <button class="dg-segmented-item">Used</button>
-</div>
+## Application shell and navigation
+
+Drogular UI now includes a responsive application-shell vocabulary:
+
+```text
+dg-shell
+dg-sidebar
+dg-brand
+dg-brand-mark
+dg-nav
+dg-nav-group
+dg-nav-item
+dg-nav-submenu
+dg-nav-subitem
+dg-sidebar-footer
+dg-sidebar-user
+dg-topbar
+dg-topbar-context
+dg-topbar-actions
+dg-main
+dg-page
+dg-page-header
+dg-page-kicker
+dg-page-title
+dg-page-content
+dg-footer
 ```
 
----
+Navigation items recognize `is-active` and `aria-current="page"`. The shell collapses to a mobile-friendly block/navigation 
+layout at the framework breakpoint.
 
-## Composition model
-
-Drogular UI classes are designed to be composed with application-owned classes:
-
-```html
-<section class="dg-card hardware-panel board-identity">
-    ...
-</section>
-```
-
-The framework primitive provides the common surface while the application class
-owns domain layout and any intentional visual specialization.
-
-Semantic variants should describe meaning rather than a specific color. For example,
-server-side C++ can choose `success`, `warning`, or `danger`, while Drogular UI owns
-the shared treatment.
-
----
+These classes provide structural presentation, not routing. Links remain normal server routes and may independently opt 
+into `dg-offline-navigation` or other Interactions behavior.
 
 ## Resource API
-
-The embedded stylesheet is also available through:
 
 ```cpp
 #include <drogular/ui_resources.hpp>
 
 drogular::ui_resources::StylesheetPath;
+drogular::ui_resources::ScriptPath;
 drogular::ui_resources::stylesheet();
+drogular::ui_resources::script();
 ```
 
-Normal applications should prefer `App::ui()` and the built-in asset path. The
-resource API is primarily useful in tests and framework integrations.
+Normal applications should prefer `App::ui()` and the built-in asset paths. Direct resource access is primarily useful 
+in tests and framework integrations.
 
-See [Drogular Interactions](../interactions/README.md) for optional declarative
-fragment behavior and [System Monitor PWA](../../../examples/system_monitor_pwa/README.md)
-for a complete application that combines both modules.
+## Composition with Interactions
+
+Drogular UI and Drogular Interactions are independent:
+
+```cpp
+app.ui();            // presentation resources
+app.interactions();  // HTML-over-the-wire behavior
+```
+
+They deliberately share a few semantic contracts, such as connection-state styling, but neither module requires the other.
+
+PortalDemo demonstrates the broader shell/form/table/navigation primitives. System Monitor PWA demonstrates semantic status 
+presentation and live Interactions behavior.
+
+See [Drogular Interactions](../interactions/README.md) and [Offline Read Models](../offline/README.md).

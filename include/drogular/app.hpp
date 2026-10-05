@@ -367,16 +367,19 @@ public:
     /**
      * Enables Offline Read Models for Drogular Interactions.
      *
-     * The capability is opt-in. Stage 1 exposes configuration only; it does
-     * not change browser runtime behavior yet. Enabling it also enables the
-     * Interactions runtime because offline reads are part of that pipeline.
+     * The capability is opt-in. Enabling it activates exact cached GET
+     * representations, cached application shells, read-only offline state,
+     * and offline navigation support in Drogular Interactions. It also
+     * enables the Interactions runtime because offline reads are part of
+     * that pipeline.
      */
     App& offlineReadModels();
 
     /**
-     * Enables the built-in Drogular UI stylesheet.
+     * Enables the built-in Drogular UI resources.
      *
-     * The stylesheet is served from /__drogular/assets/ui.css.
+     * The stylesheet is served from /__drogular/assets/ui.css and the
+     * optional behavior script from /__drogular/assets/ui.js.
      * Calling this method more than once is safe.
      */
     App& ui();

@@ -211,8 +211,9 @@ public:
     /**
      * Enables the Offline Read Models interaction capability.
      *
-     * Stage 1 only records framework configuration. Browser storage and
-     * interaction-pipeline integration are provided by later stages.
+     * The option controls the Offline Read Models integration in the built-in
+     * Interactions runtime, including representation storage and exact cached
+     * GET fallback.
      */
     void setOfflineReadModelsEnabled(bool enabled) {
         offlineReadModelsEnabled_ = enabled;

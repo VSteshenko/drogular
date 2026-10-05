@@ -59,6 +59,15 @@ behavior while keeping rendering on the server.
 
 ---
 
+## [Offline Read-only Applications](offline-read-models.md)
+
+**Need previously rendered server data to remain browsable without a connection?**
+
+Enable Offline Read Models, opt selected GET interactions into exact representation caching, preserve a cached shell, 
+and keep mutation paths disabled while the runtime is read-only.
+
+---
+
 ## [Authentication & Authorization](authentication/overview.md)
 
 **Need to authenticate users and protect application resources?**

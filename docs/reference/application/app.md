@@ -203,20 +203,39 @@ app.interactions();
 <script src="/__drogular/assets/interactions.js" defer></script>
 ```
 
+### `offlineReadModels()`
+
+```cpp
+App& offlineReadModels();
+```
+
+Enables the [Offline Read Models](../offline/README.md) capability and automatically enables Drogular Interactions. The 
+runtime can persist exact server-rendered GET representations and application shells in IndexedDB, restore matching cached 
+representations after a network failure, expose independent connection/data/capability state, and enforce read-only behavior 
+while cached data is active.
+
+```cpp
+app.offlineReadModels();
+```
+
+The capability is opt-in. Only interaction roots explicitly marked with `dg-offline-read` and `dg-offline-runtime="framework"` 
+participate in fragment caching.
+
 ### `ui()`
 
 ```cpp
 App& ui();
 ```
 
-Enables the built-in [Drogular UI](../ui/README.md) stylesheet at:
+Enables the built-in [Drogular UI](../ui/README.md) resources at:
 
 ```text
 /__drogular/assets/ui.css
+/__drogular/assets/ui.js
 ```
 
 The call is idempotent and independent from `interactions()`. Drogular does not
-inject the stylesheet into page layouts automatically.
+inject either resource into page layouts automatically.
 
 ```cpp
 app.ui();
@@ -224,6 +243,7 @@ app.ui();
 
 ```html
 <link rel="stylesheet" href="/__drogular/assets/ui.css">
+<script src="/__drogular/assets/ui.js" defer></script>
 ```
 
 The two modules can be combined when an application wants both the shared UI

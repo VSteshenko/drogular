@@ -95,6 +95,13 @@ Add optional declarative GET fragment queries and POST form commands, fragment r
 
 - [Drogular Interactions](interactions/README.md)
 
+## Offline Read Models
+
+Cache exact server-rendered GET representations and application shells, restore them without network access, and expose 
+an explicit read-only offline state through Drogular Interactions.
+
+- [Offline Read Models](offline/README.md)
+
 ## Drogular UI
 
 Use optional shared presentation primitives and semantic variants without giving the framework ownership of application layout or branding.
@@ -124,4 +131,3 @@ Build GraphQL documents, execute requests through interchangeable clients, inspe
 Render pages and component trees directly in unit-style tests and inspect the resulting HTML and render context.
 
 - [Testing](testing/README.md)
-
