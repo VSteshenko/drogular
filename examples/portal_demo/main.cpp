@@ -26,7 +26,6 @@
 #include "features/users/actions/update_user_action.hpp"
 #include "features/users/actions/users_fragment_action.hpp"
 #include "features/offline/pages/offline_page.hpp"
-#include "features/localization/support/portal_translations.hpp"
 #include "support/portal_expression_functions.hpp"
 #include "features/projects/actions/create_project_action.hpp"
 #include "features/projects/actions/projects_fragment_action.hpp"
@@ -57,6 +56,7 @@
 #include <drogular/static_file_cache_profile.hpp>
 #include <drogular/session_store.hpp>
 #include <drogular/in_process_graphql_client.hpp>
+#include <drogular/file_translation_provider.hpp>
 
 #include <exception>
 #include <iostream>
@@ -124,7 +124,10 @@ int main(
     app.services().addFactory<drogular::TranslationProvider>(
         drogular::ServiceLifetime::Singleton,
         [] {
-            return std::make_shared<PortalTranslations>();
+            return std::make_shared<drogular::FileTranslationProvider>(
+                "examples/portal_demo/resources/localization",
+                "en"
+            );
         }
     );
 

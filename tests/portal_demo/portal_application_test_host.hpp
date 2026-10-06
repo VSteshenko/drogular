@@ -7,7 +7,6 @@
 #include "features/department_members/graphql/portal_graphql_department_member_provider.hpp"
 #include "features/department_members/providers/department_member_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
-#include "features/localization/support/portal_translations.hpp"
 #include "support/portal_expression_functions.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
@@ -25,6 +24,7 @@
 #include <drogular/services.hpp>
 #include <drogular/session_store.hpp>
 #include <drogular/in_process_graphql_client.hpp>
+#include <drogular/file_translation_provider.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -134,7 +134,11 @@ public:
         services_.addFactory<drogular::TranslationProvider>(
             drogular::ServiceLifetime::Singleton,
             [] {
-                return std::make_shared<PortalTranslations>();
+                return std::make_shared<drogular::FileTranslationProvider>(
+                    std::filesystem::path(DROGULAR_SOURCE_DIR) /
+                        "examples/portal_demo/resources/localization",
+                    "en"
+                );
             }
         );
     }

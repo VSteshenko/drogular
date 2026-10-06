@@ -3,12 +3,14 @@
 #include "data/demo_dataset.hpp"
 #include "features/localization/actions/language_action.hpp"
 #include "features/localization/support/portal_error_translator.hpp"
-#include "features/localization/support/portal_translations.hpp"
 
 #include <drogular/action_context.hpp>
 #include <drogular/action_validation_error.hpp>
 #include <drogular/locale_support.hpp>
 #include <drogular/render_context.hpp>
+#include <drogular/file_translation_provider.hpp>
+
+#include <filesystem>
 
 #include <drogon/HttpRequest.h>
 #include <gtest/gtest.h>
@@ -49,49 +51,61 @@ drogular::RenderContext makeRenderContext(
     return context;
 }
 
+std::filesystem::path translationDirectory() {
+    return std::filesystem::path(DROGULAR_SOURCE_DIR) /
+        "examples/portal_demo/resources/localization";
+}
+
+drogular::FileTranslationProvider makeTranslations() {
+    return drogular::FileTranslationProvider(
+        translationDirectory(),
+        "en"
+    );
+}
+
 } // namespace
 
 TEST(PortalLocalizationTests, TranslationsReturnEnglishValue) {
-    PortalTranslations translations;
+    auto translations = makeTranslations();
 
     EXPECT_EQ(
-        translations.get("en", "dashboard.title"),
+        translations.translate("en", "dashboard.title"),
         "Dashboard"
     );
 }
 
 TEST(PortalLocalizationTests, TranslationsReturnGermanValue) {
-    PortalTranslations translations;
+    auto translations = makeTranslations();
 
     EXPECT_EQ(
-        translations.get("de", "dashboard.title"),
+        translations.translate("de", "dashboard.title"),
         "Übersicht"
     );
 }
 
 TEST(PortalLocalizationTests, UnknownLocaleFallsBackToEnglish) {
-    PortalTranslations translations;
+    auto translations = makeTranslations();
 
     EXPECT_EQ(
-        translations.get("fr", "login.title"),
+        translations.translate("fr", "login.title"),
         "Login"
     );
 }
 
 TEST(PortalLocalizationTests, MissingGermanKeyFallsBackToEnglish) {
-    PortalTranslations translations;
+    auto translations = makeTranslations();
 
     EXPECT_EQ(
-        translations.get("de", "missing.key"),
-        "missing.key"
+        translations.translate("de", "departments.search"),
+        "Search departments"
     );
 }
 
 TEST(PortalLocalizationTests, UnknownKeyFallsBackToKey) {
-    PortalTranslations translations;
+    auto translations = makeTranslations();
 
     EXPECT_EQ(
-        translations.get("en", "unknown.translation.key"),
+        translations.translate("en", "unknown.translation.key"),
         "unknown.translation.key"
     );
 }
