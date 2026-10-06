@@ -40,6 +40,7 @@ add_library(drogular
     src/developer_tools/diagnostics_resources.cpp
     src/developer_tools/component_registry.cpp
     src/form_validator.cpp
+    src/file_translation_provider.cpp
     src/graphql.cpp
     src/graphql_client.cpp
     src/in_process_graphql_client.cpp
