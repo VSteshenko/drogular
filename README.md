@@ -195,19 +195,20 @@ The [Getting Started](docs/getting-started/README.md) guide adds the required CM
 
 ---
 
-## What's New in 0.22
+## What's New in 0.23
 
-Drogular 0.22 focuses on developer productivity and making the path from an installed CLI to a working application fast and reproducible.
+Drogular 0.23 turns the server-driven UI experiments from System Monitor and PortalDemo into reusable framework capabilities.
 
-- 🚀 Reusable project generator with embedded project templates
-- 🧰 Developer-focused `drogular` CLI with destination-path support and template discovery
-- 🧩 `minimal` starter with the recommended Drogular project structure and concise `Tip:` guidance
-- 📱 Installable `pwa` starter with manifest, service worker, offline fallback, responsive UI, and application icons
-- 🛡 Safer generation with path validation, overwrite protection, and cleanup after failures
-- 🧪 End-to-end smoke tests that generate, configure, compile, and link both official starters
-- 📊 New System Monitor PWA example with live monitoring, reconnect/offline behavior, SSH, and Raspberry Pi hardware inspection
+- ⚡ Drogular Interactions for declarative fragment GET/POST flows, refresh/navigation hooks, history, retry, and offline-aware behavior
+- 🎨 Drogular UI as an optional shared foundation for application shells, navigation, forms, tables, cards, status, and responsive layouts
+- 🧩 `ActionRenderer` and shared request context for consistent Action → Component rendering and true request-scoped services
+- 📴 Offline Read Models with cached server-rendered representations, offline navigation, locale-aware identity, and read-only mutation protection
+- 🛠 Aggregate runtime diagnostics for requests, actions, rendering, Interactions, and scoped service resolution, exposed through Application Inspection and Developer Tools
+- 🏗 PortalDemo migration of Projects, Departments, Roles, Project Types, and offline read flows to the new APIs
+- 📊 System Monitor migration to the framework-level Interactions and UI APIs
+- 🧠 Template Engine cleanup with semantic AST compilation, integer expression values, parser/runtime decomposition, and custom-function diagnostics
 
-See [RELEASE_NOTES_0.22.md](RELEASE_NOTES_0.22.md) for the complete release notes.
+See [RELEASE_NOTES_0.23.md](RELEASE_NOTES_0.23.md) for the complete release notes.
 
 ---
 
@@ -224,64 +225,39 @@ See [RELEASE_NOTES_0.22.md](RELEASE_NOTES_0.22.md) for the complete release note
 
 ## Roadmap
 
-### 0.23 — Server-driven UI & Framework Foundations
+### 0.24 — Localization & Application Experience
 
-Drogular 0.23 is turning the successful System Monitor experiments into reusable framework capabilities while keeping JavaScript and CSS optional, small, and composable. The first framework-level Drogular Interactions and Drogular UI APIs are now in place and System Monitor has been migrated to consume them.
+Drogular 0.24 will build on the 0.23 server-driven UI foundations with stronger localization tooling, a more application-oriented PortalDemo shell, and a second reference application.
 
-**Drogular Interactions**
+**Localization**
 
-- Declarative fragment requests and form commands with `dg-get`, `dg-post`, `dg-target`, and `dg-trigger`
-- Load, polling, change, and debounced input triggers
-- Standard loading, ready, empty, and error states
-- Polling groups for coordinated live UI
-- Failure limits with pause and explicit resume
-- Framework-served `/__drogular/assets/interactions.js` via opt-in `app.interactions()`
-- Interaction runtime separated from application-specific connection/status markup through `data-dg-connection-*`
-- First-class Component / Fragment rendering from Actions with `ActionRenderer`
-- Interaction-aware Actions through `ActionContext::isInteraction()`
-- URL/history synchronization plus success refresh/navigation for mutation flows
+- Load translations from external files through a reusable translation-source abstraction
+- Define deterministic source/merge behavior for application translations
+- Extend the Drogular CLI with translation validation
+- Report missing and unused translation keys
+- Support CI-friendly failure on incomplete translations
 
-**Drogular UI**
+**PortalDemo application experience**
 
-A small optional UI foundation rather than a full CSS framework:
+- Move page content into a dedicated application frame
+- Keep the application header persistent at the top
+- Keep primary navigation in a persistent left sidebar
+- Make the content area independently replaceable through Drogular Interactions
+- Preserve responsive behavior for smaller screens
 
-- `dg-button`
-- `dg-card`
-- `dg-toolbar`
-- `dg-status`
-- `dg-badge`
-- `dg-segmented`
-- Semantic variants: `neutral`, `info`, `success`, `warning`, and `danger`
-- Responsive shell, navigation, form, table, details, pagination, and empty-state primitives
-- Persistent `dg-collapsible` state through the optional framework UI script
-- Framework-served `/__drogular/assets/ui.css` and `/__drogular/assets/ui.js` via opt-in `app.ui()`
+**Dashboard tasks**
 
-The System Monitor reference application also validates a server-driven presentation model: C++ Components choose semantic state and UI variants, templates compose the primitives, and Drogular UI owns the shared visual treatment. Application-specific layout, branding, and domain presentation remain application-owned.
+- Add current tasks to the PortalDemo dashboard
+- Model task status and priority rather than using presentation-only demo data
+- Add summary views and Interaction-based task updates
 
-Drogular UI and Drogular Interactions are intentionally independent: applications can use either one alone or combine them. The goal is to remove repeated presentation boilerplate without turning Drogular into a general-purpose CSS framework.
+**Mini Store example**
 
-**Offline Read Models**
-
-The Interactions runtime now also has an opt-in read-only offline representation layer through `app.offlineReadModels()`:
-
-- Exact cached GET representations backed by IndexedDB
-- Representation identity includes request, locale/context, and scope
-- Cached application shells and same-origin offline navigation
-- Independent connection, data, and interaction-capability state
-- Explicit read-only mode that blocks mutations instead of queueing writes
-- Cache-only locale switching with server reconciliation after reconnect
-- PortalDemo validation across cached Projects, Departments, and Users
-
-Offline Read Models preserve server-rendered HTML rather than introducing a second client-side domain model.
-
-**Template Engine cleanup**
-
-- Precompile interpolation expressions
-- Compile component tags/attributes into semantic AST
-- Split `template_runtime.cpp`
-- Split Expression parser/lexer
-- Integer `ExpressionValue`
-- Runtime diagnostics for custom functions
+- Add a customer-facing mini store as a second reference application
+- Product catalog, categories, search, filters, pagination, and product details
+- Shopping cart state without introducing payment or order-processing scope
+- Use external translation files as an acceptance test for the new localization API
+- Exercise Drogular UI and Interactions in a public, non-admin application
 
 ### 1.0
 
