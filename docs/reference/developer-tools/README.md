@@ -18,7 +18,7 @@ ApplicationInspection
 DeveloperToolsComponentRegistry
 ```
 
-The inspection data is independent from the browser UI. Custom contributors add semantic sections to the inspection contract, while browser-side renderer modules are registered separately.
+The inspection data is independent from the browser UI. Drogular contributes aggregate runtime sections to every `App::inspect()` snapshot, custom contributors add application-specific semantic sections, and browser-side renderer modules are registered separately.
 
 ## Core Types
 
@@ -30,6 +30,8 @@ The inspection data is independent from the browser UI. Custom contributors add 
 - [`ApplicationInspectionController`](application-inspection-controller.md) — public JSON endpoint controller at `/__drogular/inspection`.
 - [`diagnostics_resources`](diagnostics-resources.md) — embedded HTML, stylesheet, and JavaScript used by the diagnostics application.
 - [`Diagnostics`](diagnostics.md) — shared diagnostic collection primitives surfaced by inspection.
+- [`RuntimeDiagnostics`](runtime-diagnostics.md) — thread-safe aggregate counters for request, rendering, Interactions, and scoped-service activity.
+- [`RuntimeDiagnosticsContributor`](runtime-diagnostics-contributor.md) — built-in adapter that publishes runtime snapshots as inspection sections.
 
 ## Activation
 

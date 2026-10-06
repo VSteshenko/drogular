@@ -78,7 +78,7 @@ Developer Tools are a first-class part of Drogular rather than an external utili
 Developer Tools include:
 
 - Development Profile
-- Built-in Diagnostics
+- Built-in Diagnostics with aggregate runtime metrics
 - Application Inspection
 - Extensible Inspection Contributors
 - Custom Developer Components

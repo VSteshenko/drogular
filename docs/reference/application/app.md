@@ -369,7 +369,9 @@ Changing from Development to another profile throws `std::logic_error` when Deve
 ApplicationInspection inspect() const;
 ```
 
-Builds and returns an [`ApplicationInspection`](../developer-tools/application-inspection.md) snapshot of registered routes, static file mappings, service worker route, offline page route, components, services, diagnostics entries, and custom inspection contributions.
+Builds and returns an [`ApplicationInspection`](../developer-tools/application-inspection.md) snapshot of registered 
+routes, static file mappings, service worker route, offline page route, components, services, diagnostics entries, 
+aggregate runtime diagnostics, and custom inspection contributions.
 
 Calling `inspect()` does not start the server.
 

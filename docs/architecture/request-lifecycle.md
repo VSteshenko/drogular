@@ -12,11 +12,16 @@ For every matching GET request the router:
 HTTP request
     │
     ▼
-create RenderContext
+create request state
     │
     ├── attach ApplicationServices
-    ├── attach HttpRequest
+    ├── retain HttpRequest
+    ├── attach RuntimeDiagnostics
+    ├── create request ServiceScope
     └── copy route parameters
+    │
+    ▼
+create RenderContext over request state
     │
     ▼
 create fresh Page
@@ -50,11 +55,16 @@ A Page instance is therefore request-scoped. Application-shared objects referenc
 HTTP request
     │
     ▼
-create ActionContext
+create request state
     │
     ├── attach ApplicationServices
     ├── retain HttpRequest
+    ├── attach RuntimeDiagnostics
+    ├── create request ServiceScope
     └── copy route parameters
+    │
+    ▼
+create ActionContext over request state
     │
     ▼
 create fresh ActionHandler
@@ -73,18 +83,13 @@ Expected validation failures use `ActionValidationError` and become `400 Bad Req
 
 ## Context ownership
 
-`RenderContext` is a rendering scope. It owns:
+`RenderContext` is a rendering scope. It owns local template values, GraphQL render results, and a parent link for value 
+lookup. Request-bound state — the HTTP request, route parameters, application services, runtime diagnostics, and 
+`ServiceScope` — is held in framework-owned shared request state.
 
-- template values;
-- route parameters;
-- request access;
-- GraphQL render results;
-- the request service scope used by `service<T>()`;
-- a parent link for value lookup in child rendering contexts.
+Child contexts share that request state while maintaining their own local render values.
 
-Child contexts inherit access to application services, GraphQL client configuration, and the same request service scope while maintaining their own local render values.
-
-`ActionContext` is the command/request context. It owns request access, route parameters, form conversion helpers, session access, service-container access, and its own request service scope.
+`ActionContext` is the command/request view over the same kind of request state and adds form conversion helpers, session access, and action-oriented service access. When `ActionRenderer` renders a component from an action, the bridge creates a `RenderContext` over the **same** request state, so scoped services and diagnostics remain request-consistent.
 
 ## Shared application services
 
@@ -100,6 +105,18 @@ This means thread-safety must be evaluated according to the registered service l
 | `Scoped` | factory in `ApplicationServices`; one instance per request-owned `ServiceScope` |
 
 `RenderContext` and `ActionContext` both resolve scoped registrations through a request-owned scope. Child render contexts share their parent's scope. A scoped service can therefore be treated as one instance per HTTP request in the framework request pipeline.
+
+## Runtime diagnostics
+
+`App` owns one application-lived `RuntimeDiagnostics` collector. The router attaches it to each framework request state. 
+Runtime subsystems update inexpensive aggregate counters rather than retaining request history.
+
+The current aggregates cover routed page/action requests, rendered actions and redirects, component rendering and maximum
+component depth, Drogular Interactions request/response classes, and scoped-service resolutions/cache hits/creations. 
+`App::inspect()` publishes an immutable snapshot through Developer Tools.
+
+Standalone `ActionContext`, `RenderContext`, and `ServiceScope` objects may be created without runtime diagnostics; 
+this is supported for tests and low-level use and is not treated as an invariant violation.
 
 ## Sessions
 

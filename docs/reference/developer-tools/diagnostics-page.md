@@ -66,7 +66,13 @@ drogular.routes
 drogular.components
 drogular.services
 drogular.diagnostics
+drogular.runtime
+drogular.interactions
+drogular.service-scopes
 ```
+
+The runtime renderers present aggregate request/rendering counters, Interactions response counters, and scoped-service 
+resolution counters as metric cards.
 
 Custom sections can request a renderer registered through [`DeveloperToolsComponentRegistry`](developer-tools-component-registry.md).
 

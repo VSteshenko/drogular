@@ -157,7 +157,14 @@ sections
 3. `services` using component `drogular.services`
 4. `diagnostics` using component `drogular.diagnostics`
 
-Application-defined sections are appended afterwards.
+Runtime and application-defined sections are appended afterwards. `App::inspect()` contributes three built-in runtime
+sections before application contributors run:
+
+1. `runtime` using component `drogular.runtime`
+2. `interactions` using component `drogular.interactions`
+3. `service-scopes` using component `drogular.service-scopes`
+
+These use the existing extensible `sections` contract, so adding them does not change `SchemaVersion`.
 
 ## Creating an Inspection
 
@@ -176,6 +183,7 @@ const auto inspection = app.inspect();
 - DI service registrations;
 - component diagnostics;
 - inspection endpoint routes when enabled;
+- aggregate runtime diagnostics for routed requests, rendering, Interactions, and scoped-service resolution;
 - contributions from [`DeveloperToolsContributor`](developer-tools-contributor.md) instances.
 
 Calling `inspect()` does not start the server.
@@ -203,4 +211,6 @@ std::cout
 - [`DeveloperToolsComponentRegistry`](developer-tools-component-registry.md)
 - [`ApplicationInspectionController`](application-inspection-controller.md)
 - [`Diagnostics`](diagnostics.md)
+- [`RuntimeDiagnostics`](runtime-diagnostics.md)
+- [`RuntimeDiagnosticsContributor`](runtime-diagnostics-contributor.md)
 - [`App`](../application/app.md)
