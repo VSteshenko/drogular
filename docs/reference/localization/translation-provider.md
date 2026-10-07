@@ -8,7 +8,8 @@
 
 `TranslationProvider` defines the application-specific translation lookup contract.
 
-Drogular supplies the requested locale and translation key. The application decides where translations are stored and what fallback policy to apply.
+Drogular supplies the requested locale and translation key. The concrete provider decides where translations are stored 
+and what fallback policy to apply. Drogular includes `FileTranslationProvider` for the common case of JSON resources stored on disk.
 
 ---
 
@@ -54,13 +55,16 @@ Those policies belong to the concrete implementation.
 
 ## Registration
 
-Register an implementation through dependency injection:
+Register an implementation through dependency injection. For file-based resources, Drogular provides `FileTranslationProvider`:
 
 ```cpp
 app.services().addFactory<drogular::TranslationProvider>(
     drogular::ServiceLifetime::Singleton,
     [] {
-        return std::make_shared<PortalTranslations>();
+        return std::make_shared<drogular::FileTranslationProvider>(
+            "resources/localization",
+            "en"
+        );
     }
 );
 ```
@@ -107,12 +111,14 @@ public:
 };
 ```
 
-PortalDemo uses this pattern in `PortalTranslations`.
+Custom providers can still implement any storage and fallback policy required by the application. PortalDemo uses 
+the built-in `FileTranslationProvider` instead.
 
 ---
 
 ## Related Types
 
+- [`FileTranslationProvider`](file-translation-provider.md)
 - [`TranslationSupport`](translation-support.md)
 - [`LocaleSupport`](locale-support.md)
 - [`RenderContext`](../rendering/render-context.md)

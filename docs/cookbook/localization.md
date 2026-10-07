@@ -10,9 +10,10 @@ This guide shows how to separate user-visible text from application logic using 
 
 ## Recommended Solution
 
-Implement a `TranslationProvider` and resolve translated values through `RenderContext`.
+Register a `TranslationProvider` and resolve translated values through `RenderContext`.
 
-This keeps pages and components independent from any particular language while allowing the application to choose how translations are stored.
+For file-based application resources, use the built-in `FileTranslationProvider`. Custom providers remain available when 
+translations come from another storage system or require a different lookup policy.
 
 ---
 
@@ -22,7 +23,8 @@ This keeps pages and components independent from any particular language while a
 
 `TranslationProvider` defines a simple interface for resolving localized text.
 
-Applications are free to implement the interface using any storage mechanism. PortalDemo provides a concrete implementation named `PortalTranslations`.
+Applications are free to implement the interface using any storage mechanism. Drogular also provides `FileTranslationProvider`, 
+which loads one flat JSON file per locale and keeps the catalog in memory.
 
 ```cpp
 class TranslationProvider
@@ -41,13 +43,34 @@ public:
 
 ### Registering the Provider
 
-Register the translation provider through dependency injection.
+Create one file per locale:
+
+```text
+resources/localization/
+├── de.json
+└── en.json
+```
+
+For example, `en.json` can contain:
+
+```json
+{
+  "nav.dashboard": "Dashboard",
+  "users.title": "Users",
+  "common.previous": "Previous"
+}
+```
+
+Translation files are flat JSON objects with string values. Register the provider through dependency injection:
 
 ```cpp
 app.services().addFactory<drogular::TranslationProvider>(
     drogular::ServiceLifetime::Singleton,
     [] {
-        return std::make_shared<PortalTranslations>();
+        return std::make_shared<drogular::FileTranslationProvider>(
+            "resources/localization",
+            "en"
+        );
     }
 );
 ```
@@ -127,9 +150,8 @@ This keeps page initialization concise while making every translated value expli
 
 Fallback behavior is defined by the translation provider implementation.
 
-`PortalTranslations` first searches the requested locale.
-
-If the locale or translation key cannot be found, it falls back to the default language.
+`FileTranslationProvider` first searches the requested locale. If the locale or translation key cannot be found, it 
+searches the configured default locale. If the key is also missing there, it returns the key itself.
 
 Applications may implement a different fallback strategy while using the same `TranslationProvider` interface.
 
@@ -151,6 +173,7 @@ Applications may implement a different fallback strategy while using the same `T
 ### API Reference
 
 - [`TranslationProvider`](../reference/localization/translation-provider.md)
+- [`FileTranslationProvider`](../reference/localization/file-translation-provider.md)
 - [`TranslationSupport`](../reference/localization/translation-support.md)
 - [`LocaleSupport`](../reference/localization/locale-support.md)
 - [`RenderContext`](../reference/rendering/render-context.md)
