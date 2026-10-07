@@ -134,6 +134,10 @@ if(DROGULAR_BUILD_TOOLS OR DROGULAR_BUILD_TESTS)
     add_subdirectory(tools/drogular)
 endif()
 
+if(DROGULAR_BUILD_TOOLS OR DROGULAR_BUILD_TESTS)
+    add_subdirectory(tools/localization_check)
+endif()
+
 if(DROGULAR_BUILD_TESTS)
     include(FetchContent)
 

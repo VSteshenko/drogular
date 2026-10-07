@@ -271,6 +271,16 @@ target_link_libraries(drogular_system_monitor_pwa_tests
     system_monitor_core
 )
 
+add_executable(drogular_localization_check_tests
+    localization_check/localization_check_tests.cpp
+)
+
+target_link_libraries(drogular_localization_check_tests
+    PRIVATE
+    drogular_localization_check_support
+    GTest::gtest_main
+)
+
 add_executable(drogular_project_generator_tests
     project_generator/project_generator_generation_tests.cpp
     project_generator/project_generator_file_renderer_tests.cpp
@@ -291,6 +301,7 @@ include(GoogleTest)
 gtest_discover_tests(drogular_tests)
 gtest_discover_tests(drogular_portal_demo_tests)
 gtest_discover_tests(drogular_project_generator_tests)
+gtest_discover_tests(drogular_localization_check_tests)
 gtest_discover_tests(drogular_system_monitor_pwa_tests)
 
 # Generated-project smoke tests verify that official starters remain buildable
