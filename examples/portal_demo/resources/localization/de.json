@@ -11,6 +11,7 @@
   "departments.active": "Aktiv",
   "departments.inactive": "Inaktiv",
   "departments.create": "Abteilung erstellen",
+  "departments.search": "Abteilungen durchsuchen",
   "departments.search.clear": "Zurücksetzen",
   "departments.edit": "Bearbeiten",
   "departments.empty": "Keine Abteilungen gefunden.",

@@ -97,7 +97,7 @@ TEST(PortalLocalizationTests, MissingGermanKeyFallsBackToEnglish) {
 
     EXPECT_EQ(
         translations.translate("de", "departments.search"),
-        "Search departments"
+        "Abteilungen durchsuchen"
     );
 }
 

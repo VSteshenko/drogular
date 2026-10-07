@@ -81,12 +81,9 @@ TEST(TranslationCatalogValidatorTests, ValidatesFileProviderUsingItsDefaultLocal
 
     const auto result = drogular::TranslationCatalogValidator::validate(provider);
 
-    EXPECT_FALSE(result.valid());
+    EXPECT_TRUE(result.valid());
     ASSERT_TRUE(result.locales.contains("de"));
-    EXPECT_EQ(
-        result.locales.at("de").missingKeys,
-        std::vector<std::string>{"departments.search"}
-    );
+    EXPECT_TRUE(result.locales.at("de").missingKeys.empty());
     EXPECT_TRUE(result.locales.at("de").extraKeys.empty());
 }
 

@@ -304,6 +304,15 @@ gtest_discover_tests(drogular_project_generator_tests)
 gtest_discover_tests(drogular_localization_check_tests)
 gtest_discover_tests(drogular_system_monitor_pwa_tests)
 
+# Keep example localization catalogs complete in every CTest/CI run.
+add_test(
+    NAME drogular_portal_demo_localization_catalog
+    COMMAND
+        $<TARGET_FILE:drogular_localization_check>
+        "${CMAKE_SOURCE_DIR}/examples/portal_demo/resources/localization"
+        --reference en
+)
+
 # Generated-project smoke tests verify that official starters remain buildable
 # against the current Drogular source tree, without following a released Git tag.
 # They require the CLI executable, so library-only test configurations skip them.
