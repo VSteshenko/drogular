@@ -86,6 +86,7 @@ add_library(drogular
     src/template_loader.cpp
     src/template_preprocessor.cpp
     src/translation_support.cpp
+    src/translation_catalog_validator.cpp
 )
 
 add_library(Drogular::drogular ALIAS drogular)
