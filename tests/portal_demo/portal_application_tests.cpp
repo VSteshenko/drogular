@@ -28,6 +28,7 @@
 #include "features/departments/pages/department_edit_page.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
 #include "features/admin/pages/admin_page.hpp"
+#include "ui/portal_page_fragment_action.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 #include "features/department_members/actions/add_department_member_action.hpp"
@@ -94,27 +95,102 @@ TEST(PortalApplicationTests, DashboardRendersApplicationShellAndPrimaryNavigatio
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-sidebar")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-topbar")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-main")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-portal-content)"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-get="/fragments/pages/dashboard")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-get="/fragments/pages/users")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-get="/fragments/pages/projects")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-get="/fragments/pages/departments")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-trigger="click")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-target="[data-portal-content]")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-history="push")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-page")"));
     EXPECT_TRUE(
-        HtmlTestSupport::containsText(
+        HtmlTestSupport::elementHasAttributes(
             html,
-            R"(class="dg-nav-item is-active"
-           href="/dashboard"
-           aria-current="page")"
+            "a",
+            {
+                {"class", "dg-nav-item is-active"},
+                {"href", "/dashboard"},
+                {"dg-get", "/fragments/pages/dashboard"},
+                {"dg-trigger", "click"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history", "push"},
+                {"dg-history-url", "/dashboard"},
+                {"dg-offline-navigation", ""},
+                {"aria-current", "page"}
+            }
         )
     );
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/users"
-           dg-offline-navigation)"));
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/projects"
-           dg-offline-navigation)"));
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/departments"
-           dg-offline-navigation)"));
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "a",
+            {
+                {"href", "/users"},
+                {"dg-get", "/fragments/pages/users"},
+                {"dg-trigger", "click"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history", "push"},
+                {"dg-history-url", "/users"},
+                {"dg-offline-navigation", ""}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "a",
+            {
+                {"href", "/projects"},
+                {"dg-get", "/fragments/pages/projects"},
+                {"dg-trigger", "click"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history", "push"},
+                {"dg-history-url", "/projects"},
+                {"dg-offline-navigation", ""}
+            }
+        )
+    );
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "a",
+            {
+                {"href", "/departments"},
+                {"dg-get", "/fragments/pages/departments"},
+                {"dg-trigger", "click"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history", "push"},
+                {"dg-history-url", "/departments"},
+                {"dg-offline-navigation", ""}
+            }
+        )
+    );
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/admin")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-nav-submenu")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/roles")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/project-types")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/__drogular")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(href="/dashboard")"));
+}
+
+TEST(PortalApplicationTests, WorkspacePageFragmentRendersContentWithoutApplicationShell) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto result = app.execute<
+        PortalPageFragmentAction<PortalProjectsPage>
+    >();
+
+    ASSERT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), R"(class="dg-page")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), R"(data-projects-browser)"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(result.body(), R"(class="dg-sidebar")"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(result.body(), R"(class="dg-topbar")"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(result.body(), R"(<!doctype html>)"));
 }
 
 TEST(PortalApplicationTests, AdminSubmenuTracksNestedSectionActiveState) {

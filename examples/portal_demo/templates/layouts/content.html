@@ -1,0 +1,12 @@
+<main class="dg-page" data-portal-page-title="{{ pageTitle }} — {{ t('app.title') }}">
+    <header class="dg-page-header">
+        <p class="dg-page-kicker">{{ t('app.title') }}</p>
+        <h1 class="dg-page-title">{{ pageTitle }}</h1>
+    </header>
+
+    <div class="dg-page-content">
+        @content
+    </div>
+</main>
+
+@include("partials/footer.html")

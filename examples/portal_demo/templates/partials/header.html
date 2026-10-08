@@ -8,23 +8,44 @@
     <nav class="dg-nav" aria-label="Primary">
         <a class="dg-nav-item @if(currentPath == "/dashboard")is-active@endif"
            href="/dashboard"
+           dg-get="/fragments/pages/dashboard"
+           dg-trigger="click"
+           dg-target="[data-portal-content]"
+           dg-history="push"
+           dg-history-url="/dashboard"
+           dg-offline-navigation
            @if(currentPath == "/dashboard")aria-current="page"@endif>
             {{ t('nav.dashboard') }}
         </a>
         <a class="dg-nav-item @if(currentPath == "/users")is-active@endif"
            href="/users"
+           dg-get="/fragments/pages/users"
+           dg-trigger="click"
+           dg-target="[data-portal-content]"
+           dg-history="push"
+           dg-history-url="/users"
            dg-offline-navigation
            @if(currentPath == "/users")aria-current="page"@endif>
             {{ t('nav.users') }}
         </a>
         <a class="dg-nav-item @if(currentPath == "/projects")is-active@endif"
            href="/projects"
+           dg-get="/fragments/pages/projects"
+           dg-trigger="click"
+           dg-target="[data-portal-content]"
+           dg-history="push"
+           dg-history-url="/projects"
            dg-offline-navigation
            @if(currentPath == "/projects")aria-current="page"@endif>
             {{ t('nav.projects') }}
         </a>
         <a class="dg-nav-item @if(currentPath == "/departments")is-active@endif"
            href="/departments"
+           dg-get="/fragments/pages/departments"
+           dg-trigger="click"
+           dg-target="[data-portal-content]"
+           dg-history="push"
+           dg-history-url="/departments"
            dg-offline-navigation
            @if(currentPath == "/departments")aria-current="page"@endif>
             {{ t('nav.departments') }}

@@ -660,6 +660,15 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
                 state.failures = 0;
                 if (target) applyConnectionResponse(element, target);
                 syncHistory(element, url);
+                if (target) {
+                    target.dispatchEvent(new CustomEvent('dg:after-replace', {
+                        bubbles: true,
+                        detail: {
+                            requestUrl: `${url.pathname}${url.search}${url.hash}`,
+                            historyUrl: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+                        },
+                    }));
+                }
 
                 const successNavigate =
                     element.getAttribute('dg-on-success-navigate');
@@ -906,6 +915,17 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
             }
 
             const eventName = token.split(/\s+/)[0];
+            if (eventName === 'click') {
+                element.addEventListener('click', (event) => {
+                    if (element instanceof HTMLAnchorElement) {
+                        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                        if (element.target && element.target !== '_self') return;
+                        event.preventDefault();
+                    }
+                    refresh(element);
+                });
+                continue;
+            }
             if (eventName !== 'input' && eventName !== 'change') continue;
 
             const delay = parseDelay(token);
@@ -984,8 +1004,12 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     }, true);
 
     window.addEventListener('popstate', () => {
-        if (!offlineReadModelsEnabled || offlineState.capability !== 'read-only') return;
-        void restoreOfflineShell(new URL(window.location.href));
+        if (offlineReadModelsEnabled && offlineState.capability === 'read-only') {
+            void restoreOfflineShell(new URL(window.location.href));
+            return;
+        }
+
+        window.location.reload();
     });
 
     document.addEventListener('submit', (event) => {

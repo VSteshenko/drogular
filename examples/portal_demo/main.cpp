@@ -48,6 +48,7 @@
 #include "features/department_members/actions/remove_department_member_action.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/departments_fragment_action.hpp"
+#include "ui/portal_page_fragment_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 #include "ui/components/portal_select_component.hpp"
 #include "ui/components/portal_pagination_component.hpp"
@@ -220,7 +221,9 @@ int main(
     app.page<PortalLoginPage>("/");
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
+    app.get<PortalPageFragmentAction<PortalDashboardPage>>("/fragments/pages/dashboard");
     app.page<PortalUsersPage>("/users");
+    app.get<PortalPageFragmentAction<PortalUsersPage>>("/fragments/pages/users");
     app.get<PortalUsersFragmentAction>("/fragments/users");
     app.page<PortalUserEditPage>("/users/{id}/edit");
     app.page<PortalRolesPage>("/roles");
@@ -235,10 +238,12 @@ int main(
     app.action<PortalUpdateProjectTypeAction>("/project-types/{id}/update");
     app.action<PortalDeleteProjectTypeAction>("/project-types/{id}/delete");
     app.page<PortalDepartmentsPage>("/departments");
+    app.get<PortalPageFragmentAction<PortalDepartmentsPage>>("/fragments/pages/departments");
     app.get<PortalDepartmentsFragmentAction>("/fragments/departments");
     app.page<PortalDepartmentDetailsPage>("/departments/{id}");
     app.page<PortalDepartmentEditPage>("/departments/{id}/edit");
     app.page<PortalProjectsPage>("/projects");
+    app.get<PortalPageFragmentAction<PortalProjectsPage>>("/fragments/pages/projects");
     app.get<PortalProjectsFragmentAction>("/fragments/projects");
     app.page<PortalProjectDetailsPage>("/projects/{id}");
     app.page<PortalProjectEditPage>("/projects/{id}/edit");

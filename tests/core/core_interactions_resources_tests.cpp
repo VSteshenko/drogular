@@ -279,6 +279,17 @@ TEST(CoreInteractionsResourcesTests, OfflineShellUsesSameRepresentationStore) {
     EXPECT_NE(script.find("void storeCurrentShell()"), std::string_view::npos);
 }
 
+TEST(CoreInteractionsResourcesTests, SupportsProgressiveEnhancedLinkNavigation) {
+    const auto script = drogular::interactions_resources::script();
+
+    EXPECT_NE(script.find("eventName === 'click'"), std::string_view::npos);
+    EXPECT_NE(script.find("element instanceof HTMLAnchorElement"), std::string_view::npos);
+    EXPECT_NE(script.find("event.preventDefault()"), std::string_view::npos);
+    EXPECT_NE(script.find("dg:after-replace"), std::string_view::npos);
+    EXPECT_NE(script.find("historyUrl:"), std::string_view::npos);
+    EXPECT_NE(script.find("window.location.reload()"), std::string_view::npos);
+}
+
 TEST(CoreInteractionsResourcesTests, OfflineLocaleRestoreIsCacheOnly) {
     const auto script = drogular::interactions_resources::script();
 

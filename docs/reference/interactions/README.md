@@ -72,6 +72,11 @@ Selects the element whose `innerHTML` is replaced.
 
 After replacement, nested `[dg-get]` and `[dg-post]` roots inside the new fragment are installed automatically. The runtime does not use a general-purpose `MutationObserver`; interaction roots inserted by unrelated application code are not automatically discovered.
 
+After a successful target replacement and history synchronization, the target dispatches a bubbling `dg:after-replace` 
+event. `event.detail.requestUrl` identifies the fragment request and `event.detail.historyUrl` identifies the resulting 
+browser URL. Applications can use this for shell-local presentation state such as active navigation without owning 
+the request lifecycle.
+
 ## Triggers
 
 ### `dg-trigger`
@@ -79,6 +84,18 @@ After replacement, nested `[dg-get]` and `[dg-post]` roots inside the new fragme
 Supported forms are `load`, `every Ns`, `input`, `input delay:Nms`, `change`, and `change delay:Nms`. Multiple triggers are comma-separated.
 
 The default is `load` for `dg-get` and `submit` for `dg-post`. Forms intercept normal submit and pass the active submitter into request serialization.
+
+`click` can be used to progressively enhance links. For an anchor, Drogular intercepts an unmodified primary-button click 
+while preserving the normal `href` behavior for no-JavaScript navigation, modified clicks, and non-`_self` targets:
+
+```html
+<a href="/projects"
+   dg-get="/fragments/pages/projects"
+   dg-trigger="click"
+   dg-target="[data-content]"
+   dg-history="push"
+   dg-history-url="/projects">Projects</a>
+```
 
 ## Request state
 

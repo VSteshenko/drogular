@@ -1,4 +1,4 @@
-const CACHE_NAME = "drogular-portal-demo-v10";
+const CACHE_NAME = "drogular-portal-demo-v11";
 
 const APP_SHELL = [
     "/",
@@ -8,6 +8,8 @@ const APP_SHELL = [
     "/assets/manifest.webmanifest",
     "/service-worker.js",
     "/assets/favicon.ico",
+    "/assets/offline-read-ui.js",
+    "/assets/portal-navigation.js",
     "/__drogular/assets/ui.css",
     "/__drogular/assets/ui.js",
     "/__drogular/assets/interactions.js"

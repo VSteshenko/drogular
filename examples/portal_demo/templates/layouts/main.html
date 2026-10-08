@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/__drogular/assets/ui.css">
     <script src="/__drogular/assets/ui.js" defer></script>
     <script src="/assets/offline-read-ui.js" defer></script>
+    <script src="/assets/portal-navigation.js" defer></script>
     <script src="/__drogular/assets/interactions.js" defer></script>
 </head>
 <body>
@@ -32,7 +33,7 @@
         <div class="dg-shell">
             @include("partials/header.html")
 
-            <div class="dg-main">
+            <div class="dg-main" data-portal-content>
                 <main class="dg-page">
                     <header class="dg-page-header">
                         <p class="dg-page-kicker">{{ t('app.title') }}</p>
