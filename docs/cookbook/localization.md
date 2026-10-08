@@ -157,6 +157,20 @@ Applications may implement a different fallback strategy while using the same `T
 
 ---
 
+## Validate Translation Catalogs
+
+For file-based catalogs, use `drogular-l10n-check` during development or CI:
+
+```bash
+drogular-l10n-check resources/localization --reference en
+```
+
+The reference locale defines the expected key set. The command reports keys missing from another locale and keys that 
+exist only in another locale. It returns a non-zero exit code when the catalog is incomplete or structurally inconsistent.
+
+For validation inside C++ tooling or tests, use `TranslationCatalogValidator` directly with a loaded catalog or 
+`FileTranslationProvider`. Validation compares locale key sets; it does not scan application source files for unused translation keys.
+
 ## Best Practices
 
 - Keep translation keys stable.
@@ -174,6 +188,8 @@ Applications may implement a different fallback strategy while using the same `T
 
 - [`TranslationProvider`](../reference/localization/translation-provider.md)
 - [`FileTranslationProvider`](../reference/localization/file-translation-provider.md)
+- [`TranslationCatalogValidator`](../reference/localization/translation-catalog-validator.md)
+- [`drogular-l10n-check`](../reference/localization/localization-check.md)
 - [`TranslationSupport`](../reference/localization/translation-support.md)
 - [`LocaleSupport`](../reference/localization/locale-support.md)
 - [`RenderContext`](../reference/rendering/render-context.md)

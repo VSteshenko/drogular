@@ -231,11 +231,11 @@ Drogular 0.24 will build on the 0.23 server-driven UI foundations with stronger 
 
 **Localization**
 
-- Load translations from external files through a reusable translation-source abstraction
-- Define deterministic source/merge behavior for application translations
-- Extend the Drogular CLI with translation validation
-- Report missing and unused translation keys
-- Support CI-friendly failure on incomplete translations
+- Load translations from external JSON files through `FileTranslationProvider`
+- Use deterministic requested-locale → default-locale → key fallback behavior
+- Validate catalogs with the standalone `drogular-l10n-check` utility
+- Report missing and extra keys relative to a reference locale
+- Enforce complete example catalogs through CTest/CI
 
 **PortalDemo application experience**
 
@@ -258,6 +258,21 @@ Drogular 0.24 will build on the 0.23 server-driven UI foundations with stronger 
 - Shopping cart state without introducing payment or order-processing scope
 - Use external translation files as an acceptance test for the new localization API
 - Exercise Drogular UI and Interactions in a public, non-admin application
+
+### 0.25 — Client & Offline Localization
+
+Extend the server-side localization model introduced in 0.24 to client and offline experiences without creating a second 
+source of translation truth.
+
+- Keep the server-side translation catalog as the source of truth
+- Export client-consumable locale resources from the server catalog
+- Add a localization manifest with the default locale and available locale resources
+- Cache locale resources through the Service Worker for offline use
+- Support localized Offline navigation using cached translation catalogs
+- Allow language switching while offline when the requested locale is already cached
+- Preserve requested-locale → default-locale → key fallback semantics on the client
+- Add version/hash-based invalidation so localization resources can be refreshed independently of the application shell
+- Reuse the same translation data across server rendering, online Interactions, and Offline UI
 
 ### 1.0
 

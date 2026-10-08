@@ -85,5 +85,7 @@ The provider does not choose the current request locale. Locale resolution remai
 ## See also
 
 - [`TranslationProvider`](translation-provider.md)
+- [`TranslationCatalogValidator`](translation-catalog-validator.md)
+- [`drogular-l10n-check`](localization-check.md)
 - [`TranslationSupport`](translation-support.md)
 - [`LocaleSupport`](locale-support.md)
