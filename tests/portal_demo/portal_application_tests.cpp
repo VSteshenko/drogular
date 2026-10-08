@@ -93,6 +93,7 @@ TEST(PortalApplicationTests, DashboardRendersApplicationShellAndPrimaryNavigatio
 
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-sidebar")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-topbar")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-main")"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(class="dg-page")"));
     EXPECT_TRUE(
         HtmlTestSupport::containsText(

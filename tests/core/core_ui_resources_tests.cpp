@@ -48,6 +48,17 @@ TEST(UiResourcesTests, ShipsPresentationPrimitives) {
     );
 }
 
+TEST(UiResourcesTests, ApplicationShellKeepsNavigationAroundScrollableContent) {
+    const auto css = drogular::ui_resources::stylesheet();
+
+    EXPECT_NE(css.find("height: 100vh"), std::string_view::npos);
+    EXPECT_NE(css.find("overflow: hidden"), std::string_view::npos);
+    EXPECT_NE(css.find("overflow-y: auto"), std::string_view::npos);
+    EXPECT_NE(css.find("overscroll-behavior: contain"), std::string_view::npos);
+    EXPECT_NE(css.find("height: auto"), std::string_view::npos);
+    EXPECT_NE(css.find("overflow: visible"), std::string_view::npos);
+}
+
 TEST(UiResourcesTests, ShipsThemeTokensAndModes) {
     const auto css = drogular::ui_resources::stylesheet();
 

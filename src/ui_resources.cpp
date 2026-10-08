@@ -605,7 +605,9 @@ textarea {
 
 
 .dg-shell {
-    min-height: 100vh;
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
     display: grid;
     grid-template-columns: 16rem minmax(0, 1fr);
     grid-template-rows: auto 1fr;
@@ -616,6 +618,8 @@ textarea {
     grid-column: 1;
     grid-row: 1 / span 2;
     min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
     padding: 1.25rem 1rem;
     border-right: 1px solid var(--dg-border);
     background: var(--dg-surface);
@@ -758,6 +762,8 @@ textarea {
     grid-column: 2;
     grid-row: 1;
     min-width: 0;
+    position: relative;
+    z-index: 10;
     min-height: 4.25rem;
     padding: .75rem clamp(1rem, 3vw, 2rem);
     border-bottom: 1px solid var(--dg-border);
@@ -786,6 +792,9 @@ textarea {
     grid-column: 2;
     grid-row: 2;
     min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
 }
@@ -843,10 +852,15 @@ textarea {
     }
 
     .dg-shell {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
         display: block;
     }
 
     .dg-sidebar {
+        min-height: auto;
+        overflow: visible;
         padding: .8rem 1rem;
         border-right: 0;
         border-bottom: 1px solid var(--dg-border);
@@ -890,6 +904,7 @@ textarea {
     }
 
     .dg-topbar {
+        position: static;
         padding: .7rem 1rem;
         align-items: flex-start;
         flex-direction: column;
@@ -897,6 +912,11 @@ textarea {
 
     .dg-topbar-actions {
         justify-content: flex-start;
+    }
+
+    .dg-main {
+        overflow: visible;
+        overscroll-behavior: auto;
     }
 
     .dg-page {
