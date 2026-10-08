@@ -1,0 +1,61 @@
+/* PortalDemo dashboard-specific density. Keep framework-wide card primitives generic. */
+.portal-dashboard-overview {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .65rem;
+}
+
+.portal-dashboard-metric .dg-card-body {
+    padding: .7rem .8rem;
+}
+
+.portal-dashboard-metric .dg-card-subtitle {
+    margin: 0;
+    font-size: .8rem;
+}
+
+.portal-dashboard-metric .dg-card-title {
+    margin-top: .15rem;
+    font-size: 1.05rem;
+}
+
+.portal-dashboard-tasks {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .65rem;
+}
+
+.portal-dashboard-task .dg-card-body {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .7rem .8rem;
+}
+
+.portal-dashboard-task .dg-card-title {
+    min-width: 0;
+}
+
+.portal-dashboard-task .dg-card-subtitle {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+@media (max-width: 70rem) {
+    .portal-dashboard-overview {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 52rem) {
+    .portal-dashboard-overview,
+    .portal-dashboard-tasks {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 36rem) {
+    .portal-dashboard-overview,
+    .portal-dashboard-tasks {
+        grid-template-columns: 1fr;
+    }
+}

@@ -15,6 +15,46 @@
     </div>
 </section>
 
+<h3>{{ t('dashboard.overview') }}</h3>
+<div class="dg-card-grid portal-dashboard-overview" data-dashboard-overview>
+@foreach(metric in dashboardOverview)
+<a class="dg-card portal-dashboard-metric"
+   href="{{ metric.url }}"
+   dg-get="{{ metric.fragmentUrl }}"
+   dg-trigger="click"
+   dg-target="[data-portal-content]"
+   dg-history="push"
+   dg-history-url="{{ metric.url }}">
+    <div class="dg-card-body">
+        <p class="dg-card-subtitle">{{ t(metric.labelKey) }}</p>
+        <h3 class="dg-card-title">{{ metric.value }}</h3>
+    </div>
+</a>
+@endforeach
+</div>
+
+<h3>{{ t('dashboard.current_tasks') }}</h3>
+<div class="dg-card-grid portal-dashboard-tasks" data-dashboard-current-tasks>
+@foreach(task in dashboardTasks)
+<a class="dg-card portal-dashboard-task"
+   href="{{ task.url }}"
+   dg-get="{{ task.fragmentUrl }}"
+   dg-trigger="click"
+   dg-target="[data-portal-content]"
+   dg-history="push"
+   dg-history-url="{{ task.url }}">
+    <div class="dg-card-body">
+        <h4 class="dg-card-title">{{ task.title }}</h4>
+        <p class="dg-card-subtitle">
+            <span class="dg-badge dg-badge-info">{{ t(task.statusKey) }}</span>
+        </p>
+    </div>
+</a>
+@empty
+<p class="dg-empty-state">{{ t('dashboard.no_current_tasks') }}</p>
+@endforeach
+</div>
+
 <h3>{{ t('dashboard.quick_links') }}</h3>
 <div class="dg-card-grid">
 @foreach(section in dashboardSections where !section.adminOnly || currentRole in adminRoles)

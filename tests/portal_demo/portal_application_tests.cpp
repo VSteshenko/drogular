@@ -672,6 +672,37 @@ TEST(PortalApplicationTests, DashboardTranslatesQuickLinksThroughExpressionFunct
     );
 }
 
+TEST(PortalApplicationTests, DashboardShowsLiveOverviewAndCurrentTasks) {
+    PortalApplicationTestHost app(
+        DemoDataset::create()
+    );
+
+    app.loginAsAdmin();
+
+    const auto html = app.render<PortalDashboardPage>();
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Overview"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Active projects"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Paused projects"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Current tasks"));
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "a",
+            {
+                {"href", "/projects/1"},
+                {"dg-get", "/fragments/pages/projects/1"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history-url", "/projects/1"}
+            }
+        )
+    );
+
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Customer Portal"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(html, "Analytics Platform"));
+}
+
 TEST(PortalApplicationTests, ProjectsPageFormatsStatusWithSwitch) {
     PortalApplicationTestHost app(
         DemoDataset::create()
