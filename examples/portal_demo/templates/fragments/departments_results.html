@@ -19,7 +19,16 @@
                 <tbody>
                 @foreach(department in departments)
                 <tr>
-                    <td><a href="{{ department.detailsUrl }}">{{ department.name }}</a></td>
+                    <td>
+                        <a href="{{ department.detailsUrl }}"
+                           dg-get="{{ department.detailsFragmentUrl }}"
+                           dg-trigger="click"
+                           dg-target="[data-portal-content]"
+                           dg-history="push"
+                           dg-history-url="{{ department.detailsUrl }}">
+                            {{ department.name }}
+                        </a>
+                    </td>
                     <td>{{ department.manager }}</td>
                     <td>
                         @if(department.active)
@@ -30,7 +39,17 @@
                     </td>
                     <td>{{ department.description }}</td>
                     @if(isAdmin)
-                    <td><a class="dg-button" href="{{ department.editUrl }}">{{ t('departments.edit') }}</a></td>
+                    <td>
+                        <a class="dg-button"
+                           href="{{ department.editUrl }}"
+                           dg-get="{{ department.editFragmentUrl }}"
+                           dg-trigger="click"
+                           dg-target="[data-portal-content]"
+                           dg-history="push"
+                           dg-history-url="{{ department.editUrl }}">
+                            {{ t('departments.edit') }}
+                        </a>
+                    </td>
                     @endif
                 </tr>
                 @empty

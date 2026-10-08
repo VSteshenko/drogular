@@ -4,6 +4,7 @@
 #include "features/roles/providers/role_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/render_context.hpp>
 
 #include <string>
@@ -54,6 +55,10 @@ public:
             item["canDelete"] = userCount == 0;
             item["editUrl"] =
                 "/roles/" + std::to_string(role.id) + "/edit";
+            item["editFragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(
+                    item["editUrl"].asString()
+                );
             item["deleteUrl"] =
                 "/roles/" + std::to_string(role.id) + "/delete";
             items.append(std::move(item));

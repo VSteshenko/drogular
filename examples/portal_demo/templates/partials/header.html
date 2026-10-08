@@ -54,17 +54,32 @@
         <div class="dg-nav-group @if(adminNavigationActive)is-active@endif">
             <a class="dg-nav-item @if(adminNavigationActive)is-active@endif"
                href="/admin"
+               dg-get="/fragments/pages/admin"
+               dg-trigger="click"
+               dg-target="[data-portal-content]"
+               dg-history="push"
+               dg-history-url="/admin"
                @if(currentPath == "/admin")aria-current="page"@endif>
                 {{ t('nav.admin') }}
             </a>
             <div class="dg-nav-submenu" aria-label="{{ t('nav.admin') }}">
                 <a class="dg-nav-subitem @if(rolesNavigationActive)is-active@endif"
                    href="/roles"
+                   dg-get="/fragments/pages/roles"
+                   dg-trigger="click"
+                   dg-target="[data-portal-content]"
+                   dg-history="push"
+                   dg-history-url="/roles"
                    @if(rolesNavigationActive)aria-current="page"@endif>
                     {{ t('roles.page.title') }}
                 </a>
                 <a class="dg-nav-subitem @if(projectTypesNavigationActive)is-active@endif"
                    href="/project-types"
+                   dg-get="/fragments/pages/project-types"
+                   dg-trigger="click"
+                   dg-target="[data-portal-content]"
+                   dg-history="push"
+                   dg-history-url="/project-types"
                    @if(projectTypesNavigationActive)aria-current="page"@endif>
                     {{ t('project_types.page.title') }}
                 </a>

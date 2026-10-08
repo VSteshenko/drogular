@@ -8,6 +8,7 @@
 #include "features/projects/ui/portal_project_query_view_model.hpp"
 #include "data/portal_schema.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/pagination_model.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/url.hpp>
@@ -164,6 +165,10 @@ public:
             value["detailsUrl"] =
                 "/projects/" + std::to_string(project.id) +
                 "?returnUrl=" + drogular::Url::encode(returnUrl);
+            value["detailsFragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(
+                    value["detailsUrl"].asString()
+                );
             projects.append(std::move(value));
         }
 

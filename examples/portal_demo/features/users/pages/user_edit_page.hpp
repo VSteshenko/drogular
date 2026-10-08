@@ -6,6 +6,7 @@
 #include "features/users/providers/user_provider.hpp"
 #include "ui/portal_page_support.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
@@ -41,6 +42,22 @@ public:
                 context.requireRouteParam("id").c_str()
             );
 
+        const auto request = context.request();
+        const auto requestedReturnUrl =
+            request != nullptr
+                ? request->getParameter("returnUrl")
+                : std::string("");
+        const auto usersBackUrl =
+            requestedReturnUrl == "/users" ||
+            requestedReturnUrl.rfind("/users?", 0) == 0
+                ? requestedReturnUrl
+                : std::string("/users");
+        context.set("usersBackUrl", usersBackUrl);
+        context.set(
+            "usersBackFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(usersBackUrl)
+        );
+
         auto users =
             context.requireService<PortalUserProvider>();
 
@@ -55,9 +72,6 @@ public:
         if (!user.has_value()) {
             return;
         }
-
-        const auto request =
-            context.request();
 
         const auto error =
             request != nullptr

@@ -5,6 +5,7 @@
 #include "features/users/ui/portal_user_query_serializer.hpp"
 #include "features/roles/providers/role_provider.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/pagination_model.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/url.hpp>
@@ -101,6 +102,10 @@ public:
             value["editUrl"] =
                 "/users/" + std::to_string(user.id) +
                 "/edit?returnUrl=" + drogular::Url::encode(returnUrl);
+            value["editFragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(
+                    value["editUrl"].asString()
+                );
             users.append(std::move(value));
         }
 

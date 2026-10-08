@@ -20,7 +20,16 @@
                         <td><strong>{{ user.username }}</strong></td>
                         <td><span class="dg-badge dg-badge-info">{{ user.role }}</span></td>
                         @if(isAdmin)
-                        <td><a href="{{ user.editUrl }}">{{ t('users.edit') }}</a></td>
+                        <td>
+                            <a href="{{ user.editUrl }}"
+                               dg-get="{{ user.editFragmentUrl }}"
+                               dg-trigger="click"
+                               dg-target="[data-portal-content]"
+                               dg-history="push"
+                               dg-history-url="{{ user.editUrl }}">
+                            {{ t('users.edit') }}
+                            </a>
+                        </td>
                         @endif
                     </tr>
                     @empty

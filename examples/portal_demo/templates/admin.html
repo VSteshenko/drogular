@@ -27,7 +27,15 @@
             <p class="dg-card-subtitle">{{ t('admin.roles.description') }}</p>
         </div>
         <div class="dg-card-footer">
-            <a class="dg-button" href="/roles">{{ t('admin.open') }}</a>
+            <a class="dg-button"
+               href="/roles"
+               dg-get="/fragments/pages/roles"
+               dg-trigger="click"
+               dg-target="[data-portal-content]"
+               dg-history="push"
+               dg-history-url="/roles">
+                {{ t('admin.open') }}
+            </a>
         </div>
     </section>
 
@@ -39,7 +47,15 @@
             <p class="dg-card-subtitle">{{ t('admin.project_types.description') }}</p>
         </div>
         <div class="dg-card-footer">
-            <a class="dg-button" href="/project-types">{{ t('admin.open') }}</a>
+            <a class="dg-button"
+               href="/project-types"
+               dg-get="/fragments/pages/project-types"
+               dg-trigger="click"
+               dg-target="[data-portal-content]"
+               dg-history="push"
+               dg-history-url="/project-types">
+                {{ t('admin.open') }}
+            </a>
         </div>
     </section>
 

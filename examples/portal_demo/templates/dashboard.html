@@ -33,7 +33,15 @@
                 data-link-number="{{ loop.parent.number }}.{{ loop.number }}"
                 data-loop-depth="{{ loop.depth }}"
             >
-                <a href="{{ link.url }}">{{ t(link.titleKey) }}</a>
+                <a href="{{ link.url }}"
+                   dg-get="{{ link.fragmentUrl }}"
+                   dg-trigger="click"
+                   dg-target="[data-portal-content]"
+                   dg-history="push"
+                   dg-history-url="{{ link.url }}"
+                   @if(link.offlineNavigation)dg-offline-navigation@endif>
+                    {{ t(link.titleKey) }}
+                </a>
             </li>
             @empty
             <li class="dg-empty-state">{{ t('dashboard.no_links') }}</li>

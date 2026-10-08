@@ -15,7 +15,14 @@
                     @foreach(project in projects)
                     <tr data-project-id="{{ project.id }}">
                         <td>
-                            <a href="{{ project.detailsUrl }}">{{ project.title }}</a>
+                            <a href="{{ project.detailsUrl }}"
+                               dg-get="{{ project.detailsFragmentUrl }}"
+                               dg-trigger="click"
+                               dg-target="[data-portal-content]"
+                               dg-history="push"
+                               dg-history-url="{{ project.detailsUrl }}">
+                                {{ project.title }}
+                            </a>
                         </td>
                         <td>
                             @switch(project.status)

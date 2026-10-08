@@ -8,7 +8,15 @@
 @if(departmentNotFound)
 <section class="dg-card"><div class="dg-card-body">
     <p>{{ t('departments.not_found') }}</p>
-    <a class="dg-button" href="{{ departmentsBackUrl }}">{{ t('departments.back') }}</a>
+    <a class="dg-button"
+       href="{{ departmentsBackUrl }}"
+       dg-get="{{ departmentsBackFragmentUrl }}"
+       dg-trigger="click"
+       dg-target="[data-portal-content]"
+       dg-history="push"
+       dg-history-url="{{ departmentsBackUrl }}">
+        {{ t('departments.back') }}
+    </a>
 </div></section>
 @else
 <div class="dg-stack">
@@ -42,9 +50,25 @@
         </div>
         <div class="dg-card-footer dg-form-actions">
             @if(isAdmin)
-            <a class="dg-button" href="{{ departmentEditUrl }}">{{ t('departments.edit') }}</a>
+            <a class="dg-button"
+               href="{{ departmentEditUrl }}"
+               dg-get="{{ departmentEditFragmentUrl }}"
+               dg-trigger="click"
+               dg-target="[data-portal-content]"
+               dg-history="push"
+               dg-history-url="{{ departmentEditUrl }}">
+                {{ t('departments.edit') }}
+            </a>
             @endif
-            <a class="dg-button" href="{{ departmentsBackUrl }}">{{ t('departments.back') }}</a>
+            <a class="dg-button"
+               href="{{ departmentsBackUrl }}"
+               dg-get="{{ departmentsBackFragmentUrl }}"
+               dg-trigger="click"
+               dg-target="[data-portal-content]"
+               dg-history="push"
+               dg-history-url="{{ departmentsBackUrl }}">
+                {{ t('departments.back') }}
+            </a>
         </div>
     </section>
 

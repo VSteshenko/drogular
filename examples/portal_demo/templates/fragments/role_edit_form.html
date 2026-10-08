@@ -21,7 +21,15 @@
                 </div>
                 <div class="dg-form-actions">
                     <button class="dg-button" type="submit">{{ t('roles.update') }}</button>
-                    <a class="dg-button" href="/roles">{{ t('roles.back') }}</a>
+                    <a class="dg-button"
+                       href="/roles"
+                       dg-get="/fragments/pages/roles"
+                       dg-trigger="click"
+                       dg-target="[data-portal-content]"
+                       dg-history="push"
+                       dg-history-url="/roles">
+                        {{ t('roles.back') }}
+                    </a>
                 </div>
             </form>
         </div>

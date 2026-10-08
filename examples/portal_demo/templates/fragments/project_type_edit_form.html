@@ -21,7 +21,15 @@
                 </div>
                 <div class="dg-form-actions">
                     <button class="dg-button" type="submit">{{ t('project_types.update') }}</button>
-                    <a class="dg-button" href="/project-types">{{ t('project_types.back') }}</a>
+                    <a class="dg-button"
+                       href="/project-types"
+                       dg-get="/fragments/pages/project-types"
+                       dg-trigger="click"
+                       dg-target="[data-portal-content]"
+                       dg-history="push"
+                       dg-history-url="/project-types">
+                        {{ t('project_types.back') }}
+                    </a>
                 </div>
             </form>
         </div>

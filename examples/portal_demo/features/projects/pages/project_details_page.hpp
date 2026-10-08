@@ -7,6 +7,7 @@
 #include "features/roles/providers/role_provider.hpp"
 #include "data/portal_schema.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
@@ -63,11 +64,15 @@ public:
 
         context.set("projectsBackUrl", safeReturnUrl);
         context.set(
-            "projectEditUrl",
-            PortalProjectNavigationSupport::editUrl(
-                id,
-                safeReturnUrl
-            )
+            "projectsBackFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(safeReturnUrl)
+        );
+        const auto projectEditUrl =
+            PortalProjectNavigationSupport::editUrl(id, safeReturnUrl);
+        context.set("projectEditUrl", projectEditUrl);
+        context.set(
+            "projectEditFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(projectEditUrl)
         );
 
         const auto success =

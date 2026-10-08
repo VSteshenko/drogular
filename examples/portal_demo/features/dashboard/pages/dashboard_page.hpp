@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui/portal_page_support.hpp"
+#include "ui/portal_frame_navigation_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
@@ -27,12 +28,16 @@ public:
             Json::Value& links,
             std::string titleKey,
             std::string url,
-            bool adminOnly = false
+            bool adminOnly = false,
+            bool offlineNavigation = false
         ) {
             Json::Value link(Json::objectValue);
             link["titleKey"] = std::move(titleKey);
-            link["url"] = std::move(url);
+            link["url"] = url;
+            link["fragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(url);
             link["adminOnly"] = adminOnly;
+            link["offlineNavigation"] = offlineNavigation;
             links.append(std::move(link));
         };
 
@@ -43,17 +48,23 @@ public:
         addLink(
             workspace["links"],
             "nav.projects",
-            "/projects"
+            "/projects",
+            false,
+            true
         );
         addLink(
             workspace["links"],
             "nav.departments",
-            "/departments"
+            "/departments",
+            false,
+            true
         );
         addLink(
             workspace["links"],
             "nav.users",
-            "/users"
+            "/users",
+            false,
+            true
         );
         sections.append(std::move(workspace));
 

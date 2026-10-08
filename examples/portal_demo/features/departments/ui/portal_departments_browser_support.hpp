@@ -5,6 +5,7 @@
 #include "features/departments/ui/portal_department_query_serializer.hpp"
 #include "features/users/providers/user_provider.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/pagination_model.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/url.hpp>
@@ -118,6 +119,14 @@ public:
             item["editUrl"] =
                 "/departments/" + std::to_string(value.id) +
                 "/edit?returnUrl=" + drogular::Url::encode(returnUrl);
+            item["detailsFragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(
+                    item["detailsUrl"].asString()
+                );
+            item["editFragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(
+                    item["editUrl"].asString()
+                );
             departments.append(std::move(item));
         }
 

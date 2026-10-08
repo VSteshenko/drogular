@@ -248,6 +248,16 @@ int main(
     app.page<PortalProjectDetailsPage>("/projects/{id}");
     app.page<PortalProjectEditPage>("/projects/{id}/edit");
 
+    app.get<PortalPageFragmentAction<PortalAdminPage>>("/fragments/pages/admin");
+    app.get<PortalPageFragmentAction<PortalRolesPage>>("/fragments/pages/roles");
+    app.get<PortalPageFragmentAction<PortalRoleEditPage>>("/fragments/pages/roles/{id}/edit");
+    app.get<PortalPageFragmentAction<PortalProjectTypesPage>>("/fragments/pages/project-types");
+    app.get<PortalPageFragmentAction<PortalProjectTypeEditPage>>("/fragments/pages/project-types/{id}/edit");
+    app.get<PortalPageFragmentAction<PortalUserEditPage>>("/fragments/pages/users/{id}/edit");
+    app.get<PortalPageFragmentAction<PortalDepartmentDetailsPage>>("/fragments/pages/departments/{id}");
+    app.get<PortalPageFragmentAction<PortalDepartmentEditPage>>("/fragments/pages/departments/{id}/edit");
+    app.get<PortalPageFragmentAction<PortalProjectDetailsPage>>("/fragments/pages/projects/{id}");
+    app.get<PortalPageFragmentAction<PortalProjectEditPage>>("/fragments/pages/projects/{id}/edit");
     app.action<PortalLanguageAction>("/language");
     app.action<PortalThemeAction>("/theme");
     app.action<PortalLoginAction>("/login");

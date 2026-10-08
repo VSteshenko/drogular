@@ -5,6 +5,7 @@
 #include "features/localization/support/portal_error_translator.hpp"
 #include "features/users/providers/user_provider.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/render_context.hpp>
 
 class PortalDepartmentEditFormSupport final {
@@ -37,8 +38,13 @@ public:
         context.set("departmentDescription", description);
         context.set("departmentActive", isActive);
         context.set("departmentsReturnUrl", safeReturnUrl);
-        context.set("departmentDetailsUrl",
-            PortalDepartmentNavigationSupport::detailsUrl(department.id, safeReturnUrl));
+        const auto departmentDetailsUrl =
+            PortalDepartmentNavigationSupport::detailsUrl(department.id, safeReturnUrl);
+        context.set("departmentDetailsUrl", departmentDetailsUrl);
+        context.set(
+            "departmentDetailsFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(departmentDetailsUrl)
+        );
 
         Json::Value managers(Json::arrayValue);
         for (const auto& user : context.requireService<PortalUserProvider>()->all()) {

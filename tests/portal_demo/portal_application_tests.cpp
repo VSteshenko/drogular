@@ -29,6 +29,7 @@
 #include "features/dashboard/pages/dashboard_page.hpp"
 #include "features/admin/pages/admin_page.hpp"
 #include "ui/portal_page_fragment_action.hpp"
+#include "ui/portal_frame_navigation_support.hpp"
 #include "features/departments/actions/create_department_action.hpp"
 #include "features/departments/actions/update_department_action.hpp"
 #include "features/department_members/actions/add_department_member_action.hpp"
@@ -213,13 +214,78 @@ TEST(PortalApplicationTests, AdminSubmenuTracksNestedSectionActiveState) {
         )
     );
     EXPECT_TRUE(
-        HtmlTestSupport::containsText(
+        HtmlTestSupport::elementHasAttributes(
             html,
-            R"(class="dg-nav-subitem is-active"
-                   href="/roles"
-                   aria-current="page")"
+            "a",
+            {
+                {"class", "dg-nav-subitem is-active"},
+                {"href", "/roles"},
+                {"dg-get", "/fragments/pages/roles"},
+                {"dg-trigger", "click"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history", "push"},
+                {"dg-history-url", "/roles"},
+                {"aria-current", "page"}
+            }
         )
     );
+}
+
+TEST(PortalApplicationTests, FrameNavigationPreservesCanonicalUrlAndQuery) {
+    const auto url = "/projects/7/edit?returnUrl=%2Fprojects%3Fpage%3D2";
+
+    EXPECT_EQ(
+        PortalFrameNavigationSupport::fragmentUrl(url),
+        "/fragments/pages/projects/7/edit?returnUrl=%2Fprojects%3Fpage%3D2"
+    );
+}
+
+TEST(PortalApplicationTests, ProjectDetailsUsesContentFrameNavigation) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto project = app.dataset().projects().front();
+    const auto returnUrl = "/projects?search=port&page=2";
+    const auto html = app.render<PortalProjectDetailsPage>(
+        {{"returnUrl", returnUrl}},
+        {{"id", std::to_string(project.id)}}
+    );
+
+    const auto editUrl =
+        "/projects/" + std::to_string(project.id) +
+        "/edit?returnUrl=" + drogular::Url::encode(returnUrl);
+
+    EXPECT_TRUE(
+        HtmlTestSupport::elementHasAttributes(
+            html,
+            "a",
+            {
+                {"id", "projectEditLink"},
+                {"href", editUrl},
+                {"dg-get", PortalFrameNavigationSupport::fragmentUrl(editUrl)},
+                {"dg-trigger", "click"},
+                {"dg-target", "[data-portal-content]"},
+                {"dg-history", "push"},
+                {"dg-history-url", editUrl}
+            }
+        )
+    );
+}
+
+TEST(PortalApplicationTests, NestedPageFragmentRendersWithoutApplicationShell) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+
+    const auto project = app.dataset().projects().front();
+    const auto result = app.execute<
+        PortalPageFragmentAction<PortalProjectDetailsPage>
+    >({}, {{"id", std::to_string(project.id)}});
+
+    ASSERT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), R"(class="dg-page")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(result.body(), R"(id="projectEditLink")"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(result.body(), R"(class="dg-sidebar")"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(result.body(), R"(class="dg-topbar")"));
 }
 
 TEST(PortalApplicationTests, DashboardUsesCardPrimitivesForQuickLinks) {

@@ -6,6 +6,7 @@
 #include "features/localization/support/portal_error_translator.hpp"
 #include "data/portal_schema.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/render_context.hpp>
 
 class PortalProjectEditFormSupport final {
@@ -42,12 +43,15 @@ public:
         context.set("projectTitle", title);
         context.set("projectStatus", status);
         context.set("projectsReturnUrl", safeReturnUrl);
-        context.set(
-            "projectDetailsUrl",
+        const auto projectDetailsUrl =
             PortalProjectNavigationSupport::detailsUrl(
                 project.id,
                 safeReturnUrl
-            )
+            );
+        context.set("projectDetailsUrl", projectDetailsUrl);
+        context.set(
+            "projectDetailsFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(projectDetailsUrl)
         );
 
         context.set("projectTitleRequired", schema.fieldRequired("title"));

@@ -5,7 +5,23 @@
 <section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('auth.access_denied.title') }}</h2><p>{{ t('auth.access_denied.message') }}</p></div></section>
 @else
 @if(userNotFound)
-<section class="dg-card"><div class="dg-card-body"><h2 class="dg-card-title">{{ t('users.not_found.title') }}</h2><p>{{ t('users.not_found.message') }}</p><a class="dg-button" href="/users">{{ t('users.back') }}</a></div></section>
+<section class="dg-card">
+    <div class="dg-card-body">
+        <h2 class="dg-card-title">
+            {{ t('users.not_found.title') }}
+        </h2>
+        <p>{{ t('users.not_found.message') }}</p>
+        <a class="dg-button"
+           href="{{ usersBackUrl }}"
+           dg-get="{{ usersBackFragmentUrl }}"
+           dg-trigger="click"
+           dg-target="[data-portal-content]"
+           dg-history="push"
+           dg-history-url="{{ usersBackUrl }}">
+            {{ t('users.back') }}
+        </a>
+    </div>
+</section>
 @else
 <div class="dg-stack">
     @if(hasUsersError)@include("partials/alert_error.html")@endif
@@ -24,7 +40,15 @@
                 </div>
                 <div class="dg-form-actions">
                     <button class="dg-button" type="submit">{{ t('users.update') }}</button>
-                    <a class="dg-button" href="/users">{{ t('users.back') }}</a>
+                    <a class="dg-button"
+                       href="{{ usersBackUrl }}"
+                       dg-get="{{ usersBackFragmentUrl }}"
+                       dg-trigger="click"
+                       dg-target="[data-portal-content]"
+                       dg-history="push"
+                       dg-history-url="{{ usersBackUrl }}">
+                        {{ t('users.back') }}
+                    </a>
                 </div>
             </form>
         </div>

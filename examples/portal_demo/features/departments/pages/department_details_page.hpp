@@ -6,6 +6,7 @@
 #include "features/department_members/ui/portal_department_members_support.hpp"
 #include "features/users/providers/user_provider.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
@@ -46,8 +47,15 @@ public:
             );
         context.set("departmentsBackUrl", returnUrl);
         context.set(
-            "departmentEditUrl",
-            PortalDepartmentNavigationSupport::editUrl(id, returnUrl)
+            "departmentsBackFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(returnUrl)
+        );
+        const auto departmentEditUrl =
+            PortalDepartmentNavigationSupport::editUrl(id, returnUrl);
+        context.set("departmentEditUrl", departmentEditUrl);
+        context.set(
+            "departmentEditFragmentUrl",
+            PortalFrameNavigationSupport::fragmentUrl(departmentEditUrl)
         );
 
         if (!department) {

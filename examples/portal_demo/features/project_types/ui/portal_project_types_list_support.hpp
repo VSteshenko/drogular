@@ -4,6 +4,7 @@
 #include "features/project_types/providers/project_type_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
 
+#include "ui/portal_frame_navigation_support.hpp"
 #include <drogular/render_context.hpp>
 
 #include <string>
@@ -65,6 +66,10 @@ public:
                 "/project-types/" +
                 std::to_string(type.id) +
                 "/edit";
+            item["editFragmentUrl"] =
+                PortalFrameNavigationSupport::fragmentUrl(
+                    item["editUrl"].asString()
+                );
             item["deleteUrl"] =
                 "/project-types/" +
                 std::to_string(type.id) +
