@@ -119,8 +119,30 @@ target_include_directories(drogular_tests
     ${CMAKE_SOURCE_DIR}/examples/todo_pwa
     ${CMAKE_SOURCE_DIR}/examples/auth_sample
     ${CMAKE_SOURCE_DIR}/examples/repository_sample
+    ${CMAKE_SOURCE_DIR}/examples/mini_store
     ${CMAKE_SOURCE_DIR}/examples/portal_demo
     ${CMAKE_SOURCE_DIR}/examples/system_monitor_pwa
+)
+
+add_executable(drogular_mini_store_tests
+    mini_store/mini_store_store_tests.cpp
+)
+
+target_compile_definitions(drogular_mini_store_tests
+    PRIVATE
+    DROGULAR_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+target_include_directories(drogular_mini_store_tests
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests
+    ${CMAKE_SOURCE_DIR}/examples/mini_store
+)
+
+target_link_libraries(drogular_mini_store_tests
+    PRIVATE
+    Drogular::drogular
+    GTest::gtest_main
 )
 
 add_executable(drogular_portal_demo_tests
@@ -299,6 +321,7 @@ target_link_libraries(drogular_project_generator_tests
 include(GoogleTest)
 
 gtest_discover_tests(drogular_tests)
+gtest_discover_tests(drogular_mini_store_tests)
 gtest_discover_tests(drogular_portal_demo_tests)
 gtest_discover_tests(drogular_project_generator_tests)
 gtest_discover_tests(drogular_localization_check_tests)

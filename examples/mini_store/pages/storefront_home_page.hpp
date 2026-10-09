@@ -1,0 +1,25 @@
+#pragma once
+
+#include "data/mini_store_store.hpp"
+
+#include <drogular/page.hpp>
+#include <drogular/page_support.hpp>
+
+class MiniStoreStorefrontHomePage final : public drogular::TemplatePage {
+public:
+    void onInit(drogular::RenderContext& context) override {
+        drogular::PageSupport::apply(context, "Mini Store");
+        const auto store = context.requireService<MiniStoreStore>();
+        const auto products = store->products();
+        const auto categories = store->categories();
+        context.set("productCount", static_cast<Json::UInt64>(products.size()));
+        context.set("categoryCount", static_cast<Json::UInt64>(categories.size()));
+    }
+
+    std::string templatePath() const override {
+        return "storefront_home.html";
+    }
+    std::string layoutPath() const override {
+        return "layouts/storefront.html";
+    }
+};
