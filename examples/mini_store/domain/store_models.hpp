@@ -1,5 +1,7 @@
 #pragma once
 
+#include "domain/localized_text.hpp"
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -12,15 +14,15 @@ enum class MiniStoreOrderStatus {
 
 struct MiniStoreCategory {
     int id = 0;
-    std::string name;
+    MiniStoreLocalizedText name;
     std::string slug;
 };
 
 struct MiniStoreProduct {
     int id = 0;
     std::string sku;
-    std::string name;
-    std::string description;
+    MiniStoreLocalizedText name;
+    MiniStoreLocalizedText description;
     int categoryId = 0;
     std::int64_t priceCents = 0;
     int stock = 0;

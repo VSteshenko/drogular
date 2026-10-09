@@ -4,6 +4,7 @@
 
 #include <drogular/page.hpp>
 #include <drogular/page_support.hpp>
+#include <drogular/render_context.hpp>
 
 class MiniStoreStorefrontHomePage final : public drogular::TemplatePage {
 public:
