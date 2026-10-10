@@ -1,4 +1,5 @@
 #include "data/mini_store_store.hpp"
+#include "features/catalog/ui/catalog_support.hpp"
 
 #include <gtest/gtest.h>
 
@@ -58,4 +59,53 @@ TEST(MiniStoreStoreTests, DemoCatalogContainsLocalizedProductAndCategoryContent)
     ASSERT_FALSE(categories.empty());
     EXPECT_EQ(categories.front().name.resolve("en"), "Coffee & Tea");
     EXPECT_EQ(categories.front().name.resolve("de"), "Kaffee & Tee");
+}
+
+TEST(MiniStoreCatalogTests, FiltersByLocalizedNameAndCategory) {
+    MiniStoreStore store;
+    MiniStoreCatalogQuery query;
+    query.search = "Kaffee";
+    query.category = "coffee-tea";
+
+    const auto products = MiniStoreCatalogSupport::filter(
+        store.products(), store.categories(), query, "de"
+    );
+
+    ASSERT_EQ(products.size(), 1U);
+    EXPECT_EQ(products.front().sku, "COF-001");
+}
+
+TEST(MiniStoreCatalogTests, SortsByPrice) {
+    MiniStoreStore store;
+    MiniStoreCatalogQuery query;
+    query.sort = "price-desc";
+
+    const auto products = MiniStoreCatalogSupport::filter(
+        store.products(), store.categories(), query, "en"
+    );
+
+    ASSERT_FALSE(products.empty());
+    EXPECT_EQ(products.front().sku, "KIT-002");
+}
+
+TEST(MiniStoreCatalogTests, PreservesCatalogStateInProductReturnUrl) {
+    MiniStoreCatalogQuery query;
+    query.search = "coffee server";
+    query.category = "kitchen";
+    query.sort = "price-asc";
+
+    EXPECT_EQ(
+        MiniStoreCatalogSupport::catalogUrl(query),
+        "/catalog?q=coffee%20server&category=kitchen&sort=price-asc"
+    );
+    EXPECT_EQ(
+        MiniStoreCatalogSupport::productUrl(3, query),
+        "/products/3?returnUrl=%2Fcatalog%3Fq%3Dcoffee%2520server%26category%3Dkitchen%26sort%3Dprice-asc"
+    );
+}
+
+TEST(MiniStoreCatalogTests, RejectsUnsafeReturnUrl) {
+    EXPECT_EQ(MiniStoreCatalogSupport::safeCatalogReturnUrl("https://example.test"), "/catalog");
+    EXPECT_EQ(MiniStoreCatalogSupport::safeCatalogReturnUrl("//example.test"), "/catalog");
+    EXPECT_EQ(MiniStoreCatalogSupport::safeCatalogReturnUrl("/catalog?category=kitchen"), "/catalog?category=kitchen");
 }

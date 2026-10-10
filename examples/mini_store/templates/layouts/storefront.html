@@ -1,22 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ pageTitle }}</title>
+    <title>{{ pageTitle }} — {{ t('app.title') }}</title>
     <link rel="stylesheet" href="/__drogular/assets/ui.css">
+    <link rel="stylesheet" href="/assets/storefront.css">
 </head>
 <body>
 <header class="dg-topbar">
-    <a class="dg-brand" href="/">Mini Store</a>
+    <a class="dg-brand" href="/">{{ t('app.title') }}</a>
     <nav class="dg-nav" aria-label="Store navigation">
-        <a class="dg-nav-item" href="/">Home</a>
-        <a class="dg-nav-item" href="/catalog">Catalog</a>
-        <a class="dg-nav-item" href="/cart">Cart</a>
-        <a class="dg-nav-item" href="/staff">Staff</a>
+        <a class="dg-nav-item" href="/">{{ t('nav.home') }}</a>
+        <a class="dg-nav-item" href="/catalog">{{ t('nav.catalog') }}</a>
+        <a class="dg-nav-item" href="/cart">{{ t('nav.cart') }}</a>
+        <a class="dg-nav-item" href="/staff">{{ t('nav.staff') }}</a>
     </nav>
+    <div class="dg-actions">
+        <form method="post" action="/language">
+            <input type="hidden" name="language" value="en">
+            <input type="hidden" name="redirect" value="{{ languageRedirect }}">
+            <button class="dg-button" type="submit">EN</button>
+        </form>
+        <form method="post" action="/language">
+            <input type="hidden" name="language" value="de">
+            <input type="hidden" name="redirect" value="{{ languageRedirect }}">
+            <button class="dg-button" type="submit">DE</button>
+        </form>
+    </div>
 </header>
 <main class="dg-page">
+    <header class="dg-page-header">
+        <p class="dg-page-kicker">{{ t('app.title') }}</p>
+        <h1 class="dg-page-title">{{ pageTitle }}</h1>
+    </header>
     <div class="dg-page-content">@content</div>
 </main>
 </body>

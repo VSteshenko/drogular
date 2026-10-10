@@ -3,13 +3,13 @@
 #include "data/mini_store_store.hpp"
 
 #include <drogular/page.hpp>
-#include <drogular/page_support.hpp>
+#include "support/storefront_page_support.hpp"
 #include <drogular/render_context.hpp>
 
 class MiniStoreStorefrontHomePage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Mini Store");
+        MiniStoreStorefrontPageSupport::apply(context, "home.title");
         const auto store = context.requireService<MiniStoreStore>();
         const auto products = store->products();
         const auto categories = store->categories();

@@ -1,0 +1,34 @@
+@if(productNotFound)
+<div class="dg-card">
+    <div class="dg-card-body dg-empty-state">
+        <h2>{{ t('product.not_found') }}</h2>
+        <a class="dg-button" href="{{ productBackUrl }}">
+            {{ t('product.back') }}
+        </a>
+    </div>
+</div>
+@else
+<article class="dg-card mini-store-product-details">
+    <div class="dg-card-body">
+        <p class="dg-kicker">{{ productSku }}</p>
+        <h2 class="dg-card-title">{{ productName }}</h2>
+        <p>{{ productDescription }}</p>
+        <p class="mini-store-product-price">{{ productPrice }}</p>
+        @if(productStock)
+        <span class="dg-badge dg-badge-success">
+            {{ t('product.in_stock') }} · {{ productStock }}
+        </span>
+        @else
+        <span class="dg-badge dg-badge-neutral">
+            {{ t('product.out_of_stock') }}
+        </span>
+        @endif
+    </div>
+    <div class="dg-card-footer">
+        <a class="dg-button" href="{{ productBackUrl }}">{{ t('product.back') }}</a>
+        <button class="dg-button dg-button-primary" type="button" disabled>
+            {{ t('product.add_to_cart') }}
+        </button>
+    </div>
+</article>
+@endif

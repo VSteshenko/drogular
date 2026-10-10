@@ -1,21 +1,23 @@
 <section class="dg-card">
     <div class="dg-card-body">
-        <p class="dg-card-subtitle">Drogular Mini Store</p>
-        <h1 class="dg-card-title">A small store with one shared domain</h1>
-        <p>The storefront and staff workspace operate on the same products, categories and orders.</p>
-        <p><a class="dg-button" href="/catalog">Browse catalog</a></p>
+        <p class="dg-card-subtitle">{{ t('home.kicker') }}</p>
+        <h1 class="dg-card-title">{{ t('home.heading') }}</h1>
+        <p>{{ t('home.description') }}</p>
+        <p>
+            <a class="dg-button" href="/catalog">{{ t('home.browse') }}</a>
+        </p>
     </div>
 </section>
 <div class="dg-card-grid">
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Products</p>
+            <p class="dg-card-subtitle">{{ t('home.products') }}</p>
             <h2 class="dg-card-title">{{ productCount }}</h2>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Categories</p>
+            <p class="dg-card-subtitle">{{ t('home.categories') }}</p>
             <h2 class="dg-card-title">{{ categoryCount }}</h2>
         </div>
     </section>

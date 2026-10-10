@@ -1,0 +1,68 @@
+<section class="dg-stack">
+    <form class="dg-card" method="get" action="/catalog">
+        <div class="dg-card-body dg-form-grid">
+            <label class="dg-field">
+                <span class="dg-label">{{ t('catalog.search') }}</span>
+                <input class="dg-input" type="search" name="q" value="{{ catalogSearch }}">
+            </label>
+            <label class="dg-field">
+                <span class="dg-label">{{ t('catalog.category') }}</span>
+                <select class="dg-select" name="category">
+                    <option value="">{{ t('catalog.all_categories') }}</option>
+                    @foreach(category in categories)
+                        <option value="{{ category.slug }}" @if(category.selected)selected@endif>
+                            {{ category.name }}
+                        </option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="dg-field">
+                <span class="dg-label">{{ t('catalog.sort') }}</span>
+                <select class="dg-select" name="sort">
+                    <option value="name" @if(sortName)selected@endif>
+                        {{ t('catalog.sort.name') }}
+                    </option>
+                    <option value="price-asc" @if(sortPriceAsc)selected@endif>
+                        {{ t('catalog.sort.price_asc') }}
+                    </option>
+                    <option value="price-desc" @if(sortPriceDesc)selected@endif>
+                        {{ t('catalog.sort.price_desc') }}
+                    </option>
+                </select>
+            </label>
+        </div>
+        <div class="dg-card-footer">
+            <button class="dg-button dg-button-primary" type="submit">
+                {{ t('catalog.apply') }}
+            </button>
+            <a class="dg-button" href="/catalog">{{ t('catalog.clear') }}</a>
+        </div>
+    </form>
+    <div class="dg-card-grid mini-store-product-grid">
+        @foreach(product in products)
+            <a class="dg-card mini-store-product-card" href="{{ product.detailsUrl }}">
+                <div class="dg-card-body">
+                    <p class="dg-kicker">{{ product.sku }}</p>
+                    <h2 class="dg-card-title">{{ product.name }}</h2>
+                    <p>{{ product.description }}</p>
+                </div>
+                <div class="dg-card-footer mini-store-product-meta">
+                    <strong>{{ product.price }}</strong>
+                    @if(product.stock)
+                        <span class="dg-badge dg-badge-success">
+                            {{ t('product.in_stock') }}
+                        </span>
+                    @else
+                        <span class="dg-badge dg-badge-neutral">
+                            {{ t('product.out_of_stock') }}
+                        </span>
+                    @endif
+                </div>
+            </a>
+        @empty
+            <div class="dg-card">
+                <div class="dg-card-body dg-empty-state">{{ t('catalog.empty') }}</div>
+            </div>
+        @endforeach
+    </div>
+</section>

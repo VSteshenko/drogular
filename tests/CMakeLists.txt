@@ -336,6 +336,14 @@ add_test(
         --reference en
 )
 
+add_test(
+    NAME drogular_mini_store_localization_catalog
+    COMMAND
+        $<TARGET_FILE:drogular_localization_check>
+        "${CMAKE_SOURCE_DIR}/examples/mini_store/resources/localization"
+        --reference en
+)
+
 # Generated-project smoke tests verify that official starters remain buildable
 # against the current Drogular source tree, without following a released Git tag.
 # They require the CLI executable, so library-only test configurations skip them.
