@@ -1,0 +1,50 @@
+@if(cartEmpty)
+    <div class="dg-card">
+        <div class="dg-card-body dg-empty-state">
+            <p>{{ t('cart.empty') }}</p>
+            <a class="dg-button" href="/catalog">
+                {{ t('cart.continue') }}
+            </a>
+        </div>
+    </div>
+@else
+    <div class="dg-card">
+        <form method="post" action="/checkout/place">
+            <div class="dg-card-body dg-stack">
+@if(customerError)
+                <div class="dg-alert dg-alert-danger">
+                    {{ t('checkout.customer_error') }}
+                </div>
+@endif
+@if(stockError)
+                <div class="dg-alert dg-alert-danger">
+                    {{ t('checkout.stock_error') }}
+                </div>
+@endif
+                <label class="dg-field">
+                    <span class="dg-label">
+                        {{ t('checkout.name') }}
+                    </span>
+                    <input class="dg-input" name="name" required>
+                </label>
+                <label class="dg-field">
+                    <span class="dg-label">
+                        {{ t('checkout.email') }}
+                    </span>
+                    <input class="dg-input" type="email" name="email" required>
+                </label>
+                <h2>{{ t('checkout.review') }}</h2>
+@foreach(item in cartItems)
+                <p>{{ item.quantity }} × {{ item.name }} — {{ item.lineTotal }}</p>
+@endforeach
+                <strong>{{ t('cart.total') }}: {{ cartTotal }}</strong>
+            </div>
+            <div class="dg-card-footer">
+                <a class="dg-button" href="/cart">{{ t('checkout.back') }}</a>
+                <button class="dg-button dg-button-primary" type="submit">
+                    {{ t('checkout.place_order') }}
+                </button>
+            </div>
+        </form>
+    </div>
+@endif

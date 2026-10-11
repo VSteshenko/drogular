@@ -17,3 +17,13 @@
     font-size: 1.5rem;
     font-weight: 700;
 }
+.mini-store-cart-row .dg-card-footer {
+    align-items: end;
+}
+.mini-store-quantity {
+    max-width: 7rem;
+}
+.mini-store-cart-total {
+    justify-content: flex-end;
+    gap: 1rem;
+}

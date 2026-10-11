@@ -26,9 +26,20 @@
     </div>
     <div class="dg-card-footer">
         <a class="dg-button" href="{{ productBackUrl }}">{{ t('product.back') }}</a>
+        @if(productStock)
+        <form method="post" action="/cart/add">
+            <input type="hidden" name="productId" value="{{ productId }}">
+            <input type="hidden" name="quantity" value="1">
+            <input type="hidden" name="returnUrl" value="{{ productAddReturnUrl }}">
+            <button class="dg-button dg-button-primary" type="submit">
+                {{ t('product.add_to_cart') }}
+            </button>
+        </form>
+        @else
         <button class="dg-button dg-button-primary" type="button" disabled>
             {{ t('product.add_to_cart') }}
         </button>
+        @endif
     </div>
 </article>
 @endif

@@ -1,0 +1,21 @@
+@if(orderFound)
+    <div class="dg-card">
+        <div class="dg-card-body dg-empty-state">
+            <h2>{{ t('order.confirmation.heading') }}</h2>
+            <p>{{ t('order.confirmation.thanks') }} {{ customerName }}</p>
+            <p>{{ t('order.confirmation.number') }} #{{ orderId }}</p>
+            <strong>{{ orderTotal }}</strong>
+        </div>
+        <div class="dg-card-footer">
+            <a class="dg-button dg-button-primary" href="/catalog">
+                {{ t('order.confirmation.continue') }}
+            </a>
+        </div>
+    </div>
+@else
+    <div class="dg-card">
+        <div class="dg-card-body dg-empty-state">
+            {{ t('order.confirmation.not_found') }}
+        </div>
+    </div>
+@endif

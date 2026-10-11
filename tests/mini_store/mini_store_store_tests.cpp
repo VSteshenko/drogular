@@ -109,3 +109,58 @@ TEST(MiniStoreCatalogTests, RejectsUnsafeReturnUrl) {
     EXPECT_EQ(MiniStoreCatalogSupport::safeCatalogReturnUrl("//example.test"), "/catalog");
     EXPECT_EQ(MiniStoreCatalogSupport::safeCatalogReturnUrl("/catalog?category=kitchen"), "/catalog?category=kitchen");
 }
+
+TEST(MiniStoreStoreTests, PlacesOrderFromCartAndKeepsLocalizedSnapshot) {
+    MiniStoreStore store;
+
+    const auto before = store.product(1);
+    ASSERT_TRUE(before.has_value());
+
+    const auto order =
+        store.placeOrder({
+                "Ada Example",
+                "ada@example.test"
+            }, {
+                {
+                    1, 2
+                }
+            },
+            "de");
+
+    ASSERT_TRUE(order.has_value());
+    ASSERT_EQ(order->items.size(), 1U);
+    EXPECT_EQ(order->items.front().productName, "Hausmischung Kaffee");
+    EXPECT_EQ(order->items.front().unitPriceCents, 1290);
+    EXPECT_EQ(order->totalCents, 2580);
+    EXPECT_EQ(order->status, MiniStoreOrderStatus::New);
+    EXPECT_FALSE(order->createdAt.empty());
+    EXPECT_EQ(order->createdAt.back(), 'Z');
+    EXPECT_NE(order->createdAt, "2026-10-11T12:00:00Z");
+
+    const auto after = store.product(1);
+    ASSERT_TRUE(after.has_value());
+    EXPECT_EQ(after->stock, before->stock - 2);
+}
+
+TEST(MiniStoreStoreTests, RejectsOrderWhenStockIsInsufficientWithoutMutatingStock) {
+    MiniStoreStore store;
+
+    const auto before = store.product(5);
+    ASSERT_TRUE(before.has_value());
+
+    const auto order = store.placeOrder({
+            "Ada Example",
+            "ada@example.test"
+        },
+        {
+            {
+                5, before->stock + 1
+            }
+        },
+        "en");
+    EXPECT_FALSE(order.has_value());
+
+    const auto after = store.product(5);
+    ASSERT_TRUE(after.has_value());
+    EXPECT_EQ(after->stock, before->stock);
+}

@@ -32,6 +32,8 @@ public:
         context.set("productDescription", std::string(product->description.resolve(locale)));
         context.set("productSku", product->sku); context.set("productPrice", MiniStoreCatalogSupport::money(product->priceCents));
         context.set("productStock", product->stock);
+        context.set("productId", product->id);
+        context.set("productAddReturnUrl", "/cart");
     }
 
     std::string templatePath() const override {
