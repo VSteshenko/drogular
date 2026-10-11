@@ -1,0 +1,39 @@
+<header class="dg-page-header">
+    <div>
+        <p class="dg-page-kicker">Catalog</p>
+        <h1 class="dg-page-title">Products</h1>
+    </div>
+    <a class="dg-button dg-button-primary" href="/staff/products/new">New product</a>
+</header>
+<div class="dg-card">
+    <div class="dg-card-body">
+        <table class="dg-table">
+            <thead>
+            <tr>
+                <th>SKU</th>
+                <th>English</th>
+                <th>Deutsch</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+@foreach(product in products)
+            <tr>
+                <td>{{ product.sku }}</td>
+                <td>{{ product.nameEn }}</td>
+                <td>{{ product.nameDe }}</td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>@if(product.active)Active@elseInactive@endif</td>
+                <td>
+                    <a class="dg-button" href="/staff/products/{{ product.id }}/edit">Edit</a>
+                </td>
+            </tr>
+@endforeach
+            </tbody>
+        </table>
+    </div>
+</div>

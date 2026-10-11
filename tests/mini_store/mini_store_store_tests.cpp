@@ -164,3 +164,90 @@ TEST(MiniStoreStoreTests, RejectsOrderWhenStockIsInsufficientWithoutMutatingStoc
     ASSERT_TRUE(after.has_value());
     EXPECT_EQ(after->stock, before->stock);
 }
+
+TEST(MiniStoreStoreTests, StaffCanCreateAndUpdateLocalizedCategory) {
+    MiniStoreStore store;
+    EXPECT_TRUE(store.saveCategory({
+            0,
+            {{"en", "Books"}, {"de", "Buecher"}},
+            "books"
+        })
+    );
+
+    const auto categories = store.categories();
+    const auto it = std::find_if(
+        categories.begin(),
+        categories.end(),
+        [](const auto& c) {
+            return c.slug == "books";
+        });
+    ASSERT_NE(it, categories.end());
+
+    auto changed = *it;
+    changed.name = {{"en", "Books & Media"}, {"de", "Buecher & Medien"}};
+    EXPECT_TRUE(store.saveCategory(changed));
+    EXPECT_EQ(store.category(changed.id)->name.resolve("de"), "Buecher & Medien");
+}
+
+TEST(MiniStoreStoreTests, StaffRejectsDuplicateCategorySlug) {
+    MiniStoreStore store;
+    EXPECT_FALSE(store.saveCategory({
+            0,
+            {{"en", "Other"}, {"de", "Andere"}},
+            "coffee-tea"
+        })
+    );
+}
+
+TEST(MiniStoreStoreTests, StaffCanCreateAndUpdateLocalizedProduct) {
+    MiniStoreStore store;
+    MiniStoreProduct product{
+        0,
+        "BOOK-001",
+        {{"en", "Guide"}, {"de", "Handbuch"}},
+        {{"en", "A guide"}, {"de", "Ein Handbuch"}},
+        1,
+        1990,
+        4,
+        true
+    };
+    EXPECT_TRUE(store.saveProduct(product));
+
+    const auto products = store.products();
+    const auto it = std::find_if(
+        products.begin(),
+        products.end(),
+        [](const auto& p) {
+            return p.sku == "BOOK-001";
+        });
+    ASSERT_NE(it, products.end());
+
+    auto changed = *it;
+    changed.stock = 9;
+    changed.active = false;
+    EXPECT_TRUE(store.saveProduct(changed));
+
+    const auto saved = store.product(changed.id);
+    ASSERT_TRUE(saved);
+    EXPECT_EQ(saved->stock, 9);
+    EXPECT_FALSE(saved->active);
+}
+
+TEST(MiniStoreStoreTests, StaffRejectsDuplicateSkuAndInvalidStock) {
+    MiniStoreStore store;
+    MiniStoreProduct duplicate{
+        0,
+        "COF-001",
+        {{"en", "X"}, {"de", "X"}},
+        {{"en", "X"}, {"de", "X"}},
+        1,
+        100,
+        1,
+        true
+    };
+    EXPECT_FALSE(store.saveProduct(duplicate));
+
+    duplicate.sku = "NEW-001";
+    duplicate.stock = -1;
+    EXPECT_FALSE(store.saveProduct(duplicate));
+}

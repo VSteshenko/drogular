@@ -1,0 +1,60 @@
+<header class="dg-page-header">
+    <h1 class="dg-page-title">
+        @if(editing)Edit product@elseNew product@endif
+    </h1>
+</header>
+<form class="dg-card" method="post" action="/staff/products/save">
+    <div class="dg-card-body dg-form-grid">
+        <input type="hidden" name="id" value="{{ id }}">
+        <label class="dg-field">
+            <span class="dg-label">SKU</span>
+            <input class="dg-input" name="sku" value="{{ sku }}" required>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Category</span>
+            <select class="dg-select" name="categoryId" required>
+@foreach(category in categories)
+                <option value="{{ category.id }}" @if(category.selected)selected@endif>
+                    {{ category.name }}
+                </option>
+@endforeach
+            </select>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Price</span>
+            <input class="dg-input" name="price" value="{{ price }}" inputmode="decimal" required>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Stock</span>
+            <input class="dg-input" type="number" min="0" name="stock" value="{{ stock }}" required>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Name — English</span>
+            <input class="dg-input" name="nameEn" value="{{ nameEn }}" required>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Name — Deutsch</span>
+            <input class="dg-input" name="nameDe" value="{{ nameDe }}" required>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Description — English</span>
+            <textarea class="dg-input" name="descriptionEn" required>
+                {{ descriptionEn }}
+            </textarea>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Description — Deutsch</span>
+            <textarea class="dg-input" name="descriptionDe" required>
+                {{ descriptionDe }}
+            </textarea>
+        </label>
+        <label class="dg-field">
+            <span class="dg-label">Active</span>
+            <input type="checkbox" name="active" @if(active)checked@endif>
+        </label>
+    </div>
+    <div class="dg-card-footer">
+        <button class="dg-button dg-button-primary" type="submit">Save</button>
+        <a class="dg-button" href="/staff/products">Cancel</a>
+    </div>
+</form>

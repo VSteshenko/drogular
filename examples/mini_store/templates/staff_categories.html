@@ -1,0 +1,33 @@
+<header class="dg-page-header">
+    <div>
+        <p class="dg-page-kicker">Catalog</p>
+        <h1 class="dg-page-title">Categories</h1>
+    </div>
+    <a class="dg-button dg-button-primary" href="/staff/categories/new">New category</a>
+</header>
+<div class="dg-card">
+    <div class="dg-card-body">
+        <table class="dg-table">
+            <thead>
+            <tr>
+                <th>Slug</th>
+                <th>English</th>
+                <th>Deutsch</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+@foreach(category in categoryRows)
+            <tr>
+                <td>{{ category.slug }}</td>
+                <td>{{ category.nameEn }}</td>
+                <td>{{ category.nameDe }}</td>
+                <td>
+                    <a class="dg-button" href="/staff/categories/{{ category.id }}/edit">Edit</a>
+                </td>
+            </tr>
+@endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
