@@ -1,0 +1,70 @@
+@if(found)
+<header class="dg-page-header">
+    <div>
+        <p class="dg-page-kicker">Orders</p>
+        <h1 class="dg-page-title">Order #{{ id }}</h1>
+    </div>
+    <a class="dg-button" href="/staff/orders">Back to orders</a>
+</header>
+<div class="dg-card-grid">
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <p class="dg-card-subtitle">Customer</p>
+            <h2 class="dg-card-title">{{ customer }}</h2>
+            <p>{{ email }}</p>
+        </div>
+    </section>
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <p class="dg-card-subtitle">Status</p>
+            <h2 class="dg-card-title">{{ status }}</h2>
+            <p>{{ createdAt }}</p>
+        </div>
+    </section>
+    <section class="dg-card">
+        <div class="dg-card-body">
+            <p class="dg-card-subtitle">Total</p>
+            <h2 class="dg-card-title">{{ total }}</h2>
+        </div>
+    </section>
+</div>
+<div class="dg-card">
+    <div class="dg-card-body">
+        <table class="dg-table">
+            <thead>
+            <tr>
+                <th>Product snapshot</th>
+                <th>Unit price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+            </thead>
+            <tbody>
+@foreach(item in items)
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.unitPrice }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.lineTotal }}</td>
+            </tr>
+@endforeach
+            </tbody>
+        </table>
+    </div>
+@if(canAdvance)
+    <div class="dg-card-footer">
+        <form method="post" action="/staff/orders/advance">
+            <input type="hidden" name="id" value="{{ id }}">
+            <button class="dg-button dg-button-primary" type="submit">
+                Move to {{ nextStatus }}
+            </button>
+        </form>
+    </div>
+@endif
+</div>
+@else
+<header class="dg-page-header">
+    <h1 class="dg-page-title">Order not found</h1>
+</header>
+<a class="dg-button" href="/staff/orders">Back to orders</a>
+@endif

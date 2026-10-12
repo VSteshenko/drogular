@@ -14,8 +14,11 @@
 #include "features/staff/pages/product_form_page.hpp"
 #include "features/staff/pages/categories_page.hpp"
 #include "features/staff/pages/category_form_page.hpp"
+#include "features/staff/pages/orders_page.hpp"
+#include "features/staff/pages/order_details_page.hpp"
 #include "features/staff/actions/save_product_action.hpp"
 #include "features/staff/actions/save_category_action.hpp"
+#include "features/staff/actions/advance_order_action.hpp"
 #include "support/mini_store_expression_functions.hpp"
 
 #include <drogular/app.hpp>
@@ -57,6 +60,8 @@ int main() {
     app.page<MiniStoreStaffCategoriesPage>("/staff/categories");
     app.page<MiniStoreStaffCategoryFormPage>("/staff/categories/new");
     app.page<MiniStoreStaffCategoryFormPage>("/staff/categories/{id}/edit");
+    app.page<MiniStoreStaffOrdersPage>("/staff/orders");
+    app.page<MiniStoreStaffOrderDetailsPage>("/staff/orders/{id}");
     app.page<MiniStoreCatalogPage>("/catalog");
     app.page<MiniStoreProductDetailsPage>("/products/{id}");
     app.page<MiniStoreCartPage>("/cart");
@@ -65,6 +70,7 @@ int main() {
     app.action<MiniStoreLanguageAction>("/language");
     app.action<MiniStoreSaveProductAction>("/staff/products/save");
     app.action<MiniStoreSaveCategoryAction>("/staff/categories/save");
+    app.action<MiniStoreAdvanceOrderAction>("/staff/orders/advance");
     app.action<MiniStoreAddToCartAction>("/cart/add");
     app.action<MiniStoreUpdateCartAction>("/cart/update");
     app.action<MiniStoreCheckoutAction>("/checkout/place");

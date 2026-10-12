@@ -1,17 +1,13 @@
 #pragma once
 
 #include "data/mini_store_dataset.hpp"
+#include "data/mini_store_time.hpp"
 
 #include <algorithm>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
 #include <mutex>
-#include <sstream>
 #include <optional>
 #include <vector>
 
-using Clock = std::chrono::system_clock;
 
 class MiniStoreStore {
 public:
@@ -34,6 +30,47 @@ public:
     std::vector<MiniStoreOrder> orders() const {
         std::lock_guard lock(mutex_);
         return dataset_.orders;
+    }
+
+    std::optional<MiniStoreOrder> order(int id) const {
+        std::lock_guard lock(mutex_);
+        const auto it = std::find_if(
+            dataset_.orders.begin(),
+            dataset_.orders.end(),
+            [id](const auto& order) {
+                return order.id == id;
+            }
+        );
+        return it == dataset_.orders.end()
+            ? std::nullopt
+            : std::optional<MiniStoreOrder>(*it);
+    }
+
+    bool advanceOrder(int id) {
+        std::lock_guard lock(mutex_);
+        const auto it = std::find_if(
+            dataset_.orders.begin(),
+            dataset_.orders.end(),
+            [id](const auto& order) {
+                return order.id == id;
+            }
+        );
+        if (it == dataset_.orders.end()) {
+            return false;
+        }
+
+        switch (it->status) {
+            case MiniStoreOrderStatus::New:
+                it->status = MiniStoreOrderStatus::Processing;
+                return true;
+            case MiniStoreOrderStatus::Processing:
+                it->status = MiniStoreOrderStatus::Completed;
+                return true;
+            case MiniStoreOrderStatus::Completed:
+                return false;
+        }
+
+        return false;
     }
 
     std::optional<MiniStoreProduct> product(int id) const {
@@ -179,7 +216,7 @@ public:
         order.id = dataset_.orders.empty() ? 1000 : dataset_.orders.front().id + 1;
         order.customer = std::move(customer);
         order.status = MiniStoreOrderStatus::New;
-        order.createdAt = currentTimestamp();
+        order.createdAt = mini_store_time::now();
 
         for (const auto& cartItem : cart) {
             const auto it = std::find_if(
@@ -231,22 +268,5 @@ private:
         }
 
         return result;
-    }
-
-    static std::string currentTimestamp() {
-        const auto now = std::chrono::system_clock::now();
-        const auto time = std::chrono::system_clock::to_time_t(now);
-        std::tm utc{};
-
-#if defined(_WIN32)
-        gmtime_s(&utc, &time);
-#else
-        gmtime_r(&time, &utc);
-#endif
-
-        std::ostringstream stream;
-        stream << std::put_time(&utc, "%Y-%m-%dT%H:%M:%SZ");
-
-        return stream.str();
     }
 };

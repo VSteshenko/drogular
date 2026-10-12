@@ -20,6 +20,24 @@ TEST(CoreTemplateEngineTests, ReplacesStringVariable) {
     EXPECT_EQ(html, "<h1>Hello Drogular</h1>");
 }
 
+TEST(CoreTemplateEngineTests, RendersStringLikeContextValues) {
+    drogular::RenderContext context;
+
+    const char* pointer = "Pointer";
+
+    context.set("literal", "Literal");
+    context.set("pointer", pointer);
+    context.set("view", std::string_view("View"));
+
+    const auto html =
+        drogular::template_engine::render(
+            "{{ literal }}|{{ pointer }}|{{ view }}",
+            context
+        );
+
+    EXPECT_EQ(html, "Literal|Pointer|View");
+}
+
 TEST(CoreTemplateEngineTests, ReplacesMultipleVariables) {
     drogular::RenderContext context;
 

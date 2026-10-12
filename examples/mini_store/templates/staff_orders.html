@@ -1,0 +1,51 @@
+<header class="dg-page-header">
+    <div>
+        <p class="dg-page-kicker">Orders</p>
+        <h1 class="dg-page-title">Order workflow</h1>
+    </div>
+</header>
+<div class="dg-card">
+    <div class="dg-card-body">
+        <form method="get" action="/staff/orders" class="dg-form-row">
+            <label>
+                Status
+                <select name="status">
+                    <option value="all">All</option>
+                    <option value="new">New</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </label>
+            <button class="dg-button" type="submit">Filter</button>
+        </form>
+        <table class="dg-table">
+            <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+@foreach(order in orders)
+            <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.customer }}
+                    <br>
+                    <small>{{ order.email }}</small>
+                </td>
+                <td>{{ order.createdAt }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.total }}</td>
+                <td>
+                    <a class="dg-button" href="/staff/orders/{{ order.id }}">Open</a>
+                </td>
+            </tr>
+@endforeach
+            </tbody>
+        </table>
+    </div>
+</div>

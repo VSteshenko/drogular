@@ -8,7 +8,7 @@ TEST(MiniStoreStoreTests, DemoDatasetIsSharedDomainFoundation) {
 
     EXPECT_EQ(store.categories().size(), 3U);
     EXPECT_EQ(store.products().size(), 6U);
-    EXPECT_EQ(store.orders().size(), 2U);
+    EXPECT_EQ(store.orders().size(), 9U);
 
     const auto product = store.product(1);
     ASSERT_TRUE(product.has_value());
@@ -18,12 +18,17 @@ TEST(MiniStoreStoreTests, DemoDatasetIsSharedDomainFoundation) {
 
 TEST(MiniStoreStoreTests, OrderItemsKeepProductSnapshotData) {
     MiniStoreStore store;
-    const auto orders = store.orders();
 
-    ASSERT_FALSE(orders.empty());
-    ASSERT_FALSE(orders.front().items.empty());
-    EXPECT_EQ(orders.front().items.front().productName, "House Blend Coffee");
-    EXPECT_EQ(orders.front().items.front().unitPriceCents, 1290);
+    const auto order = store.placeOrder(
+        {"Ada Example", "ada@example.test"},
+        {{1, 1}},
+        "en"
+    );
+
+    ASSERT_TRUE(order.has_value());
+    ASSERT_EQ(order->items.size(), 1U);
+    EXPECT_EQ(order->items.front().productName, "House Blend Coffee");
+    EXPECT_EQ(order->items.front().unitPriceCents, 1290);
 }
 
 TEST(MiniStoreLocalizedTextTests, ResolvesRequestedLocale) {
@@ -250,4 +255,63 @@ TEST(MiniStoreStoreTests, StaffRejectsDuplicateSkuAndInvalidStock) {
     duplicate.sku = "NEW-001";
     duplicate.stock = -1;
     EXPECT_FALSE(store.saveProduct(duplicate));
+}
+
+TEST(MiniStoreStoreTests, DemoOrdersCoverEveryWorkflowStatus) {
+    MiniStoreStore store;
+    const auto orders = store.orders();
+    EXPECT_EQ(
+        std::count_if(
+            orders.begin(),
+            orders.end(),
+            [](const auto& o) {
+                return o.status == MiniStoreOrderStatus::New;
+            }
+        ),
+        3
+    );
+    EXPECT_EQ(
+        std::count_if(
+            orders.begin(),
+            orders.end(),
+            [](const auto& o) {
+                return o.status == MiniStoreOrderStatus::Processing;
+            }
+        ),
+        3
+    );
+    EXPECT_EQ(
+        std::count_if(
+            orders.begin(),
+            orders.end(),
+            [](const auto& o) {
+                return o.status == MiniStoreOrderStatus::Completed;
+            }
+        ),
+        3
+    );
+}
+
+TEST(MiniStoreStoreTests, StaffAdvancesOrdersOnlyForward) {
+    MiniStoreStore store;
+    ASSERT_EQ(store.order(1008)->status, MiniStoreOrderStatus::New);
+    EXPECT_TRUE(store.advanceOrder(1008));
+    EXPECT_EQ(store.order(1008)->status, MiniStoreOrderStatus::Processing);
+    EXPECT_TRUE(store.advanceOrder(1008));
+    EXPECT_EQ(store.order(1008)->status, MiniStoreOrderStatus::Completed);
+    EXPECT_FALSE(store.advanceOrder(1008));
+    EXPECT_EQ(store.order(1008)->status, MiniStoreOrderStatus::Completed);
+    EXPECT_FALSE(store.advanceOrder(9999));
+}
+
+TEST(MiniStoreStoreTests, OrderWorkflowDoesNotChangeItemSnapshot) {
+    MiniStoreStore store;
+    const auto before = store.order(1008);
+    ASSERT_TRUE(before);
+    ASSERT_FALSE(before->items.empty());
+    EXPECT_TRUE(store.advanceOrder(1008));
+    const auto after = store.order(1008);
+    ASSERT_TRUE(after);
+    EXPECT_EQ(after->items.front().productName, before->items.front().productName);
+    EXPECT_EQ(after->items.front().unitPriceCents, before->items.front().unitPriceCents);
 }

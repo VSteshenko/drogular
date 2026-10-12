@@ -11,6 +11,8 @@
 #include <any>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <unordered_map>
 #include <stdexcept>
 #include <memory>
@@ -181,7 +183,23 @@ public:
      */
     template <typename T>
     void set(std::string key, T value) {
-        values_[std::move(key)] = std::move(value);
+        using Value = std::decay_t<T>;
+
+        if constexpr (
+            std::is_same_v<Value, const char*> ||
+            std::is_same_v<Value, char*>
+        ) {
+            values_[std::move(key)] =
+                value != nullptr
+                    ? std::string(value)
+                    : std::string{};
+        } else if constexpr (
+            std::is_same_v<Value, std::string_view>
+        ) {
+            values_[std::move(key)] = std::string(value);
+        } else {
+            values_[std::move(key)] = std::move(value);
+        }
     }
 
     /**

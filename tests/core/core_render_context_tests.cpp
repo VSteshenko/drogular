@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <string_view>
 
 TEST(CoreRenderContextTests, ReturnsApplicationServices) {
     drogular::ApplicationServices services;
@@ -87,6 +88,35 @@ TEST(CoreRenderContextTests, StoresAndReadsStringValue) {
 
     ASSERT_TRUE(title.has_value());
     EXPECT_EQ(*title, "Hello");
+}
+
+TEST(CoreRenderContextTests, NormalizesStringLikeValues) {
+    drogular::RenderContext context;
+
+    const char* pointer = "Pointer";
+    char mutablePointer[] = "Mutable";
+
+    context.set("literal", "Literal");
+    context.set("pointer", pointer);
+    context.set("mutablePointer", mutablePointer);
+    context.set("view", std::string_view("View"));
+
+    EXPECT_EQ(context.require<std::string>("literal"), "Literal");
+    EXPECT_EQ(context.require<std::string>("pointer"), "Pointer");
+    EXPECT_EQ(
+        context.require<std::string>("mutablePointer"),
+        "Mutable"
+    );
+    EXPECT_EQ(context.require<std::string>("view"), "View");
+}
+
+TEST(CoreRenderContextTests, NormalizesNullStringPointerToEmptyString) {
+    drogular::RenderContext context;
+    const char* value = nullptr;
+
+    context.set("value", value);
+
+    EXPECT_EQ(context.require<std::string>("value"), "");
 }
 
 TEST(CoreRenderContextTests, StoresAndReadsIntegerValue) {

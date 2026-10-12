@@ -1,7 +1,9 @@
 #pragma once
 
 #include "domain/store_models.hpp"
+#include "data/mini_store_time.hpp"
 
+#include <chrono>
 #include <vector>
 
 struct MiniStoreDataset {
@@ -138,8 +140,106 @@ inline MiniStoreDataset createMiniStoreDemoDataset() {
         },
         {
             {
-                1001,
-                {"Alex Morgan", "alex@example.test"},
+                1008,
+                {
+                    "Mia Weber",
+                    "mia@example.test"
+                },
+                {
+                    {
+                        2,
+                        "Earl Grey Tea",
+                        990,
+                        1
+                    }
+                },
+                990,
+                MiniStoreOrderStatus::New,
+                mini_store_time::ago(std::chrono::hours{2})
+            },
+            {
+                1007,
+                {
+                    "Noah Fischer",
+                    "noah@example.test"
+                },
+                {
+                    {
+                        4,
+                        "Canvas Market Bag",
+                        1590, 2
+                    }
+                },
+                3180,
+                MiniStoreOrderStatus::Processing,
+                mini_store_time::ago(std::chrono::hours{12})
+            },
+            {
+                1006,
+                {
+                    "Emma Klein",
+                    "emma@example.test"
+                },
+                {
+                    {
+                        3,
+                        "Glass Coffee Server",
+                        2490,
+                        1
+                    },
+                    {
+                        1,
+                        "House Blend Coffee",
+                        1290,
+                        1
+                    }
+                },
+                3780,
+                MiniStoreOrderStatus::Completed,
+                mini_store_time::ago(std::chrono::hours{20})
+            },
+            {
+                1005,
+                {
+                    "Liam Wagner",
+                    "liam@example.test"
+                },
+                {
+                    {
+                        5,
+                        "Digital Kitchen Scale",
+                        2990,
+                        2
+                    }
+                },
+                5980,
+                MiniStoreOrderStatus::New,
+                mini_store_time::ago(std::chrono::hours{30})
+            },
+            {
+                1004,
+                {
+                    "Sofia Becker",
+                    "sofia@example.test"
+                },
+                {
+                    {
+                        6,
+                        "Travel Tumbler",
+                        2190,
+                        1
+                    }
+                },
+                2190,
+                MiniStoreOrderStatus::Processing,
+                mini_store_time::ago(std::chrono::hours{48})
+            },
+            {
+                1003,
+                {
+                    "Ben Hoffmann",
+                    "ben@example.test"
+                },
                 {
                     {
                         1,
@@ -155,20 +255,68 @@ inline MiniStoreDataset createMiniStoreDemoDataset() {
                     }
                 },
                 4170,
+                MiniStoreOrderStatus::Completed,
+                mini_store_time::ago(std::chrono::hours{60})
+            },
+            {
+                1002,
+                {
+                    "Lea Schulz",
+                    "lea@example.test"
+                },
+                {
+                    {
+                        2,
+                        "Earl Grey Tea",
+                        990,
+                        3
+                    }
+                },
+                2970,
                 MiniStoreOrderStatus::New,
-                "2026-10-08T09:30:00Z"
+                mini_store_time::ago(std::chrono::hours{72})
+            },
+            {
+                1001,
+                {
+                    "Alex Morgan",
+                    "alex@example.test"
+                },
+                {
+                    {
+                        1,
+                        "House Blend Coffee",
+                        1290,
+                        2
+                    },
+                    {
+                        4,
+                        "Canvas Market Bag",
+                        1590,
+                        1
+                    }
+                },
+                4170,
+                MiniStoreOrderStatus::Processing,
+                mini_store_time::ago(std::chrono::hours{96})
             },
             {
                 1000,
-                {"Sam Taylor", "sam@example.test"},
+                {
+                    "Sam Taylor",
+                    "sam@example.test"
+                },
                 {
                     {
                         3,
-                        "Glass Coffee Server", 2490, 1
-                    }},
+                        "Glass Coffee Server",
+                        2490,
+                        1
+                    }
+                },
                 2490,
-                MiniStoreOrderStatus::Processing,
-                "2026-10-07T15:10:00Z"
+                MiniStoreOrderStatus::Completed,
+                mini_store_time::ago(std::chrono::hours{120})
             }
         }
     };
