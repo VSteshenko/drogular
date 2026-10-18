@@ -273,6 +273,7 @@ source of translation truth.
 - Preserve requested-locale → default-locale → key fallback semantics on the client
 - Add version/hash-based invalidation so localization resources can be refreshed independently of the application shell
 - Reuse the same translation data across server rendering, online Interactions, and Offline UI
+- Add a first-class Return URL / Navigation Context API for safe return-target parsing, propagation, URL encoding, and redirects across RenderContext and ActionContext
 
 ### 1.0
 
