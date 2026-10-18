@@ -1,5 +1,6 @@
 #include "data/mini_store_store.hpp"
 #include "features/catalog/ui/catalog_support.hpp"
+#include "ui/mini_store_frame_navigation_support.hpp"
 
 #include <gtest/gtest.h>
 
@@ -294,6 +295,7 @@ TEST(MiniStoreStoreTests, DemoOrdersCoverEveryWorkflowStatus) {
 
 TEST(MiniStoreStoreTests, StaffAdvancesOrdersOnlyForward) {
     MiniStoreStore store;
+
     ASSERT_EQ(store.order(1008)->status, MiniStoreOrderStatus::New);
     EXPECT_TRUE(store.advanceOrder(1008));
     EXPECT_EQ(store.order(1008)->status, MiniStoreOrderStatus::Processing);
@@ -306,12 +308,34 @@ TEST(MiniStoreStoreTests, StaffAdvancesOrdersOnlyForward) {
 
 TEST(MiniStoreStoreTests, OrderWorkflowDoesNotChangeItemSnapshot) {
     MiniStoreStore store;
+
     const auto before = store.order(1008);
     ASSERT_TRUE(before);
     ASSERT_FALSE(before->items.empty());
     EXPECT_TRUE(store.advanceOrder(1008));
+
     const auto after = store.order(1008);
     ASSERT_TRUE(after);
     EXPECT_EQ(after->items.front().productName, before->items.front().productName);
     EXPECT_EQ(after->items.front().unitPriceCents, before->items.front().unitPriceCents);
+}
+
+TEST(MiniStoreFrameNavigationTests, StorefrontFragmentPreservesCanonicalPathAndQuery) {
+    EXPECT_EQ(
+        MiniStoreFrameNavigationSupport::storefrontFragmentUrl(
+            "/products/7?returnUrl=%2Fcatalog%3Fq%3Dtea"
+        ),
+        "/fragments/storefront/products/7?returnUrl=%2Fcatalog%3Fq%3Dtea"
+    );
+}
+
+TEST(MiniStoreFrameNavigationTests, StaffFragmentMapsRootAndNestedRoutes) {
+    EXPECT_EQ(
+        MiniStoreFrameNavigationSupport::staffFragmentUrl("/staff"),
+        "/fragments/staff"
+    );
+    EXPECT_EQ(
+        MiniStoreFrameNavigationSupport::staffFragmentUrl("/staff/orders/42"),
+        "/fragments/staff/orders/42"
+    );
 }

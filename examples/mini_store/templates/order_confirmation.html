@@ -7,7 +7,13 @@
             <strong>{{ orderTotal }}</strong>
         </div>
         <div class="dg-card-footer">
-            <a class="dg-button dg-button-primary" href="/catalog">
+            <a class="dg-button dg-button-primary"
+               href="/catalog"
+               dg-get="/fragments/storefront/catalog"
+               dg-trigger="click"
+               dg-target="[data-storefront-content]"
+               dg-history="push"
+               dg-history-url="/catalog">
                 {{ t('order.confirmation.continue') }}
             </a>
         </div>

@@ -6,14 +6,47 @@
     <title>{{ pageTitle }} — {{ t('app.title') }}</title>
     <link rel="stylesheet" href="/__drogular/assets/ui.css">
     <link rel="stylesheet" href="/assets/storefront.css">
+    <script src="/__drogular/assets/interactions.js" defer></script>
+    <script src="/assets/navigation.js" defer></script>
 </head>
 <body>
 <header class="dg-topbar">
-    <a class="dg-brand" href="/">{{ t('app.title') }}</a>
+    <a class="dg-brand"
+       href="/"
+       dg-get="/fragments/storefront"
+       dg-trigger="click"
+       dg-target="[data-storefront-content]"
+       dg-history="push"
+       dg-history-url="/">
+        {{ t('app.title') }}
+    </a>
     <nav class="dg-nav" aria-label="Store navigation">
-        <a class="dg-nav-item" href="/">{{ t('nav.home') }}</a>
-        <a class="dg-nav-item" href="/catalog">{{ t('nav.catalog') }}</a>
-        <a class="dg-nav-item" href="/cart">{{ t('nav.cart') }}</a>
+        <a class="dg-nav-item"
+           href="/"
+           dg-get="/fragments/storefront"
+           dg-trigger="click"
+           dg-target="[data-storefront-content]"
+           dg-history="push" dg-history-url="/">
+            {{ t('nav.home') }}
+        </a>
+        <a class="dg-nav-item"
+           href="/catalog"
+           dg-get="/fragments/storefront/catalog"
+           dg-trigger="click"
+           dg-target="[data-storefront-content]"
+           dg-history="push"
+           dg-history-url="/catalog">
+            {{ t('nav.catalog') }}
+        </a>
+        <a class="dg-nav-item"
+           href="/cart"
+           dg-get="/fragments/storefront/cart"
+           dg-trigger="click"
+           dg-target="[data-storefront-content]"
+           dg-history="push"
+           dg-history-url="/cart">
+            {{ t('nav.cart') }}
+        </a>
         <a class="dg-nav-item" href="/staff">{{ t('nav.staff') }}</a>
     </nav>
     <div class="dg-actions">
@@ -29,12 +62,14 @@
         </form>
     </div>
 </header>
-<main class="dg-page">
+<main data-storefront-content>
+    <div class="dg-page">
     <header class="dg-page-header">
         <p class="dg-page-kicker">{{ t('app.title') }}</p>
         <h1 class="dg-page-title">{{ pageTitle }}</h1>
     </header>
     <div class="dg-page-content">@content</div>
+    </div>
 </main>
 </body>
 </html>

@@ -4,7 +4,15 @@
         <p class="dg-page-kicker">Orders</p>
         <h1 class="dg-page-title">Order #{{ id }}</h1>
     </div>
-    <a class="dg-button" href="/staff/orders">Back to orders</a>
+    <a class="dg-button"
+       href="{{ orderBackUrl }}"
+       dg-get="{{ orderBackFragmentUrl }}"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="{{ orderBackUrl }}">
+        Back to orders
+    </a>
 </header>
 <div class="dg-card-grid">
     <section class="dg-card">
@@ -66,5 +74,13 @@
 <header class="dg-page-header">
     <h1 class="dg-page-title">Order not found</h1>
 </header>
-<a class="dg-button" href="/staff/orders">Back to orders</a>
+<a class="dg-button"
+   href="{{ orderBackUrl }}"
+   dg-get="{{ orderBackFragmentUrl }}"
+   dg-trigger="click"
+   dg-target="[data-staff-content]"
+   dg-history="push"
+   dg-history-url="{{ orderBackUrl }}">
+    Back to orders
+</a>
 @endif

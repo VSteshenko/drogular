@@ -5,20 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ pageTitle }} — Mini Store</title>
     <link rel="stylesheet" href="/__drogular/assets/ui.css">
+    <script src="/__drogular/assets/interactions.js" defer></script>
+    <script src="/assets/navigation.js" defer></script>
 </head>
 <body>
 <div class="dg-shell">
     <aside class="dg-sidebar">
-        <a class="dg-brand" href="/staff">Mini Store Staff</a>
+        <a class="dg-brand"
+           href="/staff"
+           dg-get="/fragments/staff"
+           dg-trigger="click"
+           dg-target="[data-staff-content]"
+           dg-history="push"
+           dg-history-url="/staff">
+            Mini Store Staff
+        </a>
         <nav class="dg-nav" aria-label="Staff navigation">
-            <a class="dg-nav-item" href="/staff">Dashboard</a>
-            <a class="dg-nav-item" href="/staff/products">Products</a>
-            <a class="dg-nav-item" href="/staff/categories">Categories</a>
-            <a class="dg-nav-item" href="/staff/orders">Orders</a>
+            <a class="dg-nav-item"
+               href="/staff"
+               dg-get="/fragments/staff"
+               dg-trigger="click"
+               dg-target="[data-staff-content]"
+               dg-history="push"
+               dg-history-url="/staff">
+                Dashboard
+            </a>
+            <a class="dg-nav-item"
+               href="/staff/products"
+               dg-get="/fragments/staff/products"
+               dg-trigger="click"
+               dg-target="[data-staff-content]"
+               dg-history="push"
+               dg-history-url="/staff/products">
+                Products
+            </a>
+            <a class="dg-nav-item"
+               href="/staff/categories"
+               dg-get="/fragments/staff/categories"
+               dg-trigger="click"
+               dg-target="[data-staff-content]"
+               dg-history="push"
+               dg-history-url="/staff/categories">
+                Categories
+            </a>
+            <a class="dg-nav-item"
+               href="/staff/orders"
+               dg-get="/fragments/staff/orders"
+               dg-trigger="click"
+               dg-target="[data-staff-content]"
+               dg-history="push"
+               dg-history-url="/staff/orders">
+                Orders
+            </a>
             <a class="dg-nav-item" href="/">Storefront</a>
         </nav>
     </aside>
-    <main class="dg-main">
+    <main class="dg-main" data-staff-content>
         <div class="dg-page"><div class="dg-page-content">@content</div></div>
     </main>
 </div>

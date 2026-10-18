@@ -55,6 +55,14 @@
     </div>
     <div class="dg-card-footer">
         <button class="dg-button dg-button-primary" type="submit">Save</button>
-        <a class="dg-button" href="/staff/products">Cancel</a>
+        <a class="dg-button"
+           href="/staff/products"
+           dg-get="/fragments/staff/products"
+           dg-trigger="click"
+           dg-target="[data-staff-content]"
+           dg-history="push"
+           dg-history-url="/staff/products">
+            Cancel
+        </a>
     </div>
 </form>

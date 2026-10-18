@@ -4,7 +4,15 @@
         <h1 class="dg-card-title">{{ t('home.heading') }}</h1>
         <p>{{ t('home.description') }}</p>
         <p>
-            <a class="dg-button" href="/catalog">{{ t('home.browse') }}</a>
+            <a class="dg-button"
+               href="/catalog"
+               dg-get="/fragments/storefront/catalog"
+               dg-trigger="click"
+               dg-target="[data-storefront-content]"
+               dg-history="push"
+               dg-history-url="/catalog">
+                {{ t('home.browse') }}
+            </a>
         </p>
     </div>
 </section>

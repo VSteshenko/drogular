@@ -6,14 +6,21 @@
 </header>
 <div class="dg-card">
     <div class="dg-card-body">
-        <form method="get" action="/staff/orders" class="dg-form-row">
+        <form method="get"
+              action="/staff/orders"
+              class="dg-form-row"
+              dg-get="/fragments/staff/orders"
+              dg-target="[data-staff-content]"
+              dg-trigger="submit"
+              dg-history="push"
+              dg-history-url="/staff/orders">
             <label>
                 Status
                 <select name="status">
-                    <option value="all">All</option>
-                    <option value="new">New</option>
-                    <option value="processing">Processing</option>
-                    <option value="completed">Completed</option>
+                    <option value="all" @if(filterAll)selected@endif>All</option>
+                    <option value="new" @if(filterNew)selected@endif>New</option>
+                    <option value="processing" @if(filterProcessing)selected@endif>Processing</option>
+                    <option value="completed" @if(filterCompleted)selected@endif>Completed</option>
                 </select>
             </label>
             <button class="dg-button" type="submit">Filter</button>
@@ -41,7 +48,15 @@
                 <td>{{ order.status }}</td>
                 <td>{{ order.total }}</td>
                 <td>
-                    <a class="dg-button" href="/staff/orders/{{ order.id }}">Open</a>
+                    <a class="dg-button"
+                       href="{{ order.url }}"
+                       dg-get="{{ order.fragmentUrl }}"
+                       dg-trigger="click"
+                       dg-target="[data-staff-content]"
+                       dg-history="push"
+                       dg-history-url="{{ historyUrl }}">
+                        Open
+                    </a>
                 </td>
             </tr>
 @endforeach

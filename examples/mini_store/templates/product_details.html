@@ -2,7 +2,13 @@
 <div class="dg-card">
     <div class="dg-card-body dg-empty-state">
         <h2>{{ t('product.not_found') }}</h2>
-        <a class="dg-button" href="{{ productBackUrl }}">
+        <a class="dg-button"
+           href="{{ productBackUrl }}"
+           dg-get="{{ productBackFragmentUrl }}"
+           dg-trigger="click"
+           dg-target="[data-storefront-content]"
+           dg-history="push"
+           dg-history-url="{{ productBackUrl }}">
             {{ t('product.back') }}
         </a>
     </div>
@@ -25,7 +31,15 @@
         @endif
     </div>
     <div class="dg-card-footer">
-        <a class="dg-button" href="{{ productBackUrl }}">{{ t('product.back') }}</a>
+        <a class="dg-button"
+           href="{{ productBackUrl }}"
+           dg-get="{{ productBackFragmentUrl }}"
+           dg-trigger="click"
+           dg-target="[data-storefront-content]"
+           dg-history="push"
+           dg-history-url="{{ productBackUrl }}">
+            {{ t('product.back') }}
+        </a>
         @if(productStock)
         <form method="post" action="/cart/add">
             <input type="hidden" name="productId" value="{{ productId }}">

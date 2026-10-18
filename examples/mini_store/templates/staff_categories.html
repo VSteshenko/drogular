@@ -3,7 +3,15 @@
         <p class="dg-page-kicker">Catalog</p>
         <h1 class="dg-page-title">Categories</h1>
     </div>
-    <a class="dg-button dg-button-primary" href="/staff/categories/new">New category</a>
+    <a class="dg-button dg-button-primary"
+       href="/staff/categories/new"
+       dg-get="/fragments/staff/categories/new"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/categories/new">
+        New category
+    </a>
 </header>
 <div class="dg-card">
     <div class="dg-card-body">
@@ -23,7 +31,15 @@
                 <td>{{ category.nameEn }}</td>
                 <td>{{ category.nameDe }}</td>
                 <td>
-                    <a class="dg-button" href="/staff/categories/{{ category.id }}/edit">Edit</a>
+                    <a class="dg-button"
+                       href="/staff/categories/{{ category.id }}/edit"
+                       dg-get="/fragments/staff/categories/{{ category.id }}/edit"
+                       dg-trigger="click"
+                       dg-target="[data-staff-content]"
+                       dg-history="push"
+                       dg-history-url="/staff/categories/{{ category.id }}/edit">
+                        Edit
+                    </a>
                 </td>
             </tr>
 @endforeach

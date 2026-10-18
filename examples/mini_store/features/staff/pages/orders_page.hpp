@@ -20,6 +20,13 @@ public:
             return lhs.createdAt > rhs.createdAt;
         });
 
+        const auto selectedFilter = filter.empty() ? std::string{"all"} : filter;
+        std::string historyUrl = MiniStoreOrderSupport::safeOrderReturnUrl({});
+        if (selectedFilter != "all") {
+            historyUrl += "?status=";
+            historyUrl += selectedFilter;
+        }
+
         Json::Value rows(Json::arrayValue);
         for (const auto& order : orders) {
             if (!MiniStoreOrderSupport::matches(order.status, filter)) {
@@ -33,10 +40,20 @@ public:
             row["total"] = MiniStoreOrderSupport::money(order.totalCents);
             row["status"] = MiniStoreOrderSupport::statusName(order.status);
             row["createdAt"] = order.createdAt;
+            row["url"] = MiniStoreOrderSupport::orderUrl(order.id, historyUrl);
+            row["fragmentUrl"] =
+                MiniStoreFrameNavigationSupport::staffOrderFragmentUrl(row["url"].asString());
+
             rows.append(row);
         }
+
         context.set("orders", rows);
-        context.set("filter", filter.empty() ? "all" : filter);
+        context.set("filter", selectedFilter);
+        context.set("historyUrl", historyUrl);
+        context.set("filterAll", selectedFilter == "all");
+        context.set("filterNew", selectedFilter == "new");
+        context.set("filterProcessing", selectedFilter == "processing");
+        context.set("filterCompleted", selectedFilter == "completed");
     }
 
     std::string templatePath() const override {

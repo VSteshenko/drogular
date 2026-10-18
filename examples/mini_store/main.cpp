@@ -20,6 +20,7 @@
 #include "features/staff/actions/save_category_action.hpp"
 #include "features/staff/actions/advance_order_action.hpp"
 #include "support/mini_store_expression_functions.hpp"
+#include "ui/mini_store_page_fragment_action.hpp"
 
 #include <drogular/app.hpp>
 #include <drogular/static_file_cache_profile.hpp>
@@ -31,6 +32,7 @@ int main() {
     drogular::App app;
 
     app.ui()
+       .interactions()
        .templateRoot("examples/mini_store/templates")
        .staticFiles("/assets", "examples/mini_store/public")
        .templateCache(false)
@@ -67,6 +69,21 @@ int main() {
     app.page<MiniStoreCartPage>("/cart");
     app.page<MiniStoreCheckoutPage>("/checkout");
     app.page<MiniStoreOrderConfirmationPage>("/order-confirmation");
+    app.get<MiniStoreStorefrontPageFragmentAction<MiniStoreStorefrontHomePage>>("/fragments/storefront");
+    app.get<MiniStoreStorefrontPageFragmentAction<MiniStoreCatalogPage>>("/fragments/storefront/catalog");
+    app.get<MiniStoreStorefrontPageFragmentAction<MiniStoreProductDetailsPage>>("/fragments/storefront/products/{id}");
+    app.get<MiniStoreStorefrontPageFragmentAction<MiniStoreCartPage>>("/fragments/storefront/cart");
+    app.get<MiniStoreStorefrontPageFragmentAction<MiniStoreCheckoutPage>>("/fragments/storefront/checkout");
+    app.get<MiniStoreStorefrontPageFragmentAction<MiniStoreOrderConfirmationPage>>("/fragments/storefront/order-confirmation");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffHomePage>>("/fragments/staff");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffProductsPage>>("/fragments/staff/products");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffProductFormPage>>("/fragments/staff/products/new");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffProductFormPage>>("/fragments/staff/products/{id}/edit");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffCategoriesPage>>("/fragments/staff/categories");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffCategoryFormPage>>("/fragments/staff/categories/new");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffCategoryFormPage>>("/fragments/staff/categories/{id}/edit");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffOrdersPage>>("/fragments/staff/orders");
+    app.get<MiniStoreStaffPageFragmentAction<MiniStoreStaffOrderDetailsPage>>("/fragments/staff/orders/{id}");
     app.action<MiniStoreLanguageAction>("/language");
     app.action<MiniStoreSaveProductAction>("/staff/products/save");
     app.action<MiniStoreSaveCategoryAction>("/staff/categories/save");

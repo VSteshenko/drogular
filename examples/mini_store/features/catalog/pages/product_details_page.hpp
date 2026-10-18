@@ -3,6 +3,7 @@
 #include "data/mini_store_store.hpp"
 #include "features/catalog/ui/catalog_support.hpp"
 #include "support/storefront_page_support.hpp"
+#include "ui/mini_store_frame_navigation_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/locale_support.hpp>
@@ -18,7 +19,11 @@ public:
         const auto request = context.request();
         const auto returnUrl =
             request ? request->getParameter("returnUrl") : std::string{};
-        context.set("productBackUrl", MiniStoreCatalogSupport::safeCatalogReturnUrl(returnUrl));
+        const auto productBackUrl = MiniStoreCatalogSupport::safeCatalogReturnUrl(returnUrl);
+        context.set("productBackUrl", productBackUrl);
+        context.set(
+            "productBackFragmentUrl",
+            MiniStoreFrameNavigationSupport::storefrontFragmentUrl(productBackUrl));
         context.set("languageRedirect", "/products/" + std::to_string(id));
 
         const auto product = context.requireService<MiniStoreStore>()->product(id);
@@ -30,7 +35,8 @@ public:
         const auto locale = drogular::LocaleSupport::current(context);
         context.set("productName", std::string(product->name.resolve(locale)));
         context.set("productDescription", std::string(product->description.resolve(locale)));
-        context.set("productSku", product->sku); context.set("productPrice", MiniStoreCatalogSupport::money(product->priceCents));
+        context.set("productSku", product->sku);
+        context.set("productPrice", MiniStoreCatalogSupport::money(product->priceCents));
         context.set("productStock", product->stock);
         context.set("productId", product->id);
         context.set("productAddReturnUrl", "/cart");

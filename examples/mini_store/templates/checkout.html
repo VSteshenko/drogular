@@ -2,7 +2,13 @@
     <div class="dg-card">
         <div class="dg-card-body dg-empty-state">
             <p>{{ t('cart.empty') }}</p>
-            <a class="dg-button" href="/catalog">
+            <a class="dg-button"
+               href="/catalog"
+               dg-get="/fragments/storefront/catalog"
+               dg-trigger="click"
+               dg-target="[data-storefront-content]"
+               dg-history="push"
+               dg-history-url="/catalog">
                 {{ t('cart.continue') }}
             </a>
         </div>
@@ -40,7 +46,15 @@
                 <strong>{{ t('cart.total') }}: {{ cartTotal }}</strong>
             </div>
             <div class="dg-card-footer">
-                <a class="dg-button" href="/cart">{{ t('checkout.back') }}</a>
+                <a class="dg-button"
+                   href="/cart"
+                   dg-get="/fragments/storefront/cart"
+                   dg-trigger="click"
+                   dg-target="[data-storefront-content]"
+                   dg-history="push"
+                   dg-history-url="/cart">
+                    {{ t('checkout.back') }}
+                </a>
                 <button class="dg-button dg-button-primary" type="submit">
                     {{ t('checkout.place_order') }}
                 </button>

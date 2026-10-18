@@ -4,6 +4,7 @@
 #include "features/catalog/ui/catalog_query_parser.hpp"
 #include "features/catalog/ui/catalog_support.hpp"
 #include "support/storefront_page_support.hpp"
+#include "ui/mini_store_frame_navigation_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/locale_support.hpp>
@@ -40,6 +41,8 @@ public:
             item["price"] = MiniStoreCatalogSupport::money(product.priceCents);
             item["stock"] = product.stock;
             item["detailsUrl"] = MiniStoreCatalogSupport::productUrl(product.id, query);
+            item["detailsFragmentUrl"] =
+                MiniStoreFrameNavigationSupport::storefrontFragmentUrl(item["detailsUrl"].asString());
 
             productItems.append(item);
         }

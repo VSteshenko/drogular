@@ -38,4 +38,30 @@ public:
     static std::string money(std::int64_t cents) {
         return MiniStoreCatalogSupport::money(cents);
     }
+
+    static std::string orderUrl(int id, const std::string& returnUrl) {
+        return "/staff/orders/" + std::to_string(id) + "?returnUrl=" + encode(returnUrl);
+    }
+
+    static std::string safeOrderReturnUrl(const std::string& value) {
+        return value.rfind("/staff/orders", 0) == 0 && value.rfind("//", 0) != 0
+            ? value
+            : std::string("/staff/orders");
+    }
+
+private:
+    static std::string encode(const std::string& value) {
+        std::ostringstream out;
+        out << std::uppercase << std::hex;
+        for (const unsigned char c : value) {
+            if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+                out << static_cast<char>(c);
+            }
+            else {
+                out << '%' << std::setw(2) << std::setfill('0') << static_cast<int>(c);
+            }
+        }
+
+        return out.str();
+    }
 };

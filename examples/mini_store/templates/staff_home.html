@@ -1,4 +1,7 @@
-<header class="dg-page-header"><p class="dg-page-kicker">Mini Store Staff</p><h1 class="dg-page-title">Dashboard</h1></header>
+<header class="dg-page-header">
+    <p class="dg-page-kicker">Mini Store Staff</p>
+    <h1 class="dg-page-title">Dashboard</h1>
+</header>
 <div class="dg-card-grid">
     <section class="dg-card">
         <div class="dg-card-body">
@@ -38,7 +41,31 @@
     </section>
 </div>
 <div class="dg-card-footer">
-    <a class="dg-button" href="/staff/products">Manage products</a>
-    <a class="dg-button" href="/staff/categories">Manage categories</a>
-    <a class="dg-button" href="/staff/orders">Manage orders</a>
+    <a class="dg-button"
+       href="/staff/products"
+       dg-get="/fragments/staff/products"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/products">
+        Manage products
+    </a>
+    <a class="dg-button"
+       href="/staff/categories"
+       dg-get="/fragments/staff/categories"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/categories">
+        Manage categories
+    </a>
+    <a class="dg-button"
+       href="/staff/orders"
+       dg-get="/fragments/staff/orders"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/orders">
+        Manage orders
+    </a>
 </div>
