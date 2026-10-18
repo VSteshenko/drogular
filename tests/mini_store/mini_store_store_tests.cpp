@@ -363,3 +363,13 @@ TEST(MiniStoreOrderSupportTests, RejectsUnsafeOrdersReturnUrl) {
         "/staff/orders"
     );
 }
+
+TEST(MiniStoreFrameNavigationTests, StaffOrderFragmentPreservesCanonicalReturnUrl) {
+    const auto canonical =
+        "/staff/orders/1008?returnUrl=%2Fstaff%2Forders%3Fstatus%3Dprocessing";
+
+    EXPECT_EQ(
+        MiniStoreFrameNavigationSupport::staffOrderFragmentUrl(canonical),
+        "/fragments/staff/orders/1008?returnUrl=%2Fstaff%2Forders%3Fstatus%3Dprocessing"
+    );
+}

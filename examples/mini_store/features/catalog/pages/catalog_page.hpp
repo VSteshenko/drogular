@@ -50,6 +50,7 @@ public:
         context.set("categories", categoryItems);
         context.set("products", productItems);
         context.set("languageRedirect", MiniStoreCatalogSupport::catalogUrl(query));
+        context.set("catalogHistoryUrl", MiniStoreCatalogSupport::catalogUrl(query));
         context.set("catalogSearch", query.search);
         context.set("catalogCategory", query.category);
         context.set("catalogSort", query.sort);

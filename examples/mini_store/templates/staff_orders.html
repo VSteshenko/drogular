@@ -13,7 +13,7 @@
               dg-target="[data-staff-content]"
               dg-trigger="submit"
               dg-history="push"
-              dg-history-url="/staff/orders">
+              dg-history-url="{{ historyUrl }}">
             <label>
                 Status
                 <select name="status">
@@ -54,7 +54,7 @@
                        dg-trigger="click"
                        dg-target="[data-staff-content]"
                        dg-history="push"
-                       dg-history-url="{{ historyUrl }}">
+                       dg-history-url="{{ order.url }}">
                         Open
                     </a>
                 </td>
