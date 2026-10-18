@@ -1,5 +1,6 @@
 #include "data/mini_store_store.hpp"
 #include "features/catalog/ui/catalog_support.hpp"
+#include "features/staff/support/order_support.hpp"
 #include "ui/mini_store_frame_navigation_support.hpp"
 
 #include <gtest/gtest.h>
@@ -337,5 +338,28 @@ TEST(MiniStoreFrameNavigationTests, StaffFragmentMapsRootAndNestedRoutes) {
     EXPECT_EQ(
         MiniStoreFrameNavigationSupport::staffFragmentUrl("/staff/orders/42"),
         "/fragments/staff/orders/42"
+    );
+}
+
+TEST(MiniStoreOrderSupportTests, PreservesFilteredOrdersReturnUrlInDetailsUrl) {
+    const auto returnUrl = MiniStoreOrderSupport::safeOrderReturnUrl(
+        "/staff/orders?status=processing"
+    );
+
+    EXPECT_EQ(returnUrl, "/staff/orders?status=processing");
+    EXPECT_EQ(
+        MiniStoreOrderSupport::orderUrl(1008, returnUrl),
+        "/staff/orders/1008?returnUrl=%2Fstaff%2Forders%3Fstatus%3Dprocessing"
+    );
+}
+
+TEST(MiniStoreOrderSupportTests, RejectsUnsafeOrdersReturnUrl) {
+    EXPECT_EQ(
+        MiniStoreOrderSupport::safeOrderReturnUrl("https://example.test/staff/orders"),
+        "/staff/orders"
+    );
+    EXPECT_EQ(
+        MiniStoreOrderSupport::safeOrderReturnUrl("//example.test/staff/orders"),
+        "/staff/orders"
     );
 }

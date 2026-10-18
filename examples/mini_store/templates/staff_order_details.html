@@ -63,6 +63,7 @@
     <div class="dg-card-footer">
         <form method="post" action="/staff/orders/advance">
             <input type="hidden" name="id" value="{{ id }}">
+            <input type="hidden" name="returnUrl" value="{{ orderBackUrl }}">
             <button class="dg-button dg-button-primary" type="submit">
                 Move to {{ nextStatus }}
             </button>
