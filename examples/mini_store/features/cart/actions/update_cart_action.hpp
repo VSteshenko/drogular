@@ -2,7 +2,10 @@
 
 #include "data/mini_store_store.hpp"
 #include "features/cart/support/cart_support.hpp"
+#include "features/cart/pages/cart_page.hpp"
+#include "ui/mini_store_page_fragment_action.hpp"
 
+#include <drogular/action_renderer.hpp>
 #include <drogular/action_handler.hpp>
 
 class MiniStoreUpdateCartAction final : public drogular::ActionHandler {
@@ -35,6 +38,16 @@ public:
         }
 
         MiniStoreCartSupport::write(session, items);
+        if (context.isInteraction()) {
+            return drogular::ActionRenderer::render<
+                MiniStoreStorefrontPageFragmentComponent<MiniStoreCartPage>
+            >(
+                context,
+                [](drogular::RenderContext& renderContext) {
+                    MiniStoreCartPage::apply(renderContext);
+                }
+            );
+        }
         return drogular::ActionResult::redirect("/cart");
     }
 };

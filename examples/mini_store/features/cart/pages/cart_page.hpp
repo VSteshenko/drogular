@@ -11,6 +11,10 @@
 class MiniStoreCartPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
+        apply(context);
+    }
+
+    static void apply(drogular::RenderContext& context) {
         MiniStoreStorefrontPageSupport::apply(context, "cart.title");
         context.set("languageRedirect", "/cart");
 

@@ -11,19 +11,27 @@
 class MiniStoreStaffOrderDetailsPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Order");
-
         const auto request = context.request();
         const auto returnUrl =
             request ? request->getParameter("returnUrl") : std::string{};
+        const auto raw = context.routeParam("id");
+        const auto id = raw ? std::atoi(raw->c_str()) : 0;
+        apply(context, id, returnUrl);
+    }
+
+    static void apply(
+        drogular::RenderContext& context,
+        int id,
+        const std::string& returnUrl
+    ) {
+        drogular::PageSupport::apply(context, "Order");
+
         const auto orderBackUrl = MiniStoreOrderSupport::safeOrderReturnUrl(returnUrl);
         context.set("orderBackUrl", orderBackUrl);
         context.set(
             "orderBackFragmentUrl",
             MiniStoreFrameNavigationSupport::staffOrderFragmentUrl(orderBackUrl));
 
-        const auto raw = context.routeParam("id");
-        const auto id = raw ? std::atoi(raw->c_str()) : 0;
         const auto order = context.requireService<MiniStoreStore>()->order(id);
         context.set("found", order.has_value());
         context.set("id", id);
