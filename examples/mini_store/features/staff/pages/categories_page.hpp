@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/mini_store_store.hpp"
+#include "features/staff/support/staff_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_support.hpp>
@@ -8,7 +9,11 @@
 class MiniStoreStaffCategoriesPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Categories");
+        MiniStoreStaffPageSupport::apply(
+            context,
+            "staff.categories.title",
+            "/staff/categories"
+        );
 
         Json::Value rows(Json::arrayValue);
         for (const auto& category : context.requireService<MiniStoreStore>()->categories()) {

@@ -2,6 +2,7 @@
 
 #include "data/mini_store_store.hpp"
 #include "features/catalog/ui/catalog_support.hpp"
+#include "features/staff/support/staff_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_support.hpp>
@@ -9,7 +10,11 @@
 class MiniStoreStaffProductsPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Products");
+        MiniStoreStaffPageSupport::apply(
+            context,
+            "staff.products.title",
+            "/staff/products"
+        );
 
         Json::Value rows(Json::arrayValue);
         for (const auto& product : context.requireService<MiniStoreStore>()->products()) {

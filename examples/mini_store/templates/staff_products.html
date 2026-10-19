@@ -1,7 +1,7 @@
 <header class="dg-page-header">
     <div>
-        <p class="dg-page-kicker">Catalog</p>
-        <h1 class="dg-page-title">Products</h1>
+        <p class="dg-page-kicker">{{ t('staff.catalog') }}</p>
+        <h1 class="dg-page-title">{{ t('staff.products.title') }}</h1>
     </div>
     <a class="dg-button dg-button-primary"
        href="/staff/products/new"
@@ -10,7 +10,7 @@
        dg-target="[data-staff-content]"
        dg-history="push"
        dg-history-url="/staff/products/new">
-        New product
+        {{ t('staff.product.new') }}
     </a>
 </header>
 <div class="dg-card">
@@ -19,11 +19,11 @@
             <thead>
             <tr>
                 <th>SKU</th>
-                <th>English</th>
-                <th>Deutsch</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
+                <th>{{ t('staff.language.english') }}</th>
+                <th>{{ t('staff.language.german') }}</th>
+                <th>{{ t('staff.product.price') }}</th>
+                <th>{{ t('staff.product.stock') }}</th>
+                <th>{{ t('staff.order.status') }}</th>
                 <th></th>
             </tr>
             </thead>
@@ -35,7 +35,7 @@
                 <td>{{ product.nameDe }}</td>
                 <td>{{ product.price }}</td>
                 <td>{{ product.stock }}</td>
-                <td>@if(product.active)Active@elseInactive@endif</td>
+                <td>@if(product.active){{ t('staff.product.active') }}@else{{ t('staff.product.inactive') }}@endif</td>
                 <td>
                     <a class="dg-button"
                        href="/staff/products/{{ product.id }}/edit"
@@ -44,7 +44,7 @@
                        dg-target="[data-staff-content]"
                        dg-history="push"
                        dg-history-url="/staff/products/{{ product.id }}/edit">
-                        Edit
+                        {{ t('staff.edit') }}
                     </a>
                 </td>
             </tr>

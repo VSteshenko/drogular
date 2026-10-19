@@ -1,6 +1,6 @@
 <header class="dg-page-header">
     <h1 class="dg-page-title">
-        @if(editing)Edit category@elseNew category@endif
+        @if(editing){{ t('staff.category.edit') }}@else{{ t('staff.category.new') }}@endif
     </h1>
 </header>
 <form class="dg-card" method="post" action="/staff/categories/save">
@@ -11,16 +11,16 @@
             <input class="dg-input" name="slug" value="{{ slug }}" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Name — English</span>
+            <span class="dg-label">{{ t('staff.category.name_en') }}</span>
             <input class="dg-input" name="nameEn" value="{{ nameEn }}" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Name — Deutsch</span>
+            <span class="dg-label">{{ t('staff.category.name_de') }}</span>
             <input class="dg-input" name="nameDe" value="{{ nameDe }}" required>
         </label>
     </div>
     <div class="dg-card-footer">
-        <button class="dg-button dg-button-primary" type="submit">Save</button>
+        <button class="dg-button dg-button-primary" type="submit">{{ t('staff.save') }}</button>
         <a class="dg-button"
            href="/staff/categories"
            dg-get="/fragments/staff/categories"
@@ -28,7 +28,7 @@
            dg-target="[data-staff-content]"
            dg-history="push"
            dg-history-url="/staff/categories">
-            Cancel
+            {{ t('staff.cancel') }}
         </a>
     </div>
 </form>

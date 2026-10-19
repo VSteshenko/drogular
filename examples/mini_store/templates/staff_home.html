@@ -1,41 +1,41 @@
 <header class="dg-page-header">
-    <p class="dg-page-kicker">Mini Store Staff</p>
-    <h1 class="dg-page-title">Dashboard</h1>
+    <p class="dg-page-kicker">{{ t('staff.brand') }}</p>
+    <h1 class="dg-page-title">{{ t('staff.dashboard.title') }}</h1>
 </header>
 <div class="dg-card-grid">
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Products</p>
+            <p class="dg-card-subtitle">{{ t('staff.products.title') }}</p>
             <h2 class="dg-card-title">{{ productCount }}</h2>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Low stock</p>
+            <p class="dg-card-subtitle">{{ t('staff.dashboard.low_stock') }}</p>
             <h2 class="dg-card-title">{{ lowStockCount }}</h2>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Orders</p>
+            <p class="dg-card-subtitle">{{ t('staff.orders.title') }}</p>
             <h2 class="dg-card-title">{{ orderCount }}</h2>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">New orders</p>
+            <p class="dg-card-subtitle">{{ t('staff.dashboard.new_orders') }}</p>
             <h2 class="dg-card-title">{{ newOrderCount }}</h2>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Processing</p>
+            <p class="dg-card-subtitle">{{ t('staff.order.status.processing') }}</p>
             <h2 class="dg-card-title">{{ processingOrderCount }}</h2>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Completed</p>
+            <p class="dg-card-subtitle">{{ t('staff.order.status.completed') }}</p>
             <h2 class="dg-card-title">{{ completedOrderCount }}</h2>
         </div>
     </section>
@@ -48,7 +48,7 @@
        dg-target="[data-staff-content]"
        dg-history="push"
        dg-history-url="/staff/products">
-        Manage products
+        {{ t('staff.dashboard.manage_products') }}
     </a>
     <a class="dg-button"
        href="/staff/categories"
@@ -57,7 +57,7 @@
        dg-target="[data-staff-content]"
        dg-history="push"
        dg-history-url="/staff/categories">
-        Manage categories
+        {{ t('staff.dashboard.manage_categories') }}
     </a>
     <a class="dg-button"
        href="/staff/orders"
@@ -66,6 +66,6 @@
        dg-target="[data-staff-content]"
        dg-history="push"
        dg-history-url="/staff/orders">
-        Manage orders
+        {{ t('staff.dashboard.manage_orders') }}
     </a>
 </div>

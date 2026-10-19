@@ -1,7 +1,7 @@
 <header class="dg-page-header">
     <div>
-        <p class="dg-page-kicker">Orders</p>
-        <h1 class="dg-page-title">Order workflow</h1>
+        <p class="dg-page-kicker">{{ t('staff.orders.title') }}</p>
+        <h1 class="dg-page-title">{{ t('staff.orders.workflow') }}</h1>
     </div>
 </header>
 <div class="dg-card">
@@ -15,24 +15,24 @@
               dg-history="push"
               dg-history-url="{{ historyUrl }}">
             <label>
-                Status
+                {{ t('staff.order.status') }}
                 <select name="status">
-                    <option value="all" @if(filterAll)selected@endif>All</option>
-                    <option value="new" @if(filterNew)selected@endif>New</option>
-                    <option value="processing" @if(filterProcessing)selected@endif>Processing</option>
-                    <option value="completed" @if(filterCompleted)selected@endif>Completed</option>
+                    <option value="all" @if(filterAll)selected@endif>{{ t('staff.order.status.all') }}</option>
+                    <option value="new" @if(filterNew)selected@endif>{{ t('staff.order.status.new') }}</option>
+                    <option value="processing" @if(filterProcessing)selected@endif>{{ t('staff.order.status.processing') }}</option>
+                    <option value="completed" @if(filterCompleted)selected@endif>{{ t('staff.order.status.completed') }}</option>
                 </select>
             </label>
-            <button class="dg-button" type="submit">Filter</button>
+            <button class="dg-button" type="submit">{{ t('staff.filter') }}</button>
         </form>
         <table class="dg-table">
             <thead>
             <tr>
-                <th>Order</th>
-                <th>Customer</th>
-                <th>Created</th>
-                <th>Status</th>
-                <th>Total</th>
+                <th>{{ t('staff.order.title') }}</th>
+                <th>{{ t('staff.order.customer') }}</th>
+                <th>{{ t('staff.order.created') }}</th>
+                <th>{{ t('staff.order.status') }}</th>
+                <th>{{ t('staff.order.total') }}</th>
                 <th></th>
             </tr>
             </thead>
@@ -55,7 +55,7 @@
                        dg-target="[data-staff-content]"
                        dg-history="push"
                        dg-history-url="{{ order.url }}">
-                        Open
+                        {{ t('staff.open') }}
                     </a>
                 </td>
             </tr>

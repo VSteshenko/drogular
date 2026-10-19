@@ -1,8 +1,8 @@
 @if(found)
 <header class="dg-page-header">
     <div>
-        <p class="dg-page-kicker">Orders</p>
-        <h1 class="dg-page-title">Order #{{ id }}</h1>
+        <p class="dg-page-kicker">{{ t('staff.orders.title') }}</p>
+        <h1 class="dg-page-title">{{ t('staff.order.title') }} #{{ id }}</h1>
     </div>
     <a class="dg-button"
        href="{{ orderBackUrl }}"
@@ -11,27 +11,27 @@
        dg-target="[data-staff-content]"
        dg-history="push"
        dg-history-url="{{ orderBackUrl }}">
-        Back to orders
+        {{ t('staff.order.back') }}
     </a>
 </header>
 <div class="dg-card-grid">
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Customer</p>
+            <p class="dg-card-subtitle">{{ t('staff.order.customer') }}</p>
             <h2 class="dg-card-title">{{ customer }}</h2>
             <p>{{ email }}</p>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Status</p>
+            <p class="dg-card-subtitle">{{ t('staff.order.status') }}</p>
             <h2 class="dg-card-title">{{ status }}</h2>
             <p>{{ createdAt }}</p>
         </div>
     </section>
     <section class="dg-card">
         <div class="dg-card-body">
-            <p class="dg-card-subtitle">Total</p>
+            <p class="dg-card-subtitle">{{ t('staff.order.total') }}</p>
             <h2 class="dg-card-title">{{ total }}</h2>
         </div>
     </section>
@@ -41,10 +41,10 @@
         <table class="dg-table">
             <thead>
             <tr>
-                <th>Product snapshot</th>
-                <th>Unit price</th>
-                <th>Quantity</th>
-                <th>Total</th>
+                <th>{{ t('staff.order.product_snapshot') }}</th>
+                <th>{{ t('staff.order.unit_price') }}</th>
+                <th>{{ t('staff.order.quantity') }}</th>
+                <th>{{ t('staff.order.total') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -68,7 +68,7 @@
             <input type="hidden" name="id" value="{{ id }}">
             <input type="hidden" name="returnUrl" value="{{ orderBackUrl }}">
             <button class="dg-button dg-button-primary" type="submit">
-                Move to {{ nextStatus }}
+                {{ t('staff.order.move_to') }} {{ nextStatus }}
             </button>
         </form>
     </div>
@@ -76,7 +76,7 @@
 </div>
 @else
 <header class="dg-page-header">
-    <h1 class="dg-page-title">Order not found</h1>
+    <h1 class="dg-page-title">{{ t('staff.order.not_found') }}</h1>
 </header>
 <a class="dg-button"
    href="{{ orderBackUrl }}"
@@ -85,6 +85,6 @@
    dg-target="[data-staff-content]"
    dg-history="push"
    dg-history-url="{{ orderBackUrl }}">
-    Back to orders
+    {{ t('staff.order.back') }}
 </a>
 @endif

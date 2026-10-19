@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data/mini_store_store.hpp"
+#include "features/staff/support/staff_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_support.hpp>
@@ -10,14 +11,18 @@
 class MiniStoreStaffCategoryFormPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Category");
-
         auto store = context.requireService<MiniStoreStore>();
         int id = 0;
         auto raw = context.routeParam("id");
         if (raw) {
             id = std::atoi(raw->c_str());
         }
+
+        MiniStoreStaffPageSupport::apply(
+            context,
+            "staff.category.title",
+            id ? "/staff/categories/" + std::to_string(id) + "/edit" : "/staff/categories/new"
+        );
 
         auto category = id
             ? store->category(id)

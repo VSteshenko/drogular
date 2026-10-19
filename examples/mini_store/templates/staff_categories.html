@@ -1,7 +1,7 @@
 <header class="dg-page-header">
     <div>
-        <p class="dg-page-kicker">Catalog</p>
-        <h1 class="dg-page-title">Categories</h1>
+        <p class="dg-page-kicker">{{ t('staff.catalog') }}</p>
+        <h1 class="dg-page-title">{{ t('staff.categories.title') }}</h1>
     </div>
     <a class="dg-button dg-button-primary"
        href="/staff/categories/new"
@@ -10,7 +10,7 @@
        dg-target="[data-staff-content]"
        dg-history="push"
        dg-history-url="/staff/categories/new">
-        New category
+        {{ t('staff.category.new') }}
     </a>
 </header>
 <div class="dg-card">
@@ -19,8 +19,8 @@
             <thead>
             <tr>
                 <th>Slug</th>
-                <th>English</th>
-                <th>Deutsch</th>
+                <th>{{ t('staff.language.english') }}</th>
+                <th>{{ t('staff.language.german') }}</th>
                 <th></th>
             </tr>
             </thead>
@@ -38,7 +38,7 @@
                        dg-target="[data-staff-content]"
                        dg-history="push"
                        dg-history-url="/staff/categories/{{ category.id }}/edit">
-                        Edit
+                        {{ t('staff.edit') }}
                     </a>
                 </td>
             </tr>

@@ -1,6 +1,6 @@
 <header class="dg-page-header">
     <h1 class="dg-page-title">
-        @if(editing)Edit product@elseNew product@endif
+        @if(editing){{ t('staff.product.edit') }}@else{{ t('staff.product.new') }}@endif
     </h1>
 </header>
 <form class="dg-card" method="post" action="/staff/products/save">
@@ -11,7 +11,7 @@
             <input class="dg-input" name="sku" value="{{ sku }}" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Category</span>
+            <span class="dg-label">{{ t('staff.category') }}</span>
             <select class="dg-select" name="categoryId" required>
 @foreach(category in categories)
                 <option value="{{ category.id }}" @if(category.selected)selected@endif>
@@ -21,40 +21,40 @@
             </select>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Price</span>
+            <span class="dg-label">{{ t('staff.product.price') }}</span>
             <input class="dg-input" name="price" value="{{ price }}" inputmode="decimal" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Stock</span>
+            <span class="dg-label">{{ t('staff.product.stock') }}</span>
             <input class="dg-input" type="number" min="0" name="stock" value="{{ stock }}" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Name — English</span>
+            <span class="dg-label">{{ t('staff.product.name_en') }}</span>
             <input class="dg-input" name="nameEn" value="{{ nameEn }}" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Name — Deutsch</span>
+            <span class="dg-label">{{ t('staff.product.name_de') }}</span>
             <input class="dg-input" name="nameDe" value="{{ nameDe }}" required>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Description — English</span>
+            <span class="dg-label">{{ t('staff.product.description_en') }}</span>
             <textarea class="dg-input" name="descriptionEn" required>
                 {{ descriptionEn }}
             </textarea>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Description — Deutsch</span>
+            <span class="dg-label">{{ t('staff.product.description_de') }}</span>
             <textarea class="dg-input" name="descriptionDe" required>
                 {{ descriptionDe }}
             </textarea>
         </label>
         <label class="dg-field">
-            <span class="dg-label">Active</span>
+            <span class="dg-label">{{ t('staff.product.active') }}</span>
             <input type="checkbox" name="active" @if(active)checked@endif>
         </label>
     </div>
     <div class="dg-card-footer">
-        <button class="dg-button dg-button-primary" type="submit">Save</button>
+        <button class="dg-button dg-button-primary" type="submit">{{ t('staff.save') }}</button>
         <a class="dg-button"
            href="/staff/products"
            dg-get="/fragments/staff/products"
@@ -62,7 +62,7 @@
            dg-target="[data-staff-content]"
            dg-history="push"
            dg-history-url="/staff/products">
-            Cancel
+            {{ t('staff.cancel') }}
         </a>
     </div>
 </form>

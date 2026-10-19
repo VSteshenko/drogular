@@ -1,9 +1,9 @@
 #pragma once
 
 #include "data/mini_store_store.hpp"
+#include "features/staff/support/staff_page_support.hpp"
 
 #include <drogular/page.hpp>
-#include <drogular/page_support.hpp>
 #include <drogular/render_context.hpp>
 
 #include <algorithm>
@@ -11,7 +11,7 @@
 class MiniStoreStaffHomePage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Staff dashboard");
+        MiniStoreStaffPageSupport::apply(context, "staff.dashboard.title", "/staff");
         const auto store = context.requireService<MiniStoreStore>();
         const auto products = store->products();
         const auto orders = store->orders();

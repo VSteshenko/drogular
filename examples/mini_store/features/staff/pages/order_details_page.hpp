@@ -2,6 +2,7 @@
 
 #include "data/mini_store_store.hpp"
 #include "features/staff/support/order_support.hpp"
+#include "features/staff/support/staff_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_support.hpp>
@@ -24,9 +25,12 @@ public:
         int id,
         const std::string& returnUrl
     ) {
-        drogular::PageSupport::apply(context, "Order");
-
         const auto orderBackUrl = MiniStoreOrderSupport::safeOrderReturnUrl(returnUrl);
+        MiniStoreStaffPageSupport::apply(
+            context,
+            "staff.order.title",
+            MiniStoreOrderSupport::orderUrl(id, orderBackUrl)
+        );
         context.set("orderBackUrl", orderBackUrl);
         context.set(
             "orderBackFragmentUrl",
@@ -41,11 +45,16 @@ public:
 
         context.set("customer", order->customer.name);
         context.set("email", order->customer.email);
-        context.set("status", MiniStoreOrderSupport::statusName(order->status));
+        context.set("status", context.translate("staff.order.status." + MiniStoreOrderSupport::statusKey(order->status)));
         context.set("createdAt", order->createdAt);
         context.set("total", MiniStoreOrderSupport::money(order->totalCents));
         context.set("canAdvance", order->status != MiniStoreOrderStatus::Completed);
-        context.set("nextStatus", order->status == MiniStoreOrderStatus::New ? "Processing" : "Completed");
+        context.set(
+            "nextStatus",
+            context.translate(order->status == MiniStoreOrderStatus::New
+                ? "staff.order.status.processing"
+                : "staff.order.status.completed")
+        );
 
         Json::Value items(Json::arrayValue);
         for (const auto& item : order->items) {

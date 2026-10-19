@@ -2,6 +2,7 @@
 
 #include "data/mini_store_store.hpp"
 #include "features/staff/support/staff_support.hpp"
+#include "features/staff/support/staff_page_support.hpp"
 
 #include <drogular/page.hpp>
 #include <drogular/page_support.hpp>
@@ -11,14 +12,18 @@
 class MiniStoreStaffProductFormPage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
-        drogular::PageSupport::apply(context, "Product");
-
         auto store = context.requireService<MiniStoreStore>();
         int id = 0;
         auto raw = context.routeParam("id");
         if (raw) {
             id = std::atoi(raw->c_str());
         }
+
+        MiniStoreStaffPageSupport::apply(
+            context,
+            "staff.product.title",
+            id ? "/staff/products/" + std::to_string(id) + "/edit" : "/staff/products/new"
+        );
 
         auto product= id
             ? store->product(id)

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ pageTitle }} — Mini Store</title>
+    <title>{{ pageTitle }} — {{ t('app.title') }}</title>
     <link rel="stylesheet" href="/__drogular/assets/ui.css">
     <script src="/__drogular/assets/interactions.js" defer></script>
     <script src="/assets/navigation.js" defer></script>
@@ -18,9 +18,9 @@
            dg-target="[data-staff-content]"
            dg-history="push"
            dg-history-url="/staff">
-            Mini Store Staff
+            {{ t('staff.brand') }}
         </a>
-        <nav class="dg-nav" aria-label="Staff navigation">
+        <nav class="dg-nav" aria-label="{{ t('staff.navigation') }}">
             <a class="dg-nav-item"
                href="/staff"
                dg-get="/fragments/staff"
@@ -28,7 +28,7 @@
                dg-target="[data-staff-content]"
                dg-history="push"
                dg-history-url="/staff">
-                Dashboard
+                {{ t('staff.dashboard.title') }}
             </a>
             <a class="dg-nav-item"
                href="/staff/products"
@@ -37,7 +37,7 @@
                dg-target="[data-staff-content]"
                dg-history="push"
                dg-history-url="/staff/products">
-                Products
+                {{ t('staff.products.title') }}
             </a>
             <a class="dg-nav-item"
                href="/staff/categories"
@@ -46,7 +46,7 @@
                dg-target="[data-staff-content]"
                dg-history="push"
                dg-history-url="/staff/categories">
-                Categories
+                {{ t('staff.categories.title') }}
             </a>
             <a class="dg-nav-item"
                href="/staff/orders"
@@ -55,10 +55,22 @@
                dg-target="[data-staff-content]"
                dg-history="push"
                dg-history-url="/staff/orders">
-                Orders
+                {{ t('staff.orders.title') }}
             </a>
-            <a class="dg-nav-item" href="/">Storefront</a>
+            <a class="dg-nav-item" href="/">{{ t('staff.storefront') }}</a>
         </nav>
+        <div class="dg-actions">
+            <form method="post" action="/language">
+                <input type="hidden" name="language" value="en">
+                <input type="hidden" name="redirect" value="{{ languageRedirect }}">
+                <button class="dg-button" type="submit">EN</button>
+            </form>
+            <form method="post" action="/language">
+                <input type="hidden" name="language" value="de">
+                <input type="hidden" name="redirect" value="{{ languageRedirect }}">
+                <button class="dg-button" type="submit">DE</button>
+            </form>
+        </div>
     </aside>
     <main class="dg-main" data-staff-content>
         <div class="dg-page"><div class="dg-page-content">@content</div></div>
