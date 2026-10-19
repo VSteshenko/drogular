@@ -275,6 +275,32 @@ source of translation truth.
 - Reuse the same translation data across server rendering, online Interactions, and Offline UI
 - Add a first-class Return URL / Navigation Context API for safe return-target parsing, propagation, URL encoding, and redirects across RenderContext and ActionContext
 
+### 0.26 — Background Jobs & Progress
+
+Introduce a first-class model for long-running and background work so applications such as Atlasys can execute, observe, and control operations without tying their lifetime to a single HTTP request.
+
+- Add a framework-level Job model with identity, lifecycle state, result/error state, and execution metadata
+- Add Job progress reporting for long-running operations
+- Add cooperative Job cancellation with explicit cancellation state and semantics
+- Add an SSE/event stream for live Job state and progress updates
+- Add `JobsDemo` as a reference application for starting, observing, cancelling, and reconnecting to Jobs
+- Add Job diagnostics for lifecycle transitions, execution time, failures, cancellation, and active/completed Job inspection
+
+### 0.27 — Health, Readiness & Authentication Context
+
+Add the operational and identity foundations required by applications such as Atlasys when running as production services.
+
+- Add first-class health and readiness endpoints with extensible application checks
+- Extend the authentication model with a richer Principal/authentication context for application and service authorization
+- Extend `AuthSample` to demonstrate Principal data, authentication state, authorization-oriented usage, and the new auth extension points
+
+### 0.28 — Audit & Metrics
+
+Add framework-level observability extension points so applications can integrate Drogular activity with operational, compliance, and monitoring infrastructure.
+
+- Add Audit hooks for security-sensitive and application-defined operations without coupling the framework to a specific audit backend
+- Add a Metrics exporter abstraction for exposing framework and application metrics to external monitoring systems
+
 ### 1.0
 
 - Stable Public API
