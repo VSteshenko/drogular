@@ -103,5 +103,8 @@
   "staff.order.unit_price": "Unit price",
   "staff.order.quantity": "Quantity",
   "staff.order.move_to": "Move to",
-  "staff.order.not_found": "Order not found"
+  "staff.order.not_found": "Order not found",
+  "offline.title": "Offline",
+  "offline.message": "Mini Store is currently offline.",
+  "offline.hint": "Reconnect to continue browsing the catalog, using the cart, checkout, or staff tools."
 }

@@ -4,6 +4,7 @@
 #include "features/catalog/pages/catalog_page.hpp"
 #include "features/catalog/pages/product_details_page.hpp"
 #include "features/localization/actions/language_action.hpp"
+#include "features/offline/pages/offline_page.hpp"
 #include "features/cart/actions/add_to_cart_action.hpp"
 #include "features/cart/actions/update_cart_action.hpp"
 #include "features/cart/actions/checkout_action.hpp"
@@ -37,6 +38,8 @@ int main() {
        .staticFiles("/assets", "examples/mini_store/public")
        .templateCache(false)
        .staticFileCacheProfile(drogular::StaticFileCacheProfile::Development)
+       .serviceWorker("examples/mini_store/public/service-worker.js")
+       .offlinePage<MiniStoreOfflinePage>()
        .profile(drogular::ApplicationProfile::Development);
 
     app.expressionFunction("t", miniStoreTranslationExpressionFunction());
