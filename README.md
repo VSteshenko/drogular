@@ -4,6 +4,8 @@
 
 # Drogular
 
+**Language:** **English** | [Deutsch](README.de.md)
+
 > **Modern C++ application framework for Drogon with server-driven UI, GraphQL, PWA and extensible Developer Tools.**
 
 Build modern web applications in C++ using a unified architecture for components, dependency injection, state management, GraphQL and Developer Tools.
