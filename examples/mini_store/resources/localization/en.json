@@ -106,5 +106,9 @@
   "staff.order.not_found": "Order not found",
   "offline.title": "Offline",
   "offline.message": "Mini Store is currently offline.",
-  "offline.hint": "Reconnect to continue browsing the catalog, using the cart, checkout, or staff tools."
+  "offline.hint": "Reconnect to continue browsing the catalog, using the cart, checkout, or staff tools.",
+  "theme.label": "Theme",
+  "theme.modern": "Modern",
+  "theme.dark": "Dark",
+  "theme.warm": "Warm"
 }
