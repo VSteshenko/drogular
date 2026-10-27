@@ -15,7 +15,10 @@
 </div>
 @else
 <article class="dg-card mini-store-product-details">
-    <div class="dg-card-body">
+    <div class="mini-store-product-details-media">
+        <span>{{ productSku }}</span>
+    </div>
+    <div class="dg-card-body mini-store-product-details-copy">
         <p class="dg-kicker">{{ productSku }}</p>
         <h2 class="dg-card-title">{{ productName }}</h2>
         <p>{{ productDescription }}</p>
@@ -30,7 +33,7 @@
         </span>
         @endif
     </div>
-    <div class="dg-card-footer">
+    <div class="dg-card-footer mini-store-product-details-actions">
         <a class="dg-button"
            href="{{ productBackUrl }}"
            dg-get="{{ productBackFragmentUrl }}"

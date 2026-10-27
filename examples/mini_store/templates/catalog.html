@@ -1,5 +1,5 @@
-<section class="dg-stack">
-    <form class="dg-card"
+<section class="dg-stack mini-store-catalog">
+    <form class="dg-card mini-store-filter-panel"
           method="get"
           action="/catalog"
           dg-get="/fragments/storefront/catalog"
@@ -7,7 +7,7 @@
           dg-trigger="submit"
           dg-history="push"
           dg-history-url="{{ catalogHistoryUrl }}">
-        <div class="dg-card-body dg-form-grid">
+        <div class="dg-card-body dg-form-grid mini-store-filter-grid">
             <label class="dg-field">
                 <span class="dg-label">{{ t('catalog.search') }}</span>
                 <input class="dg-input" type="search" name="q" value="{{ catalogSearch }}">
@@ -37,20 +37,20 @@
                     </option>
                 </select>
             </label>
-        </div>
-        <div class="dg-card-footer">
-            <button class="dg-button dg-button-primary" type="submit">
-                {{ t('catalog.apply') }}
-            </button>
-            <a class="dg-button"
-               href="/catalog"
-               dg-get="/fragments/storefront/catalog"
-               dg-trigger="click"
-               dg-target="[data-storefront-content]"
-               dg-history="push"
-               dg-history-url="/catalog">
-                {{ t('catalog.clear') }}
-            </a>
+            <div class="mini-store-filter-actions">
+                <button class="dg-button dg-button-primary" type="submit">
+                    {{ t('catalog.apply') }}
+                </button>
+                <a class="dg-button"
+                   href="/catalog"
+                   dg-get="/fragments/storefront/catalog"
+                   dg-trigger="click"
+                   dg-target="[data-storefront-content]"
+                   dg-history="push"
+                   dg-history-url="/catalog">
+                    {{ t('catalog.clear') }}
+                </a>
+            </div>
         </div>
     </form>
     <div class="dg-card-grid mini-store-product-grid">
@@ -62,7 +62,10 @@
                dg-target="[data-storefront-content]"
                dg-history="push"
                dg-history-url="{{ product.detailsUrl }}">
-                <div class="dg-card-body">
+                <div class="mini-store-product-media">
+                    <span>{{ product.sku }}</span>
+                </div>
+                <div class="dg-card-body mini-store-product-body">
                     <p class="dg-kicker">{{ product.sku }}</p>
                     <h2 class="dg-card-title">{{ product.name }}</h2>
                     <p>{{ product.description }}</p>

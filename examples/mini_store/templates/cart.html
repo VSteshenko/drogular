@@ -14,16 +14,17 @@
         </div>
     </div>
 @else
-    <div class="dg-stack">
+    <div class="dg-stack mini-store-cart">
     @foreach(item in cartItems)
         <form class="dg-card mini-store-cart-row"
               method="post"
               action="/cart/update"
               dg-post="/cart/update"
               dg-target="[data-storefront-content]">
-            <div class="dg-card-body">
-                <h2 class="dg-card-title">{{ item.name }}</h2>
-                <p>{{ item.price }}</p>
+            <div class="dg-card-body mini-store-cart-product">
+                <span class="mini-store-cart-icon" aria-hidden="true">▦</span>
+                <div><h2 class="dg-card-title">{{ item.name }}</h2>
+                <p>{{ item.price }}</p></div>
             </div>
             <div class="dg-card-footer">
                 <input type="hidden" name="productId" value="{{ item.id }}">
@@ -43,7 +44,7 @@
             </div>
         </form>
     @endforeach
-    <div class="dg-card">
+    <div class="dg-card mini-store-cart-summary">
         <div class="dg-card-footer mini-store-cart-total">
             <strong>{{ t('cart.total') }}: {{ cartTotal }}</strong>
             <a class="dg-button dg-button-primary"

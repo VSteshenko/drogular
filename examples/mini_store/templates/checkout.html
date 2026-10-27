@@ -14,9 +14,9 @@
         </div>
     </div>
 @else
-    <div class="dg-card">
+    <div class="dg-card mini-store-checkout">
         <form method="post" action="/checkout/place">
-            <div class="dg-card-body dg-stack">
+            <div class="dg-card-body dg-stack mini-store-checkout-body">
 @if(customerError)
                 <div class="dg-alert dg-alert-danger">
                     {{ t('checkout.customer_error') }}
@@ -39,13 +39,14 @@
                     </span>
                     <input class="dg-input" type="email" name="email" required>
                 </label>
+                <div class="mini-store-checkout-divider"></div>
                 <h2>{{ t('checkout.review') }}</h2>
 @foreach(item in cartItems)
                 <p>{{ item.quantity }} × {{ item.name }} — {{ item.lineTotal }}</p>
 @endforeach
                 <strong>{{ t('cart.total') }}: {{ cartTotal }}</strong>
             </div>
-            <div class="dg-card-footer">
+            <div class="dg-card-footer mini-store-checkout-actions">
                 <a class="dg-button"
                    href="/cart"
                    dg-get="/fragments/storefront/cart"

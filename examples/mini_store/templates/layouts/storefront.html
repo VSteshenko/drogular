@@ -14,9 +14,9 @@
     <script src="/__drogular/assets/interactions.js" defer></script>
     <script src="/assets/navigation.js" defer></script>
 </head>
-<body>
-<header class="dg-topbar">
-    <a class="dg-brand"
+<body class="mini-store-body">
+<header class="dg-topbar mini-store-topbar">
+    <a class="dg-brand mini-store-brand"
        href="/"
        dg-get="/fragments/storefront"
        dg-trigger="click"
@@ -25,7 +25,7 @@
        dg-history-url="/">
         {{ t('app.title') }}
     </a>
-    <nav class="dg-nav" aria-label="Store navigation">
+    <nav class="mini-store-nav" aria-label="Store navigation">
         <a class="dg-nav-item"
            href="/"
            dg-get="/fragments/storefront"
@@ -54,7 +54,7 @@
         </a>
         <a class="dg-nav-item" href="/staff">{{ t('nav.staff') }}</a>
     </nav>
-    <div class="dg-actions">
+    <div class="mini-store-header-actions">
         <div class="mini-store-theme-picker">
             <label for="mini-store-theme">{{ t('theme.label') }}</label>
             <select id="mini-store-theme" class="dg-input mini-store-theme-select" data-theme-select>
@@ -66,22 +66,22 @@
         <form method="post" action="/language">
             <input type="hidden" name="language" value="en">
             <input type="hidden" name="redirect" value="{{ languageRedirect }}">
-            <button class="dg-button" type="submit">EN</button>
+            <button class="dg-button mini-store-language{{ languageEnClass }}" type="submit">EN</button>
         </form>
         <form method="post" action="/language">
             <input type="hidden" name="language" value="de">
             <input type="hidden" name="redirect" value="{{ languageRedirect }}">
-            <button class="dg-button" type="submit">DE</button>
+            <button class="dg-button mini-store-language{{ languageDeClass }}" type="submit">DE</button>
         </form>
     </div>
 </header>
-<main data-storefront-content>
-    <div class="dg-page">
-    <header class="dg-page-header">
-        <p class="dg-page-kicker">{{ t('app.title') }}</p>
-        <h1 class="dg-page-title">{{ pageTitle }}</h1>
-    </header>
-    <div class="dg-page-content">@content</div>
+<main class="mini-store-main" data-storefront-content>
+    <div class="dg-page mini-store-page{{ pageClass }}">
+        <header class="dg-page-header mini-store-page-header">
+            <p class="dg-page-kicker">{{ t('app.title') }}</p>
+            <h1 class="dg-page-title">{{ pageTitle }}</h1>
+        </header>
+        <div class="dg-page-content mini-store-page-content">@content</div>
     </div>
 </main>
     {{{ serviceWorkerRegistration }}}

@@ -110,5 +110,11 @@
   "theme.label": "Theme",
   "theme.modern": "Modern",
   "theme.dark": "Dark",
-  "theme.warm": "Warm"
+  "theme.warm": "Warm",
+  "home.trust.catalog": "Curated catalog",
+  "home.trust.offline": "PWA ready",
+  "home.trust.localized": "English & German",
+  "home.overview": "Store overview",
+  "home.shared.heading": "One shared domain",
+  "home.shared.description": "Storefront and staff stay in sync"
 }

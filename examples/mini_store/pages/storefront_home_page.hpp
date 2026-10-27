@@ -10,6 +10,7 @@ class MiniStoreStorefrontHomePage final : public drogular::TemplatePage {
 public:
     void onInit(drogular::RenderContext& context) override {
         MiniStoreStorefrontPageSupport::apply(context, "home.title");
+        context.set("pageClass", std::string(" mini-store-page-home"));
         const auto store = context.requireService<MiniStoreStore>();
         const auto products = store->products();
         const auto categories = store->categories();

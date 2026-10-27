@@ -1,32 +1,50 @@
-<section class="dg-card">
-    <div class="dg-card-body">
-        <p class="dg-card-subtitle">{{ t('home.kicker') }}</p>
-        <h1 class="dg-card-title">{{ t('home.heading') }}</h1>
-        <p>{{ t('home.description') }}</p>
-        <p>
-            <a class="dg-button"
+<section class="mini-store-hero">
+    <div class="mini-store-hero-copy">
+        <p class="mini-store-eyebrow">{{ t('home.kicker') }}</p>
+        <h2>{{ t('home.heading') }}</h2>
+        <p class="mini-store-hero-description">{{ t('home.description') }}</p>
+        <div class="mini-store-hero-actions">
+            <a class="dg-button dg-button-primary mini-store-primary-action"
                href="/catalog"
                dg-get="/fragments/storefront/catalog"
                dg-trigger="click"
                dg-target="[data-storefront-content]"
                dg-history="push"
                dg-history-url="/catalog">
-                {{ t('home.browse') }}
+                <span>{{ t('home.browse') }}</span>
+                <span class="mini-store-action-arrow" aria-hidden="true">→</span>
             </a>
-        </p>
+        </div>
+        <div class="mini-store-trust-row">
+            <span>✓ {{ t('home.trust.catalog') }}</span>
+            <span>✓ {{ t('home.trust.offline') }}</span>
+            <span>✓ {{ t('home.trust.localized') }}</span>
+        </div>
+    </div>
+    <div class="mini-store-hero-visual" aria-hidden="true">
+        <img src="/assets/banner.png" alt="">
     </div>
 </section>
-<div class="dg-card-grid">
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('home.products') }}</p>
-            <h2 class="dg-card-title">{{ productCount }}</h2>
+<section class="mini-store-home-stats" aria-label="{{ t('home.overview') }}">
+    <article class="mini-store-stat-card">
+        <span class="mini-store-stat-icon">▦</span>
+        <div>
+            <strong>{{ productCount }}</strong>
+            <span>{{ t('home.products') }}</span>
         </div>
-    </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('home.categories') }}</p>
-            <h2 class="dg-card-title">{{ categoryCount }}</h2>
+    </article>
+    <article class="mini-store-stat-card">
+        <span class="mini-store-stat-icon">◇</span>
+        <div>
+            <strong>{{ categoryCount }}</strong>
+            <span>{{ t('home.categories') }}</span>
         </div>
-    </section>
-</div>
+    </article>
+    <article class="mini-store-stat-card mini-store-stat-wide">
+        <span class="mini-store-stat-icon">◎</span>
+        <div>
+            <strong>{{ t('home.shared.heading') }}</strong>
+            <span>{{ t('home.shared.description') }}</span>
+        </div>
+    </article>
+</section>

@@ -1,4 +1,4 @@
-const SHELL_CACHE = "drogular-mini-store-shell-v3";
+const SHELL_CACHE = "drogular-mini-store-shell-v13";
 const STOREFRONT_CACHE = "drogular-mini-store-storefront-v1";
 const OWNED_CACHES = [SHELL_CACHE, STOREFRONT_CACHE];
 

@@ -1,7 +1,8 @@
-<main class="dg-page" data-mini-store-page-title="{{ pageTitle }} — {{ t('app.title') }}">
-    <header class="dg-page-header">
+<main class="dg-page mini-store-page{{ pageClass }}"
+      data-mini-store-page-title="{{ pageTitle }} — {{ t('app.title') }}">
+    <header class="dg-page-header mini-store-page-header">
         <p class="dg-page-kicker">{{ t('app.title') }}</p>
         <h1 class="dg-page-title">{{ pageTitle }}</h1>
     </header>
-    <div class="dg-page-content">@content</div>
+    <div class="dg-page-content mini-store-page-content">@content</div>
 </main>

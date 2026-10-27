@@ -110,5 +110,11 @@
   "theme.label": "Design",
   "theme.modern": "Modern",
   "theme.dark": "Dunkel",
-  "theme.warm": "Warm"
+  "theme.warm": "Warm",
+  "home.trust.catalog": "Übersichtlicher Katalog",
+  "home.trust.offline": "PWA-fähig",
+  "home.trust.localized": "Deutsch & Englisch",
+  "home.overview": "Shop-Übersicht",
+  "home.shared.heading": "Eine gemeinsame Domain",
+  "home.shared.description": "Storefront und Mitarbeiterbereich bleiben synchron"
 }
