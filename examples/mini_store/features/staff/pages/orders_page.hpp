@@ -46,7 +46,10 @@ public:
             row["total"] = MiniStoreOrderSupport::money(order.totalCents);
             row["status"] =
                 context.translate("staff.order.status." + MiniStoreOrderSupport::statusKey(order.status));
-            row["createdAt"] = order.createdAt;
+            row["createdAt"] = MiniStoreOrderSupport::displayTimestamp(order.createdAt);
+            row["statusNew"] = order.status == MiniStoreOrderStatus::New;
+            row["statusProcessing"] = order.status == MiniStoreOrderStatus::Processing;
+            row["statusCompleted"] = order.status == MiniStoreOrderStatus::Completed;
             row["url"] = MiniStoreOrderSupport::orderUrl(order.id, historyUrl);
             row["fragmentUrl"] =
                 MiniStoreFrameNavigationSupport::staffOrderFragmentUrl(row["url"].asString());

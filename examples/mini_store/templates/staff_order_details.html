@@ -1,10 +1,10 @@
 @if(found)
-<header class="dg-page-header">
+<header class="mini-store-staff-list-header">
     <div>
-        <p class="dg-page-kicker">{{ t('staff.orders.title') }}</p>
-        <h1 class="dg-page-title">{{ t('staff.order.title') }} #{{ id }}</h1>
+        <p class="mini-store-staff-kicker">{{ t('staff.orders.title') }}</p>
+        <h1 class="mini-store-staff-title">{{ t('staff.order.title') }} #{{ id }}</h1>
     </div>
-    <a class="dg-button"
+    <a class="mini-store-staff-secondary-action"
        href="{{ orderBackUrl }}"
        dg-get="{{ orderBackFragmentUrl }}"
        dg-trigger="click"
@@ -14,31 +14,31 @@
         {{ t('staff.order.back') }}
     </a>
 </header>
-<div class="dg-card-grid">
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.order.customer') }}</p>
-            <h2 class="dg-card-title">{{ customer }}</h2>
-            <p>{{ email }}</p>
-        </div>
+
+<div class="mini-store-staff-order-summary">
+    <section class="mini-store-staff-summary-card">
+        <p class="mini-store-staff-summary-label">{{ t('staff.order.customer') }}</p>
+        <h2>{{ customer }}</h2>
+        <p class="mini-store-staff-summary-meta">{{ email }}</p>
     </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.order.status') }}</p>
-            <h2 class="dg-card-title">{{ status }}</h2>
-            <p>{{ createdAt }}</p>
-        </div>
+    <section class="mini-store-staff-summary-card">
+        <p class="mini-store-staff-summary-label">{{ t('staff.order.status') }}</p>
+        <h2>
+            <span class="mini-store-staff-order-status @if(statusNew)is-new@endif @if(statusProcessing)is-processing@endif @if(statusCompleted)is-completed@endif">
+                {{ status }}
+            </span>
+        </h2>
+        <p class="mini-store-staff-summary-meta">{{ createdAt }}</p>
     </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.order.total') }}</p>
-            <h2 class="dg-card-title">{{ total }}</h2>
-        </div>
+    <section class="mini-store-staff-summary-card">
+        <p class="mini-store-staff-summary-label">{{ t('staff.order.total') }}</p>
+        <h2 class="mini-store-staff-summary-total">{{ total }}</h2>
     </section>
 </div>
-<div class="dg-card">
-    <div class="dg-card-body">
-        <table class="dg-table">
+
+<section class="mini-store-staff-order-detail-surface">
+    <div class="mini-store-staff-table-scroll">
+        <table class="mini-store-staff-table mini-store-staff-order-items-table">
             <thead>
             <tr>
                 <th>{{ t('staff.order.product_snapshot') }}</th>
@@ -50,35 +50,35 @@
             <tbody>
 @foreach(item in items)
             <tr>
-                <td>{{ item.name }}</td>
+                <td class="mini-store-staff-name">{{ item.name }}</td>
                 <td>{{ item.unitPrice }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.lineTotal }}</td>
+                <td class="mini-store-staff-price">{{ item.lineTotal }}</td>
             </tr>
 @endforeach
             </tbody>
         </table>
     </div>
 @if(canAdvance)
-    <div class="dg-card-footer">
+    <footer class="mini-store-staff-order-actions">
         <form method="post"
               action="/staff/orders/advance"
               dg-post="/staff/orders/advance"
               dg-target="[data-staff-content]">
             <input type="hidden" name="id" value="{{ id }}">
             <input type="hidden" name="returnUrl" value="{{ orderBackUrl }}">
-            <button class="dg-button dg-button-primary" type="submit">
+            <button class="mini-store-staff-primary-action" type="submit">
                 {{ t('staff.order.move_to') }} {{ nextStatus }}
             </button>
         </form>
-    </div>
+    </footer>
 @endif
-</div>
+</section>
 @else
-<header class="dg-page-header">
-    <h1 class="dg-page-title">{{ t('staff.order.not_found') }}</h1>
+<header class="mini-store-staff-list-header">
+    <h1 class="mini-store-staff-title">{{ t('staff.order.not_found') }}</h1>
 </header>
-<a class="dg-button"
+<a class="mini-store-staff-secondary-action"
    href="{{ orderBackUrl }}"
    dg-get="{{ orderBackFragmentUrl }}"
    dg-trigger="click"

@@ -1,9 +1,9 @@
-<header class="dg-page-header">
+<header class="mini-store-staff-list-header">
     <div>
-        <p class="dg-page-kicker">{{ t('staff.catalog') }}</p>
-        <h1 class="dg-page-title">{{ t('staff.products.title') }}</h1>
+        <p class="mini-store-staff-kicker">{{ t('staff.catalog') }}</p>
+        <h1 class="mini-store-staff-title">{{ t('staff.products.title') }}</h1>
     </div>
-    <a class="dg-button dg-button-primary"
+    <a class="mini-store-staff-primary-action"
        href="/staff/products/new"
        dg-get="/fragments/staff/products/new"
        dg-trigger="click"
@@ -13,9 +13,9 @@
         {{ t('staff.product.new') }}
     </a>
 </header>
-<div class="dg-card">
-    <div class="dg-card-body">
-        <table class="dg-table">
+<div class="mini-store-staff-table-surface">
+    <div class="mini-store-staff-table-scroll">
+        <table class="mini-store-staff-table mini-store-staff-products-table">
             <thead>
             <tr>
                 <th>SKU</th>
@@ -24,20 +24,33 @@
                 <th>{{ t('staff.product.price') }}</th>
                 <th>{{ t('staff.product.stock') }}</th>
                 <th>{{ t('staff.order.status') }}</th>
-                <th></th>
+                <th><span class="mini-store-visually-hidden">{{ t('staff.edit') }}</span></th>
             </tr>
             </thead>
             <tbody>
 @foreach(product in products)
             <tr>
-                <td>{{ product.sku }}</td>
-                <td>{{ product.nameEn }}</td>
-                <td>{{ product.nameDe }}</td>
-                <td>{{ product.price }}</td>
-                <td>{{ product.stock }}</td>
-                <td>@if(product.active){{ t('staff.product.active') }}@else{{ t('staff.product.inactive') }}@endif</td>
+                <td><span class="mini-store-staff-code">{{ product.sku }}</span></td>
+                <td class="mini-store-staff-name">{{ product.nameEn }}</td>
+                <td class="mini-store-staff-name">{{ product.nameDe }}</td>
+                <td class="mini-store-staff-price">{{ product.price }}</td>
                 <td>
-                    <a class="dg-button"
+                    <div class="mini-store-staff-stock-cell">
+                        <strong class="mini-store-staff-stock-value">{{ product.stock }}</strong>
+                        <span class="mini-store-staff-stock-state {{ product.stockClass }}">
+                            @if(product.outOfStock){{ t('product.out_of_stock') }}@endif
+                            @if(product.lowStock){{ t('staff.product.low_stock') }}@endif
+                            @if(product.inStock){{ t('product.in_stock') }}@endif
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <span class="mini-store-staff-status @if(product.active)is-active@else is-inactive@endif">
+                        @if(product.active){{ t('staff.product.active') }}@else{{ t('staff.product.inactive') }}@endif
+                    </span>
+                </td>
+                <td class="mini-store-staff-row-action">
+                    <a class="mini-store-staff-secondary-action"
                        href="/staff/products/{{ product.id }}/edit"
                        dg-get="/fragments/staff/products/{{ product.id }}/edit"
                        dg-trigger="click"

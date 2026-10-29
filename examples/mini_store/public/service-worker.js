@@ -1,4 +1,4 @@
-const SHELL_CACHE = "drogular-mini-store-shell-v13";
+const SHELL_CACHE = "drogular-mini-store-shell-v21";
 const STOREFRONT_CACHE = "drogular-mini-store-storefront-v1";
 const OWNED_CACHES = [SHELL_CACHE, STOREFRONT_CACHE];
 
@@ -11,6 +11,7 @@ const APP_SHELL = [
     "/assets/icon-512.png",
     "/assets/banner.png",
     "/assets/storefront.css",
+    "/assets/staff.css",
     "/assets/theme.css",
     "/assets/theme.js",
     "/assets/navigation.js",

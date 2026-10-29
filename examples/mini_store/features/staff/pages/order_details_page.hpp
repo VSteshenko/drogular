@@ -46,7 +46,10 @@ public:
         context.set("customer", order->customer.name);
         context.set("email", order->customer.email);
         context.set("status", context.translate("staff.order.status." + MiniStoreOrderSupport::statusKey(order->status)));
-        context.set("createdAt", order->createdAt);
+        context.set("createdAt", MiniStoreOrderSupport::displayTimestamp(order->createdAt));
+        context.set("statusNew", order->status == MiniStoreOrderStatus::New);
+        context.set("statusProcessing", order->status == MiniStoreOrderStatus::Processing);
+        context.set("statusCompleted", order->status == MiniStoreOrderStatus::Completed);
         context.set("total", MiniStoreOrderSupport::money(order->totalCents));
         context.set("canAdvance", order->status != MiniStoreOrderStatus::Completed);
         context.set(

@@ -70,6 +70,7 @@
   "staff.product.edit": "Produkt bearbeiten",
   "staff.product.price": "Preis",
   "staff.product.stock": "Bestand",
+  "staff.product.low_stock": "Niedriger Bestand",
   "staff.product.active": "Aktiv",
   "staff.product.inactive": "Inaktiv",
   "staff.product.name_en": "Name — Englisch",

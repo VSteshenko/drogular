@@ -1,47 +1,83 @@
-<header class="dg-page-header">
-    <p class="dg-page-kicker">{{ t('staff.brand') }}</p>
-    <h1 class="dg-page-title">{{ t('staff.dashboard.title') }}</h1>
+<header class="mini-store-staff-page-header">
+    <p class="mini-store-staff-kicker">{{ t('staff.brand') }}</p>
+    <h1 class="mini-store-staff-title">{{ t('staff.dashboard.title') }}</h1>
 </header>
-<div class="dg-card-grid">
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.products.title') }}</p>
-            <h2 class="dg-card-title">{{ productCount }}</h2>
+<div class="mini-store-staff-kpi-grid">
+    <a class="mini-store-staff-kpi"
+       href="/staff/products"
+       dg-get="/fragments/staff/products"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/products">
+        <div class="mini-store-staff-kpi-body">
+            <p class="mini-store-staff-kpi-label">{{ t('staff.products.title') }}</p>
+            <h2 class="mini-store-staff-kpi-value">{{ productCount }}</h2>
         </div>
-    </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.dashboard.low_stock') }}</p>
-            <h2 class="dg-card-title">{{ lowStockCount }}</h2>
+    </a>
+    <a class="mini-store-staff-kpi"
+       href="/staff/products"
+       dg-get="/fragments/staff/products"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/products">
+        <div class="mini-store-staff-kpi-body">
+            <p class="mini-store-staff-kpi-label">{{ t('staff.dashboard.low_stock') }}</p>
+            <h2 class="mini-store-staff-kpi-value">{{ lowStockCount }}</h2>
         </div>
-    </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.orders.title') }}</p>
-            <h2 class="dg-card-title">{{ orderCount }}</h2>
+    </a>
+    <a class="mini-store-staff-kpi"
+       href="/staff/orders"
+       dg-get="/fragments/staff/orders"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/orders">
+        <div class="mini-store-staff-kpi-body">
+            <p class="mini-store-staff-kpi-label">{{ t('staff.orders.title') }}</p>
+            <h2 class="mini-store-staff-kpi-value">{{ orderCount }}</h2>
         </div>
-    </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.dashboard.new_orders') }}</p>
-            <h2 class="dg-card-title">{{ newOrderCount }}</h2>
+    </a>
+    <a class="mini-store-staff-kpi"
+       href="/staff/orders?status=new"
+       dg-get="/fragments/staff/orders?status=new"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/orders?status=new">
+        <div class="mini-store-staff-kpi-body">
+            <p class="mini-store-staff-kpi-label">{{ t('staff.dashboard.new_orders') }}</p>
+            <h2 class="mini-store-staff-kpi-value">{{ newOrderCount }}</h2>
         </div>
-    </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.order.status.processing') }}</p>
-            <h2 class="dg-card-title">{{ processingOrderCount }}</h2>
+    </a>
+    <a class="mini-store-staff-kpi"
+       href="/staff/orders?status=processing"
+       dg-get="/fragments/staff/orders?status=processing"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/orders?status=processing">
+        <div class="mini-store-staff-kpi-body">
+            <p class="mini-store-staff-kpi-label">{{ t('staff.order.status.processing') }}</p>
+            <h2 class="mini-store-staff-kpi-value">{{ processingOrderCount }}</h2>
         </div>
-    </section>
-    <section class="dg-card">
-        <div class="dg-card-body">
-            <p class="dg-card-subtitle">{{ t('staff.order.status.completed') }}</p>
-            <h2 class="dg-card-title">{{ completedOrderCount }}</h2>
+    </a>
+    <a class="mini-store-staff-kpi"
+       href="/staff/orders?status=completed"
+       dg-get="/fragments/staff/orders?status=completed"
+       dg-trigger="click"
+       dg-target="[data-staff-content]"
+       dg-history="push"
+       dg-history-url="/staff/orders?status=completed">
+        <div class="mini-store-staff-kpi-body">
+            <p class="mini-store-staff-kpi-label">{{ t('staff.order.status.completed') }}</p>
+            <h2 class="mini-store-staff-kpi-value">{{ completedOrderCount }}</h2>
         </div>
-    </section>
+    </a>
 </div>
-<div class="dg-card-footer">
-    <a class="dg-button"
+<div class="mini-store-staff-dashboard-actions">
+    <a class="mini-store-staff-action"
        href="/staff/products"
        dg-get="/fragments/staff/products"
        dg-trigger="click"
@@ -50,7 +86,7 @@
        dg-history-url="/staff/products">
         {{ t('staff.dashboard.manage_products') }}
     </a>
-    <a class="dg-button"
+    <a class="mini-store-staff-action"
        href="/staff/categories"
        dg-get="/fragments/staff/categories"
        dg-trigger="click"
@@ -59,7 +95,7 @@
        dg-history-url="/staff/categories">
         {{ t('staff.dashboard.manage_categories') }}
     </a>
-    <a class="dg-button"
+    <a class="mini-store-staff-action"
        href="/staff/orders"
        dg-get="/fragments/staff/orders"
        dg-trigger="click"

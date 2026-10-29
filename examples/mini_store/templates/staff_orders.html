@@ -1,31 +1,33 @@
-<header class="dg-page-header">
+<header class="mini-store-staff-list-header">
     <div>
-        <p class="dg-page-kicker">{{ t('staff.orders.title') }}</p>
-        <h1 class="dg-page-title">{{ t('staff.orders.workflow') }}</h1>
+        <p class="mini-store-staff-kicker">{{ t('staff.orders.title') }}</p>
+        <h1 class="mini-store-staff-title">{{ t('staff.orders.workflow') }}</h1>
     </div>
 </header>
-<div class="dg-card">
-    <div class="dg-card-body">
-        <form method="get"
-              action="/staff/orders"
-              class="dg-form-row"
-              dg-get="/fragments/staff/orders"
-              dg-target="[data-staff-content]"
-              dg-trigger="submit"
-              dg-history="push"
-              dg-history-url="{{ historyUrl }}">
-            <label>
-                {{ t('staff.order.status') }}
-                <select name="status">
-                    <option value="all" @if(filterAll)selected@endif>{{ t('staff.order.status.all') }}</option>
-                    <option value="new" @if(filterNew)selected@endif>{{ t('staff.order.status.new') }}</option>
-                    <option value="processing" @if(filterProcessing)selected@endif>{{ t('staff.order.status.processing') }}</option>
-                    <option value="completed" @if(filterCompleted)selected@endif>{{ t('staff.order.status.completed') }}</option>
-                </select>
-            </label>
-            <button class="dg-button" type="submit">{{ t('staff.filter') }}</button>
-        </form>
-        <table class="dg-table">
+
+<section class="mini-store-staff-orders-surface">
+    <form method="get"
+          action="/staff/orders"
+          class="mini-store-staff-order-filter"
+          dg-get="/fragments/staff/orders"
+          dg-target="[data-staff-content]"
+          dg-trigger="submit"
+          dg-history="push"
+          dg-history-url="{{ historyUrl }}">
+        <label class="mini-store-staff-filter-field">
+            <span>{{ t('staff.order.status') }}</span>
+            <select name="status">
+                <option value="all" @if(filterAll)selected@endif>{{ t('staff.order.status.all') }}</option>
+                <option value="new" @if(filterNew)selected@endif>{{ t('staff.order.status.new') }}</option>
+                <option value="processing" @if(filterProcessing)selected@endif>{{ t('staff.order.status.processing') }}</option>
+                <option value="completed" @if(filterCompleted)selected@endif>{{ t('staff.order.status.completed') }}</option>
+            </select>
+        </label>
+        <button class="mini-store-staff-primary-action" type="submit">{{ t('staff.filter') }}</button>
+    </form>
+
+    <div class="mini-store-staff-table-scroll">
+        <table class="mini-store-staff-table mini-store-staff-orders-table">
             <thead>
             <tr>
                 <th>{{ t('staff.order.title') }}</th>
@@ -39,16 +41,18 @@
             <tbody>
 @foreach(order in orders)
             <tr>
-                <td>#{{ order.id }}</td>
-                <td>{{ order.customer }}
-                    <br>
-                    <small>{{ order.email }}</small>
-                </td>
-                <td>{{ order.createdAt }}</td>
-                <td>{{ order.status }}</td>
-                <td>{{ order.total }}</td>
+                <td class="mini-store-staff-code">#{{ order.id }}</td>
                 <td>
-                    <a class="dg-button"
+                    <strong class="mini-store-staff-customer">{{ order.customer }}</strong>
+                    <small class="mini-store-staff-customer-email">{{ order.email }}</small>
+                </td>
+                <td class="mini-store-staff-created">{{ order.createdAt }}</td>
+                <td>
+                    <span class="mini-store-staff-order-status @if(order.statusNew)is-new@endif @if(order.statusProcessing)is-processing@endif @if(order.statusCompleted)is-completed@endif">{{ order.status }}</span>
+                </td>
+                <td class="mini-store-staff-price">{{ order.total }}</td>
+                <td class="mini-store-staff-row-action">
+                    <a class="mini-store-staff-secondary-action"
                        href="{{ order.url }}"
                        dg-get="{{ order.fragmentUrl }}"
                        dg-trigger="click"
@@ -63,4 +67,4 @@
             </tbody>
         </table>
     </div>
-</div>
+</section>

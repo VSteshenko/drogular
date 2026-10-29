@@ -39,12 +39,12 @@ public:
             [](const auto& order) {
                 return order.status == MiniStoreOrderStatus::Completed;
             });
-        context.set("productCount", static_cast<Json::UInt64>(products.size()));
-        context.set("lowStockCount", static_cast<Json::UInt64>(lowStock));
-        context.set("orderCount", static_cast<Json::UInt64>(orders.size()));
-        context.set("newOrderCount", static_cast<Json::UInt64>(newOrders));
-        context.set("processingOrderCount", static_cast<Json::UInt64>(processingOrders));
-        context.set("completedOrderCount", static_cast<Json::UInt64>(completedOrders));
+        context.set("productCount", std::to_string(products.size()));
+        context.set("lowStockCount", std::to_string(lowStock));
+        context.set("orderCount", std::to_string(orders.size()));
+        context.set("newOrderCount", std::to_string(newOrders));
+        context.set("processingOrderCount", std::to_string(processingOrders));
+        context.set("completedOrderCount", std::to_string(completedOrders));
     }
 
     std::string templatePath() const override {

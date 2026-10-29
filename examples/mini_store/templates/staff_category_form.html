@@ -1,27 +1,27 @@
-<header class="dg-page-header">
+<header class="dg-page-header mini-store-staff-form-header">
     <h1 class="dg-page-title">
         @if(editing){{ t('staff.category.edit') }}@else{{ t('staff.category.new') }}@endif
     </h1>
 </header>
-<form class="dg-card" method="post" action="/staff/categories/save">
-    <div class="dg-card-body dg-form-grid">
+<form class="mini-store-staff-form-surface" method="post" action="/staff/categories/save">
+    <div class="mini-store-staff-form-grid">
         <input type="hidden" name="id" value="{{ id }}">
-        <label class="dg-field">
-            <span class="dg-label">Slug</span>
-            <input class="dg-input" name="slug" value="{{ slug }}" required>
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">Slug</span>
+            <input class="mini-store-staff-control" name="slug" value="{{ slug }}" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.category.name_en') }}</span>
-            <input class="dg-input" name="nameEn" value="{{ nameEn }}" required>
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.category.name_en') }}</span>
+            <input class="mini-store-staff-control" name="nameEn" value="{{ nameEn }}" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.category.name_de') }}</span>
-            <input class="dg-input" name="nameDe" value="{{ nameDe }}" required>
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.category.name_de') }}</span>
+            <input class="mini-store-staff-control" name="nameDe" value="{{ nameDe }}" required>
         </label>
     </div>
-    <div class="dg-card-footer">
-        <button class="dg-button dg-button-primary" type="submit">{{ t('staff.save') }}</button>
-        <a class="dg-button"
+    <div class="mini-store-staff-form-actions">
+        <button class="mini-store-staff-primary-action" type="submit">{{ t('staff.save') }}</button>
+        <a class="mini-store-staff-secondary-action"
            href="/staff/categories"
            dg-get="/fragments/staff/categories"
            dg-trigger="click"

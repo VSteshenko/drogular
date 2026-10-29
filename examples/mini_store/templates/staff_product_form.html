@@ -1,68 +1,82 @@
-<header class="dg-page-header">
-    <h1 class="dg-page-title">
-        @if(editing){{ t('staff.product.edit') }}@else{{ t('staff.product.new') }}@endif
-    </h1>
+<header class="mini-store-staff-list-header mini-store-staff-form-header">
+    <div>
+        <p class="mini-store-staff-eyebrow">{{ t('staff.products.title') }}</p>
+        <h1 class="mini-store-staff-page-title">
+            @if(editing){{ t('staff.product.edit') }}@else{{ t('staff.product.new') }}@endif
+        </h1>
+    </div>
 </header>
-<form class="dg-card" method="post" action="/staff/products/save">
-    <div class="dg-card-body dg-form-grid">
-        <input type="hidden" name="id" value="{{ id }}">
-        <label class="dg-field">
-            <span class="dg-label">SKU</span>
-            <input class="dg-input" name="sku" value="{{ sku }}" required>
+
+<form class="mini-store-staff-form-surface" method="post" action="/staff/products/save">
+    <input type="hidden" name="id" value="{{ id }}">
+
+    <div class="mini-store-staff-form-grid">
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">SKU</span>
+            <input class="mini-store-staff-control" name="sku" value="{{ sku }}" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.category') }}</span>
-            <select class="dg-select" name="categoryId" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.category') }}</span>
+            <select class="mini-store-staff-control mini-store-staff-select" name="categoryId" required>
 @foreach(category in categories)
-                <option value="{{ category.id }}" @if(category.selected)selected@endif>
-                    {{ category.name }}
-                </option>
+                <option value="{{ category.id }}" @if(category.selected)selected@endif>{{ category.name }}</option>
 @endforeach
             </select>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.price') }}</span>
-            <input class="dg-input" name="price" value="{{ price }}" inputmode="decimal" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.product.price') }}</span>
+            <input class="mini-store-staff-control" name="price" value="{{ price }}" inputmode="decimal" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.stock') }}</span>
-            <input class="dg-input" type="number" min="0" name="stock" value="{{ stock }}" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.product.stock') }}</span>
+            <input class="mini-store-staff-control" type="number" min="0" name="stock" value="{{ stock }}" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.name_en') }}</span>
-            <input class="dg-input" name="nameEn" value="{{ nameEn }}" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.product.name_en') }}</span>
+            <input class="mini-store-staff-control" name="nameEn" value="{{ nameEn }}" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.name_de') }}</span>
-            <input class="dg-input" name="nameDe" value="{{ nameDe }}" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.product.name_de') }}</span>
+            <input class="mini-store-staff-control" name="nameDe" value="{{ nameDe }}" required>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.description_en') }}</span>
-            <textarea class="dg-input" name="descriptionEn" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.product.description_en') }}</span>
+            <textarea class="mini-store-staff-control mini-store-staff-textarea"
+                      name="descriptionEn"
+                      required>
                 {{ descriptionEn }}
             </textarea>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.description_de') }}</span>
-            <textarea class="dg-input" name="descriptionDe" required>
+
+        <label class="mini-store-staff-field">
+            <span class="mini-store-staff-field-label">{{ t('staff.product.description_de') }}</span>
+            <textarea class="mini-store-staff-control mini-store-staff-textarea"
+                      name="descriptionDe"
+                      required>
                 {{ descriptionDe }}
             </textarea>
         </label>
-        <label class="dg-field">
-            <span class="dg-label">{{ t('staff.product.active') }}</span>
-            <input type="checkbox" name="active" @if(active)checked@endif>
+
+        <label class="mini-store-staff-check-field">
+            <input class="mini-store-staff-checkbox" type="checkbox" name="active" @if(active)checked@endif>
+            <span class="mini-store-staff-field-label">{{ t('staff.product.active') }}</span>
         </label>
     </div>
-    <div class="dg-card-footer">
-        <button class="dg-button dg-button-primary" type="submit">{{ t('staff.save') }}</button>
-        <a class="dg-button"
+
+    <footer class="mini-store-staff-form-actions">
+        <button class="mini-store-staff-primary-action" type="submit">{{ t('staff.save') }}</button>
+        <a class="mini-store-staff-secondary-action"
            href="/staff/products"
            dg-get="/fragments/staff/products"
            dg-trigger="click"
            dg-target="[data-staff-content]"
            dg-history="push"
-           dg-history-url="/staff/products">
-            {{ t('staff.cancel') }}
-        </a>
-    </div>
+           dg-history-url="/staff/products">{{ t('staff.cancel') }}</a>
+    </footer>
 </form>

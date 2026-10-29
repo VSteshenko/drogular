@@ -39,6 +39,14 @@ public:
         return MiniStoreCatalogSupport::money(cents);
     }
 
+    static std::string displayTimestamp(const std::string& value) {
+        // Keep the persisted ISO-8601 value untouched; only make the staff UI easier to scan.
+        if (value.size() >= 20 && value[4] == '-' && value[7] == '-' && value[10] == 'T') {
+            return value.substr(0, 10) + " · " + value.substr(11, 5) + " UTC";
+        }
+        return value;
+    }
+
     static std::string orderUrl(int id, const std::string& returnUrl) {
         return "/staff/orders/" + std::to_string(id) + "?returnUrl=" + encode(returnUrl);
     }

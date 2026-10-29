@@ -10,13 +10,14 @@
     <script src="/assets/theme.js"></script>
     <link rel="stylesheet" href="/__drogular/assets/ui.css">
     <link rel="stylesheet" href="/assets/theme.css">
+    <link rel="stylesheet" href="/assets/staff.css">
     <script src="/__drogular/assets/interactions.js" defer></script>
     <script src="/assets/navigation.js" defer></script>
 </head>
-<body>
-<div class="dg-shell">
-    <aside class="dg-sidebar">
-        <a class="dg-brand"
+<body class="mini-store-staff-body">
+<div class="mini-store-staff-shell">
+    <aside class="mini-store-staff-sidebar">
+        <a class="mini-store-staff-brand"
            href="/staff"
            dg-get="/fragments/staff"
            dg-trigger="click"
@@ -25,8 +26,9 @@
            dg-history-url="/staff">
             {{ t('staff.brand') }}
         </a>
-        <nav class="dg-nav" aria-label="{{ t('staff.navigation') }}">
-            <a class="dg-nav-item"
+        <nav class="mini-store-staff-nav" aria-label="{{ t('staff.navigation') }}">
+            <a class="mini-store-staff-nav-item"
+               data-staff-path="/staff"
                href="/staff"
                dg-get="/fragments/staff"
                dg-trigger="click"
@@ -35,7 +37,8 @@
                dg-history-url="/staff">
                 {{ t('staff.dashboard.title') }}
             </a>
-            <a class="dg-nav-item"
+            <a class="mini-store-staff-nav-item"
+               data-staff-path="/staff/products"
                href="/staff/products"
                dg-get="/fragments/staff/products"
                dg-trigger="click"
@@ -44,7 +47,8 @@
                dg-history-url="/staff/products">
                 {{ t('staff.products.title') }}
             </a>
-            <a class="dg-nav-item"
+            <a class="mini-store-staff-nav-item"
+               data-staff-path="/staff/categories"
                href="/staff/categories"
                dg-get="/fragments/staff/categories"
                dg-trigger="click"
@@ -53,7 +57,8 @@
                dg-history-url="/staff/categories">
                 {{ t('staff.categories.title') }}
             </a>
-            <a class="dg-nav-item"
+            <a class="mini-store-staff-nav-item"
+               data-staff-path="/staff/orders"
                href="/staff/orders"
                dg-get="/fragments/staff/orders"
                dg-trigger="click"
@@ -62,9 +67,9 @@
                dg-history-url="/staff/orders">
                 {{ t('staff.orders.title') }}
             </a>
-            <a class="dg-nav-item" href="/">{{ t('staff.storefront') }}</a>
+            <a class="mini-store-staff-nav-item mini-store-staff-storefront-link" href="/">{{ t('staff.storefront') }}</a>
         </nav>
-        <div class="dg-actions">
+        <div class="mini-store-staff-preferences">
         <div class="mini-store-theme-picker">
             <label for="mini-store-theme">{{ t('theme.label') }}</label>
             <select id="mini-store-theme" class="dg-input mini-store-theme-select" data-theme-select>
@@ -76,17 +81,19 @@
             <form method="post" action="/language">
                 <input type="hidden" name="language" value="en">
                 <input type="hidden" name="redirect" value="{{ languageRedirect }}">
-                <button class="dg-button" type="submit">EN</button>
+                <button class="mini-store-staff-language{{ languageEnClass }}" type="submit">EN</button>
             </form>
             <form method="post" action="/language">
                 <input type="hidden" name="language" value="de">
                 <input type="hidden" name="redirect" value="{{ languageRedirect }}">
-                <button class="dg-button" type="submit">DE</button>
+                <button class="mini-store-staff-language{{ languageDeClass }}" type="submit">DE</button>
             </form>
         </div>
     </aside>
-    <main class="dg-main" data-staff-content>
-        <div class="dg-page"><div class="dg-page-content">@content</div></div>
+    <main class="mini-store-staff-main" data-staff-content>
+        <div class="mini-store-staff-page">
+            <div class="mini-store-staff-content">@content</div>
+        </div>
     </main>
 </div>
     {{{ serviceWorkerRegistration }}}

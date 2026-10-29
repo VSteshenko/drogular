@@ -14,7 +14,12 @@ public:
         const std::string& languageRedirect
     ) {
         drogular::PageSupport::apply(context, context.translate(titleKey));
-        context.set("locale", drogular::LocaleSupport::current(context));
+        const auto locale = drogular::LocaleSupport::current(context);
+        context.set("locale", locale);
+        context.set("languageEnClass",
+                    locale == "en" ? std::string(" is-active") : std::string{});
+        context.set("languageDeClass",
+                    locale == "de" ? std::string(" is-active") : std::string{});
         context.set("languageRedirect", languageRedirect);
     }
 };

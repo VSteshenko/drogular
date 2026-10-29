@@ -1,9 +1,9 @@
-<header class="dg-page-header">
+<header class="mini-store-staff-list-header">
     <div>
-        <p class="dg-page-kicker">{{ t('staff.catalog') }}</p>
-        <h1 class="dg-page-title">{{ t('staff.categories.title') }}</h1>
+        <p class="mini-store-staff-kicker">{{ t('staff.catalog') }}</p>
+        <h1 class="mini-store-staff-title">{{ t('staff.categories.title') }}</h1>
     </div>
-    <a class="dg-button dg-button-primary"
+    <a class="mini-store-staff-primary-action"
        href="/staff/categories/new"
        dg-get="/fragments/staff/categories/new"
        dg-trigger="click"
@@ -13,25 +13,25 @@
         {{ t('staff.category.new') }}
     </a>
 </header>
-<div class="dg-card">
-    <div class="dg-card-body">
-        <table class="dg-table">
+<div class="mini-store-staff-table-surface">
+    <div class="mini-store-staff-table-scroll">
+        <table class="mini-store-staff-table mini-store-staff-categories-table">
             <thead>
             <tr>
                 <th>Slug</th>
                 <th>{{ t('staff.language.english') }}</th>
                 <th>{{ t('staff.language.german') }}</th>
-                <th></th>
+                <th><span class="mini-store-visually-hidden">{{ t('staff.edit') }}</span></th>
             </tr>
             </thead>
             <tbody>
 @foreach(category in categoryRows)
             <tr>
-                <td>{{ category.slug }}</td>
-                <td>{{ category.nameEn }}</td>
-                <td>{{ category.nameDe }}</td>
-                <td>
-                    <a class="dg-button"
+                <td><span class="mini-store-staff-code">{{ category.slug }}</span></td>
+                <td class="mini-store-staff-name">{{ category.nameEn }}</td>
+                <td class="mini-store-staff-name">{{ category.nameDe }}</td>
+                <td class="mini-store-staff-row-action">
+                    <a class="mini-store-staff-secondary-action"
                        href="/staff/categories/{{ category.id }}/edit"
                        dg-get="/fragments/staff/categories/{{ category.id }}/edit"
                        dg-trigger="click"
