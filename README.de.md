@@ -196,20 +196,19 @@ Die Anleitung [Getting Started](docs/getting-started/README.md) erläutert die e
 
 ---
 
-## Neu in Version 0.23
+## Neu in Version 0.24
 
-Drogular 0.23 überführt die Experimente mit servergesteuerten Benutzeroberflächen aus System Monitor und PortalDemo in wiederverwendbare Framework-Funktionen.
+Drogular 0.24 erweitert das Modell für servergesteuerte Anwendungen um dateibasierte Lokalisierung, Übersetzungsvalidierung, eine persistente PortalDemo-Anwendungsshell und die neue Mini-Store-Referenzanwendung.
 
-- ⚡ Drogular Interactions für deklarative GET-/POST-Abläufe mit Fragmenten, Aktualisierungs- und Navigations-Hooks, History, Retry und Offline-Unterstützung
-- 🎨 Drogular UI als optionale gemeinsame Grundlage für Anwendungslayouts, Navigation, Formulare, Tabellen, Karten, Statusanzeigen und responsive Layouts
-- 🧩 `ActionRenderer` und gemeinsamer Request-Kontext für konsistentes Rendering von Action → Component und echte Request-Scoped-Dienste
-- 📴 Offline Read Models mit zwischengespeicherten serverseitig gerenderten Ansichten, Offline-Navigation, sprachabhängiger Identität und Schutz vor schreibenden Offline-Aktionen
-- 🛠 Aggregierte Laufzeitdiagnose für Requests, Actions, Rendering, Interactions und die Auflösung von Scoped-Diensten, verfügbar über Application Inspection und Developer Tools
-- 🏗 Migration von Projects, Departments, Roles, Project Types und Offline-Leseabläufen in PortalDemo auf die neuen APIs
-- 📊 Migration von System Monitor auf die Framework-APIs für Interactions und UI
-- 🧠 Überarbeitung der Template Engine mit semantischer AST-Kompilierung, ganzzahligen Ausdruckswerten, Trennung von Parser und Laufzeit sowie Diagnose für benutzerdefinierte Funktionen
+- 🌐 `FileTranslationProvider` für externe JSON-Übersetzungskataloge mit deterministischer Fallback-Reihenfolge: angeforderte Sprache → Standardsprache → Schlüssel
+- ✅ `drogular-l10n-check` sowie CTest-/CI-Prüfungen für fehlende und zusätzliche Übersetzungsschlüssel
+- 🏗 PortalDemo-Anwendungsrahmen mit persistentem Header, Sidebar-Navigation und unabhängig austauschbarem Inhaltsbereich
+- 📋 Darstellung aktueller Projektarbeit im PortalDemo-Dashboard; eine umfassendere Aufgabenmodellierung bleibt für 0.25 geplant
+- 🛍 Mini-Store-Referenzanwendung mit lokalisierten Storefront- und Staff-Bereichen, Katalog, Warenkorb, Checkout, Bestandsprüfung, Produkt-/Kategorieverwaltung und Bestellworkflow
+- ⚡ Mini Store als Referenz für Drogular UI, Interactions, kanonische/History-Navigation, Themes sowie PWA-/Offline-Verhalten
+- 🧪 Erweiterte Regressionstests auf Anwendungsebene für Mini-Store-Abläufe und Lokalisierungsverträge
 
-Vollständige Versionshinweise: [RELEASE_NOTES_0.23.md](RELEASE_NOTES_0.23.md).
+Vollständige Versionshinweise: [RELEASE_NOTES_0.24.md](RELEASE_NOTES_0.24.md).
 
 ---
 
@@ -221,45 +220,11 @@ Vollständige Versionshinweise: [RELEASE_NOTES_0.23.md](RELEASE_NOTES_0.23.md).
 - 📚 [API Reference](docs/reference/README.md)
 - 🧩 [Examples](examples/)
 - 🚀 [PortalDemo – Referenzanwendung](examples/portal_demo/)
+- 🛍 [Mini Store – Referenzanwendung](examples/mini_store/)
 
 ---
 
 ## Roadmap
-
-### 0.24 — Lokalisierung und Anwendungserlebnis
-
-Drogular 0.24 baut auf den Grundlagen für servergesteuerte Benutzeroberflächen aus Version 0.23 auf. Im Mittelpunkt stehen verbesserte Lokalisierungswerkzeuge, eine stärker an realen Anwendungen orientierte PortalDemo-Oberfläche und eine zweite Referenzanwendung.
-
-**Lokalisierung**
-
-- Übersetzungen aus externen JSON-Dateien über `FileTranslationProvider` laden
-- Deterministische Fallback-Reihenfolge: angeforderte Sprache → Standardsprache → Schlüssel
-- Übersetzungskataloge mit dem eigenständigen Werkzeug `drogular-l10n-check` prüfen
-- Fehlende und zusätzliche Schlüssel gegenüber einer Referenzsprache melden
-- Vollständige Übersetzungskataloge der Beispiele über CTest/CI sicherstellen
-
-**Anwendungserlebnis in PortalDemo**
-
-- Seiteninhalte in einen eigenen Anwendungsbereich auslagern
-- Den Header dauerhaft am oberen Rand anzeigen
-- Die Hauptnavigation in einer dauerhaft sichtbaren linken Seitenleiste halten
-- Den Inhaltsbereich über Drogular Interactions unabhängig austauschbar machen
-- Responsives Verhalten auf kleineren Bildschirmen erhalten
-
-**Dashboard-Aufgaben**
-
-- Aktuelle Projektaufgaben im PortalDemo-Dashboard anzeigen
-- Den vorhandenen Projektstatus für eine kompakte Übersicht der aktuellen Arbeit wiederverwenden
-- Das Dashboard auf die Darstellung aktueller Arbeit konzentrieren; eine umfassendere Aufgabenmodellierung wird auf 0.25 verschoben
-
-**Mini-Store-Beispiel**
-
-- Einen lokalisierten kundenorientierten Mini-Store als zweite Referenzanwendung hinzufügen
-- Produktkatalog mit Kategorien, Suche, Filtern, Sortierung und Produktdetails
-- Sitzungsbasierter Warenkorb, Checkout, Bestellbestätigung und Bestandsprüfung
-- Staff-Dashboard mit Produkt-/Kategorieverwaltung und Bestellworkflow von New über Processing bis Completed
-- Externe EN/DE-Übersetzungsdateien als Akzeptanztest für die Lokalisierungs-API verwenden
-- Drogular UI, Interactions, kanonische/History-Navigation, Themes sowie PWA-/Offline-Verhalten in Storefront und Staff erproben
 
 ### 0.25 — Client- und Offline-Lokalisierung
 

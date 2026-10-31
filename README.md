@@ -198,20 +198,19 @@ The [Getting Started](docs/getting-started/README.md) guide adds the required CM
 
 ---
 
-## What's New in 0.23
+## What's New in 0.24
 
-Drogular 0.23 turns the server-driven UI experiments from System Monitor and PortalDemo into reusable framework capabilities.
+Drogular 0.24 expands the server-driven application model with file-backed localization, translation validation, a persistent PortalDemo application shell, and the new Mini Store reference application.
 
-- ⚡ Drogular Interactions for declarative fragment GET/POST flows, refresh/navigation hooks, history, retry, and offline-aware behavior
-- 🎨 Drogular UI as an optional shared foundation for application shells, navigation, forms, tables, cards, status, and responsive layouts
-- 🧩 `ActionRenderer` and shared request context for consistent Action → Component rendering and true request-scoped services
-- 📴 Offline Read Models with cached server-rendered representations, offline navigation, locale-aware identity, and read-only mutation protection
-- 🛠 Aggregate runtime diagnostics for requests, actions, rendering, Interactions, and scoped service resolution, exposed through Application Inspection and Developer Tools
-- 🏗 PortalDemo migration of Projects, Departments, Roles, Project Types, and offline read flows to the new APIs
-- 📊 System Monitor migration to the framework-level Interactions and UI APIs
-- 🧠 Template Engine cleanup with semantic AST compilation, integer expression values, parser/runtime decomposition, and custom-function diagnostics
+- 🌐 `FileTranslationProvider` for external JSON translation catalogs with deterministic requested-locale → default-locale → key fallback
+- ✅ `drogular-l10n-check` plus CTest/CI catalog validation for missing and extra translation keys
+- 🏗 PortalDemo application frame with persistent header/sidebar navigation and an independently replaceable content area
+- 📋 PortalDemo dashboard presentation for current project work, while richer task modeling remains planned for 0.25
+- 🛍 Mini Store reference application with localized Storefront and Staff surfaces, catalog, cart, checkout, stock validation, product/category management, and order workflow
+- ⚡ Mini Store coverage of Drogular UI, Interactions, canonical/history navigation, themes, and PWA/offline behavior
+- 🧪 Expanded application-level regression coverage for the Mini Store flows and localization contracts
 
-See [RELEASE_NOTES_0.23.md](RELEASE_NOTES_0.23.md) for the complete release notes.
+See [RELEASE_NOTES_0.24.md](RELEASE_NOTES_0.24.md) for the complete release notes.
 
 ---
 
@@ -223,45 +222,11 @@ See [RELEASE_NOTES_0.23.md](RELEASE_NOTES_0.23.md) for the complete release note
 - 📚 [API Reference](docs/reference/README.md)
 - 🧩 [Examples](examples/)
 - 🚀 [PortalDemo Reference Application](examples/portal_demo/)
+- 🛍 [Mini Store Reference Application](examples/mini_store/)
 
 ---
 
 ## Roadmap
-
-### 0.24 — Localization & Application Experience
-
-Drogular 0.24 will build on the 0.23 server-driven UI foundations with stronger localization tooling, a more application-oriented PortalDemo shell, and a second reference application.
-
-**Localization**
-
-- Load translations from external JSON files through `FileTranslationProvider`
-- Use deterministic requested-locale → default-locale → key fallback behavior
-- Validate catalogs with the standalone `drogular-l10n-check` utility
-- Report missing and extra keys relative to a reference locale
-- Enforce complete example catalogs through CTest/CI
-
-**PortalDemo application experience**
-
-- Move page content into a dedicated application frame
-- Keep the application header persistent at the top
-- Keep primary navigation in a persistent left sidebar
-- Make the content area independently replaceable through Drogular Interactions
-- Preserve responsive behavior for smaller screens
-
-**Dashboard tasks**
-
-- Add current project tasks to the PortalDemo dashboard
-- Reuse project status to provide a compact current-work summary
-- Keep the dashboard focused on presentation of current work; richer task modeling moves to 0.25
-
-**Mini Store example**
-
-- Add a localized customer-facing mini store as a second reference application
-- Product catalog with categories, search, filters, sorting, and product details
-- Session-backed cart, checkout, order confirmation, and stock validation
-- Staff dashboard with product/category management and an order workflow from New to Processing to Completed
-- Use external EN/DE translation files as an acceptance test for the localization API
-- Exercise Drogular UI, Interactions, canonical/history navigation, themes, and PWA/offline behavior across Storefront and Staff surfaces
 
 ### 0.25 — Client & Offline Localization
 
