@@ -119,6 +119,7 @@ Rather than being a collection of isolated examples, PortalDemo shows how these 
 | Repository Sample | Repository pattern and data access |
 | System Monitor PWA | Live server-rendered fragments, PWA behavior, and remote/system hardware monitoring |
 | PortalDemo | Complete reference application architecture |
+| Mini Store | Localized storefront and staff workflows, cart/checkout, order lifecycle, Interactions, and PWA behavior |
 
 ---
 
@@ -249,17 +250,18 @@ Drogular 0.24 will build on the 0.23 server-driven UI foundations with stronger 
 
 **Dashboard tasks**
 
-- Add current tasks to the PortalDemo dashboard
-- Model task status and priority rather than using presentation-only demo data
-- Add summary views and Interaction-based task updates
+- Add current project tasks to the PortalDemo dashboard
+- Reuse project status to provide a compact current-work summary
+- Keep the dashboard focused on presentation of current work; richer task modeling moves to 0.25
 
 **Mini Store example**
 
-- Add a customer-facing mini store as a second reference application
-- Product catalog, categories, search, filters, pagination, and product details
-- Shopping cart state without introducing payment or order-processing scope
-- Use external translation files as an acceptance test for the new localization API
-- Exercise Drogular UI and Interactions in a public, non-admin application
+- Add a localized customer-facing mini store as a second reference application
+- Product catalog with categories, search, filters, sorting, and product details
+- Session-backed cart, checkout, order confirmation, and stock validation
+- Staff dashboard with product/category management and an order workflow from New to Processing to Completed
+- Use external EN/DE translation files as an acceptance test for the localization API
+- Exercise Drogular UI, Interactions, canonical/history navigation, themes, and PWA/offline behavior across Storefront and Staff surfaces
 
 ### 0.25 — Client & Offline Localization
 
@@ -276,6 +278,8 @@ source of translation truth.
 - Add version/hash-based invalidation so localization resources can be refreshed independently of the application shell
 - Reuse the same translation data across server rendering, online Interactions, and Offline UI
 - Add a first-class Return URL / Navigation Context API for safe return-target parsing, propagation, URL encoding, and redirects across RenderContext and ActionContext
+- Extend PortalDemo task modeling with first-class task status and priority instead of presentation-only current-work data
+- Add task summary views and Interaction-based task updates
 
 ### 0.26 — Background Jobs & Progress
 

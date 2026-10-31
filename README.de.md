@@ -119,6 +119,7 @@ PortalDemo ist keine Sammlung isolierter Beispiele, sondern zeigt, wie diese Fun
 | Repository Sample | Repository-Muster und Datenzugriff |
 | System Monitor PWA | Serverseitig gerenderte Live-Fragmente, PWA-Verhalten und Fernüberwachung von System und Hardware |
 | PortalDemo | Vollständige Architektur einer Referenzanwendung |
+| Mini Store | Lokalisierter Storefront- und Staff-Workflow, Warenkorb/Checkout, Bestelllebenszyklus, Interactions und PWA-Verhalten |
 
 ---
 
@@ -247,17 +248,18 @@ Drogular 0.24 baut auf den Grundlagen für servergesteuerte Benutzeroberflächen
 
 **Dashboard-Aufgaben**
 
-- Aktuelle Aufgaben zum PortalDemo-Dashboard hinzufügen
-- Aufgabenstatus und Priorität modellieren, statt ausschließlich präsentationsbezogene Demodaten zu verwenden
-- Übersichtsansichten und Aufgabenaktualisierungen auf Basis von Interactions ergänzen
+- Aktuelle Projektaufgaben im PortalDemo-Dashboard anzeigen
+- Den vorhandenen Projektstatus für eine kompakte Übersicht der aktuellen Arbeit wiederverwenden
+- Das Dashboard auf die Darstellung aktueller Arbeit konzentrieren; eine umfassendere Aufgabenmodellierung wird auf 0.25 verschoben
 
 **Mini-Store-Beispiel**
 
-- Einen kundenorientierten Mini-Store als zweite Referenzanwendung hinzufügen
-- Produktkatalog, Kategorien, Suche, Filter, Paginierung und Produktdetails
-- Warenkorbzustand ohne Integration von Zahlungen oder Bestellabwicklung
-- Externe Übersetzungsdateien als Akzeptanztest für die neue Lokalisierungs-API verwenden
-- Drogular UI und Interactions in einer öffentlichen Anwendung ohne Administrationsschwerpunkt erproben
+- Einen lokalisierten kundenorientierten Mini-Store als zweite Referenzanwendung hinzufügen
+- Produktkatalog mit Kategorien, Suche, Filtern, Sortierung und Produktdetails
+- Sitzungsbasierter Warenkorb, Checkout, Bestellbestätigung und Bestandsprüfung
+- Staff-Dashboard mit Produkt-/Kategorieverwaltung und Bestellworkflow von New über Processing bis Completed
+- Externe EN/DE-Übersetzungsdateien als Akzeptanztest für die Lokalisierungs-API verwenden
+- Drogular UI, Interactions, kanonische/History-Navigation, Themes sowie PWA-/Offline-Verhalten in Storefront und Staff erproben
 
 ### 0.25 — Client- und Offline-Lokalisierung
 
@@ -273,6 +275,8 @@ Das in Version 0.24 eingeführte serverseitige Lokalisierungsmodell auf Client- 
 - Versions-/Hash-basierte Invalidierung hinzufügen, damit Sprachressourcen unabhängig von der Anwendungsshell aktualisiert werden können
 - Dieselben Übersetzungsdaten für serverseitiges Rendering, Online-Interactions und Offline-UI wiederverwenden
 - Eine erstklassige Return-URL-/Navigation-Context-API für sichere Verarbeitung und Weitergabe von Rücksprungzielen, URL-Kodierung und Weiterleitungen in `RenderContext` und `ActionContext` hinzufügen
+- Die Aufgabenmodellierung in PortalDemo um erstklassigen Aufgabenstatus und Priorität erweitern, statt nur präsentationsbezogene Daten zur aktuellen Arbeit zu verwenden
+- Aufgabenübersichten und Aufgabenaktualisierungen auf Basis von Interactions ergänzen
 
 ### 0.26 — Hintergrundaufgaben und Fortschritt
 
