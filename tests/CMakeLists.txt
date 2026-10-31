@@ -126,6 +126,7 @@ target_include_directories(drogular_tests
 
 add_executable(drogular_mini_store_tests
     mini_store/mini_store_store_tests.cpp
+    mini_store/mini_store_application_tests.cpp
 )
 
 target_compile_definitions(drogular_mini_store_tests
