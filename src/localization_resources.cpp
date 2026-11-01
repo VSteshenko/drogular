@@ -8,6 +8,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
     let manifestValue = null;
     let activeLocale = null;
     const resources = new Map();
+    const CACHE_NAME = 'drogular-localization-v1';
 
     const requireObject = (value, name) => {
         if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -37,12 +38,49 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         return manifest;
     };
 
-    const fetchJson = async (url) => {
-        const response = await fetch(url, { headers: { Accept: 'application/json' } });
-        if (!response.ok) {
-            throw new Error(`Localization request failed: ${response.status} ${url}`);
+    const cacheAvailable = () => typeof caches !== 'undefined';
+
+    const versionedUrl = (url, version) => {
+        if (!version) return url;
+        const value = new URL(url, globalThis.location?.href || 'http://localhost/');
+        value.searchParams.set('dg-l10n-version', version);
+        return value.toString();
+    };
+
+    const fetchJson = async (url, { cacheKey = url } = {}) => {
+        const request = new Request(url, { headers: { Accept: 'application/json' } });
+        try {
+            const response = await fetch(request);
+            if (!response.ok) {
+                throw new Error(`Localization request failed: ${response.status} ${url}`);
+            }
+            if (cacheAvailable()) {
+                const cache = await caches.open(CACHE_NAME);
+                await cache.put(cacheKey, response.clone());
+            }
+            return response.json();
+        } catch (error) {
+            if (!cacheAvailable()) throw error;
+            const cache = await caches.open(CACHE_NAME);
+            const cached = await cache.match(cacheKey);
+            if (!cached) throw error;
+            return cached.json();
         }
-        return response.json();
+    };
+
+    const pruneLocalizationCache = async (manifest) => {
+        if (!cacheAvailable()) return;
+        const cache = await caches.open(CACHE_NAME);
+        const keep = new Set([
+            new URL(manifestUrl, globalThis.location?.href || 'http://localhost/').toString(),
+            ...Object.values(manifest.locales).map(descriptor =>
+                versionedUrl(descriptor.url, descriptor.version)
+            ),
+        ]);
+        const keys = await cache.keys();
+        await Promise.all(keys.map(request =>
+            keep.has(request.url) ? Promise.resolve(false) : cache.delete(request)
+        ));
     };
 
     const loadManifest = async ({ force = false } = {}) => {
@@ -53,9 +91,14 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
 
         const next = validateManifest(await fetchJson(manifestUrl));
         if (manifestValue?.version !== next.version) {
-            resources.clear();
+            for (const [locale, resource] of resources.entries()) {
+                if (next.locales[locale]?.version !== resource.version) {
+                    resources.delete(locale);
+                }
+            }
         }
         manifestValue = next;
+        await pruneLocalizationCache(next);
         return manifestValue;
     };
 
@@ -67,8 +110,9 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         const cached = resources.get(locale);
         if (cached?.version === descriptor.version) return cached;
 
+        const resourceUrl = versionedUrl(descriptor.url, descriptor.version);
         const resource = requireObject(
-            await fetchJson(descriptor.url),
+            await fetchJson(resourceUrl, { cacheKey: resourceUrl }),
             `resource: ${locale}`
         );
         if (resource.locale !== locale) {
@@ -146,6 +190,7 @@ constexpr std::string_view Script = R"DROGULAR_JS((() => {
         locale: () => activeLocale,
         defaultLocale: () => manifestValue?.defaultLocale || null,
         manifest: () => manifestValue,
+        cacheName: () => CACHE_NAME,
     });
 
     globalThis.drogularLocalization = api;

@@ -73,3 +73,66 @@ TEST(LocalizationResourcesTests, ExposesExplicitRuntimeApi) {
         std::string::npos
     );
 }
+
+TEST(LocalizationResourcesTests, PersistsLocalizationResponsesForOfflineUse) {
+    const std::string script(drogular::localization_resources::script());
+
+    EXPECT_NE(
+        script.find("const CACHE_NAME = 'drogular-localization-v1'"),
+        std::string::npos
+    );
+    EXPECT_NE(script.find("await caches.open(CACHE_NAME)"), std::string::npos);
+    EXPECT_NE(
+        script.find("await cache.put(cacheKey, response.clone())"),
+        std::string::npos
+    );
+    EXPECT_NE(
+        script.find("const cached = await cache.match(cacheKey)"),
+        std::string::npos
+    );
+}
+
+TEST(LocalizationResourcesTests, UsesVersionedLocaleCacheKeys) {
+    const std::string script(drogular::localization_resources::script());
+
+    EXPECT_NE(
+        script.find("value.searchParams.set('dg-l10n-version', version)"),
+        std::string::npos
+    );
+    EXPECT_NE(
+        script.find("versionedUrl(descriptor.url, descriptor.version)"),
+        std::string::npos
+    );
+}
+
+TEST(LocalizationResourcesTests, RetainsUnchangedLocaleResourcesAcrossManifestUpdates) {
+    const std::string script(drogular::localization_resources::script());
+
+    EXPECT_NE(
+        script.find("next.locales[locale]?.version !== resource.version"),
+        std::string::npos
+    );
+    const auto loadManifest = script.find("const loadManifest");
+    const auto loadResource = script.find("const loadResource");
+    ASSERT_NE(loadManifest, std::string::npos);
+    ASSERT_NE(loadResource, std::string::npos);
+    EXPECT_EQ(
+        script.substr(loadManifest, loadResource - loadManifest)
+            .find("resources.clear();"),
+        std::string::npos
+    );
+}
+
+TEST(LocalizationResourcesTests, PrunesSupersededPersistentLocaleVersions) {
+    const std::string script(drogular::localization_resources::script());
+
+    EXPECT_NE(
+        script.find("const pruneLocalizationCache = async"),
+        std::string::npos
+    );
+    EXPECT_NE(script.find("const keys = await cache.keys()"), std::string::npos);
+    EXPECT_NE(
+        script.find("keep.has(request.url) ? Promise.resolve(false) : cache.delete(request)"),
+        std::string::npos
+    );
+}
