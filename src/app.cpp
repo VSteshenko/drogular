@@ -4,6 +4,7 @@
 #include <drogular/developer_tools/diagnostics_resources.hpp>
 #include <drogular/developer_tools/runtime_diagnostics_contributor.hpp>
 #include <drogular/interactions_resources.hpp>
+#include <drogular/localization_resources.hpp>
 #include <drogular/ui_resources.hpp>
 
 #include <drogon/drogon.h>
@@ -214,6 +215,34 @@ App& App::interactions() {
 App& App::offlineReadModels() {
     options_.setOfflineReadModelsEnabled(true);
     return interactions();
+}
+
+App& App::clientLocalization() {
+    if (clientLocalizationEnabled_) {
+        return *this;
+    }
+
+    drogon::app().registerHandler(
+        std::string(localization_resources::ScriptPath),
+        [](
+            const drogon::HttpRequestPtr&,
+            std::function<void(const drogon::HttpResponsePtr&)>&& callback
+        ) {
+            auto response = drogon::HttpResponse::newHttpResponse();
+            response->addHeader(
+                "Content-Type",
+                "text/javascript; charset=utf-8"
+            );
+            response->setBody(
+                std::string(localization_resources::script())
+            );
+            callback(response);
+        },
+        {drogon::Get}
+    );
+
+    clientLocalizationEnabled_ = true;
+    return *this;
 }
 
 App& App::ui() {

@@ -35,6 +35,7 @@ add_executable(drogular_tests
     core/core_form_validator_tests.cpp
     core/core_inject_tests.cpp
     core/core_locale_support_tests.cpp
+    core/core_localization_resources_tests.cpp
     core/core_pwa_scripts_tests.cpp
     core/core_pwa_html_tests.cpp
     core/core_pwa_page_support_tests.cpp

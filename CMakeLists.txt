@@ -58,6 +58,7 @@ add_library(drogular
     src/pwa_html.cpp
     src/pwa_page_support.cpp
     src/locale_support.cpp
+    src/localization_resources.cpp
     src/router.cpp
     src/runtime_diagnostics.cpp
     src/route_pattern.cpp

@@ -377,6 +377,15 @@ public:
     App& offlineReadModels();
 
     /**
+     * Enables the built-in client localization browser runtime.
+     *
+     * The runtime is served from /__drogular/assets/localization.js.
+     * Applications configure it with the URL of a ClientLocalizationManifest.
+     * Calling this method more than once is safe.
+     */
+    App& clientLocalization();
+
+    /**
      * Enables the built-in Drogular UI resources.
      *
      * The stylesheet is served from /__drogular/assets/ui.css and the
@@ -428,6 +437,7 @@ private:
     bool developerToolsEnabled_ = false;
     bool inspectionEnabled_ = false;
     bool interactionsEnabled_ = false;
+    bool clientLocalizationEnabled_ = false;
     bool uiEnabled_ = false;
     bool diagnosticsPageEnabled_ = false;
     std::shared_ptr<ApplicationInspectionController> inspectionController_;
