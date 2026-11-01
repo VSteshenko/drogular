@@ -69,11 +69,14 @@ jobs:
           git clone --depth 1 https://github.com/drogonframework/drogon.git
           cd drogon
           git submodule update --init --recursive --depth 1
+          OPENSSL_ROOT="$(brew --prefix openssl@3)"
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_EXAMPLES=OFF \
             -DBUILD_CTL=OFF \
-            -DBUILD_ORM=OFF
+            -DBUILD_ORM=OFF \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            -DCMAKE_PREFIX_PATH="$OPENSSL_ROOT"
           cmake --build build
           sudo cmake --install build
 
