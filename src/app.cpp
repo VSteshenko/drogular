@@ -192,10 +192,7 @@ App& App::interactions() {
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
             auto response = drogon::HttpResponse::newHttpResponse();
-            response->addHeader(
-                "Content-Type",
-                "text/javascript; charset=utf-8"
-            );
+            response->setContentTypeString("text/javascript; charset=utf-8");
             const auto offlineEnabled =
                 options_.offlineReadModelsEnabled() ? "true" : "false";
             response->setBody(
@@ -229,10 +226,7 @@ App& App::clientLocalization() {
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
             auto response = drogon::HttpResponse::newHttpResponse();
-            response->addHeader(
-                "Content-Type",
-                "text/javascript; charset=utf-8"
-            );
+            response->setContentTypeString("text/javascript; charset=utf-8");
             response->setBody(
                 std::string(localization_resources::script())
             );
@@ -257,10 +251,7 @@ App& App::ui() {
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
             auto response = drogon::HttpResponse::newHttpResponse();
-            response->addHeader(
-                "Content-Type",
-                "text/css; charset=utf-8"
-            );
+            response->setContentTypeString("text/css; charset=utf-8");
             response->setBody(
                 std::string(ui_resources::stylesheet())
             );
@@ -276,10 +267,7 @@ App& App::ui() {
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
             auto response = drogon::HttpResponse::newHttpResponse();
-            response->addHeader(
-                "Content-Type",
-                "text/javascript; charset=utf-8"
-            );
+            response->setContentTypeString("text/javascript; charset=utf-8");
             response->setBody(
                 std::string(ui_resources::script())
             );
@@ -339,7 +327,7 @@ App& App::enableDiagnosticsPage() {
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
             auto response = drogon::HttpResponse::newHttpResponse();
-            response->addHeader("Content-Type", "text/css; charset=utf-8");
+            response->setContentTypeString("text/css; charset=utf-8");
             response->setBody(
                 std::string(diagnostics_resources::stylesheet())
             );
@@ -356,7 +344,7 @@ App& App::enableDiagnosticsPage() {
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
             auto response = drogon::HttpResponse::newHttpResponse();
-            response->addHeader("Content-Type", "text/javascript; charset=utf-8");
+            response->setContentTypeString("text/javascript; charset=utf-8");
             response->setBody(
                 std::string(diagnostics_resources::script())
             );

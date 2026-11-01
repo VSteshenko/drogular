@@ -4,6 +4,10 @@
 #include <gtest/gtest.h>
 
 #include <string_view>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <string>
 
 TEST(UiResourcesTests, ShipsPresentationPrimitives) {
     const auto css = drogular::ui_resources::stylesheet();
@@ -149,4 +153,29 @@ TEST(UiResourcesTests, UiAndInteractionsCanBeEnabledIndependently) {
 
     EXPECT_NO_THROW(uiOnly.ui());
     EXPECT_NO_THROW(interactionsOnly.interactions());
+}
+
+// Regression: Drogon emits its own Content-Type for newHttpResponse().
+// addHeader("Content-Type", ...) would append a second MIME header, which
+// strict browsers such as Safari reject for stylesheets.
+TEST(UiResourcesTests, FrameworkAssetHandlersDoNotAppendContentType) {
+    const auto sourcePath =
+        std::filesystem::path(__FILE__).parent_path().parent_path().parent_path()
+        / "src" / "app.cpp";
+    std::ifstream source(sourcePath);
+    ASSERT_TRUE(source.is_open()) << sourcePath;
+    const std::string body(
+        (std::istreambuf_iterator<char>(source)),
+        std::istreambuf_iterator<char>()
+    );
+    EXPECT_EQ(body.find("addHeader(\"Content-Type\""), std::string::npos);
+    EXPECT_EQ(body.find("\"Content-Type\",\n"), std::string::npos);
+    EXPECT_NE(
+        body.find("setContentTypeString(\"text/css; charset=utf-8\")"),
+        std::string::npos
+    );
+    EXPECT_NE(
+        body.find("setContentTypeString(\"text/javascript; charset=utf-8\")"),
+        std::string::npos
+    );
 }
