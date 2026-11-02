@@ -1,6 +1,7 @@
 #include "startup/portal_demo_startup.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/localization/actions/language_action.hpp"
+#include "features/localization/actions/client_localization_actions.hpp"
 #include "features/theme/actions/theme_action.hpp"
 #include "features/diagnostics/portal_inspection_contributor.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
@@ -116,6 +117,8 @@ int main(
            "portal.summary",
            "/assets/portal-inspection.js"
        );
+
+    app.clientLocalization();
 
     app.expressionFunction(
         "t",
@@ -258,6 +261,8 @@ int main(
     app.get<PortalPageFragmentAction<PortalDepartmentEditPage>>("/fragments/pages/departments/{id}/edit");
     app.get<PortalPageFragmentAction<PortalProjectDetailsPage>>("/fragments/pages/projects/{id}");
     app.get<PortalPageFragmentAction<PortalProjectEditPage>>("/fragments/pages/projects/{id}/edit");
+    app.get<PortalLocalizationManifestAction>("/assets/localization/manifest.json");
+    app.get<PortalLocalizationResourceAction>("/assets/localization/{locale}");
     app.action<PortalLanguageAction>("/language");
     app.action<PortalThemeAction>("/theme");
     app.action<PortalLoginAction>("/login");

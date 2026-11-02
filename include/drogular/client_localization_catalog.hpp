@@ -54,11 +54,13 @@ public:
     ClientLocalizationCatalog(
         Catalog catalog,
         std::string defaultLocale,
-        std::string resourceBasePath = "/assets/localization"
+        std::string resourceBasePath = "/assets/localization",
+        std::string resourceSuffix = ".json"
     );
 
     const std::string& defaultLocale() const noexcept;
     const std::string& resourceBasePath() const noexcept;
+    const std::string& resourceSuffix() const noexcept;
     const std::string& version() const noexcept;
 
     ClientLocalizationManifest manifest() const;
@@ -69,6 +71,7 @@ private:
     Catalog catalog_;
     std::string defaultLocale_;
     std::string resourceBasePath_;
+    std::string resourceSuffix_;
     std::map<std::string, std::string> localeVersions_;
     std::string version_;
 };

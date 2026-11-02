@@ -4,8 +4,35 @@
     // are owned by Drogular Interactions; this file renders Portal-specific UX.
     const locale = () => document.documentElement.lang || "en";
 
-    const message = (name, fallback) =>
-        document.querySelector("[data-dg-offline-read-i18n]")?.getAttribute(`data-${name}`) || fallback;
+    const localization = globalThis.drogularLocalization;
+    if (localization) {
+        localization.configure({
+            manifestUrl: "/assets/localization/manifest.json",
+        });
+    }
+    const localizationReady = localization
+        ? localization.ready(locale()).catch(() => {})
+        : Promise.resolve();
+
+    const messageKeys = {
+        "history-title": "offline.cached_filters",
+        page: "offline.page",
+        pages: "offline.pages",
+        cached: "offline.cached",
+        "cached-just-now": "offline.cached_just_now",
+        "cached-minutes": "offline.cached_minutes",
+        "cached-hours": "offline.cached_hours",
+        "cached-days": "offline.cached_days",
+        saved: "offline.saved",
+        status: "offline.read_only_status",
+    };
+
+    const message = (name, fallback) => {
+        const key = messageKeys[name];
+        if (!localization || !key) return fallback;
+        const translated = localization.translate(key);
+        return translated === key ? fallback : translated;
+    };
 
     const frameworkRepresentations = async () => {
         const api = globalThis.drogularOfflineReadModels;
@@ -87,7 +114,7 @@
         }
         return parts.length
             ? parts.join(" · ")
-            : (element.getAttribute("dg-offline-read-empty-label") || message("empty-label", "All items"));
+            : (localization?.translate(element.getAttribute("dg-offline-read-empty-key") || "") || "All items");
     };
 
     const applyHistoryRecord = (element, record) => {
@@ -236,7 +263,15 @@
         renderFrameworkOfflineState(event.detail || {}).catch(() => {});
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("dg:locale-changed", () => {
+        document.querySelectorAll("[data-dg-offline-read-history]").forEach((element) => element.remove());
+        document.querySelectorAll("[dg-get][dg-offline-read]").forEach((element) => {
+            renderHistory(element).catch(() => {});
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        await localizationReady;
         document.querySelectorAll("[dg-get][dg-offline-read]").forEach((element) => {
             renderHistory(element).catch(() => {});
         });

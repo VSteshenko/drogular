@@ -102,3 +102,18 @@ TEST(ClientLocalizationCatalogTests, RejectsUnknownLocaleResource) {
     EXPECT_FALSE(catalog.hasLocale("de"));
     EXPECT_THROW(catalog.resource("de"), std::out_of_range);
 }
+
+TEST(ClientLocalizationCatalogTests, SupportsResourcesWithoutFileSuffix) {
+    drogular::ClientLocalizationCatalog catalog(
+        {{{"en", {{"hello", "Hello"}}}}},
+        "en",
+        "/assets/localization",
+        ""
+    );
+
+    EXPECT_EQ(catalog.resourceSuffix(), "");
+    EXPECT_EQ(
+        catalog.manifest().locales.at("en").url,
+        "/assets/localization/en"
+    );
+}

@@ -2,6 +2,7 @@
 
 #include "data/demo_dataset.hpp"
 #include "features/localization/actions/language_action.hpp"
+#include "features/localization/actions/client_localization_actions.hpp"
 #include "features/localization/support/portal_error_translator.hpp"
 
 #include <drogular/action_context.hpp>
@@ -292,4 +293,48 @@ TEST(PortalLocalizationTests, ErrorTranslatorReturnsEmptyForUnknownCode) {
             "unknown"
         ).empty()
     );
+}
+
+TEST(PortalLocalizationTests, ClientManifestUsesServerTranslationCatalog) {
+    PortalApplicationTestHost app(DemoDataset::create());
+
+    const auto result = app.post<PortalLocalizationManifestAction>();
+
+    ASSERT_EQ(result.type(), drogular::ActionResultType::Json);
+    const auto& json = result.json();
+    EXPECT_EQ(json["defaultLocale"].asString(), "en");
+    EXPECT_FALSE(json["version"].asString().empty());
+    EXPECT_EQ(
+        json["locales"]["de"]["url"].asString(),
+        "/assets/localization/de"
+    );
+}
+
+TEST(PortalLocalizationTests, ClientLocaleResourceUsesServerTranslations) {
+    PortalApplicationTestHost app(DemoDataset::create());
+
+    const auto result = app.post<PortalLocalizationResourceAction>(
+        {},
+        {{"locale", "de"}}
+    );
+
+    ASSERT_EQ(result.type(), drogular::ActionResultType::Json);
+    const auto& json = result.json();
+    EXPECT_EQ(json["locale"].asString(), "de");
+    EXPECT_EQ(
+        json["translations"]["offline.cached_filters"].asString(),
+        "Gespeicherte Filter"
+    );
+}
+
+TEST(PortalLocalizationTests, ClientLocaleResourceRejectsUnknownLocale) {
+    PortalApplicationTestHost app(DemoDataset::create());
+
+    const auto result = app.post<PortalLocalizationResourceAction>(
+        {},
+        {{"locale", "fr"}}
+    );
+
+    EXPECT_EQ(result.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(result.statusCode(), drogon::k404NotFound);
 }

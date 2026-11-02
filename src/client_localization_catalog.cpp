@@ -83,11 +83,13 @@ Json::Value ClientLocalizationResource::toJson() const {
 ClientLocalizationCatalog::ClientLocalizationCatalog(
     Catalog catalog,
     std::string defaultLocale,
-    std::string resourceBasePath
+    std::string resourceBasePath,
+    std::string resourceSuffix
 )
     : catalog_(std::move(catalog)),
       defaultLocale_(std::move(defaultLocale)),
-      resourceBasePath_(normalizedBasePath(std::move(resourceBasePath))) {
+      resourceBasePath_(normalizedBasePath(std::move(resourceBasePath))),
+      resourceSuffix_(std::move(resourceSuffix)) {
     if (defaultLocale_.empty()) {
         throw std::invalid_argument("Default locale must not be empty");
     }
@@ -119,6 +121,10 @@ const std::string& ClientLocalizationCatalog::resourceBasePath() const noexcept 
     return resourceBasePath_;
 }
 
+const std::string& ClientLocalizationCatalog::resourceSuffix() const noexcept {
+    return resourceSuffix_;
+}
+
 const std::string& ClientLocalizationCatalog::version() const noexcept {
     return version_;
 }
@@ -133,7 +139,7 @@ ClientLocalizationManifest ClientLocalizationCatalog::manifest() const {
         result.locales.emplace(
             locale,
             ClientLocalizationLocale{
-                resourceBasePath_ + "/" + locale + ".json",
+                resourceBasePath_ + "/" + locale + resourceSuffix_,
                 localeVersions_.at(locale)
             }
         );

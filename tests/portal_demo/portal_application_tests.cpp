@@ -375,7 +375,7 @@ TEST(PortalApplicationTests, UsersBrowserUsesGetInteractionContract) {
             {"dg-get", "/fragments/users"},
             {"dg-offline-read", ""},
             {"dg-offline-runtime", "framework"},
-            {"dg-offline-read-empty-label", "All users"},
+            {"dg-offline-read-empty-key", "offline.all_users"},
             {"dg-target", "[data-users-results]"},
             {"dg-trigger", "input delay:300ms, change"},
             {"dg-history", "replace"}
@@ -3121,7 +3121,7 @@ TEST(PortalApplicationTests, DepartmentsBrowserUsesGetInteractionContract) {
             {"dg-get", "/fragments/departments"},
             {"dg-offline-read", ""},
             {"dg-offline-runtime", "framework"},
-            {"dg-offline-read-empty-label", "All departments"},
+            {"dg-offline-read-empty-key", "offline.all_departments"},
             {"dg-target", "[data-departments-results]"},
             {"dg-trigger", "input delay:300ms, change"},
             {"dg-history", "replace"}
