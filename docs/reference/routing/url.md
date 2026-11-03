@@ -66,7 +66,9 @@ Use [`QueryStringBuilder`](../pagination-and-request-parameters/query-string-bui
 
 ## Example
 
-PortalDemo uses `Url::encode()` when preserving a return URL inside another query string:
+For untrusted return destinations, prefer [`NavigationContext`](navigation-context.md), which validates local targets and encodes a propagated `returnUrl`. Use `Url::encode()` directly only when you already control the destination and need low-level query-value encoding.
+
+PortalDemo-style return URL encoding can be expressed as:
 
 ```cpp
 const auto redirect =
@@ -81,6 +83,7 @@ This prevents characters inside `returnUrl` from being interpreted as separators
 ## Related Types
 
 - [`Router`](router.md)
+- [`NavigationContext`](navigation-context.md)
 - [`QueryStringBuilder`](../pagination-and-request-parameters/query-string-builder.md)
 
 ## See Also

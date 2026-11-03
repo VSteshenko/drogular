@@ -50,6 +50,14 @@ Parse stable request parameters, paginate application results, and preserve acti
 
 ---
 
+## [Safe Return Navigation](safe-return-navigation.md)
+
+**Need to return to a filtered list after editing without unsafe redirects?**
+
+Validate untrusted return targets and preserve list state using `NavigationContext`.
+
+---
+
 ## [Server-driven Interactions](server-driven-interactions.md)
 
 **Need to refresh server-rendered HTML without building a client application?**

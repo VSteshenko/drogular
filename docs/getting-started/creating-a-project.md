@@ -94,11 +94,13 @@ Generated `CMakeLists.txt` files are pinned to the Drogular Git tag correspondin
 FetchContent_Declare(
     drogular
     GIT_REPOSITORY https://github.com/VSteshenko/drogular.git
-    GIT_TAG v0.21.0
+    GIT_TAG v0.24.0
 )
 ```
 
-The concrete tag above is only an example. A released CLI writes its own matching release tag, keeping generated projects reproducible instead of silently following future changes on `main`.
+The concrete tag above illustrates the current 0.24 release. The actual tag depends on the installed CLI version. 
+A released CLI writes its own matching release tag, keeping generated projects reproducible instead of silently following 
+future changes on `main`.
 
 When developing Drogular itself and testing a generated project against the local checkout, override FetchContent at configure time instead of changing the generated template:
 

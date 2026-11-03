@@ -242,7 +242,7 @@ source of translation truth.
 - Preserve requested-locale → default-locale → key fallback semantics on the client
 - Add version/hash-based invalidation so localization resources can be refreshed independently of the application shell
 - Reuse the same translation data across server rendering, online Interactions, and Offline UI
-- Add a first-class Return URL / Navigation Context API for safe return-target parsing, propagation, URL encoding, and redirects across RenderContext and ActionContext
+- Extend the existing `NavigationContext` return-target validation and propagation helpers with context-level navigation integration where useful
 - Extend PortalDemo task modeling with first-class task status and priority instead of presentation-only current-work data
 - Add task summary views and Interaction-based task updates
 
@@ -271,6 +271,15 @@ Add framework-level observability extension points so applications can integrate
 
 - Add Audit hooks for security-sensitive and application-defined operations without coupling the framework to a specific audit backend
 - Add a Metrics exporter abstraction for exposing framework and application metrics to external monitoring systems
+
+### 0.29 — Windows Platform Support & Cross-Platform Hardening
+
+Extend the supported platform matrix without changing the planned scope of 0.25–0.28.
+
+- Support Windows x64 builds with MSVC and Visual Studio
+- Add Windows CI with the complete test suite
+- Audit and harden portability across Linux, macOS, and Windows
+- Keep MinGW outside the initial 0.29 scope
 
 ### 1.0
 

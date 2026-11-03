@@ -11,6 +11,7 @@ The Routing API provides the application router, route-pattern matching with nam
 - [`Router`](router.md) — connects Drogular handlers to Drogon routes.
 - [`RoutePattern`](route-pattern.md) — matches path segments and extracts named parameters.
 - [`Url`](url.md) — provides percent-encoding helpers for query-string values.
+- [`NavigationContext`](navigation-context.md) — validates and propagates safe application-local return destinations.
 
 ---
 

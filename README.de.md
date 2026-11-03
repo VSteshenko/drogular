@@ -239,7 +239,7 @@ Das in Version 0.24 eingeführte serverseitige Lokalisierungsmodell auf Client- 
 - Die Fallback-Reihenfolge angeforderte Sprache → Standardsprache → Schlüssel auch clientseitig beibehalten
 - Versions-/Hash-basierte Invalidierung hinzufügen, damit Sprachressourcen unabhängig von der Anwendungsshell aktualisiert werden können
 - Dieselben Übersetzungsdaten für serverseitiges Rendering, Online-Interactions und Offline-UI wiederverwenden
-- Eine erstklassige Return-URL-/Navigation-Context-API für sichere Verarbeitung und Weitergabe von Rücksprungzielen, URL-Kodierung und Weiterleitungen in `RenderContext` und `ActionContext` hinzufügen
+- Die vorhandenen `NavigationContext`-Hilfen zur Validierung und Weitergabe von Rücksprungzielen bei Bedarf um eine Integration in die Request-Kontexte erweitern
 - Die Aufgabenmodellierung in PortalDemo um erstklassigen Aufgabenstatus und Priorität erweitern, statt nur präsentationsbezogene Daten zur aktuellen Arbeit zu verwenden
 - Aufgabenübersichten und Aufgabenaktualisierungen auf Basis von Interactions ergänzen
 
@@ -268,6 +268,15 @@ Framework-weite Erweiterungspunkte für Observability einführen, damit Anwendun
 
 - Audit-Hooks für sicherheitsrelevante und anwendungsspezifische Vorgänge hinzufügen, ohne das Framework an ein bestimmtes Audit-Backend zu koppeln
 - Eine Metrics-Exporter-Abstraktion bereitstellen, um Framework- und Anwendungsmetriken an externe Monitoringsysteme zu übergeben
+
+### 0.29 — Windows-Unterstützung und plattformübergreifende Stabilisierung
+
+Die unterstützten Plattformen erweitern, ohne den geplanten Umfang von 0.25–0.28 zu verändern.
+
+- Windows-x64-Builds mit MSVC und Visual Studio unterstützen
+- Windows-CI mit vollständiger Testsuite hinzufügen
+- Die Portabilität zwischen Linux, macOS und Windows prüfen und verbessern
+- MinGW zunächst außerhalb des Umfangs von 0.29 belassen
 
 ### 1.0
 

@@ -43,6 +43,9 @@ Available guides:
 - GraphQL
 - Localization
 - Pagination
+- Server-driven Interactions
+- Offline Read-only Applications
+- Safe Return Navigation
 
 [Open the Cookbook](cookbook/README.md)
 
@@ -61,6 +64,7 @@ Topics include:
 - Feature Architecture
 - Data Providers
 - Template Rendering Pipeline
+- Offline Read Models
 - Portal Feature Validation
 
 [Open Architecture](architecture/README.md)
@@ -87,9 +91,12 @@ The repository includes focused examples for individual framework capabilities a
 | `auth_sample` | Authentication and protected pages |
 | `repository_sample` | Repository abstraction and dependency injection |
 | `developer_tools` | Extending application inspection and Developer Tools |
-| `portal_demo` | Complete reference application architecture |
+| `portal_demo` | Complete reference application architecture, Interactions, UI, and Offline Read Models |
+| `system_monitor_pwa` | Live server-rendered fragments, polling, connection state, and PWA monitoring |
+| `mini_store` | Localized Storefront and Staff workflows, history navigation, and offline behavior |
 
-`PortalDemo` is the primary application used to validate and evolve Drogular's public API before features are documented as established patterns.
+`PortalDemo` is the primary application used to validate and evolve Drogular's public API before features are documented 
+as established patterns. See the [Demo Applications](demos/README.md) index for the current examples.
 
 ---
 
