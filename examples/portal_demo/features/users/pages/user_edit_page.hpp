@@ -5,8 +5,9 @@
 #include "features/roles/providers/role_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 #include "ui/portal_page_support.hpp"
-
 #include "ui/portal_frame_navigation_support.hpp"
+
+#include <drogular/navigation_context.hpp>
 #include <drogular/page.hpp>
 #include <drogular/page_auth_support.hpp>
 
@@ -47,11 +48,11 @@ public:
             request != nullptr
                 ? request->getParameter("returnUrl")
                 : std::string("");
-        const auto usersBackUrl =
-            requestedReturnUrl == "/users" ||
-            requestedReturnUrl.rfind("/users?", 0) == 0
-                ? requestedReturnUrl
-                : std::string("/users");
+        const auto usersBackUrl = drogular::NavigationContext::resolve(
+            requestedReturnUrl,
+            "/users",
+            "/users"
+        );
         context.set("usersBackUrl", usersBackUrl);
         context.set(
             "usersBackFragmentUrl",

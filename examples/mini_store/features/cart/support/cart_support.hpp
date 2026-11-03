@@ -2,6 +2,7 @@
 
 #include "data/mini_store_store.hpp"
 
+#include <drogular/navigation_context.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/session_store.hpp>
 
@@ -95,6 +96,6 @@ public:
     }
 
     static std::string safeReturnUrl(const std::string& value, const std::string& fallback = "/cart") {
-        return value.starts_with("/") && !value.starts_with("//") ? value : fallback;
+        return drogular::NavigationContext::resolve(value, fallback);
     }
 };

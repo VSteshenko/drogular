@@ -3,6 +3,8 @@
 #include "domain/store_models.hpp"
 #include "features/catalog/ui/catalog_support.hpp"
 
+#include <drogular/navigation_context.hpp>
+
 #include <string>
 
 class MiniStoreOrderSupport {
@@ -52,9 +54,11 @@ public:
     }
 
     static std::string safeOrderReturnUrl(const std::string& value) {
-        return value.rfind("/staff/orders", 0) == 0 && value.rfind("//", 0) != 0
-            ? value
-            : std::string("/staff/orders");
+        return drogular::NavigationContext::resolve(
+            value,
+            "/staff/orders",
+            "/staff/orders",
+            true);
     }
 
 private:

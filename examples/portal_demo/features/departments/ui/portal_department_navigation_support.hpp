@@ -1,6 +1,6 @@
 #pragma once
 
-#include <drogular/url.hpp>
+#include <drogular/navigation_context.hpp>
 
 #include <string>
 
@@ -9,21 +9,19 @@ public:
     static std::string departmentsReturnUrl(
         const std::string& candidate
     ) {
-        if (candidate == "/departments" ||
-            candidate.starts_with("/departments?")) {
-            return candidate;
-        }
-
-        return "/departments";
+        return drogular::NavigationContext::resolve(
+            candidate,
+            "/departments",
+            "/departments");
     }
 
     static std::string detailsUrl(int id, const std::string& returnUrl) {
-        return "/departments/" + std::to_string(id) + "?returnUrl=" +
-            drogular::Url::encode(departmentsReturnUrl(returnUrl));
+        return drogular::NavigationContext::propagate(
+            "/departments/" + std::to_string(id), departmentsReturnUrl(returnUrl));
     }
 
     static std::string editUrl(int id, const std::string& returnUrl) {
-        return "/departments/" + std::to_string(id) + "/edit?returnUrl=" +
-            drogular::Url::encode(departmentsReturnUrl(returnUrl));
+        return drogular::NavigationContext::propagate(
+            "/departments/" + std::to_string(id) + "/edit", departmentsReturnUrl(returnUrl));
     }
 };

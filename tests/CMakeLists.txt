@@ -79,6 +79,7 @@ add_executable(drogular_tests
     core/core_query_string_builder_tests.cpp
     core/core_request_parameters_tests.cpp
     core/core_url_tests.cpp
+    core/core_navigation_context_tests.cpp
     core/core_action_auth_support_tests.cpp
     core/core_route_pattern_tests.cpp
     core/core_json_conversion_tests.cpp

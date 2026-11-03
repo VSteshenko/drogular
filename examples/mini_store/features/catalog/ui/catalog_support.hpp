@@ -3,6 +3,8 @@
 #include "data/mini_store_store.hpp"
 #include "features/catalog/ui/catalog_query.hpp"
 
+#include <drogular/navigation_context.hpp>
+
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
@@ -83,9 +85,7 @@ public:
     }
 
     static std::string safeCatalogReturnUrl(const std::string& value) {
-        return value.rfind("/catalog", 0) == 0 && value.rfind("//", 0) != 0
-            ? value
-            : std::string("/catalog");
+        return drogular::NavigationContext::resolve(value, "/catalog", "/catalog");
     }
 
     static std::string money(std::int64_t cents) {

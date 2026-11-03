@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/action_handler.hpp>
+#include <drogular/navigation_context.hpp>
 
 #include <string>
 
@@ -26,10 +27,7 @@ public:
                 .value_or("/dashboard");
 
         const auto safeRedirect =
-            redirect.starts_with("/") &&
-            !redirect.starts_with("//")
-                ? redirect
-                : std::string("/dashboard");
+            drogular::NavigationContext::resolve(redirect, "/dashboard");
 
         return drogular::ActionResult::redirect(
             safeRedirect
