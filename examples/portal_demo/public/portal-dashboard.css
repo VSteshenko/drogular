@@ -59,3 +59,26 @@
         grid-template-columns: 1fr;
     }
 }
+.portal-dashboard-task .dg-card-body {
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.portal-dashboard-task-badges {
+    display: flex;
+    gap: .35rem;
+    flex-wrap: wrap;
+}
+
+.portal-task-priority-critical {
+    border: 1px solid #b91c1c;
+}
+.portal-task-priority-high {
+    border: 1px solid #d97706;
+}
+.portal-task-priority-normal {
+    border: 1px solid #64748b;
+}
+.portal-task-priority-low {
+    border: 1px solid #94a3b8;
+}

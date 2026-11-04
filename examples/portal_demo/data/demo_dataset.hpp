@@ -234,9 +234,27 @@ public:
                 .ownerId = 6,
                 .projectTypeId = 1
             })
-            .addDepartment({1, "Engineering", "Product and platform engineering", 1, true})
-            .addDepartment({2, "Operations", "Internal operations and delivery", 2, true})
-            .addDepartment({3, "Archive", "Inactive historical department", 1, false})
+            .addDepartment({
+                1,
+                "Engineering",
+                "Product and platform engineering",
+                1,
+                true
+            })
+            .addDepartment({
+                2,
+                "Operations",
+                "Internal operations and delivery",
+                2,
+                true
+            })
+            .addDepartment({
+                3,
+                "Archive",
+                "Inactive historical department",
+                1,
+                false
+            })
             .addDepartmentMember({1, 1, 1})
             .addDepartmentMember({2, 1, 2})
             .addDepartmentMember({3, 2, 2})

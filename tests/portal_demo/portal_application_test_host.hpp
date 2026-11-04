@@ -7,6 +7,7 @@
 #include "features/department_members/graphql/portal_graphql_department_member_provider.hpp"
 #include "features/department_members/providers/department_member_provider.hpp"
 #include "features/projects/providers/project_provider.hpp"
+#include "features/tasks/providers/portal_memory_task_provider.hpp"
 #include "support/portal_expression_functions.hpp"
 #include "startup/portal_graphql_server_factory.hpp"
 #include "features/project_types/graphql/portal_graphql_project_type_provider.hpp"
@@ -123,6 +124,13 @@ public:
                 return std::make_shared<PortalGraphQLProjectProvider>(
                     client
                 );
+            }
+        );
+
+        services_.addFactory<PortalTaskProvider>(
+            drogular::ServiceLifetime::Singleton,
+            [] {
+                return std::make_shared<PortalMemoryTaskProvider>();
             }
         );
 

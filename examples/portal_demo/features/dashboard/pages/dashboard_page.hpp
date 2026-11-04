@@ -3,6 +3,7 @@
 #include "ui/portal_page_support.hpp"
 #include "ui/portal_frame_navigation_support.hpp"
 #include "features/projects/providers/project_provider.hpp"
+#include "features/tasks/providers/task_provider.hpp"
 #include "features/departments/providers/department_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 
@@ -176,65 +177,58 @@ private:
     static void applyCurrentTasks(
         drogular::RenderContext& context
     ) {
-        auto projects =
-            context.requireService<PortalProjectProvider>()->all();
+        auto tasks =
+            context.requireService<PortalTaskProvider>()->all();
 
-        projects.erase(
+        tasks.erase(
             std::remove_if(
-                projects.begin(),
-                projects.end(),
-                [](const PortalProject& project) {
-                    return project.status == "done";
+                tasks.begin(),
+                tasks.end(),
+                [](const PortalTask& task) {
+                    return task.status == PortalTaskStatus::Done;
                 }
             ),
-            projects.end()
+            tasks.end()
         );
 
-        const auto statusRank = [](const std::string& status) {
-            if (status == "active") {
-                return 0;
-            }
-            if (status == "paused") {
-                return 1;
-            }
-            return 2;
-        };
-
+        // Urgent tasks come first; stable task id breaks equal-priority ties.
         std::sort(
-            projects.begin(),
-            projects.end(),
-            [&statusRank](
-                const PortalProject& left,
-                const PortalProject& right
-            ) {
-                const auto leftRank = statusRank(left.status);
-                const auto rightRank = statusRank(right.status);
-                return leftRank != rightRank
-                    ? leftRank < rightRank
-                    : left.id < right.id;
+            tasks.begin(),
+            tasks.end(),
+            [](const PortalTask& left, const PortalTask& right) {
+                if (left.priority != right.priority) {
+                    return static_cast<int>(left.priority) >
+                           static_cast<int>(right.priority);
+                }
+                return left.id < right.id;
             }
         );
 
-        Json::Value tasks(Json::arrayValue);
-        const auto count = std::min<std::size_t>(projects.size(), 6);
+        Json::Value viewTasks(Json::arrayValue);
+        const auto count = std::min<std::size_t>(tasks.size(), 6);
         for (std::size_t index = 0; index < count; ++index) {
-            const auto& project = projects[index];
-            const auto url =
-                std::string("/projects/") + std::to_string(project.id);
-
-            Json::Value task(Json::objectValue);
-            task["id"] = project.id;
-            task["title"] = project.title;
-            task["status"] = project.status;
-            task["statusKey"] =
-                std::string("projects.status.") + project.status;
-            task["url"] = url;
-            task["fragmentUrl"] =
-                PortalFrameNavigationSupport::fragmentUrl(url);
-            tasks.append(std::move(task));
+            const auto& task = tasks[index];
+            Json::Value viewTask(Json::objectValue);
+            viewTask["id"] = task.id;
+            viewTask["title"] = task.title;
+            viewTask["statusKey"] = portalTaskStatusKey(task.status);
+            viewTask["priorityKey"] = portalTaskPriorityKey(task.priority);
+            viewTask["url"] = "";
+            viewTask["fragmentUrl"] = "";
+            viewTask["priorityClass"] =
+                task.priority == PortalTaskPriority::Critical ? "critical" :
+                task.priority == PortalTaskPriority::High ? "high" :
+                task.priority == PortalTaskPriority::Normal ? "normal" : "low";
+            if (task.projectId > 0) {
+                const auto url =
+                    std::string("/projects/") + std::to_string(task.projectId);
+                viewTask["url"] = url;
+                viewTask["fragmentUrl"] =
+                    PortalFrameNavigationSupport::fragmentUrl(url);
+            }
+            viewTasks.append(std::move(viewTask));
         }
-
-        context.set("dashboardTasks", tasks);
+        context.set("dashboardTasks", viewTasks);
     }
 
 public:

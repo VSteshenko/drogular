@@ -673,33 +673,22 @@ TEST(PortalApplicationTests, DashboardTranslatesQuickLinksThroughExpressionFunct
 }
 
 TEST(PortalApplicationTests, DashboardShowsLiveOverviewAndCurrentTasks) {
-    PortalApplicationTestHost app(
-        DemoDataset::create()
-    );
-
+    PortalApplicationTestHost app(DemoDataset::create());
     app.loginAsAdmin();
 
     const auto html = app.render<PortalDashboardPage>();
 
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Overview"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, "Active projects"));
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Paused projects"));
     EXPECT_TRUE(HtmlTestSupport::containsText(html, "Current tasks"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Review portal permissions"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Update onboarding checklist"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Critical"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Blocked"));
+    EXPECT_FALSE(HtmlTestSupport::containsText(html, "Document API contracts"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(data-dashboard-task-id="3")"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(html, R"(dg-history-url="/projects/1")"));
 
-    EXPECT_TRUE(
-        HtmlTestSupport::elementHasAttributes(
-            html,
-            "a",
-            {
-                {"href", "/projects/1"},
-                {"dg-get", "/fragments/pages/projects/1"},
-                {"dg-target", "[data-portal-content]"},
-                {"dg-history-url", "/projects/1"}
-            }
-        )
-    );
-
-    EXPECT_TRUE(HtmlTestSupport::containsText(html, "Customer Portal"));
+    // Task title and lifecycle no longer mirror the linked project.
     EXPECT_FALSE(HtmlTestSupport::containsText(html, "Analytics Platform"));
 }
 

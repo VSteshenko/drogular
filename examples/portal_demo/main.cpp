@@ -5,6 +5,7 @@
 #include "features/theme/actions/theme_action.hpp"
 #include "features/diagnostics/portal_inspection_contributor.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
+#include "features/tasks/providers/portal_memory_task_provider.hpp"
 #include "features/auth/pages/login_page.hpp"
 #include "features/auth/actions/login_action.hpp"
 #include "features/auth/actions/logout_action.hpp"
@@ -215,6 +216,13 @@ int main(
             return std::make_shared<PortalGraphQLProjectProvider>(
                 graphQLClient
             );
+        }
+    );
+
+    app.services().addFactory<PortalTaskProvider>(
+        drogular::ServiceLifetime::Singleton,
+        [] {
+            return std::make_shared<PortalMemoryTaskProvider>();
         }
     );
 
