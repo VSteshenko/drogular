@@ -1,6 +1,8 @@
 #include "features/tasks/providers/portal_memory_task_provider.hpp"
+#include "data/demo_dataset.hpp"
 
 #include <gtest/gtest.h>
+#include <algorithm>
 
 TEST(PortalTaskProviderTests, SeedsFirstClassTasks) {
     PortalMemoryTaskProvider provider;
@@ -33,4 +35,17 @@ TEST(PortalTaskProviderTests, SupportsIndependentAndEmptyTasks) {
     EXPECT_STREQ(portalTaskPriorityKey(PortalTaskPriority::Low), "dashboard.task.priority.low");
     PortalMemoryTaskProvider empty(std::vector<PortalTask>{});
     EXPECT_TRUE(empty.all().empty());
+}
+
+TEST(PortalTaskProviderTests, SharedDemoDatasetKeepsTaskProjectReferencesValid) {
+    const auto dataset = DemoDataset::create();
+    PortalMemoryTaskProvider tasks(dataset.tasks());
+
+    ASSERT_EQ(tasks.all().size(), 4U);
+    for (const auto& task : tasks.all()) {
+        if (task.projectId == 0) continue;
+        const auto& projects = dataset.projects();
+        EXPECT_NE(std::find_if(projects.begin(), projects.end(),
+            [&](const PortalProject& project) { return project.id == task.projectId; }), projects.end());
+    }
 }

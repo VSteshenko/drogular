@@ -2,6 +2,7 @@
 
 #include "core/portal_string_utils.hpp"
 #include "department_provider.hpp"
+#include "data/demo_dataset.hpp"
 
 #include <drogular/pagination.hpp>
 
@@ -11,29 +12,9 @@ class PortalMemoryDepartmentProvider final
     : public PortalDepartmentProvider
 {
 public:
-    PortalMemoryDepartmentProvider() : departments_({
-        {
-            1,
-            "Engineering",
-            "Product and platform engineering",
-            1,
-            true
-        },
-        {
-            2,
-            "Operations",
-            "Internal operations and delivery",
-            2,
-            true
-        },
-        {
-            3,
-            "Archive",
-            "Inactive historical department",
-            1,
-            false
-        }
-    }), nextId_(4) {
+    PortalMemoryDepartmentProvider()
+        : PortalMemoryDepartmentProvider(DemoDataset::create().departments())
+    {
     }
 
     explicit PortalMemoryDepartmentProvider(

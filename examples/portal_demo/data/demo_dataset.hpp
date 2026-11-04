@@ -258,7 +258,35 @@ public:
             .addDepartmentMember({1, 1, 1})
             .addDepartmentMember({2, 1, 2})
             .addDepartmentMember({3, 2, 2})
-            .addDepartmentMember({4, 2, 3});
+            .addDepartmentMember({4, 2, 3})
+            .addTask({
+                1,
+                "Review portal permissions",
+                PortalTaskStatus::InProgress,
+                PortalTaskPriority::High,
+                1
+            })
+            .addTask({
+                2,
+                "Verify dashboard metrics",
+                PortalTaskStatus::Todo,
+                PortalTaskPriority::Normal,
+                2
+            })
+            .addTask({
+                3,
+                "Update onboarding checklist",
+                PortalTaskStatus::Blocked,
+                PortalTaskPriority::Critical,
+                1
+            })
+            .addTask({
+                4,
+                "Document API contracts",
+                PortalTaskStatus::Done,
+                PortalTaskPriority::Low,
+                2
+            });
 
         const auto validation =
             PortalDatasetSchemaValidator::validate(dataset);

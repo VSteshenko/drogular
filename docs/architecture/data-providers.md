@@ -198,6 +198,21 @@ References are declared in schema:
     users.role -> roles.code
     projects.projectTypeId -> projectTypes.id
 ```
+## PortalDemo fixture ownership
+
+`examples/portal_demo/data/demo_dataset.hpp` is the single source of
+initial demonstration records (users, roles, projects, project types,
+departments, memberships, and dashboard tasks). The GraphQL-backed
+PortalDemo instance starts from `DemoDataset::create()`; in-memory
+providers use the corresponding records from the same fixture instead
+of embedding separate constructor seed lists. The task provider remains
+in-memory in 0.25, but it receives the same dataset's tasks at startup.
+
+Providers are responsible for CRUD and querying, **not** for defining
+fixtures. Explicit provider constructors accepting custom vectors remain
+available for isolated tests. `PortalTask` remains independent of
+`PortalProject`; `projectId == 0` represents an unlinked task.
+
 ## Application Tests
 
 `PortalApplicationTestHost` allows testing real application flows without browser or HTTP infrastructure.

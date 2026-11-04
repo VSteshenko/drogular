@@ -1,6 +1,7 @@
 #pragma once
 
 #include "features/projects/data/portal_project.hpp"
+#include "features/tasks/data/portal_task.hpp"
 #include "features/users/data/portal_user.hpp"
 #include "features/roles/data/portal_role.hpp"
 #include "features/project_types/data/portal_project_type.hpp"
@@ -64,6 +65,19 @@ public:
         return projects_;
     }
 
+    PortalDataset& addTask(PortalTask task) {
+        tasks_.push_back(std::move(task));
+        return *this;
+    }
+
+    std::vector<PortalTask>& tasks() {
+        return tasks_;
+    }
+
+    const std::vector<PortalTask>& tasks() const {
+        return tasks_;
+    }
+
     PortalDataset& addProjectType(
         PortalProjectType projectType
     ) {
@@ -113,6 +127,7 @@ private:
     std::vector<PortalRole> roles_;
     std::vector<PortalUser> users_;
     std::vector<PortalProject> projects_;
+    std::vector<PortalTask> tasks_;
     std::vector<PortalProjectType> projectTypes_;
     std::vector<PortalDepartment> departments_;
     std::vector<PortalDepartmentMember> departmentMembers_;

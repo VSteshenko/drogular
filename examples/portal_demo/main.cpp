@@ -221,8 +221,8 @@ int main(
 
     app.services().addFactory<PortalTaskProvider>(
         drogular::ServiceLifetime::Singleton,
-        [] {
-            return std::make_shared<PortalMemoryTaskProvider>();
+        [dataset] {
+            return std::make_shared<PortalMemoryTaskProvider>(dataset->tasks());
         }
     );
 

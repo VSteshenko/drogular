@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/portal_string_utils.hpp"
+#include "data/demo_dataset.hpp"
 #include "features/users/data/portal_user.hpp"
 #include "features/users/providers/user_provider.hpp"
 
@@ -20,19 +21,14 @@ public:
     )
         : users_(std::move(users))
     {
+        for (const auto& user : users_) {
+            nextId_ = std::max(nextId_, user.id + 1);
+        }
     }
 
-    PortalMemoryUserProvider() {
-        users_.push_back({
-            .username = "admin",
-            .password = "admin",
-            .role = "admin"
-        });
-        users_.push_back({
-            .username = "user",
-            .password = "user",
-            .role = "user"
-        });
+    PortalMemoryUserProvider()
+        : PortalMemoryUserProvider(DemoDataset::create().users())
+    {
     }
 
     PortalUser create(

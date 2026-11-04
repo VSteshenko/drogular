@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/portal_string_utils.hpp"
+#include "data/demo_dataset.hpp"
 #include "features/projects/data/portal_project.hpp"
 #include "features/projects/data/portal_project_create.hpp"
 #include "features/projects/data/portal_project_update.hpp"
@@ -18,11 +19,11 @@ class PortalMemoryProjectProvider final
 {
 public:
     PortalMemoryProjectProvider()
-        : projects_({
-              {1, "Customer Portal", "active"},
-              {2, "Internal Dashboard", "paused"}
-          }),
-          nextId_(3) {
+        : projects_(DemoDataset::create().projects())
+    {
+        for (const auto& project : projects_) {
+            nextId_ = std::max(nextId_, project.id + 1);
+        }
     }
 
     std::vector<PortalProject> all() const override {

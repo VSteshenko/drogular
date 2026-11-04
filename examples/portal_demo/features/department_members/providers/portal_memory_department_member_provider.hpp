@@ -1,6 +1,7 @@
 #pragma once
 
 #include "features/department_members/providers/department_member_provider.hpp"
+#include "data/demo_dataset.hpp"
 
 #include <algorithm>
 
@@ -9,12 +10,7 @@ class PortalMemoryDepartmentMemberProvider final
 {
 public:
     PortalMemoryDepartmentMemberProvider()
-        : members_({
-            {1, 1, 1},
-            {2, 1, 2},
-            {3, 2, 2},
-            {4, 2, 3}
-        }), nextId_(5)
+        : PortalMemoryDepartmentMemberProvider(DemoDataset::create().departmentMembers())
     {
     }
 
