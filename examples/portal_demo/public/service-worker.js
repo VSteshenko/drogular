@@ -1,4 +1,5 @@
-const CACHE_NAME = "drogular-portal-demo-v12";
+const CACHE_PREFIX = "drogular-portal-demo-";
+const CACHE_NAME = `${CACHE_PREFIX}v13`;
 
 const APP_SHELL = [
     "/",
@@ -13,6 +14,7 @@ const APP_SHELL = [
     "/assets/portal-dashboard.css",
     "/__drogular/assets/ui.css",
     "/__drogular/assets/ui.js",
+    "/__drogular/assets/localization.js",
     "/__drogular/assets/interactions.js"
 ];
 
@@ -30,7 +32,7 @@ self.addEventListener("activate", event => {
             .then(cacheNames => {
                 return Promise.all(
                     cacheNames
-                        .filter(cacheName => cacheName !== CACHE_NAME)
+                        .filter(cacheName => cacheName.startsWith(CACHE_PREFIX) && cacheName !== CACHE_NAME)
                         .map(cacheName => caches.delete(cacheName))
                 );
             })

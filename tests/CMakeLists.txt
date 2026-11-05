@@ -332,6 +332,16 @@ gtest_discover_tests(drogular_project_generator_tests)
 gtest_discover_tests(drogular_localization_check_tests)
 gtest_discover_tests(drogular_system_monitor_pwa_tests)
 
+# Exercise the actual PortalDemo service worker lifecycle when Node.js is available.
+find_program(DROGULAR_NODE_EXECUTABLE NAMES node)
+if(DROGULAR_NODE_EXECUTABLE)
+    add_test(
+        NAME drogular_portal_demo_service_worker_cache_isolation
+        COMMAND "${DROGULAR_NODE_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/portal_demo/portal_service_worker_tests.js"
+    )
+endif()
+
 # Keep example localization catalogs complete in every CTest/CI run.
 add_test(
     NAME drogular_portal_demo_localization_catalog
