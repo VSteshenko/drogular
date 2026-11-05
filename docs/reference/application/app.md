@@ -122,6 +122,20 @@ Registers the GraphQL client exposed to application rendering infrastructure thr
 
 ---
 
+## Client Localization
+
+### `clientLocalization()`
+
+```cpp
+App& clientLocalization();
+```
+
+Opt-in registration of the browser runtime at `/__drogular/assets/localization.js`. Calling it repeatedly is safe. 
+Applications must provide and configure their own localization manifest and locale resource endpoints; see 
+[Client Localization](../localization/client-localization.md).
+
+---
+
 ## Route Registration
 
 ### `page<PageType>()`

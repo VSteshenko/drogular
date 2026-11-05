@@ -241,3 +241,15 @@ or automatic authenticated-principal/custom scope derivation.
 See also [Drogular Interactions](../interactions/README.md), 
 [Offline Read Models Architecture](../../architecture/offline-read-models.md), 
 and the [Offline Read-only Applications Cookbook](../../cookbook/offline-read-models.md).
+
+## Client translations and cached read representations
+
+Starting with 0.25, application UI text may also be translated using the optional 
+[Client Localization runtime](../localization/client-localization.md). Its Cache Storage namespace 
+(`drogular-localization-v1`) is independent of the IndexedDB representations described above. The runtime caches 
+versioned translation JSON while Offline Read Models cache exact server-rendered HTML by request, locale and scope.
+
+For offline language switching, the requested and fallback locale resources must have been fetched successfully before 
+disconnection. A Service Worker serving offline application shells must cache `/__drogular/assets/localization.js` and 
+must not delete the localization cache during shell upgrades. PortalDemo demonstrates this division of responsibility. 
+Offline reads remain read-only; cached translation resources do not enable mutations while disconnected.

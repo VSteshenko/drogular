@@ -21,6 +21,18 @@ and `@switch` for presentation-only state formatting. Page code keeps
 request/domain preparation in C++ while translation keys and presentation
 choices stay in templates.
 
+## PortalDemo localization and task dashboard (0.25)
+
+PortalDemo publishes its localization manifest and locale resources from the registered file-backed translation provider 
+and uses the built-in `drogularLocalization` runtime to translate offline read UI. The Service Worker precaches 
+the runtime script and preserves its separate locale cache when upgrading the application shell.
+
+Its Dashboard uses first-class `PortalTask` objects (Todo, InProgress, Blocked, Done; Low, Normal, High, Critical), 
+not project statuses disguised as tasks. Initial sample records live together in `DemoDataset`; providers hold runtime 
+state. Authorized users can change task status/priority through POST actions that return server-rendered list fragments. 
+Done tasks leave the current list, and priority affects sorting. The task domain and actions are example-specific; 
+framework background Jobs are planned for 0.26.
+
 ## System Monitor PWA
 
 System Monitor PWA is the reference application for server-rendered fragments and

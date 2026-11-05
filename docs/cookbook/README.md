@@ -38,7 +38,8 @@ Organize queries, mutations and application actions using Drogular's GraphQL sup
 
 **Need to support multiple languages?**
 
-Separate user-visible text from application logic through `TranslationProvider` and `RenderContext`.
+Separate user-visible text from application logic through `TranslationProvider` and `RenderContext`; export the same 
+catalog for browser/offline translations when needed.
 
 ---
 

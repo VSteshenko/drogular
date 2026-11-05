@@ -171,6 +171,37 @@ exist only in another locale. It returns a non-zero exit code when the catalog i
 For validation inside C++ tooling or tests, use `TranslationCatalogValidator` directly with a loaded catalog or 
 `FileTranslationProvider`. Validation compares locale key sets; it does not scan application source files for unused translation keys.
 
+## Client and Offline Localization (0.25)
+
+File-backed applications can export the same catalog to browsers using `ClientLocalizationCatalog`. The export is an 
+application decision: the framework supplies the serializer and runtime, but does not automatically expose translation 
+files over HTTP.
+
+In `main.cpp`, enable the runtime with `app.clientLocalization()` and register application GET handlers to serve 
+`catalog.manifest().toJson()` and `catalog.resource(locale).toJson()` as JSON. Build the catalog using 
+`FileTranslationProvider::catalog()` and `defaultLocale()`; do not reread the JSON files into a second client-specific 
+translation table. PortalDemo is a complete working example, with routes `/assets/localization/manifest.json` and 
+`/assets/localization/{locale}`.
+
+Load `/__drogular/assets/localization.js` before the script that configures it:
+
+```js
+const l10n = globalThis.drogularLocalization;
+l10n.configure({manifestUrl: "/assets/localization/manifest.json"});
+await l10n.ready(document.documentElement.lang || "en");
+const label = l10n.translate("nav.dashboard");
+```
+
+`setLocale("de")` loads the requested/default resources and emits `dg:locale-changed`. Subscribers should rerender text, 
+not invoke `setLocale()` again. The fallback order remains requested locale → default locale → key. For offline startup, 
+the Service Worker should precache the localization **script**, retain the independent `drogular-localization-v1` cache 
+and avoid claiming that uncached locales will work without a network connection.
+
+See [Client Localization Reference](../reference/localization/client-localization.md) for manifest/resource schema, 
+versions, URL suffix and cache rules.
+
+---
+
 ## Best Practices
 
 - Keep translation keys stable.
@@ -188,6 +219,7 @@ For validation inside C++ tooling or tests, use `TranslationCatalogValidator` di
 
 - [`TranslationProvider`](../reference/localization/translation-provider.md)
 - [`FileTranslationProvider`](../reference/localization/file-translation-provider.md)
+- [Client Localization](../reference/localization/client-localization.md)
 - [`TranslationCatalogValidator`](../reference/localization/translation-catalog-validator.md)
 - [`drogular-l10n-check`](../reference/localization/localization-check.md)
 - [`TranslationSupport`](../reference/localization/translation-support.md)

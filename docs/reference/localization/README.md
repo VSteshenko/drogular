@@ -12,6 +12,7 @@ The localization API resolves the active request locale and translates applicati
 - [`FileTranslationProvider`](file-translation-provider.md) — loads a flat JSON translation catalog from one file per locale.
 - [`TranslationCatalogValidator`](translation-catalog-validator.md) — compares locale key sets against a reference locale.
 - [`drogular-l10n-check`](localization-check.md) — validates file-based catalogs from the command line and CI.
+- [`ClientLocalizationCatalog` and browser runtime](client-localization.md) — export versioned locale resources and translate online/offline.
 - [`TranslationSupport`](translation-support.md) — translates keys using the current or an explicit locale.
 - [`LocaleSupport`](locale-support.md) — resolves the active locale from the request.
 

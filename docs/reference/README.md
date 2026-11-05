@@ -70,6 +70,7 @@ Validate submitted form values, inspect field errors, and read required typed in
 Resolve request locales and translate application keys through an application-defined provider.
 
 - [Localization](localization/README.md)
+- [Client Localization](localization/client-localization.md)
 
 ## State Management
 
