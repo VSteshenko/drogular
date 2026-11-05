@@ -82,3 +82,21 @@
 .portal-task-priority-low {
     border: 1px solid #94a3b8;
 }
+.portal-dashboard-task-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    width: 100%;
+}
+.portal-dashboard-task-controls form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+.portal-dashboard-task-controls label {
+    font-size: .8rem;
+}
+.portal-dashboard-task-controls select {
+    max-width: 12rem;
+}

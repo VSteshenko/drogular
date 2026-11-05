@@ -27,6 +27,7 @@
 #include "features/departments/pages/department_details_page.hpp"
 #include "features/departments/pages/department_edit_page.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
+#include "features/dashboard/actions/update_dashboard_task_action.hpp"
 #include "features/admin/pages/admin_page.hpp"
 #include "ui/portal_page_fragment_action.hpp"
 #include "ui/portal_frame_navigation_support.hpp"
@@ -4036,4 +4037,62 @@ TEST(PortalApplicationTests, UsedProjectTypeDeleteInteractionReturns422List) {
             return type.id == usedId;
         }
     ));
+}
+
+TEST(PortalApplicationTests, DashboardTaskActionsUpdatePriorityAndStatus) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+    const auto priority = app.postInteraction<PortalUpdateTaskPriorityAction>(
+        {{"priority", "critical"}},
+        {{"id", "2"}}
+    );
+
+    EXPECT_EQ(priority.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(priority.statusCode(), drogon::k200OK);
+    EXPECT_EQ(app.services().requireService<PortalTaskProvider>()->findById(2)->priority,
+              PortalTaskPriority::Critical);
+    EXPECT_TRUE(HtmlTestSupport::containsText(priority.body(), "Verify dashboard metrics"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(priority.body(), "Critical"));
+
+    const auto status = app.postInteraction<PortalUpdateTaskStatusAction>(
+        {{"status", "done"}},
+        {{"id", "2"}}
+    );
+    EXPECT_EQ(status.type(), drogular::ActionResultType::Html);
+    EXPECT_EQ(status.statusCode(), drogon::k200OK);
+    EXPECT_EQ(app.services().requireService<PortalTaskProvider>()->findById(2)->status, PortalTaskStatus::Done);
+    EXPECT_FALSE(HtmlTestSupport::containsText(status.body(), "Verify dashboard metrics"));
+    EXPECT_TRUE(HtmlTestSupport::containsText(status.body(), "Review portal permissions"));
+}
+
+TEST(PortalApplicationTests, DashboardTaskActionsValidateAndRequireAdmin) {
+    PortalApplicationTestHost app(DemoDataset::create());
+    app.loginAsAdmin();
+    const auto invalid = app.postInteraction<PortalUpdateTaskStatusAction>(
+        {{"status", "nonsense"}},
+        {{"id", "1"}}
+    );
+
+    EXPECT_EQ(invalid.statusCode(), drogon::k422UnprocessableEntity);
+    EXPECT_TRUE(HtmlTestSupport::containsText(invalid.body(), "Invalid task update"));
+    EXPECT_EQ(app.services().requireService<PortalTaskProvider>()->findById(1)->status,
+              PortalTaskStatus::InProgress);
+
+    const auto unknown = app.postInteraction<PortalUpdateTaskPriorityAction>(
+        {{"priority", "high"}},
+        {{"id", "999"}}
+    );
+    EXPECT_EQ(unknown.statusCode(), drogon::k422UnprocessableEntity);
+    app.loginAsUser();
+
+    const auto denied = app.post<PortalUpdateTaskStatusAction>(
+        {{"status", "done"}},
+        {{"id", "1"}}
+    );
+    EXPECT_EQ(denied.type(), drogular::ActionResultType::Redirect);
+    EXPECT_EQ(app.services().requireService<PortalTaskProvider>()->findById(1)->status,
+              PortalTaskStatus::InProgress);
+
+    const auto page = app.render<PortalDashboardPage>();
+    EXPECT_FALSE(HtmlTestSupport::containsText(page, R"(dg-post="/dashboard/tasks/1/status")"));
 }

@@ -3,7 +3,7 @@
 #include "ui/portal_page_support.hpp"
 #include "ui/portal_frame_navigation_support.hpp"
 #include "features/projects/providers/project_provider.hpp"
-#include "features/tasks/providers/task_provider.hpp"
+#include "features/dashboard/ui/portal_dashboard_tasks_support.hpp"
 #include "features/departments/providers/department_provider.hpp"
 #include "features/users/providers/user_provider.hpp"
 
@@ -30,7 +30,8 @@ public:
         }
 
         applyOverview(context);
-        applyCurrentTasks(context);
+        context.set("taskUpdateError", false);
+        PortalDashboardTasksSupport::apply(context);
 
         Json::Value sections(Json::arrayValue);
 
@@ -172,63 +173,6 @@ private:
         );
 
         context.set("dashboardOverview", overview);
-    }
-
-    static void applyCurrentTasks(
-        drogular::RenderContext& context
-    ) {
-        auto tasks =
-            context.requireService<PortalTaskProvider>()->all();
-
-        tasks.erase(
-            std::remove_if(
-                tasks.begin(),
-                tasks.end(),
-                [](const PortalTask& task) {
-                    return task.status == PortalTaskStatus::Done;
-                }
-            ),
-            tasks.end()
-        );
-
-        // Urgent tasks come first; stable task id breaks equal-priority ties.
-        std::sort(
-            tasks.begin(),
-            tasks.end(),
-            [](const PortalTask& left, const PortalTask& right) {
-                if (left.priority != right.priority) {
-                    return static_cast<int>(left.priority) >
-                           static_cast<int>(right.priority);
-                }
-                return left.id < right.id;
-            }
-        );
-
-        Json::Value viewTasks(Json::arrayValue);
-        const auto count = std::min<std::size_t>(tasks.size(), 6);
-        for (std::size_t index = 0; index < count; ++index) {
-            const auto& task = tasks[index];
-            Json::Value viewTask(Json::objectValue);
-            viewTask["id"] = task.id;
-            viewTask["title"] = task.title;
-            viewTask["statusKey"] = portalTaskStatusKey(task.status);
-            viewTask["priorityKey"] = portalTaskPriorityKey(task.priority);
-            viewTask["url"] = "";
-            viewTask["fragmentUrl"] = "";
-            viewTask["priorityClass"] =
-                task.priority == PortalTaskPriority::Critical ? "critical" :
-                task.priority == PortalTaskPriority::High ? "high" :
-                task.priority == PortalTaskPriority::Normal ? "normal" : "low";
-            if (task.projectId > 0) {
-                const auto url =
-                    std::string("/projects/") + std::to_string(task.projectId);
-                viewTask["url"] = url;
-                viewTask["fragmentUrl"] =
-                    PortalFrameNavigationSupport::fragmentUrl(url);
-            }
-            viewTasks.append(std::move(viewTask));
-        }
-        context.set("dashboardTasks", viewTasks);
     }
 
 public:

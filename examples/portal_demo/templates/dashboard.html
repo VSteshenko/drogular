@@ -35,27 +35,7 @@
 
 <h3>{{ t('dashboard.current_tasks') }}</h3>
 <div class="dg-card-grid portal-dashboard-tasks" data-dashboard-current-tasks>
-@foreach(task in dashboardTasks)
-<div class="dg-card portal-dashboard-task" data-dashboard-task-id="{{ task.id }}">
-    <div class="dg-card-body">
-        <h4 class="dg-card-title">{{ task.title }}</h4>
-        <div class="portal-dashboard-task-badges">
-            <span class="dg-badge dg-badge-info">{{ t(task.statusKey) }}</span>
-            <span class="dg-badge portal-task-priority-{{ task.priorityClass }}">{{ t(task.priorityKey) }}</span>
-        </div>
-        @if(task.url)
-        <a href="{{ task.url }}"
-           dg-get="{{ task.fragmentUrl }}"
-           dg-trigger="click"
-           dg-target="[data-portal-content]"
-           dg-history="push"
-           dg-history-url="{{ task.url }}">{{ t('dashboard.task.open_project') }}</a>
-        @endif
-    </div>
-</div>
-@empty
-<p class="dg-empty-state">{{ t('dashboard.no_current_tasks') }}</p>
-@endforeach
+@include("fragments/dashboard_tasks.html")
 </div>
 
 <h3>{{ t('dashboard.quick_links') }}</h3>

@@ -49,3 +49,19 @@ TEST(PortalTaskProviderTests, SharedDemoDatasetKeepsTaskProjectReferencesValid) 
             [&](const PortalProject& project) { return project.id == task.projectId; }), projects.end());
     }
 }
+
+TEST(PortalTaskProviderTests, MutationsPersistIndependentlyAndRejectUnknownIds) {
+    PortalMemoryTaskProvider provider;
+
+    ASSERT_TRUE(provider.updateStatus(1, PortalTaskStatus::Blocked));
+    ASSERT_TRUE(provider.updatePriority(1, PortalTaskPriority::Critical));
+    ASSERT_TRUE(provider.findById(1).has_value());
+    EXPECT_EQ(provider.findById(1)->status, PortalTaskStatus::Blocked);
+    EXPECT_EQ(provider.findById(1)->priority, PortalTaskPriority::Critical);
+    EXPECT_FALSE(provider.updateStatus(999, PortalTaskStatus::Done));
+    EXPECT_FALSE(provider.updatePriority(999, PortalTaskPriority::Low));
+    EXPECT_FALSE(parsePortalTaskStatus("in-progress").has_value());
+    EXPECT_FALSE(parsePortalTaskPriority("urgent").has_value());
+    EXPECT_EQ(parsePortalTaskStatus("done"), PortalTaskStatus::Done);
+    EXPECT_EQ(parsePortalTaskPriority("critical"), PortalTaskPriority::Critical);
+}

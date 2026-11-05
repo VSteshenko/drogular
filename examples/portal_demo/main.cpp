@@ -5,6 +5,7 @@
 #include "features/theme/actions/theme_action.hpp"
 #include "features/diagnostics/portal_inspection_contributor.hpp"
 #include "features/dashboard/pages/dashboard_page.hpp"
+#include "features/dashboard/actions/update_dashboard_task_action.hpp"
 #include "features/tasks/providers/portal_memory_task_provider.hpp"
 #include "features/auth/pages/login_page.hpp"
 #include "features/auth/actions/login_action.hpp"
@@ -232,6 +233,8 @@ int main(
     app.page<PortalLoginPage>("/");
     app.page<PortalLoginPage>("/login");
     app.page<PortalDashboardPage>("/dashboard");
+    app.action<PortalUpdateTaskStatusAction>("/dashboard/tasks/{id}/status");
+    app.action<PortalUpdateTaskPriorityAction>("/dashboard/tasks/{id}/priority");
     app.get<PortalPageFragmentAction<PortalDashboardPage>>("/fragments/pages/dashboard");
     app.page<PortalUsersPage>("/users");
     app.get<PortalPageFragmentAction<PortalUsersPage>>("/fragments/pages/users");

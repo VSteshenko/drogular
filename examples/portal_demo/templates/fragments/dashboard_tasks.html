@@ -1,0 +1,50 @@
+@if(taskUpdateError)
+<p class="dg-alert dg-alert-error">{{ t('dashboard.task.invalid_update') }}</p>
+@endif
+@foreach(task in dashboardTasks)
+<div class="dg-card portal-dashboard-task" data-dashboard-task-id="{{ task.id }}">
+    <div class="dg-card-body">
+        <h4 class="dg-card-title">{{ task.title }}</h4>
+        <div class="portal-dashboard-task-badges">
+            <span class="dg-badge dg-badge-info">{{ t(task.statusKey) }}</span>
+            <span class="dg-badge portal-task-priority-{{ task.priorityClass }}">{{ t(task.priorityKey) }}</span>
+        </div>
+        @if(isAdmin)
+        <div class="portal-dashboard-task-controls">
+            <form method="post" action="/dashboard/tasks/{{ task.id }}/status"
+                  dg-post="/dashboard/tasks/{{ task.id }}/status"
+                  dg-target="[data-dashboard-current-tasks]">
+                <label>{{ t('dashboard.task.change_status') }}</label>
+                <select name="status" aria-label="{{ t('dashboard.task.change_status') }}">
+                    @foreach(option in task.statusOptions)
+                    <option value="{{ option.value }}" @if(option.selected)selected@endif>{{ t(option.labelKey) }}</option>
+                    @endforeach
+                </select>
+                <button class="dg-button" type="submit">{{ t('dashboard.task.apply') }}</button>
+            </form>
+            <form method="post" action="/dashboard/tasks/{{ task.id }}/priority"
+                  dg-post="/dashboard/tasks/{{ task.id }}/priority"
+                  dg-target="[data-dashboard-current-tasks]">
+                <label>{{ t('dashboard.task.change_priority') }}</label>
+                <select name="priority" aria-label="{{ t('dashboard.task.change_priority') }}">
+                    @foreach(option in task.priorityOptions)
+                    <option value="{{ option.value }}" @if(option.selected)selected@endif>{{ t(option.labelKey) }}</option>
+                    @endforeach
+                </select>
+                <button class="dg-button" type="submit">{{ t('dashboard.task.apply') }}</button>
+            </form>
+        </div>
+        @endif
+        @if(task.url)
+        <a href="{{ task.url }}"
+           dg-get="{{ task.fragmentUrl }}"
+           dg-trigger="click"
+           dg-target="[data-portal-content]"
+           dg-history="push"
+           dg-history-url="{{ task.url }}">{{ t('dashboard.task.open_project') }}</a>
+        @endif
+    </div>
+</div>
+@empty
+<p class="dg-empty-state">{{ t('dashboard.no_current_tasks') }}</p>
+@endforeach
