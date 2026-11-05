@@ -198,19 +198,18 @@ The [Getting Started](docs/getting-started/README.md) guide adds the required CM
 
 ---
 
-## What's New in 0.24
+## What's New in 0.25
 
-Drogular 0.24 expands the server-driven application model with file-backed localization, translation validation, a persistent PortalDemo application shell, and the new Mini Store reference application.
+Drogular 0.25 adds client/offline localization, safe return navigation, and interactive tasks in PortalDemo.
 
-- 🌐 `FileTranslationProvider` for external JSON translation catalogs with deterministic requested-locale → default-locale → key fallback
-- ✅ `drogular-l10n-check` plus CTest/CI catalog validation for missing and extra translation keys
-- 🏗 PortalDemo application frame with persistent header/sidebar navigation and an independently replaceable content area
-- 📋 PortalDemo dashboard presentation for current project work, while richer task modeling remains planned for 0.25
-- 🛍 Mini Store reference application with localized Storefront and Staff surfaces, catalog, cart, checkout, stock validation, product/category management, and order workflow
-- ⚡ Mini Store coverage of Drogular UI, Interactions, canonical/history navigation, themes, and PWA/offline behavior
-- 🧪 Expanded application-level regression coverage for the Mini Store flows and localization contracts
+- 🌍 `ClientLocalizationCatalog` exports deterministic manifest and per-locale JSON resources from the server translation catalog.
+- 📱 `App::clientLocalization()` serves a browser runtime with `configure()`, `ready()`, `setLocale()`, and `translate()`; it keeps requested locale → default locale → key fallback.
+- 📴 Versioned locale resources persist in a dedicated Cache Storage namespace, independently of the PortalDemo Service Worker shell cache.
+- ↩️ `NavigationContext` validates and propagates safe local return targets.
+- 📋 PortalDemo models tasks separately from projects, with status, priority, a unified demo dataset and authorization-checked interactive updates.
+- 🧪 Regression coverage includes localization, navigation, task updates, and PortalDemo Service Worker cache isolation.
 
-See [RELEASE_NOTES_0.24.md](RELEASE_NOTES_0.24.md) for the complete release notes.
+See [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md) for details.
 
 ---
 
@@ -227,24 +226,6 @@ See [RELEASE_NOTES_0.24.md](RELEASE_NOTES_0.24.md) for the complete release note
 ---
 
 ## Roadmap
-
-### 0.25 — Client & Offline Localization
-
-Extend the server-side localization model introduced in 0.24 to client and offline experiences without creating a second 
-source of translation truth.
-
-- Keep the server-side translation catalog as the source of truth
-- Export client-consumable locale resources from the server catalog
-- Add a localization manifest with the default locale and available locale resources
-- Cache locale resources through the Service Worker for offline use
-- Support localized Offline navigation using cached translation catalogs
-- Allow language switching while offline when the requested locale is already cached
-- Preserve requested-locale → default-locale → key fallback semantics on the client
-- Add version/hash-based invalidation so localization resources can be refreshed independently of the application shell
-- Reuse the same translation data across server rendering, online Interactions, and Offline UI
-- Extend the existing `NavigationContext` return-target validation and propagation helpers with context-level navigation integration where useful
-- Extend PortalDemo task modeling with first-class task status and priority instead of presentation-only current-work data
-- Add task summary views and Interaction-based task updates
 
 ### 0.26 — Background Jobs & Progress
 

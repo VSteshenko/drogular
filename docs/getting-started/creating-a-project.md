@@ -94,7 +94,7 @@ Generated `CMakeLists.txt` files are pinned to the Drogular Git tag correspondin
 FetchContent_Declare(
     drogular
     GIT_REPOSITORY https://github.com/VSteshenko/drogular.git
-    GIT_TAG v0.24.0
+    GIT_TAG v0.25.0
 )
 ```
 

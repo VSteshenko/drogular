@@ -196,19 +196,18 @@ Die Anleitung [Getting Started](docs/getting-started/README.md) erläutert die e
 
 ---
 
-## Neu in Version 0.24
+## Neu in Version 0.25
 
-Drogular 0.24 erweitert das Modell für servergesteuerte Anwendungen um dateibasierte Lokalisierung, Übersetzungsvalidierung, eine persistente PortalDemo-Anwendungsshell und die neue Mini-Store-Referenzanwendung.
+Drogular 0.25 ergänzt Client-/Offline-Lokalisierung, sichere Rücksprungnavigation und interaktive Aufgaben in PortalDemo.
 
-- 🌐 `FileTranslationProvider` für externe JSON-Übersetzungskataloge mit deterministischer Fallback-Reihenfolge: angeforderte Sprache → Standardsprache → Schlüssel
-- ✅ `drogular-l10n-check` sowie CTest-/CI-Prüfungen für fehlende und zusätzliche Übersetzungsschlüssel
-- 🏗 PortalDemo-Anwendungsrahmen mit persistentem Header, Sidebar-Navigation und unabhängig austauschbarem Inhaltsbereich
-- 📋 Darstellung aktueller Projektarbeit im PortalDemo-Dashboard; eine umfassendere Aufgabenmodellierung bleibt für 0.25 geplant
-- 🛍 Mini-Store-Referenzanwendung mit lokalisierten Storefront- und Staff-Bereichen, Katalog, Warenkorb, Checkout, Bestandsprüfung, Produkt-/Kategorieverwaltung und Bestellworkflow
-- ⚡ Mini Store als Referenz für Drogular UI, Interactions, kanonische/History-Navigation, Themes sowie PWA-/Offline-Verhalten
-- 🧪 Erweiterte Regressionstests auf Anwendungsebene für Mini-Store-Abläufe und Lokalisierungsverträge
+- 🌍 `ClientLocalizationCatalog` erzeugt deterministische Manifest- und Sprachressourcen aus dem serverseitigen Übersetzungskatalog.
+- 📱 `App::clientLocalization()` stellt die Browser-Laufzeit mit `configure()`, `ready()`, `setLocale()` und `translate()` bereit. Die Fallback-Reihenfolge bleibt angeforderte Sprache → Standardsprache → Schlüssel.
+- 📴 Versionierte Sprachressourcen werden unabhängig vom Service-Worker-Shell-Cache in einem eigenen Cache-Storage-Namensraum gespeichert.
+- ↩️ `NavigationContext` prüft und überträgt sichere lokale Rücksprungziele.
+- 📋 PortalDemo verwendet eigenständige Aufgaben mit Status, Priorität, einem gemeinsamen Demo-Datensatz und autorisierten interaktiven Änderungen.
+- 🧪 Regressionstests decken Lokalisierung, Navigation, Aufgabenänderungen und die Service-Worker-Cache-Isolation ab.
 
-Vollständige Versionshinweise: [RELEASE_NOTES_0.24.md](RELEASE_NOTES_0.24.md).
+Details: [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md).
 
 ---
 
@@ -225,23 +224,6 @@ Vollständige Versionshinweise: [RELEASE_NOTES_0.24.md](RELEASE_NOTES_0.24.md).
 ---
 
 ## Roadmap
-
-### 0.25 — Client- und Offline-Lokalisierung
-
-Das in Version 0.24 eingeführte serverseitige Lokalisierungsmodell auf Client- und Offline-Szenarien ausweiten, ohne eine zweite, unabhängige Übersetzungsquelle einzuführen.
-
-- Den serverseitigen Übersetzungskatalog als maßgebliche Quelle beibehalten
-- Clientseitig nutzbare Sprachressourcen aus dem Serverkatalog exportieren
-- Ein Lokalisierungsmanifest mit Standardsprache und verfügbaren Sprachressourcen hinzufügen
-- Sprachressourcen über den Service Worker für die Offline-Nutzung zwischenspeichern
-- Lokalisierte Offline-Navigation mithilfe zwischengespeicherter Übersetzungskataloge unterstützen
-- Sprachwechsel im Offline-Modus ermöglichen, wenn die gewünschte Sprache bereits im Cache liegt
-- Die Fallback-Reihenfolge angeforderte Sprache → Standardsprache → Schlüssel auch clientseitig beibehalten
-- Versions-/Hash-basierte Invalidierung hinzufügen, damit Sprachressourcen unabhängig von der Anwendungsshell aktualisiert werden können
-- Dieselben Übersetzungsdaten für serverseitiges Rendering, Online-Interactions und Offline-UI wiederverwenden
-- Die vorhandenen `NavigationContext`-Hilfen zur Validierung und Weitergabe von Rücksprungzielen bei Bedarf um eine Integration in die Request-Kontexte erweitern
-- Die Aufgabenmodellierung in PortalDemo um erstklassigen Aufgabenstatus und Priorität erweitern, statt nur präsentationsbezogene Daten zur aktuellen Arbeit zu verwenden
-- Aufgabenübersichten und Aufgabenaktualisierungen auf Basis von Interactions ergänzen
 
 ### 0.26 — Hintergrundaufgaben und Fortschritt
 
