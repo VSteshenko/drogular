@@ -227,6 +227,9 @@ Details: [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md).
 
 ### 0.26 — Hintergrundaufgaben und Fortschritt
 
+> In Entwicklung: erster prozesslokaler Job Runtime und aggregierte Diagnosewerte.
+> Siehe [Job-Runtime-Architektur](docs/architecture/job-runtime.md) für den Implementierungsstand.
+
 Ein einheitliches Modell für lang laufende und im Hintergrund ausgeführte Aufgaben einführen. So können Anwendungen wie Atlasys Vorgänge starten, beobachten und steuern, ohne deren Lebensdauer an eine einzelne HTTP-Anfrage zu binden.
 
 - Ein Framework-weites Job-Modell mit Identität, Lebenszyklusstatus, Ergebnis-/Fehlerstatus und Ausführungsmetadaten hinzufügen

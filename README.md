@@ -229,6 +229,9 @@ See [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md) for details.
 
 ### 0.26 — Background Jobs & Progress
 
+> In development: initial process-local Job Runtime and aggregate diagnostics.
+> See [Job Runtime architecture](docs/architecture/job-runtime.md) for implemented behavior and remaining work.
+
 Introduce a first-class model for long-running and background work so applications such as Atlasys can execute, observe, and control operations without tying their lifetime to a single HTTP request.
 
 - Add a framework-level Job model with identity, lifecycle state, result/error state, and execution metadata
