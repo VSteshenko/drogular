@@ -61,14 +61,28 @@ Json::Value serviceScopesSection(
 
 Json::Value jobsSection(const RuntimeDiagnosticsSnapshot& snapshot) {
     Json::Value data(Json::objectValue);
-    data["submitted"] = Json::UInt64(snapshot.jobs.submitted);
-    data["started"] = Json::UInt64(snapshot.jobs.started);
-    data["completed"] = Json::UInt64(snapshot.jobs.completed);
-    data["failed"] = Json::UInt64(snapshot.jobs.failed);
-    data["cancelled"] = Json::UInt64(snapshot.jobs.cancelled);
-    data["cancellationRequests"] = Json::UInt64(snapshot.jobs.cancellationRequests);
-    data["progressUpdates"] = Json::UInt64(snapshot.jobs.progressUpdates);
-    data["rejected"] = Json::UInt64(snapshot.jobs.rejected);
+#define JOB_FIELD(field) data[#field] = Json::UInt64(snapshot.jobs.field)
+    JOB_FIELD(submitted);
+    JOB_FIELD(started);
+    JOB_FIELD(completed);
+    JOB_FIELD(failed);
+    JOB_FIELD(cancelled);
+    JOB_FIELD(cancellationRequests);
+    JOB_FIELD(progressUpdates);
+    JOB_FIELD(rejected);
+    JOB_FIELD(queued);
+    JOB_FIELD(running);
+    JOB_FIELD(workerCapacity);
+    JOB_FIELD(queueWaitTotalMs);
+    JOB_FIELD(executionTotalMs);
+    JOB_FIELD(eventsPublished);
+    JOB_FIELD(eventGaps);
+    JOB_FIELD(activeSubscriptions);
+    JOB_FIELD(activeSseConnections);
+    JOB_FIELD(sseConnectionsOpened);
+    JOB_FIELD(sseConnectionsRejected);
+    JOB_FIELD(sseConnectionsClosed);
+#undef JOB_FIELD
     return data;
 }
 

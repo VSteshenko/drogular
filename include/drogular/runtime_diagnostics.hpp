@@ -42,6 +42,18 @@ struct JobRuntimeDiagnostics {
     std::uint64_t cancellationRequests = 0;
     std::uint64_t progressUpdates = 0;
     std::uint64_t rejected = 0;
+    std::uint64_t queued = 0;
+    std::uint64_t running = 0;
+    std::uint64_t workerCapacity = 0;
+    std::uint64_t queueWaitTotalMs = 0;
+    std::uint64_t executionTotalMs = 0;
+    std::uint64_t eventsPublished = 0;
+    std::uint64_t eventGaps = 0;
+    std::uint64_t activeSubscriptions = 0;
+    std::uint64_t activeSseConnections = 0;
+    std::uint64_t sseConnectionsOpened = 0;
+    std::uint64_t sseConnectionsRejected = 0;
+    std::uint64_t sseConnectionsClosed = 0;
 };
 
 struct RuntimeDiagnosticsSnapshot {
@@ -97,6 +109,17 @@ public:
     void recordJobCancellationRequested() noexcept;
     void recordJobProgress() noexcept;
     void recordJobRejected() noexcept;
+    void registerJobWorkers(std::size_t count) noexcept;
+    void unregisterJobWorkers(std::size_t count) noexcept;
+    void recordJobQueueWait(std::uint64_t milliseconds) noexcept;
+    void recordJobExecution(std::uint64_t milliseconds) noexcept;
+    void recordJobEventPublished() noexcept;
+    void recordJobEventGap() noexcept;
+    void recordJobSubscriptionOpened() noexcept;
+    void recordJobSubscriptionClosed() noexcept;
+    void recordJobSseOpened() noexcept;
+    void recordJobSseRejected() noexcept;
+    void recordJobSseClosed() noexcept;
 
     RuntimeDiagnosticsSnapshot snapshot() const noexcept;
 

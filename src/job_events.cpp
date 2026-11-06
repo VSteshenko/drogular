@@ -1,4 +1,5 @@
 #include <drogular/job_events.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -16,8 +17,12 @@ struct JobEventStream::Subscriber {
 };
 
 struct JobEventStream::State {
-    State(std::size_t replayLimit, std::size_t subscriberLimit)
-        : replayCapacity(replayLimit), subscriberCapacity(subscriberLimit) {}
+    State(std::size_t replayLimit, std::size_t subscriberLimit, RuntimeDiagnostics* diag)
+        : diagnostics(diag), replayCapacity(replayLimit), subscriberCapacity(subscriberLimit)
+    {
+    }
+
+    RuntimeDiagnostics* diagnostics;
     mutable std::mutex mutex;
     const std::size_t replayCapacity;
     const std::size_t subscriberCapacity;
@@ -26,11 +31,15 @@ struct JobEventStream::State {
     std::vector<std::weak_ptr<Subscriber>> subscribers;
 };
 
-JobEventStream::JobEventStream(std::size_t replayCapacity, std::size_t subscriberCapacity) {
+JobEventStream::JobEventStream(
+    std::size_t replayCapacity,
+    std::size_t subscriberCapacity,
+    RuntimeDiagnostics* diagnostics
+) {
     if (!replayCapacity || !subscriberCapacity) {
         throw std::invalid_argument("Event capacities must be positive");
     }
-    state_ = std::make_shared<State>(replayCapacity, subscriberCapacity);
+    state_ = std::make_shared<State>(replayCapacity, subscriberCapacity, diagnostics);
 }
 
 JobEventStream::Subscription::Subscription(std::shared_ptr<State> state,
@@ -39,10 +48,33 @@ JobEventStream::Subscription::Subscription(std::shared_ptr<State> state,
 {
 }
 
+JobEventStream::Subscription& JobEventStream::Subscription::operator=(Subscription&& other) noexcept {
+    if (this != &other) {
+        if (subscriber_) {
+            std::lock_guard lock(state_->mutex);
+            if (!subscriber_->closed) {
+                subscriber_->closed = true;
+                if (state_->diagnostics) {
+                    state_->diagnostics->recordJobSubscriptionClosed();
+                }
+                subscriber_->ready.notify_all();
+            }
+        }
+        state_ = std::move(other.state_);
+        subscriber_ = std::move(other.subscriber_);
+    }
+    return *this;
+}
+
 JobEventStream::Subscription::~Subscription() {
     if (subscriber_) {
         std::lock_guard lock(state_->mutex);
-        subscriber_->closed = true;
+        if (!subscriber_->closed) {
+            subscriber_->closed = true;
+            if (state_->diagnostics) {
+                state_->diagnostics->recordJobSubscriptionClosed();
+            }
+        }
         subscriber_->ready.notify_all();
     }
 }
@@ -95,12 +127,21 @@ JobEventStream::Subscription JobEventStream::subscribe(
                 if (subscriber->pending.size() == state_->subscriberCapacity) {
                     subscriber->pending.pop_front();
                     subscriber->gap = true;
+                    if (state_->diagnostics) {
+                        state_->diagnostics->recordJobEventGap();
+                    }
                 }
                 subscriber->pending.push_back(event);
             }
         }
     }
     state_->subscribers.emplace_back(subscriber);
+    if (state_->diagnostics) {
+        state_->diagnostics->recordJobSubscriptionOpened();
+        if (subscriber->gap) {
+            state_->diagnostics->recordJobEventGap();
+        }
+    }
 
     return Subscription(state_, std::move(subscriber));
 }
@@ -113,6 +154,9 @@ std::uint64_t JobEventStream::latestSequence() const {
 void JobEventStream::publish(JobEventKind kind, JobSnapshot snapshot) {
     std::lock_guard lock(state_->mutex);
     JobEvent event{++state_->sequence, kind, std::move(snapshot)};
+    if (state_->diagnostics) {
+        state_->diagnostics->recordJobEventPublished();
+    }
     state_->replay.push_back(event);
     if (state_->replay.size() > state_->replayCapacity) {
         state_->replay.pop_front();
@@ -130,6 +174,7 @@ void JobEventStream::publish(JobEventKind kind, JobSnapshot snapshot) {
             if (target->pending.size() == state_->subscriberCapacity) {
                 target->pending.pop_front();
                 target->gap = true;
+                if (state_->diagnostics) state_->diagnostics->recordJobEventGap();
             }
             target->pending.push_back(event);
             target->ready.notify_one();

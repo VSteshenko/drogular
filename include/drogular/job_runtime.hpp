@@ -122,6 +122,7 @@ public:
     // jobs and join all workers. Running tasks must cooperate to stop promptly.
     void shutdown() noexcept;
     std::size_t workerCount() const noexcept;
+    RuntimeDiagnostics* runtimeDiagnostics() const noexcept;
     // Transport-neutral observable event stream. Outlives individual subscriptions.
     JobEventStream& events() noexcept;
 

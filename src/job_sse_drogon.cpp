@@ -1,7 +1,7 @@
 #include <drogular/job_sse_drogon.hpp>
-
 #include <drogular/job_events.hpp>
 #include <drogular/job_sse.hpp>
+#include <drogular/runtime_diagnostics.hpp>
 
 #include <drogon/HttpResponse.h>
 
@@ -64,10 +64,14 @@ struct ConnectionCount {
 
 struct ConnectionLease {
     std::shared_ptr<ConnectionCount> count;
+    RuntimeDiagnostics* diagnostics = nullptr;
 
     ~ConnectionLease() {
         if (count) {
             --count->active;
+            if (diagnostics) {
+                diagnostics->recordJobSseClosed();
+            }
         }
     }
 };
@@ -152,6 +156,9 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
                 }
             }
             if (!connections->acquire()) {
+                if (auto* diagnostics = runtime->runtimeDiagnostics()) {
+                    diagnostics->recordJobSseRejected();
+                }
                 reply(errorResponse(drogon::k503ServiceUnavailable, "Too many SSE connections"), callback);
                 return;
             }
@@ -160,6 +167,10 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
             auto subscription = runtime->events().subscribe(*id, cursor);
             auto lease = std::make_shared<ConnectionLease>();
             lease->count = connections;
+            lease->diagnostics = runtime->runtimeDiagnostics();
+            if (lease->diagnostics) {
+                lease->diagnostics->recordJobSseOpened();
+            }
             auto response = drogon::HttpResponse::newAsyncStreamResponse(
                 [runtime, lease, heartbeat,
                  subscription = std::make_shared<JobEventStream::Subscription>(

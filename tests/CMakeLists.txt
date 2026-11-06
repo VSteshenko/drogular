@@ -410,3 +410,17 @@ add_test(
     NAME drogular_job_events_smoke
     COMMAND drogular_job_events_smoke
 )
+
+# Process-local Job diagnostics and event observer accounting.
+add_executable(
+    drogular_job_diagnostics_smoke
+    job_runtime/job_diagnostics_smoke.cpp
+)
+target_link_libraries(
+    drogular_job_diagnostics_smoke
+    PRIVATE Drogular::drogular
+)
+add_test(
+    NAME drogular_job_diagnostics_smoke
+    COMMAND drogular_job_diagnostics_smoke
+)

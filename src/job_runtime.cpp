@@ -74,7 +74,7 @@ JobRuntime::JobRuntime(
     RuntimeDiagnostics* diagnostics
     )
     : maxQueued_(maxQueued), diagnostics_(diagnostics),
-      events_(std::make_unique<JobEventStream>())
+      events_(std::make_unique<JobEventStream>(256, 256, diagnostics))
 {
     if (workers == 0 || maxQueued == 0) {
         throw std::invalid_argument("JobRuntime requires workers and queue capacity");
@@ -83,6 +83,9 @@ JobRuntime::JobRuntime(
     try {
         for (std::size_t i = 0; i < workers; ++i) {
             workers_.emplace_back([this] { workerLoop(); });
+            if (diagnostics_) {
+                diagnostics_->registerJobWorkers(1);
+            }
         }
     } catch (...) {
         shutdown();
@@ -226,6 +229,8 @@ void JobRuntime::workerLoop() {
                 *shared.snapshot.startedAt - shared.snapshot.createdAt);
 
             if (diagnostics_) {
+                diagnostics_->recordJobQueueWait(
+                    static_cast<std::uint64_t>(shared.snapshot.queueDuration->count()));
                 diagnostics_->recordJobStarted();
             }
             events_->publish(JobEventKind::Started, shared.snapshot);
@@ -281,6 +286,8 @@ void JobRuntime::workerLoop() {
                 outcome == JobStatus::Failed ? JobEventKind::Failed : JobEventKind::Cancelled,
                 shared.snapshot);
             if (diagnostics_) {
+                diagnostics_->recordJobExecution(
+                    static_cast<std::uint64_t>(shared.snapshot.executionDuration->count()));
                 switch (outcome) {
                     case JobStatus::Completed:
                         diagnostics_->recordJobCompleted();
@@ -300,9 +307,11 @@ void JobRuntime::workerLoop() {
 }
 
 void JobRuntime::shutdown() noexcept {
+    bool firstShutdown = false;
     {
         std::lock_guard lock(mutex_);
         if (!stopping_) {
+            firstShutdown = true;
             stopping_ = true;
             for (const auto& [id, entry] : entries_) {
                 auto& shared = *entry->shared;
@@ -330,10 +339,17 @@ void JobRuntime::shutdown() noexcept {
             worker.join();
         }
     }
+    if (firstShutdown && diagnostics_) {
+        diagnostics_->unregisterJobWorkers(workers_.size());
+    }
 }
 
 JobEventStream& JobRuntime::events() noexcept {
     return *events_;
+}
+
+RuntimeDiagnostics* JobRuntime::runtimeDiagnostics() const noexcept {
+    return diagnostics_;
 }
 
 std::size_t JobRuntime::workerCount() const noexcept {

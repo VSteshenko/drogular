@@ -38,6 +38,31 @@ auto id = jobs.submit("Index", [](drogular::JobContext& job) {
   `jobs` section. This is not a persistent event log.
 
 
+## Runtime and SSE diagnostics
+
+Pass an optional `RuntimeDiagnostics*` when constructing `JobRuntime`. The
+existing Developer Tools `drogular.jobs` section retains the original counters
+and adds live `queued`, `running`, and `workerCapacity` gauges, cumulative
+`queueWaitTotalMs` and `executionTotalMs`, `eventsPublished`, `eventGaps`,
+`activeSubscriptions`, `activeSseConnections`, `sseConnectionsOpened`,
+`sseConnectionsRejected`, and `sseConnectionsClosed`.
+
+Queue and running gauges change on *state transitions*, not on polling.
+Waiting times are counted when a job starts; execution times when a job
+finishes. Average wait/execution can be calculated by consumers from totals
+and `started` / (`completed + failed + running cancellations`) as appropriate;
+metrics are non-transactional atomic snapshots and may be momentarily out of
+sync while transitions are recorded concurrently. A queued cancellation does
+not contribute to queue waiting time, because the job never started.
+
+SSE connection gauges apply only to endpoints registered using
+`registerJobSseEndpoint` and associated with a runtime that has diagnostics.
+A connection is counted from admission until its streaming lease is released;
+`Closed` counts lease releases including normal close and disconnects.
+Stream `eventGaps` counts cursor gaps and subscriber-buffer overflows.
+The diagnostics pointer must outlive the runtime and its SSE connections;
+these metrics are aggregates, not a per-user activity log.
+
 ## Results, errors, and timings
 
 `JobContext::setResult(value)` stores a copyable C++ value in the Job snapshot.

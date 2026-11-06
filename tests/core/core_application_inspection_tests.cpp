@@ -251,6 +251,12 @@ TEST(ApplicationInspectionTests, ReportsRuntimeDiagnosticsSections) {
     EXPECT_EQ(jobs.data["cancellationRequests"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["progressUpdates"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["rejected"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["queued"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["running"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["workerCapacity"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["eventsPublished"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["activeSubscriptions"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["activeSseConnections"].asUInt64(), 0u);
 
     const auto& scopes = inspection.sections[3];
     EXPECT_EQ(scopes.id, "service-scopes");

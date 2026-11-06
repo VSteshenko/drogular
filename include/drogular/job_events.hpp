@@ -50,7 +50,7 @@ public:
     public:
         Subscription() = default;
         Subscription(Subscription&&) noexcept = default;
-        Subscription& operator=(Subscription&&) noexcept = default;
+        Subscription& operator=(Subscription&&) noexcept;
         Subscription(const Subscription&) = delete;
         Subscription& operator=(const Subscription&) = delete;
         ~Subscription();
@@ -71,7 +71,8 @@ public:
     };
 
     explicit JobEventStream(std::size_t replayCapacity = 256,
-                            std::size_t subscriberCapacity = 256);
+                            std::size_t subscriberCapacity = 256,
+                            RuntimeDiagnostics* diagnostics = nullptr);
     JobEventStream(const JobEventStream&) = delete;
     JobEventStream& operator=(const JobEventStream&) = delete;
 
