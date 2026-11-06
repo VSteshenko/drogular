@@ -59,6 +59,19 @@ Json::Value serviceScopesSection(
     return data;
 }
 
+Json::Value jobsSection(const RuntimeDiagnosticsSnapshot& snapshot) {
+    Json::Value data(Json::objectValue);
+    data["submitted"] = Json::UInt64(snapshot.jobs.submitted);
+    data["started"] = Json::UInt64(snapshot.jobs.started);
+    data["completed"] = Json::UInt64(snapshot.jobs.completed);
+    data["failed"] = Json::UInt64(snapshot.jobs.failed);
+    data["cancelled"] = Json::UInt64(snapshot.jobs.cancelled);
+    data["cancellationRequests"] = Json::UInt64(snapshot.jobs.cancellationRequests);
+    data["progressUpdates"] = Json::UInt64(snapshot.jobs.progressUpdates);
+    data["rejected"] = Json::UInt64(snapshot.jobs.rejected);
+    return data;
+}
+
 } // namespace
 
 RuntimeDiagnosticsContributor::RuntimeDiagnosticsContributor(
@@ -83,6 +96,12 @@ void RuntimeDiagnosticsContributor::contribute(
         "Interactions",
         "drogular.interactions",
         interactionsSection(snapshot)
+    });
+    inspection.addSection({
+        "jobs",
+        "Jobs",
+        "drogular.jobs",
+        jobsSection(snapshot)
     });
     inspection.addSection({
         "service-scopes",

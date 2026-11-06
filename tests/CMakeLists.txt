@@ -381,3 +381,17 @@ if(TARGET drogular_cli)
         )
     endforeach()
 endif()
+
+# Independent Job Core smoke test: does not require a running HTTP server.
+add_executable(
+    drogular_job_runtime_smoke
+    job_runtime/job_runtime_smoke.cpp
+)
+target_link_libraries(
+    drogular_job_runtime_smoke
+    PRIVATE Drogular::drogular
+)
+add_test(
+    NAME drogular_job_runtime_smoke
+    COMMAND drogular_job_runtime_smoke
+)

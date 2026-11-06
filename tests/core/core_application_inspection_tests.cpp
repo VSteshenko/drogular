@@ -153,15 +153,16 @@ TEST(ApplicationInspectionTests, CollectsExtensionSectionsFromDiContributors) {
     );
 
     const auto inspection = app.inspect();
-    ASSERT_EQ(inspection.sections.size(), 4u);
+    ASSERT_EQ(inspection.sections.size(), 5u);
+    EXPECT_EQ(inspection.sections[2].id, "jobs");
     EXPECT_EQ(inspection.sections.back().id, "authentication");
 
     const auto json = drogular::toJson(inspection);
     EXPECT_EQ(json["schemaVersion"].asInt(), 3);
-    ASSERT_EQ(json["sections"].size(), 8u);
-    EXPECT_EQ(json["sections"][7]["id"].asString(), "authentication");
-    EXPECT_EQ(json["sections"][7]["component"].asString(), "example.authentication");
-    EXPECT_TRUE(json["sections"][7]["data"]["enabled"].asBool());
+    ASSERT_EQ(json["sections"].size(), 9u);
+    EXPECT_EQ(json["sections"][8]["id"].asString(), "authentication");
+    EXPECT_EQ(json["sections"][8]["component"].asString(), "example.authentication");
+    EXPECT_TRUE(json["sections"][8]["data"]["enabled"].asBool());
 }
 
 TEST(ApplicationInspectionTests, ReplacesSectionWithSameId) {
@@ -216,7 +217,7 @@ TEST(ApplicationInspectionTests, ReportsRuntimeDiagnosticsSections) {
     drogular::RuntimeDiagnosticsContributor contributor(diagnostics);
     contributor.contribute(inspection);
 
-    ASSERT_EQ(inspection.sections.size(), 3u);
+    ASSERT_EQ(inspection.sections.size(), 4u);
 
     const auto& runtime = inspection.sections[0];
     EXPECT_EQ(runtime.id, "runtime");
@@ -239,7 +240,19 @@ TEST(ApplicationInspectionTests, ReportsRuntimeDiagnosticsSections) {
     EXPECT_EQ(interactions.data["clientErrorResponses"].asUInt64(), 0u);
     EXPECT_EQ(interactions.data["redirects"].asUInt64(), 0u);
 
-    const auto& scopes = inspection.sections[2];
+    const auto& jobs = inspection.sections[2];
+    EXPECT_EQ(jobs.id, "jobs");
+    EXPECT_EQ(jobs.component, "drogular.jobs");
+    EXPECT_EQ(jobs.data["submitted"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["started"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["completed"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["failed"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["cancelled"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["cancellationRequests"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["progressUpdates"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["rejected"].asUInt64(), 0u);
+
+    const auto& scopes = inspection.sections[3];
     EXPECT_EQ(scopes.id, "service-scopes");
     EXPECT_EQ(scopes.component, "drogular.service-scopes");
     EXPECT_EQ(scopes.data["resolutions"].asUInt64(), 1u);
@@ -252,8 +265,9 @@ TEST(ApplicationInspectionTests, AppInspectionIncludesRuntimeDiagnosticsSections
 
     const auto inspection = app.inspect();
 
-    ASSERT_EQ(inspection.sections.size(), 3u);
+    ASSERT_EQ(inspection.sections.size(), 4u);
     EXPECT_EQ(inspection.sections[0].id, "runtime");
     EXPECT_EQ(inspection.sections[1].id, "interactions");
-    EXPECT_EQ(inspection.sections[2].id, "service-scopes");
+    EXPECT_EQ(inspection.sections[2].id, "jobs");
+    EXPECT_EQ(inspection.sections[3].id, "service-scopes");
 }

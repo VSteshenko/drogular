@@ -33,7 +33,19 @@ struct ServiceScopeRuntimeDiagnostics {
     std::uint64_t servicesCreated = 0;
 };
 
+struct JobRuntimeDiagnostics {
+    std::uint64_t submitted = 0;
+    std::uint64_t started = 0;
+    std::uint64_t completed = 0;
+    std::uint64_t failed = 0;
+    std::uint64_t cancelled = 0;
+    std::uint64_t cancellationRequests = 0;
+    std::uint64_t progressUpdates = 0;
+    std::uint64_t rejected = 0;
+};
+
 struct RuntimeDiagnosticsSnapshot {
+    JobRuntimeDiagnostics jobs;
     RequestRuntimeDiagnostics requests;
     InteractionRuntimeDiagnostics interactions;
     RenderingRuntimeDiagnostics rendering;
@@ -76,6 +88,15 @@ public:
     void recordServiceScopeResolution() noexcept;
     void recordServiceScopeCacheHit() noexcept;
     void recordServiceScopeServiceCreated() noexcept;
+
+    void recordJobSubmitted() noexcept;
+    void recordJobStarted() noexcept;
+    void recordJobCompleted() noexcept;
+    void recordJobFailed() noexcept;
+    void recordJobCancelled(bool wasRunning) noexcept;
+    void recordJobCancellationRequested() noexcept;
+    void recordJobProgress() noexcept;
+    void recordJobRejected() noexcept;
 
     RuntimeDiagnosticsSnapshot snapshot() const noexcept;
 

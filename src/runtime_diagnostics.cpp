@@ -26,6 +26,14 @@ void updateMaximum(
 } // namespace
 
 struct RuntimeDiagnostics::State {
+    std::atomic<std::uint64_t> jobSubmitted{0};
+    std::atomic<std::uint64_t> jobStarted{0};
+    std::atomic<std::uint64_t> jobCompleted{0};
+    std::atomic<std::uint64_t> jobFailed{0};
+    std::atomic<std::uint64_t> jobCancelled{0};
+    std::atomic<std::uint64_t> jobCancellationRequests{0};
+    std::atomic<std::uint64_t> jobProgress{0};
+    std::atomic<std::uint64_t> jobRejected{0};
     std::atomic<std::uint64_t> requests{0};
     std::atomic<std::uint64_t> actions{0};
     std::atomic<std::uint64_t> renderedActions{0};
@@ -116,8 +124,48 @@ void RuntimeDiagnostics::recordServiceScopeServiceCreated() noexcept {
     state_->serviceScopeServicesCreated.fetch_add(1, std::memory_order_relaxed);
 }
 
+void RuntimeDiagnostics::recordJobSubmitted() noexcept {
+    state_->jobSubmitted.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobStarted() noexcept {
+    state_->jobStarted.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobCompleted() noexcept {
+    state_->jobCompleted.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobFailed() noexcept {
+    state_->jobFailed.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobCancelled(bool) noexcept {
+    state_->jobCancelled.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobCancellationRequested() noexcept {
+    state_->jobCancellationRequests.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobProgress() noexcept {
+    state_->jobProgress.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobRejected() noexcept {
+    state_->jobRejected.fetch_add(1, std::memory_order_relaxed);
+}
+
 RuntimeDiagnosticsSnapshot RuntimeDiagnostics::snapshot() const noexcept {
     RuntimeDiagnosticsSnapshot result;
+    result.jobs.submitted = state_->jobSubmitted.load(std::memory_order_relaxed);
+    result.jobs.started = state_->jobStarted.load(std::memory_order_relaxed);
+    result.jobs.completed = state_->jobCompleted.load(std::memory_order_relaxed);
+    result.jobs.failed = state_->jobFailed.load(std::memory_order_relaxed);
+    result.jobs.cancelled = state_->jobCancelled.load(std::memory_order_relaxed);
+    result.jobs.cancellationRequests = state_->jobCancellationRequests.load(std::memory_order_relaxed);
+    result.jobs.progressUpdates = state_->jobProgress.load(std::memory_order_relaxed);
+    result.jobs.rejected = state_->jobRejected.load(std::memory_order_relaxed);
 
     result.requests.requests = state_->requests.load(std::memory_order_relaxed);
     result.requests.actions = state_->actions.load(std::memory_order_relaxed);
