@@ -1,5 +1,6 @@
 #pragma once
 
+#include <any>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -31,17 +32,32 @@ enum class JobStatus {
     Cancelled
 };
 
+struct JobError {
+    std::string code;
+    std::string message;
+};
+
 struct JobSnapshot {
     JobId id = 0;
     std::string name;
     JobStatus status = JobStatus::Queued;
     unsigned progress = 0;
     std::string message;
+    // Legacy message retained for existing consumers.
     std::string error;
+    std::optional<JobError> failure;
+    // Value is present only on successful completion. Copyable C++ values only.
+    std::any result;
+    template <typename T>
+    const T* resultAs() const noexcept {
+        return std::any_cast<T>(&result);
+    }
     bool cancellationRequested = false;
     std::chrono::system_clock::time_point createdAt{};
     std::optional<std::chrono::system_clock::time_point> startedAt;
     std::optional<std::chrono::system_clock::time_point> finishedAt;
+    std::optional<std::chrono::milliseconds> queueDuration;
+    std::optional<std::chrono::milliseconds> executionDuration;
 };
 
 class JobCancelled final : public std::runtime_error {
@@ -49,11 +65,28 @@ public:
     JobCancelled() : std::runtime_error("Job cancelled") {}
 };
 
+/** Throw to fail a Job with a stable machine-readable error code. */
+class JobFailure final : public std::runtime_error {
+public:
+    JobFailure(std::string code, std::string message)
+        : std::runtime_error(message), code_(std::move(code)) {
+        if (code_.empty()) throw std::invalid_argument("Job failure code cannot be empty");
+    }
+    const std::string& code() const noexcept { return code_; }
+private:
+    std::string code_;
+};
+
 class JobContext {
 public:
     bool cancellationRequested() const noexcept;
     void throwIfCancellationRequested() const;
     void reportProgress(unsigned percent, std::string message = {});
+    // Store a copyable C++ result. The value is published only if the task
+    // finishes successfully; cancellation/failure clears it.
+    void setResult(std::any value);
+    template <typename T>
+    void setResult(T value) { setResult(std::any(std::move(value))); }
 
 private:
     friend class JobRuntime;

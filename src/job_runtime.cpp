@@ -53,6 +53,15 @@ void JobContext::reportProgress(unsigned percent, std::string message) {
     }
 }
 
+void JobContext::setResult(std::any value) {
+    throwIfCancellationRequested();
+    std::lock_guard lock(shared_->mutex);
+    if (shared_->snapshot.status != JobStatus::Running) {
+        return;
+    }
+    shared_->snapshot.result = std::move(value);
+}
+
 JobRuntime::JobRuntime(std::size_t workers, std::size_t maxQueued,
                        RuntimeDiagnostics* diagnostics)
     : maxQueued_(maxQueued), diagnostics_(diagnostics)
@@ -196,8 +205,12 @@ void JobRuntime::workerLoop() {
             if (shared.snapshot.status == JobStatus::Cancelled) {
                 continue;
             }
+
             shared.snapshot.status = JobStatus::Running;
             shared.snapshot.startedAt = std::chrono::system_clock::now();
+            shared.snapshot.queueDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                *shared.snapshot.startedAt - shared.snapshot.createdAt);
+
             if (diagnostics_) {
                 diagnostics_->recordJobStarted();
             }
@@ -205,6 +218,7 @@ void JobRuntime::workerLoop() {
 
         JobStatus outcome = JobStatus::Completed;
         std::string error;
+        std::string errorCode;
         try {
             JobContext ctx(entry->shared);
             ctx.throwIfCancellationRequested();
@@ -212,11 +226,17 @@ void JobRuntime::workerLoop() {
             ctx.throwIfCancellationRequested();
         } catch (const JobCancelled&) {
             outcome = JobStatus::Cancelled;
+        } catch (const JobFailure& e) {
+            outcome = JobStatus::Failed;
+            errorCode = e.code();
+            error = e.what();
         } catch (const std::exception& e) {
             outcome = JobStatus::Failed;
+            errorCode = "exception";
             error = e.what();
         } catch (...) {
             outcome = JobStatus::Failed;
+            errorCode = "unknown_exception";
             error = "Unknown Job exception";
         }
 
@@ -224,7 +244,20 @@ void JobRuntime::workerLoop() {
             std::lock_guard lock(shared.mutex);
             shared.snapshot.status = outcome;
             shared.snapshot.error = std::move(error);
+            if (outcome == JobStatus::Failed) {
+                shared.snapshot.failure = JobError {
+                    std::move(errorCode),
+                    shared.snapshot.error
+                };
+                shared.snapshot.result.reset();
+            } else if (outcome == JobStatus::Cancelled) {
+                shared.snapshot.result.reset();
+            }
+
             shared.snapshot.finishedAt = std::chrono::system_clock::now();
+            shared.snapshot.executionDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                *shared.snapshot.finishedAt - *shared.snapshot.startedAt);
+
             if (outcome == JobStatus::Completed) {
                 shared.snapshot.progress = 100;
             }

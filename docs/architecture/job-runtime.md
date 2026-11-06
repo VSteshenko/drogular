@@ -37,8 +37,43 @@ auto id = jobs.submit("Index", [](drogular::JobContext& job) {
   JobRuntime and exposes aggregate Job counters in the existing Developer Tools
   `jobs` section. This is not a persistent event log.
 
+
+## Results, errors, and timings
+
+`JobContext::setResult(value)` stores a copyable C++ value in the Job snapshot.
+Read it with `snapshot.resultAs<T>()` after `Completed`; a mismatched type
+returns `nullptr`. The result is cleared on failure or cancellation. The
+runtime does not serialize arbitrary C++ results: an HTTP/Application adapter
+must deliberately choose its own public representation and access policy.
+
+```cpp
+const auto id = jobs.submit("Count", [](drogular::JobContext& job) {
+    job.reportProgress(50, "Counting");
+    job.setResult(42);
+});
+// After the Job reaches Completed:
+if (auto snapshot = jobs.find(id); snapshot &&
+    snapshot->status == drogular::JobStatus::Completed) {
+    if (const auto* count = snapshot->resultAs<int>()) {
+        // Use *count.
+    }
+}
+```
+
+Throw `drogular::JobFailure("invalid_input", "Missing input")` for a stable
+machine-readable `failure.code`. Other `std::exception` instances use code
+`exception`; unknown exceptions use `unknown_exception`. The existing `error`
+string remains for backwards compatibility. Failed or cancelled Jobs never
+publish partial results. `queueDuration` is populated when a Job begins;
+`executionDuration` is populated when it terminates after beginning. Cancelled
+queued Jobs have neither duration. Both durations use milliseconds.
+
+The `std::any` result is held in process memory and retained for the runtime
+lifetime. Avoid storing large payloads or secrets without an appropriate
+retention and authorization policy.
+
 ## Remaining 0.26 work
 
-Application adapter, structured typed results, SSE transport and replay,
+Application adapter, SSE transport and replay,
 retention policy, JobsDemo, extended timings and concurrency diagnostics, and
 stress/integration tests are **not yet implemented**.
