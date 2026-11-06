@@ -62,6 +62,7 @@ add_library(drogular
     src/router.cpp
     src/job_events.cpp
     src/job_sse.cpp
+    src/job_sse_drogon.cpp
     src/job_runtime.cpp
     src/runtime_diagnostics.cpp
     src/route_pattern.cpp

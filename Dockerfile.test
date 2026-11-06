@@ -12,7 +12,6 @@ RUN apt-get update \
         git \
         ninja-build \
         pkg-config \
-        libdrogon-dev \
         libjsoncpp-dev \
         uuid-dev \
         zlib1g-dev \
@@ -26,6 +25,22 @@ RUN apt-get update \
         libyaml-cpp-dev \
         libc-ares-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu 24.04 ships Drogon 1.8.7, which lacks async SSE streaming.
+# Pin the same newer API surface across platforms.
+ARG DROGON_VERSION=v1.9.14
+RUN git clone --depth 1 --branch "${DROGON_VERSION}" --recurse-submodules \
+        https://github.com/drogonframework/drogon.git /tmp/drogon \
+    && cmake -S /tmp/drogon -B /tmp/drogon-build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_CTL=OFF \
+        -DBUILD_ORM=OFF \
+        -DBUILD_TESTING=OFF \
+    && cmake --build /tmp/drogon-build --parallel 2 \
+    && cmake --install /tmp/drogon-build \
+    && ldconfig \
+    && rm -rf /tmp/drogon /tmp/drogon-build
 
 WORKDIR /workspace
 

@@ -113,17 +113,58 @@ runtime restarts, so reconnect handling must resync if the process changed.
 The framing helper deliberately serializes only basic metadata, progress and
 errors; opaque `std::any` results are **never** exposed automatically. The HTTP
 controller must apply authorization, isolate users' jobs, manage disconnects,
-and avoid blocking Drogon event-loop threads with `waitFor()`. A concrete
-Drogon streaming controller is **not included yet**; that integration is part
-of the upcoming Application adapter and JobsDemo stage.
+and avoid blocking Drogon event-loop threads with `waitFor()`. A Drogon adapter is provided below; applications must explicitly register
+it and enforce per-job authorization.
 
 The event stream is process-local and is not a durable audit trail. Subscribers
 are RAII handles. Consuming a batch clears its overflow flag; an SSE adapter
 must process the gap before applying subsequent events. Event publication is
 bounded and does not call arbitrary user callbacks on worker threads.
 
+## Drogon HTTP/SSE endpoint
+
+The optional Drogon adapter lives in `<drogular/job_sse_drogon.hpp>` and is
+registered explicitly by each application. It does **not** introduce a route
+or publish task data by default. Pass a shared Runtime lifetime and a mandatory
+per-job authorization check:
+
+```cpp
+#include <drogular/job_sse_drogon.hpp>
+
+// jobs is a std::shared_ptr<drogular::JobRuntime>.
+drogular::registerJobSseEndpoint(
+    drogon::app(), "/api/jobs/events", jobs,
+    [](const drogon::HttpRequestPtr& request, drogular::JobId jobId) {
+        // Replace with a real principal/tenant ownership check.
+        return authenticatedUserOwnsJob(request, jobId);
+    });
+```
+
+Clients connect using `new EventSource('/api/jobs/events?job=123')` and
+usually fetch the initial, **authorized** Job snapshot separately. Drogon
+streams `text/event-stream` using `newAsyncStreamResponse`; a bounded number
+of connection workers wait for events outside Drogon's event-loop threads.
+The endpoint validates Job IDs, enforces authorization before exposing
+existence, rejects unknown Jobs, reads `Last-Event-ID`, and sends heartbeats.
+The default connection cap is 64; additional clients receive HTTP 503. A
+replay or subscriber overflow sends `job.reset`, after which clients **must**
+fetch an up-to-date authorized snapshot. SSE never serializes opaque results.
+
+Important production constraints: this is a **process-local** adapter, not
+cross-node event delivery. Its connection model dedicates a lightweight
+worker thread per EventSource client (bounded by `maxConnections`). Connection
+cleanup is detected by a failed socket send, so idle disconnections may
+remain counted until the next heartbeat. A shared runtime must remain alive
+while it is passed to the endpoint; this adapter captures its ownership.
+Do not use an `authorize` callback that always returns true in production.
+
+The transport integration is intentionally independent of `Drogular::App`:
+Application routes and the future JobsDemo may register it without changing
+the core Runtime. A full live-browser cross-platform integration test remains
+a follow-up alongside JobsDemo.
+
 ## Remaining 0.26 work
 
-Application adapter, SSE transport and replay,
-retention policy, JobsDemo, extended timings and concurrency diagnostics, and
-stress/integration tests are **not yet implemented**.
+Application convenience wiring, retention policy, JobsDemo, extended timings
+and concurrency diagnostics, and full network stress/integration tests are
+**not yet implemented**.
