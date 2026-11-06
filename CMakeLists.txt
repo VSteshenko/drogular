@@ -60,6 +60,8 @@ add_library(drogular
     src/locale_support.cpp
     src/localization_resources.cpp
     src/router.cpp
+    src/job_events.cpp
+    src/job_sse.cpp
     src/job_runtime.cpp
     src/runtime_diagnostics.cpp
     src/route_pattern.cpp

@@ -21,6 +21,7 @@
 namespace drogular {
 
 class RuntimeDiagnostics;
+class JobEventStream;
 
 using JobId = std::uint64_t;
 
@@ -121,6 +122,8 @@ public:
     // jobs and join all workers. Running tasks must cooperate to stop promptly.
     void shutdown() noexcept;
     std::size_t workerCount() const noexcept;
+    // Transport-neutral observable event stream. Outlives individual subscriptions.
+    JobEventStream& events() noexcept;
 
 private:
     struct Entry;
@@ -132,6 +135,7 @@ private:
     std::vector<std::thread> workers_;
     std::size_t maxQueued_;
     RuntimeDiagnostics* diagnostics_;
+    std::unique_ptr<JobEventStream> events_;
     JobId nextId_ = 1;
     bool stopping_ = false;
 };

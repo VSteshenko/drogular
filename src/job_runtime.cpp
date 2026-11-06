@@ -1,4 +1,5 @@
 #include <drogular/job_runtime.hpp>
+#include <drogular/job_events.hpp>
 #include <drogular/runtime_diagnostics.hpp>
 
 #include <algorithm>
@@ -12,6 +13,7 @@ struct JobContext::Shared {
     JobSnapshot snapshot;
     std::atomic<bool> cancel{false};
     RuntimeDiagnostics* diagnostics = nullptr;
+    JobEventStream* events = nullptr;
 };
 
 struct JobRuntime::Entry {
@@ -51,6 +53,10 @@ void JobContext::reportProgress(unsigned percent, std::string message) {
     if (shared_->diagnostics) {
         shared_->diagnostics->recordJobProgress();
     }
+    if (shared_->events) {
+        std::lock_guard lock(shared_->mutex);
+        shared_->events->publish(JobEventKind::Progress, shared_->snapshot);
+    }
 }
 
 void JobContext::setResult(std::any value) {
@@ -62,9 +68,13 @@ void JobContext::setResult(std::any value) {
     shared_->snapshot.result = std::move(value);
 }
 
-JobRuntime::JobRuntime(std::size_t workers, std::size_t maxQueued,
-                       RuntimeDiagnostics* diagnostics)
-    : maxQueued_(maxQueued), diagnostics_(diagnostics)
+JobRuntime::JobRuntime(
+    std::size_t workers,
+    std::size_t maxQueued,
+    RuntimeDiagnostics* diagnostics
+    )
+    : maxQueued_(maxQueued), diagnostics_(diagnostics),
+      events_(std::make_unique<JobEventStream>())
 {
     if (workers == 0 || maxQueued == 0) {
         throw std::invalid_argument("JobRuntime requires workers and queue capacity");
@@ -103,6 +113,7 @@ JobId JobRuntime::submit(std::string name, Task task) {
 
     auto shared = std::make_shared<JobContext::Shared>();
     shared->diagnostics = diagnostics_;
+    shared->events = events_.get();
     shared->snapshot.id = nextId_++;
     shared->snapshot.name = std::move(name);
     shared->snapshot.createdAt = std::chrono::system_clock::now();
@@ -117,6 +128,7 @@ JobId JobRuntime::submit(std::string name, Task task) {
         diagnostics_->recordJobSubmitted();
     }
 
+    events_->publish(JobEventKind::Queued, entry->shared->snapshot);
     ready_.notify_one();
     return id;
 }
@@ -169,12 +181,14 @@ bool JobRuntime::requestCancel(JobId id) {
         if (diagnostics_) {
             diagnostics_->recordJobCancelled(false);
         }
+        events_->publish(JobEventKind::Cancelled, shared.snapshot);
     } else if (shared.snapshot.status == JobStatus::Running) {
         if (!shared.cancel.exchange(true, std::memory_order_acq_rel)) {
             shared.snapshot.cancellationRequested = true;
             if (diagnostics_) {
                 diagnostics_->recordJobCancellationRequested();
             }
+            events_->publish(JobEventKind::CancellationRequested, shared.snapshot);
         }
     }
 
@@ -214,6 +228,7 @@ void JobRuntime::workerLoop() {
             if (diagnostics_) {
                 diagnostics_->recordJobStarted();
             }
+            events_->publish(JobEventKind::Started, shared.snapshot);
         }
 
         JobStatus outcome = JobStatus::Completed;
@@ -261,6 +276,10 @@ void JobRuntime::workerLoop() {
             if (outcome == JobStatus::Completed) {
                 shared.snapshot.progress = 100;
             }
+            events_->publish(
+                outcome == JobStatus::Completed ? JobEventKind::Completed :
+                outcome == JobStatus::Failed ? JobEventKind::Failed : JobEventKind::Cancelled,
+                shared.snapshot);
             if (diagnostics_) {
                 switch (outcome) {
                     case JobStatus::Completed:
@@ -296,6 +315,7 @@ void JobRuntime::shutdown() noexcept {
                     if (diagnostics_) {
                         diagnostics_->recordJobCancelled(false);
                     }
+                    events_->publish(JobEventKind::Cancelled, shared.snapshot);
                 } else if (shared.snapshot.status == JobStatus::Running) {
                     shared.cancel.store(true, std::memory_order_release);
                     shared.snapshot.cancellationRequested = true;
@@ -310,6 +330,10 @@ void JobRuntime::shutdown() noexcept {
             worker.join();
         }
     }
+}
+
+JobEventStream& JobRuntime::events() noexcept {
+    return *events_;
 }
 
 std::size_t JobRuntime::workerCount() const noexcept {

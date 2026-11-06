@@ -395,3 +395,17 @@ add_test(
     NAME drogular_job_runtime_smoke
     COMMAND drogular_job_runtime_smoke
 )
+
+# Job event replay, overflow and runtime lifecycle integration.
+add_executable(
+    drogular_job_events_smoke
+    job_runtime/job_events_smoke.cpp
+)
+target_link_libraries(
+    drogular_job_events_smoke
+    PRIVATE Drogular::drogular
+)
+add_test(
+    NAME drogular_job_events_smoke
+    COMMAND drogular_job_events_smoke
+)
