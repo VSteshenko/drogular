@@ -461,6 +461,84 @@ const builtInRenderers = new Map([
                 ['SSE connections rejected', data.sseConnectionsRejected]
             ]);
     }],
+    ['drogular.job-registry', (container, section) => {
+        const data = section.data && typeof section.data === 'object' ? section.data : {};
+        const jobs = Array.isArray(data.types) ? data.types : [];
+        container.replaceChildren();
+        if (!jobs.length) {
+            container.textContent = 'No registered job types.';
+            return;
+        }
+        for (const job of jobs) {
+            const article = document.createElement('article');
+            article.className = 'metric-group';
+            const heading = document.createElement('h3');
+            heading.textContent = `${job.name} (${job.id})`;
+            const description = document.createElement('p');
+            description.textContent = job.description || 'No description';
+            article.append(heading, description);
+            if (data.launchEndpoint) {
+                const form = document.createElement('form');
+                for (const p of job.parameters || []) {
+                    const label = document.createElement('label');
+                    label.textContent = `${p.name} (${p.type}) `;
+                    const input = document.createElement('input');
+                    input.name = p.name;
+                    input.value = p.default || '';
+                    if (p.type === 'integer') {
+                        input.type = 'number';
+                        if (p.minimum != null) input.min = String(p.minimum);
+                        if (p.maximum != null) input.max = String(p.maximum);
+                    } else if (p.type === 'boolean') {
+                        const select = document.createElement('select');
+                        select.name = p.name;
+                        for (const value of ['true', 'false']) {
+                            const opt = document.createElement('option');
+                            opt.value = value;
+                            opt.textContent = value;
+                            opt.selected = value === (p.default || 'false');
+                            select.append(opt);
+                        }
+                        label.append(select);
+                        form.append(label, document.createTextNode(' '));
+                        continue;
+                    }
+                    input.required = !!p.required;
+                    label.append(input);
+                    form.append(label, document.createTextNode(' '));
+                }
+                const button = document.createElement('button');
+                button.type = 'submit';
+                button.textContent = 'Run job';
+                const status = document.createElement('span');
+                status.setAttribute('role', 'status');
+                form.append(button, status);
+                form.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    button.disabled = true;
+                    status.textContent = ' Starting…';
+                    const args = new URLSearchParams(new FormData(form));
+                    args.set('type', job.id);
+                    try {
+                        const response = await fetch(data.launchEndpoint, {
+                            method: 'POST',
+                            headers: { 'X-Drogular-Developer-Tools': '1' },
+                            body: args,
+                            credentials: 'same-origin',
+                            cache: 'no-store'
+                        });
+                        const body = await response.json();
+                        status.textContent = response.ok ? ` Job #${body.id} submitted` :
+                            ` ${body.error || 'Request failed'}`;
+                    } catch (error) {
+                        status.textContent = ` ${error.message}`;
+                    } finally { button.disabled = false; }
+                });
+                article.append(form);
+            }
+            container.append(article);
+        }
+    }],
     ['drogular.service-scopes', (container, section) => {
         const data = section.data && typeof section.data === 'object' ? section.data : {};
         container.innerHTML = metricCards([

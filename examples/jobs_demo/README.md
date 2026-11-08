@@ -66,3 +66,30 @@ already-finished jobs, and releases its connection lease when the stream worker
 exits. Polling also catches completion if an SSE event was missed. After all
 jobs finish, `activeSseConnections` and `activeSubscriptions` should return to
 zero (allow up to one heartbeat interval for a disconnected client).
+
+## Job Registry and Developer Tools
+
+The independent C++ `JobRegistry` provides a catalog of job definitions,
+typed parameter constraints, and a validated `launch()` operation. JobsDemo
+registers `demo.batch` and `demo.failure` in `main.cpp` and publishes the
+catalog through `JobRegistryContributor` as a Developer Tools section named
+**Available Jobs**. Runtime execution remains in `JobRuntime`.
+
+The built-in Developer Tools renderer generates input controls from the registry
+metadata. Launch is **explicitly opt-in** via a supplied launch endpoint. This
+example permits it only from loopback requests with the Developer Tools header;
+**this is not sufficient production authentication or CSRF protection**. Never
+expose JobsDemo to untrusted networks. A production application must enforce
+session authentication, per-job authorization, origin and CSRF checks.
+
+`public/job-client.js` is the reusable, DOM-free ES module that wraps JobsDemo's
+HTTP and SSE transport. `jobs.js` owns presentation, polling, reconnection,
+and UI lifecycle. Applications may reuse the transport pattern but must supply
+their own authenticated server routes and an authorization policy.
+
+The demo-specific `POST /api/jobs/registry/launch` endpoint accepts form fields
+`type` and `seconds`, returns a 201 Job snapshot, and is restricted to local
+requests with `X-Drogular-Developer-Tools: 1`. The existing `/api/jobs/create`
+route remains for backwards compatibility and now launches the same registered
+factories. Browse the **Available Jobs** section in `/__drogular` to use the
+auto-generated launch form.

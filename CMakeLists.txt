@@ -24,6 +24,7 @@ add_library(drogular
     src/developer_tools/application_inspection.cpp
     src/developer_tools/application_inspection_controller.cpp
     src/developer_tools/runtime_diagnostics_contributor.cpp
+    src/developer_tools/job_registry_contributor.cpp
     src/auth_support.cpp
     src/action_result.cpp
     src/action_context.cpp
@@ -64,6 +65,7 @@ add_library(drogular
     src/job_sse.cpp
     src/job_sse_drogon.cpp
     src/job_runtime.cpp
+    src/job_registry.cpp
     src/runtime_diagnostics.cpp
     src/route_pattern.cpp
     src/render_context.cpp

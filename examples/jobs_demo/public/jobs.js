@@ -1,3 +1,5 @@
+import {JobClient} from "./job-client.js";
+const client = new JobClient();
 const jobsNode = document.querySelector('#jobs');
 const metricsNode = document.querySelector('#metrics');
 const notice = document.querySelector('#notice');
@@ -32,16 +34,9 @@ function showNotice(message) {
     }
 }
 
-async function api(path, options = {}) {
-    const response = await fetch(path, { cache: 'no-store', ...options });
-    let body;
-    try {
-        body = await response.json();
-    } catch {
-        throw new Error(`HTTP ${response.status}`);
-    }
-    if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
-    return body;
+// Keep the old route shapes behind the reusable transport client.
+function api(path, options = {}) {
+    return client.request(path.startsWith('/api/jobs') ? path.slice('/api/jobs'.length) : path, options);
 }
 
 function closeStream(id) {
@@ -85,7 +80,7 @@ function subscribe(job) {
     if (!enableSse) return;
     if (terminal.has(job.status) || connections.has(job.id) ||
         connections.size >= maxLiveStreams) return;
-    const source = new EventSource(`/api/jobs/events?job=${encodeURIComponent(job.id)}`);
+    const source = client.watch(job.id);
     connections.set(job.id, source);
     for (const eventName of events) {
         source.addEventListener(eventName, event => {

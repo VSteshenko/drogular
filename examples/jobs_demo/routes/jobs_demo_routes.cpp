@@ -1,6 +1,7 @@
 #include "jobs_demo_routes.hpp"
 
 #include <drogular/job_runtime.hpp>
+#include <drogular/job_registry.hpp>
 #include <drogular/job_sse_drogon.hpp>
 #include <drogular/runtime_diagnostics.hpp>
 #include <drogon/HttpAppFramework.h>
@@ -119,6 +120,7 @@ Json::Value metricJson(const drogular::JobRuntimeDiagnostics& d) {
 }
 
 void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
+                           std::shared_ptr<drogular::JobRegistry> registry,
                            drogular::RuntimeDiagnostics& diagnostics
 ) {
     drogon::app().registerHandler("/api/jobs",
@@ -131,7 +133,7 @@ void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
         }, {drogon::Get});
 
     drogon::app().registerHandler("/api/jobs/create",
-        [jobs](const drogon::HttpRequestPtr& request, ResponseCallback&& callback) {
+        [jobs, registry](const drogon::HttpRequestPtr& request, ResponseCallback&& callback) {
             // Demo controls are intentionally bounded, rather than accepting arbitrary tasks.
             const auto secondsParam = request->getParameter("seconds");
             int seconds = 0;
@@ -147,26 +149,42 @@ void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
             }
             const bool fail = request->getParameter("fail") == "1";
             try {
-                const auto id = jobs->submit(fail ? "Failure demonstration" : "Background operation",
-                    [seconds, fail](drogular::JobContext& ctx) {
-                        for (int step = 1; step <= seconds * 5; ++step) {
-                            ctx.throwIfCancellationRequested();
-                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                            ctx.throwIfCancellationRequested();
-                            ctx.reportProgress(static_cast<unsigned>(step * 100 / (seconds * 5)),
-                                               "Processing batch " + std::to_string(step) +
-                                               " of " + std::to_string(seconds * 5));
-                        }
-                        if (fail) {
-                            throw drogular::JobFailure("DEMO_FAILURE", "Intentional demo failure");
-                        }
-                        ctx.setResult(std::string("All batches processed successfully"));
-                    });
+                const auto id = registry->launch(fail ? "demo.failure" : "demo.batch",
+                                                 {{"seconds", std::to_string(seconds)}});
                 callback(jsonResponse(jobJson(*jobs->find(id)), drogon::k201Created));
             } catch (const std::exception& error) {
                 Json::Value response;
                 response["error"] = error.what();
                 callback(jsonResponse(std::move(response), drogon::k503ServiceUnavailable));
+            }
+        }, {drogon::Post});
+
+    drogon::app().registerHandler("/api/jobs/registry/launch",
+        [jobs, registry](const drogon::HttpRequestPtr& request, ResponseCallback&& callback) {
+            // Explicitly development-only launch route. Local peer plus a custom
+            // header prevent drive-by browser POSTs; production apps MUST use
+            // real authentication, authorization and CSRF protection.
+            const auto peer = request->peerAddr().toIp();
+            if ((peer != "127.0.0.1" && peer != "::1") ||
+                request->getHeader("X-Drogular-Developer-Tools") != "1"
+            ) {
+                Json::Value error; error["error"] = "Developer Tools launch is local-only";
+                callback(jsonResponse(std::move(error), drogon::k403Forbidden));
+                return;
+            }
+            drogular::JobParameters parameters;
+            for (const auto& [name, value] : request->getParameters()) {
+                if (name != "type") parameters.emplace(name, value);
+            }
+            try {
+                const auto id = registry->launch(request->getParameter("type"), parameters);
+                callback(jsonResponse(jobJson(*jobs->find(id)), drogon::k201Created));
+            } catch (const std::invalid_argument& error) {
+                Json::Value result; result["error"] = error.what();
+                callback(jsonResponse(std::move(result), drogon::k400BadRequest));
+            } catch (const std::exception& error) {
+                Json::Value result; result["error"] = error.what();
+                callback(jsonResponse(std::move(result), drogon::k503ServiceUnavailable));
             }
         }, {drogon::Post});
 
@@ -216,6 +234,8 @@ void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
 } // namespace
 
 void jobsdemo::installRoutes(std::shared_ptr<drogular::JobRuntime> jobs,
-                             drogular::RuntimeDiagnostics& diagnostics) {
-    installRoutesInternal(std::move(jobs), diagnostics);
+                             std::shared_ptr<drogular::JobRegistry> registry,
+                             drogular::RuntimeDiagnostics& diagnostics
+) {
+    installRoutesInternal(std::move(jobs), std::move(registry), diagnostics);
 }
