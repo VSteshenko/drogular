@@ -229,7 +229,7 @@ See [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md) for details.
 
 ### 0.26 — Background Jobs & Progress
 
-> In development: initial process-local Job Runtime and aggregate diagnostics.
+> In development: Job Runtime, SSE adapter, diagnostics integration and JobsDemo are implemented; production hardening remains.
 > See [Job Runtime architecture](docs/architecture/job-runtime.md) for implemented behavior and remaining work.
 
 Introduce a first-class model for long-running and background work so applications such as Atlasys can execute, observe, and control operations without tying their lifetime to a single HTTP request.
@@ -238,7 +238,7 @@ Introduce a first-class model for long-running and background work so applicatio
 - Add Job progress reporting for long-running operations
 - Add cooperative Job cancellation with explicit cancellation state and semantics
 - Add an SSE/event stream for live Job state and progress updates
-- Add `JobsDemo` as a reference application for starting, observing, cancelling, and reconnecting to Jobs
+- Add [`JobsDemo`](examples/jobs_demo/README.md) as a reference application for starting, observing, cancelling, and reconnecting to Jobs
 - Add Job diagnostics for lifecycle transitions, execution time, failures, cancellation, and active/completed Job inspection
 
 ### 0.27 — Health, Readiness & Authentication Context

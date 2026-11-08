@@ -127,6 +127,7 @@ if(DROGULAR_BUILD_EXAMPLES)
     add_subdirectory(examples/portal_demo)
     add_subdirectory(examples/mini_store)
     add_subdirectory(examples/developer_tools)
+    add_subdirectory(examples/jobs_demo)
 endif()
 
 if(DROGULAR_BUILD_EXAMPLES OR DROGULAR_BUILD_TESTS)

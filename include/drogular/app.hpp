@@ -423,6 +423,12 @@ public:
         std::string module
     );
 
+    /** Shared runtime counters used by built-in Developer Tools.
+     * Applications may attach independent subsystems (e.g. JobRuntime).
+     * The App must outlive all attached producers.
+     */
+    RuntimeDiagnostics& runtimeDiagnostics() noexcept { return runtimeDiagnostics_; }
+
     void run(unsigned short port);
 
 private:

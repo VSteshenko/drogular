@@ -24,6 +24,18 @@ enum class JobEventKind {
     Cancelled
 };
 
+constexpr bool isTerminalJobEvent(JobEventKind kind) noexcept {
+    return kind == JobEventKind::Completed ||
+           kind == JobEventKind::Failed ||
+           kind == JobEventKind::Cancelled;
+}
+
+constexpr bool isTerminalJobStatus(JobStatus status) noexcept {
+    return status == JobStatus::Completed ||
+           status == JobStatus::Failed ||
+           status == JobStatus::Cancelled;
+}
+
 struct JobEvent {
     std::uint64_t sequence = 0;
     JobEventKind kind = JobEventKind::Queued;

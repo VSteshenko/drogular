@@ -43,6 +43,8 @@ TEST(DiagnosticsPageTests, ShipsBuiltInRuntimeDiagnosticsRenderers) {
     EXPECT_NE(script.find("drogular.runtime"), std::string_view::npos);
     EXPECT_NE(script.find("drogular.interactions"), std::string_view::npos);
     EXPECT_NE(script.find("drogular.service-scopes"), std::string_view::npos);
+    EXPECT_NE(script.find("['drogular.jobs'"), std::string_view::npos);
+    EXPECT_NE(script.find("Active SSE connections"), std::string_view::npos);
     EXPECT_NE(script.find("metricCards"), std::string_view::npos);
     EXPECT_NE(script.find("metricGroup"), std::string_view::npos);
     EXPECT_NE(css.find(".metric-grid"), std::string_view::npos);

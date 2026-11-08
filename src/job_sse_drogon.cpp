@@ -35,7 +35,7 @@ std::optional<T> parseUnsigned(std::string_view value) {
 void reply(drogon::HttpResponsePtr response,
            std::function<void(const drogon::HttpResponsePtr&)>& callback
 ) {
-    response->setExpiredTime(0);
+    response->setExpiredTime(-1);
     callback(response);
 }
 
@@ -77,14 +77,21 @@ struct ConnectionLease {
 };
 
 void forwardStream(std::shared_ptr<JobRuntime> jobs,
+                   JobId jobId,
                    drogon::ResponseStreamPtr stream,
                    JobEventStream::Subscription subscription,
                    std::chrono::milliseconds heartbeat
 ) {
-    (void)jobs;
     try {
         // Initial comment flushes headers promptly; doubles as a connection check.
         bool connected = stream->send(encodeJobSseHeartbeat());
+        // A Job may finish between the HTTP status check and the stream
+        // callback. In that case there might be no terminal event buffered.
+        // The browser will obtain the final snapshot through its JSON API.
+        const auto initial = jobs->find(jobId);
+        if (!initial || isTerminalJobStatus(initial->status)) {
+            connected = false;
+        }
         while (connected) {
             auto batch = subscription.waitFor(heartbeat);
             if (batch.gap) {
@@ -100,12 +107,20 @@ void forwardStream(std::shared_ptr<JobRuntime> jobs,
                     if (!(connected = stream->send(encodeJobSse(event)))) {
                         break;
                     }
+                    // A job-scoped subscription has no further useful events
+                    // after its terminal state; release the connection promptly.
+                    if (isTerminalJobEvent(event.kind)) {
+                        connected = false;
+                        break;
+                    }
                 }
             }
         }
     } catch (...) {
         // A disconnected client or stream error must not escape the worker.
     }
+    // The worker owns both subscription and connection lease until exit.
+    // Closing an already disconnected Drogon stream is safe; avoid leaking it.
     stream->close();
 }
 
@@ -142,8 +157,17 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
                 reply(errorResponse(drogon::k403Forbidden, "Access denied"), callback);
                 return;
             }
-            if (!runtime->find(*id)) {
+            const auto snapshot = runtime->find(*id);
+            if (!snapshot) {
                 reply(errorResponse(drogon::k404NotFound, "Unknown job"), callback);
+                return;
+            }
+            // EventSource will not reconnect after HTTP 204. Completed Jobs
+            // have a stable snapshot available via the ordinary JSON API.
+            if (isTerminalJobStatus(snapshot->status)) {
+                auto response = drogon::HttpResponse::newHttpResponse();
+                response->setStatusCode(drogon::k204NoContent);
+                reply(std::move(response), callback);
                 return;
             }
             std::optional<std::uint64_t> cursor;
@@ -172,27 +196,33 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
                 lease->diagnostics->recordJobSseOpened();
             }
             auto response = drogon::HttpResponse::newAsyncStreamResponse(
-                [runtime, lease, heartbeat,
+                [runtime, jobId = *id, heartbeat,
+                 lease = std::move(lease),
                  subscription = std::make_shared<JobEventStream::Subscription>(
                      std::move(subscription))](drogon::ResponseStreamPtr stream) mutable
                 {
+                    // Transfer the lease out of the response's callback.
+                    // Drogon may retain this callback for the response lifetime,
+                    // which must NOT keep the active connection gauge elevated.
+                    auto workerLease = std::move(lease);
                     if (!stream) return;
                     try {
-                        std::thread([runtime, stream = std::move(stream),
+                        std::thread([runtime, jobId, stream = std::move(stream),
                                      subscription = std::move(*subscription), heartbeat,
-                                     lease]() mutable
+                                     lease = std::move(workerLease)]() mutable
                         {
-                            forwardStream(std::move(runtime), std::move(stream),
+                            forwardStream(std::move(runtime), jobId, std::move(stream),
                                           std::move(subscription), heartbeat);
+                            // lease destructs when the forwarding worker exits.
                         }).detach();
                     } catch (...) {
-                        // Thread construction failure closes the stream via RAII.
+                        // Thread construction failure releases the lease via RAII.
                     }
                 }, true);
             response->setContentTypeString("text/event-stream; charset=utf-8");
             response->addHeader("Cache-Control", "no-cache, no-transform");
             response->addHeader("X-Accel-Buffering", "no");
-            response->setExpiredTime(0);
+            response->setExpiredTime(-1);
             callback(response);
         }, {drogon::Get});
 }

@@ -25,6 +25,12 @@ int main() {
     assert(frame.ends_with("\n\n"));
     assert(encodeJobSseReset().find("job.reset") != std::string::npos);
     assert(encodeJobSseHeartbeat() == ": heartbeat\n\n");
+    assert(!isTerminalJobEvent(JobEventKind::Progress));
+    assert(isTerminalJobEvent(JobEventKind::Completed));
+    assert(isTerminalJobEvent(JobEventKind::Failed));
+    assert(isTerminalJobEvent(JobEventKind::Cancelled));
+    assert(!isTerminalJobStatus(JobStatus::Running));
+    assert(isTerminalJobStatus(JobStatus::Completed));
     auto filtered = stream.subscribe(7, 1);
     batch = filtered.drain();
     assert(!batch.gap && batch.events.size() == 1);

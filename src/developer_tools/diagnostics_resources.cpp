@@ -431,6 +431,36 @@ const builtInRenderers = new Map([
             ['Redirects', data.redirects]
         ]);
     }],
+    ['drogular.jobs', (container, section) => {
+        const data = section.data && typeof section.data === 'object' ? section.data : {};
+        container.innerHTML =
+            metricGroup('Queue & workers', [
+                ['Queued', data.queued],
+                ['Running', data.running],
+                ['Worker capacity', data.workerCapacity],
+                ['Submitted', data.submitted],
+                ['Rejected', data.rejected]
+            ]) +
+            metricGroup('Execution', [
+                ['Started', data.started],
+                ['Completed', data.completed],
+                ['Failed', data.failed],
+                ['Cancelled', data.cancelled],
+                ['Cancellation requests', data.cancellationRequests],
+                ['Progress updates', data.progressUpdates],
+                ['Queue wait total (ms)', data.queueWaitTotalMs],
+                ['Execution total (ms)', data.executionTotalMs]
+            ]) +
+            metricGroup('Events & SSE', [
+                ['Events published', data.eventsPublished],
+                ['Event gaps', data.eventGaps],
+                ['Active subscriptions', data.activeSubscriptions],
+                ['Active SSE connections', data.activeSseConnections],
+                ['SSE connections opened', data.sseConnectionsOpened],
+                ['SSE connections closed', data.sseConnectionsClosed],
+                ['SSE connections rejected', data.sseConnectionsRejected]
+            ]);
+    }],
     ['drogular.service-scopes', (container, section) => {
         const data = section.data && typeof section.data === 'object' ? section.data : {};
         container.innerHTML = metricCards([
