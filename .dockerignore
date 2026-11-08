@@ -1,0 +1,7 @@
+.git
+.DS_Store
+cmake-build-*/
+build/
+**/build/
+*.patch
+*.zip

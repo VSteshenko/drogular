@@ -1,0 +1,21 @@
+# Build the reusable dependency image first:
+#   docker build -f Dockerfile.test -t drogular-tests .
+# Then:
+#   docker build -f Dockerfile.jobs-demo -t drogular-jobs-demo .
+FROM drogular-tests AS builder
+COPY . /workspace
+RUN cmake -S /workspace -B /tmp/drogular-jobs-build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DDROGULAR_BUILD_TESTS=OFF \
+        -DDROGULAR_BUILD_TOOLS=OFF \
+        -DDROGULAR_BUILD_EXAMPLES=ON \
+    && cmake --build /tmp/drogular-jobs-build --target jobs_demo --parallel 2
+
+# Runtime uses the same pinned Drogon shared libraries and system dependencies
+# as the test image, but does not include the project's build tree.
+FROM drogular-tests
+COPY --from=builder /tmp/drogular-jobs-build/examples/jobs_demo/jobs_demo /usr/local/bin/jobs_demo
+COPY examples/jobs_demo/public/ /workspace/examples/jobs_demo/public/
+COPY examples/jobs_demo/templates/ /workspace/examples/jobs_demo/templates/
+EXPOSE 8084
+CMD ["/usr/local/bin/jobs_demo", "--port", "8084"]

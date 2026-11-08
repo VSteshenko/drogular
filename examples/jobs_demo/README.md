@@ -6,8 +6,30 @@ Drogular Application and the existing Developer Tools diagnostics.
 From the repository root, build the `jobs_demo` CMake target and run:
 
 ```bash
-./build/examples/jobs_demo/jobs_demo
+./build/examples/jobs_demo/jobs_demo --port 8084
 ```
+
+The CLI follows PortalDemo: `--port <1..65535>` / `-p` overrides the default
+8084, and `--help` / `-h` prints usage. Run from the repository root because
+assets and templates are located using repository-relative paths.
+
+To run in Docker from the repository root:
+
+```bash
+docker build -f Dockerfile.test -t drogular-tests .
+docker build -f Dockerfile.jobs-demo -t drogular-jobs-demo .
+docker run --rm -p 127.0.0.1:8084:8084 drogular-jobs-demo
+```
+
+The Docker image reuses the pinned Drogon dependency environment used by the
+Linux test container. Only bind the port to loopback: these demo endpoints do
+not provide authentication or CSRF protection. The image can override the
+command (e.g. `jobs_demo --port 8084`), but update port mapping accordingly.
+
+The HTML is maintained in `templates/index.html`; `main.cpp` configures the
+application, while `routes/jobs_demo_routes.cpp` contains demo HTTP handlers.
+See [browser-client reuse audit](docs/job-client-api-audit.md) for the proposed
+shared JavaScript API boundary.
 
 Open <http://localhost:8084>. Use **Run job** or **Run failing job** to see
 queued/running/terminal states, progress, typed result, error code and cooperative
