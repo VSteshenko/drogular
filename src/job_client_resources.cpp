@@ -1,8 +1,15 @@
+#include <drogular/job_client_resources.hpp>
+
+namespace drogular::job_client_resources {
+namespace {
+
+constexpr std::string_view Script = R"DROGULAR_JOB_JS(
 /** Transport-only Jobs client. No DOM, UI state, or framework dependency. */
 export class JobClient {
-    constructor({baseUrl = '/api/jobs', fetchImpl = fetch} = {}) {
+    constructor({baseUrl = '/api/jobs', fetchImpl = globalThis.fetch, eventSourceImpl = globalThis.EventSource} = {}) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
         this.fetchImpl = fetchImpl;
+        this.eventSourceImpl = eventSourceImpl;
     }
 
     async request(path, options = {}) {
@@ -11,8 +18,8 @@ export class JobClient {
         });
         let body;
         try { body = await response.json(); }
-        catch { throw new Error(`HTTP ${response.status}`); }
-        if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+        catch { throw new Error(`HTTP ${response.status}: invalid JSON response`); }
+        if (!response.ok) throw new Error(body?.error || `HTTP ${response.status}`);
         return body;
     }
 
@@ -20,13 +27,14 @@ export class JobClient {
     get(id) { return this.request(`/detail?id=${encodeURIComponent(id)}`); }
     cancel(id) { return this.request(`/cancel?id=${encodeURIComponent(id)}`, {method: 'POST'}); }
     diagnostics() { return this.request('/diagnostics'); }
-    // This endpoint is specific to JobsDemo, not a universal Registry contract.
-    createDemo({seconds = 15, fail = false} = {}) {
-        return this.request(`/create?seconds=${encodeURIComponent(seconds)}&fail=${fail ? '1' : '0'}`,
-            {method: 'POST'});
-    }
     /** Caller owns EventSource lifetime and MUST close it when done. */
     watch(id) {
-        return new EventSource(`${this.baseUrl}/events?job=${encodeURIComponent(id)}`);
+        return new this.eventSourceImpl(`${this.baseUrl}/events?job=${encodeURIComponent(id)}`);
     }
-}
+})DROGULAR_JOB_JS";
+
+} // namespace
+
+std::string_view script() { return Script; }
+
+} // namespace drogular::job_client_resources

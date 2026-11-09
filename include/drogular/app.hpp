@@ -386,6 +386,13 @@ public:
     App& clientLocalization();
 
     /**
+     * Serves the framework-owned, DOM-free JobClient ES module at
+     * /__drogular/assets/job-client.js. Opt-in, idempotent; this does not
+     * register any job HTTP endpoints or grant job access permissions.
+     */
+    App& jobClient();
+
+    /**
      * Enables the built-in Drogular UI resources.
      *
      * The stylesheet is served from /__drogular/assets/ui.css and the
@@ -444,6 +451,7 @@ private:
     bool inspectionEnabled_ = false;
     bool interactionsEnabled_ = false;
     bool clientLocalizationEnabled_ = false;
+    bool jobClientEnabled_ = false;
     bool uiEnabled_ = false;
     bool diagnosticsPageEnabled_ = false;
     std::shared_ptr<ApplicationInspectionController> inspectionController_;

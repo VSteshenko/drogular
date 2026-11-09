@@ -1,4 +1,4 @@
-import {JobClient} from "./job-client.js";
+import {JobClient} from "/__drogular/assets/job-client.js";
 const client = new JobClient();
 const jobsNode = document.querySelector('#jobs');
 const metricsNode = document.querySelector('#metrics');

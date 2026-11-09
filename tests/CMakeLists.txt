@@ -3,6 +3,7 @@ add_executable(drogular_tests
     job_runtime/job_sse_drogon_tests.cpp
     job_runtime/job_registry_tests.cpp
     core/core_interactions_resources_tests.cpp
+    core/core_job_client_resources_tests.cpp
     core/core_offline_tests.cpp
     core/core_ui_resources_tests.cpp
     core/core_application_inspection_tests.cpp

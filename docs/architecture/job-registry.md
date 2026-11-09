@@ -23,5 +23,7 @@ principal. Registration and discovery alone never imply authorization.
 JobsDemo registers `demo.batch` and `demo.failure`, and opts into a local-only
 launch route. The example is not a production security reference.
 
-`examples/jobs_demo/public/job-client.js` contains a DOM-free browser HTTP/SSE
-client; visual state and retry policies belong to the host application's UI.
+The opt-in `App::jobClient()` serves the DOM-free `JobClient` ES module at
+`/__drogular/assets/job-client.js`. It handles basic HTTP and job-scoped SSE
+transport only; visual state and retry policies belong to the host application.
+Registration of the module does not expose server-side job routes or permissions.

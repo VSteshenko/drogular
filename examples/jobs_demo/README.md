@@ -82,10 +82,12 @@ example permits it only from loopback requests with the Developer Tools header;
 expose JobsDemo to untrusted networks. A production application must enforce
 session authentication, per-job authorization, origin and CSRF checks.
 
-`public/job-client.js` is the reusable, DOM-free ES module that wraps JobsDemo's
-HTTP and SSE transport. `jobs.js` owns presentation, polling, reconnection,
-and UI lifecycle. Applications may reuse the transport pattern but must supply
-their own authenticated server routes and an authorization policy.
+`App::jobClient()` serves Drogular's shared, DOM-free ES module at
+`/__drogular/assets/job-client.js`. JobsDemo imports it directly; there is no
+local copy. `jobs.js` owns presentation, polling, reconnection and UI lifecycle.
+Other applications opt in with `app.jobClient()` and import `JobClient` from
+that path. Each application must provide authenticated, authorized job HTTP
+routes; enabling the client module never exposes server-side endpoints.
 
 The demo-specific `POST /api/jobs/registry/launch` endpoint accepts form fields
 `type` and `seconds`, returns a 201 Job snapshot, and is restricted to local

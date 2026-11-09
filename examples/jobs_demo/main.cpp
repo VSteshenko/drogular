@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     drogular::App app;
     app.templateRoot("examples/jobs_demo/templates")
        .templateCache(false)
+       .jobClient()
        .profile(drogular::ApplicationProfile::Development)
        .staticFiles("/assets", "examples/jobs_demo/public")
        .staticFileCacheProfile(drogular::StaticFileCacheProfile::Development)

@@ -11,8 +11,8 @@ route names, markup, status messages, and security assumptions.
 
 ## Candidate reusable browser API
 
-Introduce a separately shipped, framework-owned ES module (proposed:
-`drogular/jobs-client.js`) with *no DOM dependencies*. It should expose:
+Provide the separately shipped, framework-owned ES module at
+`/__drogular/assets/job-client.js` with *no DOM dependencies*. It should expose:
 
 | Responsibility | Proposed surface | Constraints |
 | --- | --- | --- |
@@ -37,7 +37,16 @@ rather than translated DOM strings.
 `seconds`/`fail` submission form, formatting of metrics, HTML/CSS and polling
 frequency for this demonstration remain example-specific.
 
-## Recommended implementation sequence
+## Implementation status (0.26)
+
+The transport-only module is embedded as `job_client_resources` and delivered
+by opt-in `App::jobClient()`. JobsDemo imports that module without duplicating
+its source. `watch(id)` returns an EventSource that the caller must close;
+reconnection policy, resynchronization, subscription budgets and UI state
+remain application-owned. Demo-only `/create` is intentionally not in the
+public module. Other applications must supply their own authorized endpoints.
+
+## Further evolution
 
 1. Define a versioned HTTP/job-event contract and test it independently of UI.
 2. Extract a DOM-free JobClient from `jobs.js`, with dependency-injected fetch,
