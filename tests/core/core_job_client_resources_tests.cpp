@@ -11,6 +11,8 @@ TEST(JobClientResourcesTests, ShipsSharedModuleWithoutDemoLaunch) {
     EXPECT_FALSE(script.empty());
     EXPECT_NE(script.find("export class JobClient"), std::string_view::npos);
     EXPECT_NE(script.find("watch(id)"), std::string_view::npos);
+    EXPECT_NE(script.find("globalThis.fetch.bind(globalThis)"),
+              std::string_view::npos);
     EXPECT_EQ(script.find("createDemo"), std::string_view::npos);
     EXPECT_EQ(script.find("document."), std::string_view::npos);
     EXPECT_EQ(drogular::job_client_resources::ScriptPath,

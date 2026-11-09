@@ -6,7 +6,7 @@ namespace {
 constexpr std::string_view Script = R"DROGULAR_JOB_JS(
 /** Transport-only Jobs client. No DOM, UI state, or framework dependency. */
 export class JobClient {
-    constructor({baseUrl = '/api/jobs', fetchImpl = globalThis.fetch, eventSourceImpl = globalThis.EventSource} = {}) {
+    constructor({baseUrl = '/api/jobs', fetchImpl = globalThis.fetch.bind(globalThis), eventSourceImpl = globalThis.EventSource} = {}) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
         this.fetchImpl = fetchImpl;
         this.eventSourceImpl = eventSourceImpl;
