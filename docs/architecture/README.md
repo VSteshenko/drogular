@@ -43,3 +43,5 @@ Pages and Actions are created per request. Long-lived application services are r
 Architecture documents describe ownership, boundaries, lifetimes, and design intent. They are not a substitute for the [API Reference](../reference/README.md), which remains the source for exact signatures and behavior.
 
 Working code and tests are the final source of truth when an implementation detail and a document disagree.
+
+- [Process Metrics](process-metrics.md) — process CPU, RSS, threads and uptime independent of Jobs.

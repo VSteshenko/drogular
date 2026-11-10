@@ -126,7 +126,7 @@ ApplicationInspection App::inspect() const {
         });
     }
 
-    RuntimeDiagnosticsContributor(runtimeDiagnostics_).contribute(result);
+    RuntimeDiagnosticsContributor(runtimeDiagnostics_, &processMetrics_).contribute(result);
 
     const auto contributors =
         services_.service<DeveloperToolsContributors>();

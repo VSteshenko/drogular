@@ -5,6 +5,7 @@
 #include <drogular/page.hpp>
 #include <drogular/router.hpp>
 #include <drogular/runtime_diagnostics.hpp>
+#include <drogular/process_metrics.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
 #include <drogular/application_profile.hpp>
@@ -436,12 +437,15 @@ public:
      */
     RuntimeDiagnostics& runtimeDiagnostics() noexcept { return runtimeDiagnostics_; }
 
+    ProcessMetricsProvider& processMetrics() noexcept { return processMetrics_; }
+
     void run(unsigned short port);
 
 private:
     ApplicationOptions options_;
     ApplicationServices services_;
     RuntimeDiagnostics runtimeDiagnostics_;
+    ProcessMetricsProvider processMetrics_;
     Router router_{&services_, &runtimeDiagnostics_};
     std::optional<std::string> offlinePageRoute_;
     std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;

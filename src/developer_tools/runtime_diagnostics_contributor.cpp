@@ -89,9 +89,11 @@ Json::Value jobsSection(const RuntimeDiagnosticsSnapshot& snapshot) {
 } // namespace
 
 RuntimeDiagnosticsContributor::RuntimeDiagnosticsContributor(
-    const RuntimeDiagnostics& diagnostics
+    const RuntimeDiagnostics& diagnostics,
+    const ProcessMetricsProvider* processMetrics
 ) noexcept
-    : diagnostics_(diagnostics) {
+    : diagnostics_(diagnostics), processMetrics_(processMetrics)
+{
 }
 
 void RuntimeDiagnosticsContributor::contribute(
@@ -105,6 +107,23 @@ void RuntimeDiagnosticsContributor::contribute(
         "drogular.runtime",
         runtimeSection(snapshot)
     });
+    if (processMetrics_ != nullptr) {
+        const auto metrics = processMetrics_->snapshot();
+        Json::Value data(Json::objectValue);
+        data["available"] = metrics.available;
+        data["cpuPercent"] = metrics.cpuPercent ? Json::Value(*metrics.cpuPercent) : Json::Value();
+        data["residentBytes"] = Json::UInt64(metrics.residentBytes);
+        data["peakResidentBytes"] = Json::UInt64(metrics.peakResidentBytes);
+        data["threadCount"] = Json::UInt64(metrics.threadCount);
+        data["uptimeMs"] = Json::UInt64(metrics.uptimeMs);
+        data["cpuTimeMs"] = Json::UInt64(metrics.cpuTimeMs);
+        inspection.addSection({
+            "process",
+            "Process",
+            "drogular.process",
+            std::move(data)
+        });
+    }
     inspection.addSection({
         "interactions",
         "Interactions",

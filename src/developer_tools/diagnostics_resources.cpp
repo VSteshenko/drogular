@@ -431,6 +431,25 @@ const builtInRenderers = new Map([
             ['Redirects', data.redirects]
         ]);
     }],
+    ['drogular.process', (container, section) => {
+        const data = section.data && typeof section.data === 'object' ? section.data : {};
+        if (!data.available) {
+            container.textContent = 'Process metrics are not available on this platform.';
+            return;
+        }
+        const mib = value => value == null ? '—' : (Number(value) / (1024 * 1024)).toFixed(1) + ' MiB';
+        const cpu = data.cpuPercent == null ? 'Sampling…' : Number(data.cpuPercent).toFixed(1) + '%';
+        const uptime = data.uptimeMs == null ? '—' : Math.floor(Number(data.uptimeMs) / 1000) + ' s';
+        container.innerHTML =
+            metricGroup('Process resources', [
+                ['CPU (one core = 100%)', cpu],
+                ['Resident memory (RSS)', mib(data.residentBytes)],
+                ['Peak RSS', mib(data.peakResidentBytes)],
+                ['Threads', data.threadCount],
+                ['Uptime', uptime],
+                ['Total CPU time (ms)', data.cpuTimeMs]
+            ]);
+    }],
     ['drogular.jobs', (container, section) => {
         const data = section.data && typeof section.data === 'object' ? section.data : {};
         container.innerHTML =

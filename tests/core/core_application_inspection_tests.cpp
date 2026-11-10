@@ -153,16 +153,16 @@ TEST(ApplicationInspectionTests, CollectsExtensionSectionsFromDiContributors) {
     );
 
     const auto inspection = app.inspect();
-    ASSERT_EQ(inspection.sections.size(), 5u);
-    EXPECT_EQ(inspection.sections[2].id, "jobs");
+    ASSERT_EQ(inspection.sections.size(), 6u);
+    EXPECT_EQ(inspection.sections[3].id, "jobs");
     EXPECT_EQ(inspection.sections.back().id, "authentication");
 
     const auto json = drogular::toJson(inspection);
     EXPECT_EQ(json["schemaVersion"].asInt(), 3);
-    ASSERT_EQ(json["sections"].size(), 9u);
-    EXPECT_EQ(json["sections"][8]["id"].asString(), "authentication");
-    EXPECT_EQ(json["sections"][8]["component"].asString(), "example.authentication");
-    EXPECT_TRUE(json["sections"][8]["data"]["enabled"].asBool());
+    ASSERT_EQ(json["sections"].size(), 10u);
+    EXPECT_EQ(json["sections"][9]["id"].asString(), "authentication");
+    EXPECT_EQ(json["sections"][9]["component"].asString(), "example.authentication");
+    EXPECT_TRUE(json["sections"][9]["data"]["enabled"].asBool());
 }
 
 TEST(ApplicationInspectionTests, ReplacesSectionWithSameId) {
@@ -271,9 +271,12 @@ TEST(ApplicationInspectionTests, AppInspectionIncludesRuntimeDiagnosticsSections
 
     const auto inspection = app.inspect();
 
-    ASSERT_EQ(inspection.sections.size(), 4u);
+    ASSERT_EQ(inspection.sections.size(), 5u);
     EXPECT_EQ(inspection.sections[0].id, "runtime");
-    EXPECT_EQ(inspection.sections[1].id, "interactions");
-    EXPECT_EQ(inspection.sections[2].id, "jobs");
-    EXPECT_EQ(inspection.sections[3].id, "service-scopes");
+    EXPECT_EQ(inspection.sections[1].id, "process");
+    EXPECT_EQ(inspection.sections[1].component, "drogular.process");
+    EXPECT_TRUE(inspection.sections[1].data.isMember("residentBytes"));
+    EXPECT_EQ(inspection.sections[2].id, "interactions");
+    EXPECT_EQ(inspection.sections[3].id, "jobs");
+    EXPECT_EQ(inspection.sections[4].id, "service-scopes");
 }

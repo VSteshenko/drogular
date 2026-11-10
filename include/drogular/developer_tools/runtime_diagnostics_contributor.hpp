@@ -2,6 +2,7 @@
 
 #include <drogular/developer_tools/application_inspection.hpp>
 #include <drogular/runtime_diagnostics.hpp>
+#include <drogular/process_metrics.hpp>
 
 namespace drogular {
 
@@ -16,7 +17,8 @@ class RuntimeDiagnosticsContributor final
     : public DeveloperToolsContributor {
 public:
     explicit RuntimeDiagnosticsContributor(
-        const RuntimeDiagnostics& diagnostics
+        const RuntimeDiagnostics& diagnostics,
+        const ProcessMetricsProvider* processMetrics = nullptr
     ) noexcept;
 
     void contribute(
@@ -25,6 +27,7 @@ public:
 
 private:
     const RuntimeDiagnostics& diagnostics_;
+    const ProcessMetricsProvider* processMetrics_;
 };
 
 } // namespace drogular
