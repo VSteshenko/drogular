@@ -31,17 +31,26 @@ jobs:
       - name: Install Ubuntu dependencies
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            cmake \
-            g++ \
-            git \
-            libjsoncpp-dev \
-            uuid-dev \
-            zlib1g-dev \
-            openssl \
-            libssl-dev \
-            libc-ares-dev
+          for attempt in 1 2 3 4 5; do
+            if sudo apt-get update -o Acquire::Retries=3 &&
+              sudo apt-get install -y -o Acquire::Retries=3 \
+              cmake \
+              g++ \
+              git \
+              zlib1g-dev \
+              libssl-dev \
+              libc-ares-dev \
+              libjsoncpp-dev \
+              uuid-dev; then
+              exit 0
+            fi
+
+            echo "APT attempt $attempt failed"
+            sleep 15
+          done
+
+          echo "Failed to install Ubuntu dependencies"
+          exit 1
 
       - name: Install Drogon on Ubuntu
         if: runner.os == 'Linux'
