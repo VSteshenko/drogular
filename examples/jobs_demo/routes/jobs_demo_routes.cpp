@@ -98,6 +98,17 @@ Json::Value metricJson(const drogular::JobRuntimeDiagnostics& d) {
     JOB_METRIC(queued);
     JOB_METRIC(running);
     JOB_METRIC(workerCapacity);
+    JOB_METRIC(queueCapacity);
+    JOB_METRIC(peakQueued);
+    JOB_METRIC(peakRunning);
+    JOB_METRIC(queueWaitMaxMs);
+    JOB_METRIC(executionMaxMs);
+    JOB_METRIC(queueWaitSamples);
+    JOB_METRIC(executionSamples);
+    JOB_METRIC(queueWaitAverageMs);
+    JOB_METRIC(executionAverageMs);
+    JOB_METRIC(workerUtilizationBps);
+    JOB_METRIC(queueSaturationBps);
     JOB_METRIC(submitted);
     JOB_METRIC(started);
     JOB_METRIC(completed);

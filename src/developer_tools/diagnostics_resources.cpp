@@ -519,6 +519,11 @@ const builtInRenderers = new Map([
                 ['Queued', data.queued],
                 ['Running', data.running],
                 ['Worker capacity', data.workerCapacity],
+                ['Worker utilization (%)', data.workerCapacity ? (Number(data.workerUtilizationBps || 0) / 100).toFixed(2) : '—'],
+                ['Peak running', data.peakRunning],
+                ['Queue capacity', data.queueCapacity],
+                ['Queue saturation (%)', data.queueCapacity ? (Number(data.queueSaturationBps || 0) / 100).toFixed(2) : '—'],
+                ['Peak queued', data.peakQueued],
                 ['Submitted', data.submitted],
                 ['Rejected', data.rejected]
             ]) +
@@ -530,7 +535,13 @@ const builtInRenderers = new Map([
                 ['Cancellation requests', data.cancellationRequests],
                 ['Progress updates', data.progressUpdates],
                 ['Queue wait total (ms)', data.queueWaitTotalMs],
-                ['Execution total (ms)', data.executionTotalMs]
+                ['Queue wait avg (ms)', data.queueWaitAverageMs],
+                ['Queue wait max (ms)', data.queueWaitMaxMs],
+                ['Queue wait samples', data.queueWaitSamples],
+                ['Execution total (ms)', data.executionTotalMs],
+                ['Execution avg (ms)', data.executionAverageMs],
+                ['Execution max (ms)', data.executionMaxMs],
+                ['Execution samples', data.executionSamples]
             ]) +
             metricGroup('Events & SSE', [
                 ['Events published', data.eventsPublished],

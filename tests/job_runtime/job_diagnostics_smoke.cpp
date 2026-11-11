@@ -28,6 +28,14 @@ int main() {
         const auto second = jobs.submit("queued", [](JobContext&) {});
         auto snap = diagnostics.snapshot().jobs;
         assert(snap.running == 1 && snap.queued == 1 && snap.workerCapacity == 1);
+        assert(snap.queueCapacity == 8);
+        assert(snap.peakQueued >= 1 && snap.peakRunning == 1);
+        assert(snap.workerUtilizationBps == 10000);
+        assert(snap.queueSaturationBps == 1250);
+        assert(snap.queueWaitSamples == 1);
+        assert(snap.queueWaitAverageMs == snap.queueWaitTotalMs);
+        assert(snap.executionSamples == 0);
+
         assert(jobs.requestCancel(second));
         snap = diagnostics.snapshot().jobs;
         assert(snap.running == 1 && snap.queued == 0 && snap.cancelled == 1);
@@ -36,9 +44,18 @@ int main() {
             std::this_thread::sleep_for(1ms);
         }
         assert(jobs.find(first)->status == JobStatus::Completed);
+        for (int i = 0; i < 1000 && diagnostics.snapshot().jobs.completed == 0; ++i) {
+            std::this_thread::sleep_for(1ms);
+        }
         snap = diagnostics.snapshot().jobs;
         assert(snap.running == 0 && snap.queued == 0);
         assert(snap.completed == 1 && snap.cancelled == 1);
+        assert(snap.queueWaitSamples == 1);
+        assert(snap.executionSamples == 1);
+        assert(snap.queueWaitMaxMs == snap.queueWaitTotalMs);
+        assert(snap.executionMaxMs == snap.executionTotalMs);
+        assert(snap.executionAverageMs == snap.executionTotalMs);
+        assert(snap.workerUtilizationBps == 0 && snap.queueSaturationBps == 0);
         assert(snap.eventsPublished >= 5 && snap.progressUpdates == 1);
         assert(snap.activeSubscriptions == 0);
         {
@@ -55,8 +72,10 @@ int main() {
         assert(diagnostics.snapshot().jobs.activeSubscriptions == 0);
         jobs.shutdown();
         assert(diagnostics.snapshot().jobs.workerCapacity == 0);
+        assert(diagnostics.snapshot().jobs.queueCapacity == 0);
         jobs.shutdown();
         assert(diagnostics.snapshot().jobs.workerCapacity == 0);
+        assert(diagnostics.snapshot().jobs.queueCapacity == 0);
     }
     {
         JobEventStream stream(2, 1, &diagnostics);
@@ -68,6 +87,15 @@ int main() {
         assert(diagnostics.snapshot().jobs.eventGaps >= 1);
     }
     assert(diagnostics.snapshot().jobs.activeSubscriptions == 0);
-
+    // Explicit sample counts keep averages correct even when queued jobs cancel.
+    diagnostics.recordJobQueueWait(20);
+    diagnostics.recordJobQueueWait(40);
+    diagnostics.recordJobExecution(50);
+    diagnostics.recordJobExecution(90);
+    const auto final = diagnostics.snapshot().jobs;
+    assert(final.queueWaitSamples == 3 && final.queueWaitMaxMs >= 40);
+    assert(final.executionSamples == 3 && final.executionMaxMs >= 90);
+    assert(final.queueWaitAverageMs == final.queueWaitTotalMs / 3);
+    assert(final.executionAverageMs == final.executionTotalMs / 3);
     return 0;
 }

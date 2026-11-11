@@ -73,6 +73,17 @@ Json::Value jobsSection(const RuntimeDiagnosticsSnapshot& snapshot) {
     JOB_FIELD(queued);
     JOB_FIELD(running);
     JOB_FIELD(workerCapacity);
+    JOB_FIELD(queueCapacity);
+    JOB_FIELD(peakQueued);
+    JOB_FIELD(peakRunning);
+    JOB_FIELD(queueWaitMaxMs);
+    JOB_FIELD(executionMaxMs);
+    JOB_FIELD(queueWaitSamples);
+    JOB_FIELD(executionSamples);
+    JOB_FIELD(queueWaitAverageMs);
+    JOB_FIELD(executionAverageMs);
+    JOB_FIELD(workerUtilizationBps);
+    JOB_FIELD(queueSaturationBps);
     JOB_FIELD(queueWaitTotalMs);
     JOB_FIELD(executionTotalMs);
     JOB_FIELD(eventsPublished);

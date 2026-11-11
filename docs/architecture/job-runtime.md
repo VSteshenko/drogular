@@ -42,16 +42,26 @@ auto id = jobs.submit("Index", [](drogular::JobContext& job) {
 
 Pass an optional `RuntimeDiagnostics*` when constructing `JobRuntime`. The
 existing Developer Tools `drogular.jobs` section retains the original counters
-and adds live `queued`, `running`, and `workerCapacity` gauges, cumulative
+and adds live `queued`, `running`, `workerCapacity` and `queueCapacity` gauges, cumulative
 `queueWaitTotalMs` and `executionTotalMs`, `eventsPublished`, `eventGaps`,
 `activeSubscriptions`, `activeSseConnections`, `sseConnectionsOpened`,
 `sseConnectionsRejected`, and `sseConnectionsClosed`.
 
 Queue and running gauges change on *state transitions*, not on polling.
 Waiting times are counted when a job starts; execution times when a job
-finishes. Average wait/execution can be calculated by consumers from totals
-and `started` / (`completed + failed + running cancellations`) as appropriate;
-metrics are non-transactional atomic snapshots and may be momentarily out of
+finishes. `queueWaitSamples` and `executionSamples` count precisely the
+observations contributing to their respective totals. The diagnostics snapshot
+provides rounded-down `queueWaitAverageMs` and `executionAverageMs`, plus
+`queueWaitMaxMs`, `executionMaxMs`, `peakQueued`, and `peakRunning`. Current
+worker utilization and queue saturation are represented in basis points
+(`workerUtilizationBps`, `queueSaturationBps`; 10000 = 100%). A zero
+capacity yields zero basis points; the UI displays these ratios as unavailable.
+Capacity gauges aggregate all active JobRuntime instances sharing diagnostics;
+peaks are lifetime high-water marks for the aggregate, not per-runtime maxima.
+The ratios are instantaneous gauges, not time-weighted utilization averages.
+
+
+Metrics are non-transactional atomic snapshots and may be momentarily out of
 sync while transitions are recorded concurrently. A queued cancellation does
 not contribute to queue waiting time, because the job never started.
 

@@ -45,6 +45,19 @@ struct JobRuntimeDiagnostics {
     std::uint64_t queued = 0;
     std::uint64_t running = 0;
     std::uint64_t workerCapacity = 0;
+    std::uint64_t queueCapacity = 0;
+    std::uint64_t peakQueued = 0;
+    std::uint64_t peakRunning = 0;
+    std::uint64_t queueWaitMaxMs = 0;
+    std::uint64_t executionMaxMs = 0;
+    std::uint64_t queueWaitSamples = 0;
+    std::uint64_t executionSamples = 0;
+    std::uint64_t queueWaitAverageMs = 0;
+    std::uint64_t executionAverageMs = 0;
+    // These ratios are percentages in basis points (10000 = 100%).
+    std::uint64_t workerUtilizationBps = 0;
+    std::uint64_t queueSaturationBps = 0;
+
     std::uint64_t queueWaitTotalMs = 0;
     std::uint64_t executionTotalMs = 0;
     std::uint64_t eventsPublished = 0;
@@ -110,6 +123,8 @@ public:
     void recordJobProgress() noexcept;
     void recordJobRejected() noexcept;
     void registerJobWorkers(std::size_t count) noexcept;
+    void registerJobQueueCapacity(std::size_t count) noexcept;
+    void unregisterJobQueueCapacity(std::size_t count) noexcept;
     void unregisterJobWorkers(std::size_t count) noexcept;
     void recordJobQueueWait(std::uint64_t milliseconds) noexcept;
     void recordJobExecution(std::uint64_t milliseconds) noexcept;

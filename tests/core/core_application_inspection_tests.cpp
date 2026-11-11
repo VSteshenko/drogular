@@ -254,6 +254,17 @@ TEST(ApplicationInspectionTests, ReportsRuntimeDiagnosticsSections) {
     EXPECT_EQ(jobs.data["queued"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["running"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["workerCapacity"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["queueCapacity"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["peakQueued"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["peakRunning"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["queueWaitMaxMs"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["executionMaxMs"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["queueWaitSamples"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["executionSamples"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["queueWaitAverageMs"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["executionAverageMs"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["workerUtilizationBps"].asUInt64(), 0u);
+    EXPECT_EQ(jobs.data["queueSaturationBps"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["eventsPublished"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["activeSubscriptions"].asUInt64(), 0u);
     EXPECT_EQ(jobs.data["activeSseConnections"].asUInt64(), 0u);

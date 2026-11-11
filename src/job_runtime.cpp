@@ -80,6 +80,9 @@ JobRuntime::JobRuntime(
         throw std::invalid_argument("JobRuntime requires workers and queue capacity");
     }
     workers_.reserve(workers);
+    if (diagnostics_) {
+        diagnostics_->registerJobQueueCapacity(maxQueued_);
+    }
     try {
         for (std::size_t i = 0; i < workers; ++i) {
             workers_.emplace_back([this] { workerLoop(); });
@@ -341,6 +344,7 @@ void JobRuntime::shutdown() noexcept {
     }
     if (firstShutdown && diagnostics_) {
         diagnostics_->unregisterJobWorkers(workers_.size());
+        diagnostics_->unregisterJobQueueCapacity(maxQueued_);
     }
 }
 
