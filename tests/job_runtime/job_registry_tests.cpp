@@ -76,3 +76,25 @@ TEST(JobRegistryTests, RejectsInvalidDefinitions) {
     def.parameters = {{"n", drogular::JobParameterType::Integer, false, "7", 1, 5}};
     EXPECT_THROW(registry.registerJob(def, [](auto&, const auto&) {}), std::invalid_argument);
 }
+
+TEST(JobRegistryTests, RestrictsDiscreteParameterChoices) {
+    drogular::JobRuntime runtime(1, 4);
+    drogular::JobRegistry registry(runtime);
+    drogular::JobDefinition def;
+    def.id = "test.memory";
+    def.name = "Memory task";
+    def.parameters.push_back({
+        "memoryKiB",
+        drogular::JobParameterType::Integer,
+        false,
+        "512",
+        0,
+        2048,
+        {"0", "512", "1024", "2048"}
+    });
+    registry.registerJob(def, [](auto&, const auto&) {});
+    EXPECT_THROW(registry.launch("test.memory", {{"memoryKiB", "1023"}}),
+                 std::invalid_argument);
+    EXPECT_NO_THROW(registry.launch("test.memory", {{"memoryKiB", "1024"}}));
+    runtime.shutdown();
+}

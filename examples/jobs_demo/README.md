@@ -95,3 +95,18 @@ requests with `X-Drogular-Developer-Tools: 1`. The existing `/api/jobs/create`
 route remains for backwards compatibility and now launches the same registered
 factories. Browse the **Available Jobs** section in `/__drogular` to use the
 auto-generated launch form.
+
+## Resource allocation demonstration
+
+The **Memory allocation** control offers `0`, `0.5`, `1`, and `2 MiB`
+(`memoryKiB=0|512|1024|2048` on the demo create route). Both registered
+job types accept `memoryKiB` (integer, 0–2048) for Developer Tools launches.
+The running task touches one byte per 4096-byte page and retains the vector
+until completion, failure, or cooperative cancellation. Each progress update
+includes the requested amount, and a successful result includes a checksum.
+
+Watch the independent Process CPU/RSS history in Developer Tools while running
+multiple jobs. Physical RSS may remain elevated after the vector is freed:
+allocators can retain reusable pages, so the chart is not a measurement of
+per-job memory ownership. Do not expose these unauthenticated demo routes to
+untrusted networks.

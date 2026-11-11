@@ -1,5 +1,6 @@
 #include <drogular/job_registry.hpp>
 
+#include <algorithm>
 #include <charconv>
 #include <set>
 #include <utility>
@@ -22,6 +23,11 @@ bool validIdentifier(std::string_view value) {
 }
 
 void validateValue(const JobParameterDefinition& param, const std::string& value) {
+    if (!param.choices.empty() &&
+        std::find(param.choices.begin(), param.choices.end(), value) == param.choices.end()
+    ) {
+        throw std::invalid_argument("Unsupported parameter choice: " + param.name);
+    }
     if (param.type == JobParameterType::Boolean) {
         if (value != "true" && value != "false") {
             throw std::invalid_argument("Invalid boolean parameter: " + param.name);
@@ -52,6 +58,17 @@ void JobRegistry::registerJob(JobDefinition definition, Factory factory) {
             (param.minimum && param.maximum && *param.minimum > *param.maximum)
         ) {
             throw std::invalid_argument("Invalid job parameter definition");
+        }
+        for (const auto& choice : param.choices) {
+            validateValue(JobParameterDefinition{
+                param.name,
+                param.type,
+                param.required,
+                {},
+                param.minimum,
+                param.maximum,
+                {}
+            }, choice);
         }
         if (!param.defaultValue.empty()) {
             validateValue(param, param.defaultValue);

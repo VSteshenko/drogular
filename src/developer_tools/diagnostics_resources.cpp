@@ -432,6 +432,61 @@ const builtInRenderers = new Map([
         ]);
     }],
     ['drogular.process', (container, section) => {
+        // SVG history uses DOM elements rather than generated HTML; only numeric
+        // samples are accepted, and gaps in CPU sampling remain gaps.
+        const processChart = (caption, history, field, scale, suffix, color) => {
+            const wrap = document.createElement('div');
+            const heading = document.createElement('h3');
+            heading.textContent = caption;
+            wrap.append(heading);
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', '0 0 640 150');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('role', 'img');
+            svg.setAttribute('aria-label', caption + ' over the last five minutes');
+            const values = history.map(point => {
+                const value = point[field];
+                return value == null ? null : Number(value) / scale;
+            });
+            const valid = values.filter(value => value != null && Number.isFinite(value));
+            if (!valid.length) {
+                const label = document.createElement('p');
+                label.textContent = 'Waiting for samples…';
+                wrap.append(label);
+                return wrap;
+            }
+            const max = Math.max(1, ...valid) * 1.1;
+            const times = history.map(point => Number(point.elapsedMs));
+            const minTime = Math.max(0, times.at(-1) - 300000);
+            const span = Math.max(1, times.at(-1) - minTime);
+            let path = '';
+            let connected = false;
+            for (let i = 0; i < values.length; i++) {
+                if (values[i] == null || !Number.isFinite(values[i])) {
+                    connected = false;
+                    continue;
+                }
+                const x = 45 + 580 * (times[i] - minTime) / span;
+                const y = 125 - 105 * Math.max(0, values[i]) / max;
+                path += (connected ? ' L ' : ' M ') + x.toFixed(2) + ' ' + y.toFixed(2);
+                connected = true;
+            }
+            const line = document.createElementNS(svg.namespaceURI, 'path');
+            line.setAttribute('d', path);
+            line.setAttribute('fill', 'none');
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', '2.5');
+            svg.append(line);
+            const axis = document.createElementNS(svg.namespaceURI, 'text');
+            axis.setAttribute('x', '6');
+            axis.setAttribute('y', '20');
+            axis.setAttribute('fill', 'currentColor');
+            axis.setAttribute('font-size', '12');
+            axis.textContent = max.toFixed(1) + suffix;
+            svg.append(axis);
+            wrap.append(svg);
+            return wrap;
+        };
         const data = section.data && typeof section.data === 'object' ? section.data : {};
         if (!data.available) {
             container.textContent = 'Process metrics are not available on this platform.';
@@ -449,6 +504,13 @@ const builtInRenderers = new Map([
                 ['Uptime', uptime],
                 ['Total CPU time (ms)', data.cpuTimeMs]
             ]);
+        if (Array.isArray(data.history)) {
+            const history = data.history.filter(p => p && Number.isFinite(Number(p.elapsedMs)));
+            container.append(
+                processChart('CPU history (%)', history, 'cpuPercent', 1, '%', '#16a085'),
+                processChart('Memory RSS history (MiB)', history, 'residentBytes', 1048576, ' MiB', '#5892ed')
+            );
+        }
     }],
     ['drogular.jobs', (container, section) => {
         const data = section.data && typeof section.data === 'object' ? section.data : {};
@@ -504,6 +566,22 @@ const builtInRenderers = new Map([
                     const input = document.createElement('input');
                     input.name = p.name;
                     input.value = p.default || '';
+                    if (Array.isArray(p.choices) && p.choices.length) {
+                        const select = document.createElement('select');
+                        select.name = p.name;
+                        for (const value of p.choices) {
+                            const opt = document.createElement('option');
+                            opt.value = value;
+                            opt.textContent = p.name === 'memoryKiB'
+                                ? value === '0' ? 'None' : Number(value) / 1024 + ' MiB'
+                                : value;
+                            opt.selected = value === (p.default || '');
+                            select.append(opt);
+                        }
+                        label.append(select);
+                        form.append(label, document.createTextNode(' '));
+                        continue;
+                    }
                     if (p.type === 'integer') {
                         input.type = 'number';
                         if (p.minimum != null) input.min = String(p.minimum);
@@ -663,6 +741,7 @@ const renderInspection = async (data, rendererRegistry) => {
     for (const section of sections) {
         const panel = document.createElement('section');
         panel.className = 'panel';
+        panel.dataset.sectionId = section.id;
         const heading = document.createElement('h2');
         heading.textContent = section.title || section.id || 'Section';
         panel.appendChild(heading);
@@ -670,6 +749,9 @@ const renderInspection = async (data, rendererRegistry) => {
         await renderSection(panel, section, rendererRegistry);
     }
 };
+
+let processRendererRegistry = null;
+let refreshingProcess = false;
 
 const loadInspection = async () => {
     const button = byId('refresh-button');
@@ -692,6 +774,7 @@ const loadInspection = async () => {
         if (!response.ok) throw new Error(`Inspection request failed with HTTP ${response.status}`);
         const data = await response.json();
         await renderInspection(data, rendererRegistry);
+        processRendererRegistry = rendererRegistry;
         byId('status-text').textContent = `Inspection loaded at ${new Date().toLocaleTimeString()}`;
     } catch (cause) {
         error.hidden = false;
@@ -702,11 +785,39 @@ const loadInspection = async () => {
     }
 };
 
+// Update only the Process panel; a full re-render would reset inputs in the
+// Available Jobs section while someone is configuring a Job.
+const refreshProcess = async () => {
+    const panel = [...document.querySelectorAll('[data-section-id]')]
+        .find(node => node.dataset.sectionId === 'process');
+    if (!panel || !processRendererRegistry || refreshingProcess) return;
+    refreshingProcess = true;
+    try {
+        const response = await fetch(inspectionEndpoint, { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const section = (data.sections || []).find(item => item.id === 'process');
+        if (!section) return;
+        panel.replaceChildren();
+        const heading = document.createElement('h2');
+        heading.textContent = section.title || 'Process';
+        panel.append(heading);
+        await renderSection(panel, section, processRendererRegistry);
+    } catch (_) {
+        // The manual Refresh button continues to provide error feedback.
+    } finally { refreshingProcess = false; }
+};
+
 const startDiagnostics = () => {
     const refreshButton = byId('refresh-button');
     if (!refreshButton || !byId('status-text') || !byId('error-state')) return;
     refreshButton.addEventListener('click', loadInspection);
     loadInspection();
+    // Reuse the existing inspection endpoint and renderer; do not spawn a
+    // second client-side sampler. Pause background refresh for hidden tabs.
+    window.setInterval(() => {
+        if (!document.hidden && !refreshButton.disabled) refreshProcess();
+    }, 2000);
 };
 
 if (document.readyState === 'loading') {

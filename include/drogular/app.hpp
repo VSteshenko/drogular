@@ -6,6 +6,7 @@
 #include <drogular/router.hpp>
 #include <drogular/runtime_diagnostics.hpp>
 #include <drogular/process_metrics.hpp>
+#include <drogular/process_metrics_history.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
 #include <drogular/application_profile.hpp>
@@ -435,9 +436,17 @@ public:
      * Applications may attach independent subsystems (e.g. JobRuntime).
      * The App must outlive all attached producers.
      */
-    RuntimeDiagnostics& runtimeDiagnostics() noexcept { return runtimeDiagnostics_; }
+    RuntimeDiagnostics& runtimeDiagnostics() noexcept {
+        return runtimeDiagnostics_;
+    }
 
-    ProcessMetricsProvider& processMetrics() noexcept { return processMetrics_; }
+    ProcessMetricsProvider& processMetrics() noexcept {
+        return processMetrics_;
+    }
+
+    ProcessMetricsHistory& processMetricsHistory() noexcept {
+        return processMetricsHistory_;
+    }
 
     void run(unsigned short port);
 
@@ -446,6 +455,7 @@ private:
     ApplicationServices services_;
     RuntimeDiagnostics runtimeDiagnostics_;
     ProcessMetricsProvider processMetrics_;
+    ProcessMetricsHistory processMetricsHistory_{processMetrics_};
     Router router_{&services_, &runtimeDiagnostics_};
     std::optional<std::string> offlinePageRoute_;
     std::function<std::shared_ptr<drogular::Page>()> offlinePageFactory_;

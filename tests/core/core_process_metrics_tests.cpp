@@ -1,4 +1,5 @@
 #include <drogular/process_metrics.hpp>
+#include <drogular/process_metrics_history.hpp>
 #include <drogular/app.hpp>
 
 #include <gtest/gtest.h>
@@ -44,4 +45,34 @@ TEST(ProcessMetricsTests, AppInspectionExposesIndependentSection) {
     EXPECT_TRUE(section->data.isMember("available"));
     EXPECT_TRUE(section->data.isMember("threadCount"));
     EXPECT_TRUE(section->data.isMember("cpuPercent"));
+    EXPECT_TRUE(section->data.isMember("history"));
+    EXPECT_TRUE(section->data["history"].isArray());
+}
+
+TEST(ProcessMetricsTests, HistoryIsBoundedAndStopsCleanly) {
+    drogular::ProcessMetricsProvider provider;
+    drogular::ProcessMetricsHistory history(provider, std::chrono::milliseconds(10), 3);
+    history.start();
+    history.start(); // idempotent
+    std::this_thread::sleep_for(std::chrono::milliseconds(110));
+    history.stop();
+    history.stop(); // idempotent
+    const auto samples = history.snapshot();
+    ASSERT_EQ(samples.size(), 3u);
+    EXPECT_LE(samples.front().elapsedMs, samples.back().elapsedMs);
+#if defined(__linux__) || defined(__APPLE__)
+    EXPECT_TRUE(samples.back().metrics.available);
+    EXPECT_TRUE(samples.back().metrics.cpuPercent.has_value());
+#endif
+    const auto saved = samples.back().elapsedMs;
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    EXPECT_EQ(history.snapshot().back().elapsedMs, saved);
+}
+
+TEST(ProcessMetricsTests, HistoryRejectsInvalidConfiguration) {
+    drogular::ProcessMetricsProvider provider;
+    EXPECT_THROW((drogular::ProcessMetricsHistory(provider, std::chrono::milliseconds(0), 2)),
+                 std::invalid_argument);
+    EXPECT_THROW((drogular::ProcessMetricsHistory(provider, std::chrono::milliseconds(10), 0)),
+                 std::invalid_argument);
 }

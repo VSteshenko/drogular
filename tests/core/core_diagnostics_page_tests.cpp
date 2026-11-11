@@ -42,6 +42,8 @@ TEST(DiagnosticsPageTests, ShipsBuiltInRuntimeDiagnosticsRenderers) {
 
     EXPECT_NE(script.find("drogular.runtime"), std::string_view::npos);
     EXPECT_NE(script.find("drogular.process"), std::string_view::npos);
+    EXPECT_NE(script.find("CPU history (%)"), std::string_view::npos);
+    EXPECT_NE(script.find("Memory RSS history (MiB)"), std::string_view::npos);
     EXPECT_NE(script.find("Resident memory (RSS)"), std::string_view::npos);
     EXPECT_NE(script.find("drogular.interactions"), std::string_view::npos);
     EXPECT_NE(script.find("drogular.service-scopes"), std::string_view::npos);

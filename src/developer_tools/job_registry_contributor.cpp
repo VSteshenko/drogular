@@ -41,6 +41,11 @@ void JobRegistryContributor::contribute(ApplicationInspection& inspection) const
             if (p.maximum) {
                 parameter["maximum"] = Json::Int64(*p.maximum);
             }
+            if (!p.choices.empty()) {
+                Json::Value choices(Json::arrayValue);
+                for (const auto& choice : p.choices) choices.append(choice);
+                parameter["choices"] = std::move(choices);
+            }
             parameters.append(std::move(parameter));
         }
         item["parameters"] = std::move(parameters);

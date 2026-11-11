@@ -147,10 +147,29 @@ void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
                 callback(jsonResponse(std::move(error), drogon::k400BadRequest));
                 return;
             }
+            const auto memoryParam = request->getParameter("memoryKiB");
+            int memoryKiB = 0; // Preserve compatibility with older demo clients.
+            bool invalidMemory = false;
+            if (!memoryParam.empty()) {
+                const auto [memoryEnd, memoryError] = std::from_chars(
+                    memoryParam.data(), memoryParam.data() + memoryParam.size(), memoryKiB);
+                invalidMemory = memoryError != std::errc{} ||
+                    memoryEnd != memoryParam.data() + memoryParam.size();
+            }
+            if (invalidMemory ||
+                (memoryKiB != 0 && memoryKiB != 512 &&
+                 memoryKiB != 1024 && memoryKiB != 2048)
+            ) {
+                Json::Value error;
+                error["error"] = "memoryKiB must be 0, 512, 1024, or 2048";
+                callback(jsonResponse(std::move(error), drogon::k400BadRequest));
+                return;
+            }
             const bool fail = request->getParameter("fail") == "1";
             try {
                 const auto id = registry->launch(fail ? "demo.failure" : "demo.batch",
-                                                 {{"seconds", std::to_string(seconds)}});
+                                                 {{"seconds", std::to_string(seconds)},
+                                                  {"memoryKiB", std::to_string(memoryKiB)}});
                 callback(jsonResponse(jobJson(*jobs->find(id)), drogon::k201Created));
             } catch (const std::exception& error) {
                 Json::Value response;

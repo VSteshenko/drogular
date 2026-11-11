@@ -69,6 +69,7 @@ add_library(drogular
     src/job_client_resources.cpp
     src/runtime_diagnostics.cpp
     src/process_metrics.cpp
+    src/process_metrics_history.cpp
     src/route_pattern.cpp
     src/render_context.cpp
     src/url.cpp

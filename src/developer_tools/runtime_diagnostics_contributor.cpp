@@ -90,9 +90,10 @@ Json::Value jobsSection(const RuntimeDiagnosticsSnapshot& snapshot) {
 
 RuntimeDiagnosticsContributor::RuntimeDiagnosticsContributor(
     const RuntimeDiagnostics& diagnostics,
-    const ProcessMetricsProvider* processMetrics
+    const ProcessMetricsProvider* processMetrics,
+    const ProcessMetricsHistory* history
 ) noexcept
-    : diagnostics_(diagnostics), processMetrics_(processMetrics)
+    : diagnostics_(diagnostics), processMetrics_(processMetrics), history_(history)
 {
 }
 
@@ -108,7 +109,13 @@ void RuntimeDiagnosticsContributor::contribute(
         runtimeSection(snapshot)
     });
     if (processMetrics_ != nullptr) {
-        const auto metrics = processMetrics_->snapshot();
+        // Do not disturb the CPU sampling interval with extra inspection reads.
+        const auto recorded = history_
+            ? history_->snapshot()
+            : std::vector<ProcessMetricsHistorySample>{};
+        const auto metrics = recorded.empty()
+            ? processMetrics_->snapshot()
+            : recorded.back().metrics;
         Json::Value data(Json::objectValue);
         data["available"] = metrics.available;
         data["cpuPercent"] = metrics.cpuPercent ? Json::Value(*metrics.cpuPercent) : Json::Value();
@@ -117,6 +124,20 @@ void RuntimeDiagnosticsContributor::contribute(
         data["threadCount"] = Json::UInt64(metrics.threadCount);
         data["uptimeMs"] = Json::UInt64(metrics.uptimeMs);
         data["cpuTimeMs"] = Json::UInt64(metrics.cpuTimeMs);
+        if (history_ != nullptr) {
+            Json::Value samples(Json::arrayValue);
+            for (const auto& point : recorded) {
+                Json::Value sample(Json::objectValue);
+                sample["elapsedMs"] = Json::UInt64(point.elapsedMs);
+                sample["cpuPercent"] = point.metrics.cpuPercent
+                    ? Json::Value(*point.metrics.cpuPercent)
+                    : Json::Value();
+                sample["residentBytes"] = Json::UInt64(point.metrics.residentBytes);
+                samples.append(std::move(sample));
+            }
+            data["history"] = std::move(samples);
+            data["samplingIntervalMs"] = 2000;
+        }
         inspection.addSection({
             "process",
             "Process",

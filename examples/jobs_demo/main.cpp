@@ -14,6 +14,8 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <vector>
+#include <cstdint>
 
 int main(int argc, char* argv[]) {
     JobsDemoOptions options;
@@ -55,6 +57,15 @@ int main(int argc, char* argv[]) {
             1,
             120
         });
+        definition.parameters.push_back({
+            "memoryKiB",
+            drogular::JobParameterType::Integer,
+            false,
+            "0",
+            0,
+            2048,
+            {"0", "512", "1024", "2048"}
+        });
         registry->registerJob(
             std::move(definition),
             [fail](
@@ -62,18 +73,37 @@ int main(int argc, char* argv[]) {
                 const drogular::JobParameters& parameters
             ) {
                 const int seconds = std::stoi(parameters.at("seconds"));
+                const auto requestedKiB = static_cast<std::size_t>(
+                    std::stoul(parameters.at("memoryKiB")));
+                // Keep the allocation alive across the entire task; touching
+                // pages ensures the operating system commits physical memory.
+                std::vector<std::uint8_t> memory(requestedKiB * 1024, 0);
+                for (std::size_t i = 0; i < memory.size(); i += 4096) {
+                    memory[i] = static_cast<std::uint8_t>(i / 4096 % 255 + 1);
+                }
+                const auto allocationLabel = std::to_string(requestedKiB) + " KiB";
                 for (int step = 1; step <= seconds * 5; ++step) {
                     ctx.throwIfCancellationRequested();
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
                     ctx.throwIfCancellationRequested();
                     ctx.reportProgress(
                         static_cast<unsigned>(step * 100 / (seconds * 5)),
-                        "Processing batch " + std::to_string(step) + " of " + std::to_string(seconds * 5));
+                        "Processing batch " + std::to_string(step) + " of " +
+                        std::to_string(seconds * 5) + " · allocated " + allocationLabel);
+                }
+                // Read allocated memory to keep its lifetime observable to
+                // the optimizer. RAII also releases it on cancellation/failure.
+                std::uint64_t checksum = 0;
+                for (std::size_t i = 0; i < memory.size(); i += 4096) {
+                    checksum += memory[i];
                 }
                 if (fail) {
-                    throw drogular::JobFailure("DEMO_FAILURE", "Intentional demo failure");
+                    throw drogular::JobFailure(
+                        "DEMO_FAILURE",
+                        "Intentional demo failure · allocated " + allocationLabel);
                 }
-                ctx.setResult(std::string("All batches processed successfully"));
+                ctx.setResult("All batches processed successfully · allocated " +
+                              allocationLabel + " · checksum " + std::to_string(checksum));
             }
         );
     };

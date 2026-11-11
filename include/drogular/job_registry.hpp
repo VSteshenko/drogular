@@ -26,6 +26,8 @@ struct JobParameterDefinition {
     std::string defaultValue;
     std::optional<std::int64_t> minimum;
     std::optional<std::int64_t> maximum;
+    // Optional discrete values, useful for bounded launch forms.
+    std::vector<std::string> choices;
 };
 
 struct JobDefinition {

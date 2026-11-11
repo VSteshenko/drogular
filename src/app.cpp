@@ -126,7 +126,11 @@ ApplicationInspection App::inspect() const {
         });
     }
 
-    RuntimeDiagnosticsContributor(runtimeDiagnostics_, &processMetrics_).contribute(result);
+    RuntimeDiagnosticsContributor(
+        runtimeDiagnostics_,
+        &processMetrics_,
+        &processMetricsHistory_)
+    .contribute(result);
 
     const auto contributors =
         services_.service<DeveloperToolsContributors>();
@@ -479,9 +483,16 @@ void App::run(unsigned short port) {
         );
     }
 
-    drogon::app()
-        .addListener("0.0.0.0", port)
-        .run();
+    processMetricsHistory_.start();
+    try {
+        drogon::app()
+            .addListener("0.0.0.0", port)
+            .run();
+    } catch (...) {
+        processMetricsHistory_.stop();
+        throw;
+    }
+    processMetricsHistory_.stop();
 }
 
 } // namespace drogular

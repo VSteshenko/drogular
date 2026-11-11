@@ -210,8 +210,9 @@ async function refreshMetrics() {
 
 async function create(fail) {
     const duration = document.querySelector('#duration').value;
+    const memory = document.querySelector('#memory').value;
     try {
-        const job = await api(`/api/jobs/create?seconds=${duration}&fail=${fail ? '1' : '0'}`, {method:'POST'});
+        const job = await api(`/api/jobs/create?seconds=${duration}&memoryKiB=${memory}&fail=${fail ? '1' : '0'}`, {method:'POST'});
         state.set(job.id, job);
         reconcileStreams();
         render();
