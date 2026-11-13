@@ -72,7 +72,28 @@ std::string_view kindName(JobEventKind kind) {
 
 std::string encodeJobSse(const JobEvent& event) {
     const auto& job = event.job;
-    std::string data = "{\"id\":" + std::to_string(job.id) +
+    const char* status = "Queued";
+    switch (job.status) {
+    case JobStatus::Queued:
+        status = "Queued";
+        break;
+    case JobStatus::Running:
+        status = "Running";
+        break;
+    case JobStatus::Paused:
+        status = "Paused";
+        break;
+    case JobStatus::Completed:
+        status = "Completed";
+        break;
+    case JobStatus::Failed:
+        status = "Failed";
+        break;
+    case JobStatus::Cancelled:
+        status = "Cancelled";
+        break;
+    }
+    std::string data = "{\"status\":" + quote(status) + ",\"id\":" + std::to_string(job.id) +
         ",\"name\":" + quote(job.name) +
         ",\"progress\":" + std::to_string(job.progress) +
         ",\"message\":" + quote(job.message) +

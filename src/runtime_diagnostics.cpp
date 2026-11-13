@@ -184,12 +184,39 @@ void RuntimeDiagnostics::recordJobCancellationRequested() noexcept {
 void RuntimeDiagnostics::recordJobPauseRequested() noexcept {
     state_->jobPauseRequests.fetch_add(1, std::memory_order_relaxed);
 }
+
 void RuntimeDiagnostics::recordJobResumeRequested() noexcept {
     state_->jobResumeRequests.fetch_add(1, std::memory_order_relaxed);
 }
+
+void RuntimeDiagnostics::recordJobYielded() noexcept {
+    state_->jobRunning.fetch_sub(1, std::memory_order_relaxed);
+    state_->jobPaused.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobRequeued(std::uint64_t pausedMs) noexcept {
+    state_->jobPaused.fetch_sub(1, std::memory_order_relaxed);
+    const auto queued = state_->jobQueued.fetch_add(1, std::memory_order_relaxed) + 1;
+    updateMaximum(state_->jobPeakQueued, queued);
+    state_->jobPauseTotalMs.fetch_add(pausedMs, std::memory_order_relaxed);
+    state_->jobPauseSamples.fetch_add(1, std::memory_order_relaxed);
+}
+
+void RuntimeDiagnostics::recordJobRunningRequeued() noexcept {
+    state_->jobRunning.fetch_sub(1, std::memory_order_relaxed);
+    const auto queued = state_->jobQueued.fetch_add(1, std::memory_order_relaxed) + 1;
+    updateMaximum(state_->jobPeakQueued, queued);
+}
+
+void RuntimeDiagnostics::recordJobCancelledPaused() noexcept {
+    state_->jobPaused.fetch_sub(1, std::memory_order_relaxed);
+    state_->jobCancelled.fetch_add(1, std::memory_order_relaxed);
+}
+
 void RuntimeDiagnostics::recordJobPaused() noexcept {
     state_->jobPaused.fetch_add(1, std::memory_order_relaxed);
 }
+
 void RuntimeDiagnostics::recordJobResumed(std::uint64_t milliseconds) noexcept {
     state_->jobPaused.fetch_sub(1, std::memory_order_relaxed);
     state_->jobPauseTotalMs.fetch_add(milliseconds, std::memory_order_relaxed);

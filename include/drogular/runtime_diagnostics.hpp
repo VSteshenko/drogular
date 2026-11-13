@@ -129,6 +129,10 @@ public:
     void recordJobPauseRequested() noexcept;
     void recordJobResumeRequested() noexcept;
     void recordJobPaused() noexcept;
+    void recordJobYielded() noexcept;
+    void recordJobRequeued(std::uint64_t pausedMs) noexcept;
+    void recordJobRunningRequeued() noexcept;
+    void recordJobCancelledPaused() noexcept;
     void recordJobResumed(std::uint64_t milliseconds) noexcept;
     void recordJobProgress() noexcept;
     void recordJobRejected() noexcept;

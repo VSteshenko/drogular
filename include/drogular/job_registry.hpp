@@ -49,6 +49,9 @@ public:
 
     explicit JobRegistry(JobRuntime& runtime) noexcept;
     void registerJob(JobDefinition definition, Factory factory);
+    // Factory creates one restartable task per launch; captures own checkpoint state.
+    void registerResumableJob(JobDefinition definition,
+        std::function<JobRuntime::Task(const JobParameters&)> factory);
     std::vector<JobDefinition> list() const;
     std::optional<JobDefinition> find(std::string_view id) const;
     // Throws invalid_argument for invalid/unknown parameters or an unknown type.
@@ -59,6 +62,7 @@ private:
     struct Registered {
         JobDefinition definition;
         Factory factory;
+        std::function<JobRuntime::Task(const JobParameters&)> resumableFactory;
     };
     JobRuntime& runtime_;
     mutable std::mutex mutex_;

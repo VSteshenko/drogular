@@ -66,44 +66,49 @@ int main(int argc, char* argv[]) {
             2048,
             {"0", "512", "1024", "2048"}
         });
-        registry->registerJob(
+        registry->registerResumableJob(
             std::move(definition),
-            [fail](
-                drogular::JobContext& ctx,
-                const drogular::JobParameters& parameters
-            ) {
-                const int seconds = std::stoi(parameters.at("seconds"));
-                const auto requestedKiB = static_cast<std::size_t>(
+            [fail](const drogular::JobParameters& parameters) -> drogular::JobRuntime::Task {
+                struct DemoState {
+                    int step = 0;
+                    int steps = 0;
+                    std::size_t memoryKiB = 0;
+                };
+                auto state = std::make_shared<DemoState>();
+                state->steps = std::stoi(parameters.at("seconds")) * 5;
+                state->memoryKiB = static_cast<std::size_t>(
                     std::stoul(parameters.at("memoryKiB")));
-                // Keep the allocation alive across the entire task; touching
-                // pages ensures the operating system commits physical memory.
-                std::vector<std::uint8_t> memory(requestedKiB * 1024, 0);
-                for (std::size_t i = 0; i < memory.size(); i += 4096) {
-                    memory[i] = static_cast<std::uint8_t>(i / 4096 % 255 + 1);
-                }
-                const auto allocationLabel = std::to_string(requestedKiB) + " KiB";
-                for (int step = 1; step <= seconds * 5; ++step) {
+                // Only the checkpoint is persistent. Allocations are scoped to
+                // each worker execution and are released on yield/cancel/finish.
+                return [state, fail](drogular::JobContext& ctx) {
                     ctx.waitIfPaused();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                    std::vector<std::uint8_t> memory(state->memoryKiB * 1024, 0);
+                    for (std::size_t i = 0; i < memory.size(); i += 4096) {
+                        memory[i] = static_cast<std::uint8_t>(i / 4096 % 255 + 1);
+                    }
+                    const auto allocationLabel = std::to_string(state->memoryKiB) + " KiB";
+                    while (state->step < state->steps) {
+                        ctx.waitIfPaused();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                        // Progress may yield; commit the work before publishing.
+                        ++state->step;
+                        ctx.reportProgress(
+                            static_cast<unsigned>(state->step * 100 / state->steps),
+                            "Processing batch " + std::to_string(state->step) + " of " +
+                            std::to_string(state->steps) + " · allocated " + allocationLabel);
+                    }
                     ctx.waitIfPaused();
-                    ctx.reportProgress(
-                        static_cast<unsigned>(step * 100 / (seconds * 5)),
-                        "Processing batch " + std::to_string(step) + " of " +
-                        std::to_string(seconds * 5) + " · allocated " + allocationLabel);
-                }
-                // Read allocated memory to keep its lifetime observable to
-                // the optimizer. RAII also releases it on cancellation/failure.
-                std::uint64_t checksum = 0;
-                for (std::size_t i = 0; i < memory.size(); i += 4096) {
-                    checksum += memory[i];
-                }
-                if (fail) {
-                    throw drogular::JobFailure(
-                        "DEMO_FAILURE",
-                        "Intentional demo failure · allocated " + allocationLabel);
-                }
-                ctx.setResult("All batches processed successfully · allocated " +
-                              allocationLabel + " · checksum " + std::to_string(checksum));
+                    std::uint64_t checksum = 0;
+                    for (std::size_t i = 0; i < memory.size(); i += 4096) {
+                        checksum += memory[i];
+                    }
+                    if (fail) {
+                        throw drogular::JobFailure(
+                            "DEMO_FAILURE", "Intentional demo failure · allocated " + allocationLabel);
+                    }
+                    ctx.setResult("All batches processed successfully · allocated " +
+                                  allocationLabel + " · checksum " + std::to_string(checksum));
+                };
             }
         );
     };

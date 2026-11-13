@@ -44,12 +44,8 @@ void validateValue(const JobParameterDefinition& param, const std::string& value
     }
 }
 
-} // namespace
-
-JobRegistry::JobRegistry(JobRuntime& runtime) noexcept : runtime_(runtime) {}
-
-void JobRegistry::registerJob(JobDefinition definition, Factory factory) {
-    if (!validIdentifier(definition.id) || definition.name.empty() || !factory) {
+void validateDefinition(const JobDefinition& definition) {
+    if (!validIdentifier(definition.id) || definition.name.empty()) {
         throw std::invalid_argument("Invalid job registration");
     }
     std::set<std::string> names;
@@ -74,9 +70,35 @@ void JobRegistry::registerJob(JobDefinition definition, Factory factory) {
             validateValue(param, param.defaultValue);
         }
     }
+}
+
+} // namespace
+
+JobRegistry::JobRegistry(JobRuntime& runtime) noexcept : runtime_(runtime) {}
+
+void JobRegistry::registerJob(JobDefinition definition, Factory factory) {
+    validateDefinition(definition);
     std::lock_guard lock(mutex_);
     const std::string key = definition.id;
-    if (!registered_.emplace(key, Registered{std::move(definition), std::move(factory)}).second) {
+    if (!registered_.emplace(key, Registered{std::move(definition), std::move(factory), {}}).second) {
+        throw std::invalid_argument("Duplicate job type: " + key);
+    }
+}
+
+void JobRegistry::registerResumableJob(
+    JobDefinition definition, std::function<JobRuntime::Task(const JobParameters&)> factory) {
+    if (!factory) {
+        throw std::invalid_argument("Invalid resumable job registration");
+    }
+    validateDefinition(definition);
+    std::lock_guard lock(mutex_);
+    const std::string key = definition.id;
+    if (!registered_.emplace(key, Registered{
+            std::move(definition),
+            {},
+            std::move(factory)
+        }).second
+    ) {
         throw std::invalid_argument("Duplicate job type: " + key);
     }
 }
@@ -127,6 +149,10 @@ JobId JobRegistry::launch(std::string_view id, const JobParameters& parameters) 
         if (!args.contains(name)) {
             throw std::invalid_argument("Unknown job parameter: " + name);
         }
+    }
+    if (entry.resumableFactory) {
+        return runtime_.submitResumable(entry.definition.name,
+                                        entry.resumableFactory(args));
     }
     return runtime_.submit(entry.definition.name,
         [factory = std::move(entry.factory), args = std::move(args)](JobContext& context) {

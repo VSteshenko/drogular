@@ -99,9 +99,8 @@ function subscribe(job) {
                 'job.cancelled':'Cancelled'
             })[eventName];
             const old = state.get(message.id) || job;
-            const nextStatus = eventName === 'job.resumed'
-                ? (old.status === 'Queued' ? 'Queued' : 'Running')
-                : (status || old.status);
+            // Resume may requeue a resumable job rather than run immediately.
+            const nextStatus = message.status || status || old.status;
             state.set(message.id, {...old, ...message, status: nextStatus});
             render();
             if (status && terminal.has(status)) {

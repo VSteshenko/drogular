@@ -287,8 +287,11 @@ void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
                 return;
             }
             if (!jobs->requestResume(*id)) {
-                Json::Value error; error["error"] = "Unknown job";
-                callback(jsonResponse(std::move(error), drogon::k404NotFound));
+                Json::Value error;
+                const bool known = jobs->find(*id).has_value();
+                error["error"] = known ? "Job queue full; retry Resume later" : "Unknown job";
+                callback(jsonResponse(std::move(error),
+                    known ? drogon::k409Conflict : drogon::k404NotFound));
                 return;
             }
             callback(jsonResponse(jobJson(*jobs->find(*id))));

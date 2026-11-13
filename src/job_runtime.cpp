@@ -16,7 +16,14 @@ struct JobContext::Shared {
     std::optional<std::chrono::steady_clock::time_point> pausedSince;
     RuntimeDiagnostics* diagnostics = nullptr;
     JobEventStream* events = nullptr;
+    bool resumable = false;
 };
+
+namespace {
+
+struct JobYield final {};
+
+}
 
 struct JobRuntime::Entry {
     std::shared_ptr<JobContext::Shared> shared;
@@ -43,6 +50,10 @@ void JobContext::waitIfPaused() const {
     std::unique_lock lock(shared_->mutex);
     if (!shared_->snapshot.pauseRequested || shared_->snapshot.status != JobStatus::Running) {
         return;
+    }
+    if (shared_->resumable) {
+        lock.unlock();
+        throw JobYield{}; // Unwind stack and release worker; caller preserves checkpoint.
     }
     shared_->snapshot.status = JobStatus::Paused;
     shared_->pausedSince = std::chrono::steady_clock::now();
@@ -138,6 +149,14 @@ JobRuntime::~JobRuntime() {
 }
 
 JobId JobRuntime::submit(std::string name, Task task) {
+    return submitImpl(std::move(name), std::move(task), false);
+}
+
+JobId JobRuntime::submitResumable(std::string name, Task task) {
+    return submitImpl(std::move(name), std::move(task), true);
+}
+
+JobId JobRuntime::submitImpl(std::string name, Task task, bool resumable) {
     if (!task) {
         throw std::invalid_argument("Job task cannot be empty");
     }
@@ -155,6 +174,7 @@ JobId JobRuntime::submit(std::string name, Task task) {
     }
 
     auto shared = std::make_shared<JobContext::Shared>();
+    shared->resumable = resumable;
     shared->diagnostics = diagnostics_;
     shared->events = events_.get();
     shared->snapshot.id = nextId_++;
@@ -227,6 +247,21 @@ bool JobRuntime::requestCancel(JobId id) {
             diagnostics_->recordJobCancelled(false);
         }
         events_->publish(JobEventKind::Cancelled, shared.snapshot);
+    } else if (shared.snapshot.status == JobStatus::Paused && shared.resumable) {
+        shared.snapshot.pauseRequested = false;
+        shared.snapshot.cancellationRequested = true;
+        shared.cancel.store(true, std::memory_order_release);
+        if (shared.pausedSince) {
+            shared.snapshot.pausedDuration += std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - *shared.pausedSince);
+            shared.pausedSince.reset();
+        }
+        shared.snapshot.status = JobStatus::Cancelled;
+        shared.snapshot.finishedAt = std::chrono::system_clock::now();
+        if (diagnostics_) {
+            diagnostics_->recordJobCancelledPaused();
+        }
+        events_->publish(JobEventKind::Cancelled, shared.snapshot);
     } else if (shared.snapshot.status == JobStatus::Running || shared.snapshot.status == JobStatus::Paused) {
         if (!shared.cancel.exchange(true, std::memory_order_acq_rel)) {
             shared.snapshot.cancellationRequested = true;
@@ -276,11 +311,29 @@ bool JobRuntime::requestResume(JobId id) {
     auto& shared = *it->second->shared;
     std::lock_guard jobLock(shared.mutex);
     if (shared.snapshot.pauseRequested && !shared.snapshot.cancellationRequested && !stopping_) {
+        if (shared.resumable && shared.snapshot.status == JobStatus::Paused && queue_.size() >= maxQueued_) {
+            return false; // Keep paused until capacity becomes available.
+        }
         shared.snapshot.pauseRequested = false;
         if (diagnostics_) {
             diagnostics_->recordJobResumeRequested();
         }
-        // Queued tasks stay queued; paused workers resume at their checkpoint.
+        if (shared.resumable && shared.snapshot.status == JobStatus::Paused) {
+            auto elapsed = std::chrono::milliseconds{0};
+            if (shared.pausedSince) {
+                elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - *shared.pausedSince);
+                shared.snapshot.pausedDuration += elapsed;
+                shared.pausedSince.reset();
+            }
+            shared.snapshot.status = JobStatus::Queued;
+            queue_.push_back(it->second); // Back of FIFO; do not jump ahead of waiting jobs.
+            if (diagnostics_) {
+                diagnostics_->recordJobRequeued(elapsed.count());
+            }
+            events_->publish(JobEventKind::Resumed, shared.snapshot);
+        }
+        // Legacy cooperative jobs resume on their occupied worker.
         if (shared.snapshot.status == JobStatus::Queued) {
             events_->publish(JobEventKind::Resumed, shared.snapshot);
         }
@@ -327,18 +380,26 @@ void JobRuntime::workerLoop() {
             }
 
             shared.snapshot.status = JobStatus::Running;
-            shared.snapshot.startedAt = std::chrono::system_clock::now();
-            shared.snapshot.queueDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
-                *shared.snapshot.startedAt - shared.snapshot.createdAt);
+            const auto now = std::chrono::system_clock::now();
+            const bool firstStart = !shared.snapshot.startedAt;
+            if (firstStart) shared.snapshot.startedAt = now;
+            if (firstStart) {
+                shared.snapshot.queueDuration =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(now - shared.snapshot.createdAt);
+            }
 
             if (diagnostics_) {
-                diagnostics_->recordJobQueueWait(
-                    static_cast<std::uint64_t>(shared.snapshot.queueDuration->count()));
+                if (firstStart) {
+                    diagnostics_->recordJobQueueWait(
+                        static_cast<std::uint64_t>(shared.snapshot.queueDuration->count())
+                    );
+                }
                 diagnostics_->recordJobStarted();
             }
             events_->publish(JobEventKind::Started, shared.snapshot);
         }
 
+        bool yielded = false;
         JobStatus outcome = JobStatus::Completed;
         std::string error;
         std::string errorCode;
@@ -347,6 +408,8 @@ void JobRuntime::workerLoop() {
             ctx.waitIfPaused();
             entry->task(ctx);
             ctx.waitIfPaused();
+        } catch (const JobYield&) {
+            yielded = true;
         } catch (const JobCancelled&) {
             outcome = JobStatus::Cancelled;
         } catch (const JobFailure& e) {
@@ -363,6 +426,36 @@ void JobRuntime::workerLoop() {
             error = "Unknown Job exception";
         }
 
+        if (yielded) {
+            // Runtime lock precedes job lock everywhere, including Resume/Cancel.
+            std::lock_guard runtimeLock(mutex_);
+            std::lock_guard jobLock(shared.mutex);
+            if (shared.cancel.load(std::memory_order_acquire) || stopping_) {
+                shared.snapshot.status = JobStatus::Cancelled;
+                shared.snapshot.finishedAt = std::chrono::system_clock::now();
+                shared.snapshot.result.reset();
+                if (diagnostics_) {
+                    diagnostics_->recordJobCancelled(true);
+                }
+                events_->publish(JobEventKind::Cancelled, shared.snapshot);
+            } else if (shared.snapshot.pauseRequested) {
+                shared.snapshot.status = JobStatus::Paused;
+                shared.pausedSince = std::chrono::steady_clock::now();
+                if (diagnostics_) {
+                    diagnostics_->recordJobYielded();
+                }
+                events_->publish(JobEventKind::Paused, shared.snapshot);
+            } else {
+                shared.snapshot.status = JobStatus::Queued;
+                queue_.push_back(entry);
+                if (diagnostics_) {
+                    diagnostics_->recordJobRunningRequeued();
+                }
+                events_->publish(JobEventKind::Queued, shared.snapshot);
+                ready_.notify_one();
+            }
+            continue;
+        }
         {
             std::lock_guard lock(shared.mutex);
             shared.snapshot.status = outcome;
@@ -428,6 +521,21 @@ void JobRuntime::shutdown() noexcept {
                     shared.snapshot.finishedAt = std::chrono::system_clock::now();
                     if (diagnostics_) {
                         diagnostics_->recordJobCancelled(false);
+                    }
+                    events_->publish(JobEventKind::Cancelled, shared.snapshot);
+                } else if (shared.snapshot.status == JobStatus::Paused && shared.resumable) {
+                    shared.cancel.store(true, std::memory_order_release);
+                    shared.snapshot.cancellationRequested = true;
+                    shared.snapshot.pauseRequested = false;
+                    shared.snapshot.status = JobStatus::Cancelled;
+                    shared.snapshot.finishedAt = std::chrono::system_clock::now();
+                    if (shared.pausedSince) {
+                        shared.snapshot.pausedDuration += std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::steady_clock::now() - *shared.pausedSince);
+                        shared.pausedSince.reset();
+                    }
+                    if (diagnostics_) {
+                        diagnostics_->recordJobCancelledPaused();
                     }
                     events_->publish(JobEventKind::Cancelled, shared.snapshot);
                 } else if (shared.snapshot.status == JobStatus::Running ||

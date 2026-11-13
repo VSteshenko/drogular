@@ -87,6 +87,8 @@ public:
     void throwIfCancellationRequested() const;
     // Cooperative checkpoint: waits without polling; worker remains occupied.
     void waitIfPaused() const;
+    // Resumable jobs yield their worker at this checkpoint and restart the
+    // callback after Resume; callback state must live outside its stack.
     void reportProgress(unsigned percent, std::string message = {});
     // Store a copyable C++ result. The value is published only if the task
     // finishes successfully; cancellation/failure clears it.
@@ -119,6 +121,9 @@ public:
     // Throws std::invalid_argument for an empty task, std::runtime_error if
     // stopped or full. Rejections never create an inspectable Job.
     JobId submit(std::string name, Task task);
+    // Opt-in: tasks must be restartable and retain checkpoint state in captures.
+    JobId submitResumable(std::string name, Task task);
+
     std::optional<JobSnapshot> find(JobId id) const;
     std::vector<JobSnapshot> list() const;
     // Returns false only for an unknown Job. Terminal Jobs are unchanged.
@@ -136,6 +141,7 @@ public:
 private:
     struct Entry;
     void workerLoop();
+    JobId submitImpl(std::string name, Task task, bool resumable);
     mutable std::mutex mutex_;
     std::condition_variable ready_;
     std::map<JobId, std::shared_ptr<Entry>> entries_;

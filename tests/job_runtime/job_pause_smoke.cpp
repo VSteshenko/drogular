@@ -10,7 +10,7 @@ using namespace drogular;
 using namespace std::chrono_literals;
 
 template<class Pred> void until(Pred pred) {
-    for (int i=0; i<1000 && !pred(); ++i) {
+    for (int i = 0; i < 1000 && !pred(); ++i) {
         std::this_thread::sleep_for(2ms);
     }
     assert(pred());
@@ -23,7 +23,7 @@ int main() {
     std::promise<void> started;
     const auto id = jobs.submit("pause", [&](JobContext& ctx) {
         started.set_value();
-        for (int i=0; i<40; ++i) {
+        for (int i = 0; i < 40; ++i) {
             ctx.waitIfPaused();
             ++steps;
             std::this_thread::sleep_for(5ms);
@@ -75,7 +75,10 @@ int main() {
     std::atomic<bool> reached{ false };
     auto cancellable = jobs.submit("cancel-paused", [&](JobContext& ctx) {
         reached = true;
-        for (;;) { ctx.waitIfPaused(); std::this_thread::sleep_for(1ms); }
+        for (;;) {
+            ctx.waitIfPaused();
+            std::this_thread::sleep_for(1ms);
+        }
     });
     until([&] {
         return reached.load();
@@ -103,6 +106,79 @@ int main() {
     until([&] {
         return jobs.find(halted)->status == JobStatus::Paused;
     });
+    // New resumable API: pause frees the only worker; resume requeues.
+    RuntimeDiagnostics releasedDiagnostics;
+    JobRuntime released(1, 8, &releasedDiagnostics);
+    struct Checkpoint {
+        std::atomic<int> step{0};
+    };
+    auto checkpoint = std::make_shared<Checkpoint>();
+    const auto longId = released.submitResumable("long", [checkpoint](JobContext& ctx) {
+        while (checkpoint->step.load() < 80) {
+            ctx.waitIfPaused();
+            ++checkpoint->step;
+            std::this_thread::sleep_for(3ms);
+        }
+    });
+    until([&] {
+        return checkpoint->step.load() >= 3;
+    });
+    assert(released.requestPause(longId));
+    until([&] {
+        return released.find(longId)->status == JobStatus::Paused;
+    });
+    assert(releasedDiagnostics.snapshot().jobs.running == 0);
+    assert(releasedDiagnostics.snapshot().jobs.paused == 1);
+
+    const auto urgent = released.submit("urgent", [](JobContext&) {});
+    until([&] {
+        return released.find(urgent)->status == JobStatus::Completed;
+    });
+    assert(released.find(longId)->status == JobStatus::Paused);
+    assert(released.requestResume(longId));
+    until([&] {
+        return released.find(longId)->status == JobStatus::Completed;
+    });
+    assert(releasedDiagnostics.snapshot().jobs.paused == 0);
+    assert(releasedDiagnostics.snapshot().jobs.running == 0);
+    assert(releasedDiagnostics.snapshot().jobs.queued == 0);
+    // Paused resumable jobs can be cancelled without consuming a worker.
+    const auto toCancel = released.submitResumable("cancel", [](JobContext& ctx) {
+        for (;;) {
+            ctx.waitIfPaused();
+            std::this_thread::sleep_for(1ms);
+        }
+    });
+    until([&] {
+        return released.find(toCancel)->status == JobStatus::Running;
+    });
+    assert(released.requestPause(toCancel));
+    until([&] {
+        return released.find(toCancel)->status == JobStatus::Paused;
+    });
+    assert(released.requestCancel(toCancel));
+    assert(released.find(toCancel)->status == JobStatus::Cancelled);
+    assert(releasedDiagnostics.snapshot().jobs.paused == 0);
+    released.shutdown();
+
+    // Shutdown cancels resumable jobs parked without workers.
+    JobRuntime shutdownRuntime(1, 4);
+    const auto parking = shutdownRuntime.submitResumable("parking", [](JobContext& ctx) {
+        for (;;) {
+            ctx.waitIfPaused();
+            std::this_thread::sleep_for(1ms);
+        }
+    });
+    until([&] {
+        return shutdownRuntime.find(parking)->status == JobStatus::Running;
+    });
+    assert(shutdownRuntime.requestPause(parking));
+    until([&] {
+        return shutdownRuntime.find(parking)->status == JobStatus::Paused;
+    });
+    shutdownRuntime.shutdown();
+    assert(shutdownRuntime.find(parking)->status == JobStatus::Cancelled);
+
     jobs.shutdown();
     assert(jobs.find(halted)->status == JobStatus::Cancelled);
     assert(diagnostics.snapshot().jobs.paused == 0);
