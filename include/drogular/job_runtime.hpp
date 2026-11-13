@@ -113,7 +113,8 @@ public:
 
     explicit JobRuntime(std::size_t workers = 2,
                         std::size_t maxQueued = 1024,
-                        RuntimeDiagnostics* diagnostics = nullptr);
+                        RuntimeDiagnostics* diagnostics = nullptr,
+                        std::size_t maxRetainedTerminal = 256);
     ~JobRuntime();
     JobRuntime(const JobRuntime&) = delete;
     JobRuntime& operator=(const JobRuntime&) = delete;
@@ -134,6 +135,11 @@ public:
     // jobs and join all workers. Running tasks must cooperate to stop promptly.
     void shutdown() noexcept;
     std::size_t workerCount() const noexcept;
+    // True after shutdown has been requested (also used by SSE adapters).
+    bool isStopping() const noexcept;
+    // Explicitly remove terminal snapshots older than the newest keepLatest.
+    // Active, queued and paused jobs are never evicted.
+    std::size_t pruneTerminalJobs(std::size_t keepLatest);
     RuntimeDiagnostics* runtimeDiagnostics() const noexcept;
     // Transport-neutral observable event stream. Outlives individual subscriptions.
     JobEventStream& events() noexcept;
@@ -141,6 +147,7 @@ public:
 private:
     struct Entry;
     void workerLoop();
+    std::size_t pruneTerminalJobsLocked(std::size_t keepLatest);
     JobId submitImpl(std::string name, Task task, bool resumable);
     mutable std::mutex mutex_;
     std::condition_variable ready_;
@@ -148,6 +155,7 @@ private:
     std::deque<std::shared_ptr<Entry>> queue_;
     std::vector<std::thread> workers_;
     std::size_t maxQueued_;
+    std::size_t maxRetainedTerminal_;
     RuntimeDiagnostics* diagnostics_;
     std::unique_ptr<JobEventStream> events_;
     JobId nextId_ = 1;

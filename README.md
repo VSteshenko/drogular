@@ -240,6 +240,8 @@ Introduce a first-class model for long-running and background work so applicatio
 - Add an SSE/event stream for live Job state and progress updates
 - Add [`JobsDemo`](examples/jobs_demo/README.md) as a reference application for starting, observing, cancelling, and reconnecting to Jobs
 - Add Job diagnostics for lifecycle transitions, execution time, failures, cancellation, and active/completed Job inspection
+- Support opt-in resumable jobs that release worker capacity while paused and requeue on resume
+- Include independent Process Metrics, five-minute resource history and reusable browser JobClient
 
 ### 0.27 — Health, Readiness & Authentication Context
 

@@ -92,8 +92,11 @@ void forwardStream(std::shared_ptr<JobRuntime> jobs,
         if (!initial || isTerminalJobStatus(initial->status)) {
             connected = false;
         }
-        while (connected) {
+        while (connected && !jobs->isStopping()) {
             auto batch = subscription.waitFor(heartbeat);
+            if (jobs->isStopping()) {
+                break;
+            }
             if (batch.gap) {
                 // Reset invalidates all preceding frames, including replay in this batch.
                 connected = stream->send(encodeJobSseReset());
@@ -155,6 +158,10 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
             }
             if (!authorize(request, *id)) {
                 reply(errorResponse(drogon::k403Forbidden, "Access denied"), callback);
+                return;
+            }
+            if (runtime->isStopping()) {
+                reply(errorResponse(drogon::k503ServiceUnavailable, "Job Runtime is stopping"), callback);
                 return;
             }
             const auto snapshot = runtime->find(*id);

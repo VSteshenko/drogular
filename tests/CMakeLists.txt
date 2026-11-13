@@ -398,6 +398,18 @@ add_test(
     COMMAND drogular_job_runtime_smoke
 )
 
+# Bounded retention of terminal jobs, without eviction of active work.
+add_executable(drogular_job_retention_smoke
+    job_runtime/job_retention_smoke.cpp
+)
+target_link_libraries(drogular_job_retention_smoke
+    PRIVATE Drogular::drogular
+)
+add_test(
+    NAME drogular_job_retention_smoke
+    COMMAND drogular_job_retention_smoke
+)
+
 # Job event replay, overflow and runtime lifecycle integration.
 add_executable(drogular_job_events_smoke
     job_runtime/job_events_smoke.cpp

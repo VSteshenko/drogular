@@ -119,9 +119,11 @@ void JobContext::setResult(std::any value) {
 JobRuntime::JobRuntime(
     std::size_t workers,
     std::size_t maxQueued,
-    RuntimeDiagnostics* diagnostics
+    RuntimeDiagnostics* diagnostics,
+    std::size_t maxRetainedTerminal
     )
-    : maxQueued_(maxQueued), diagnostics_(diagnostics),
+    : maxQueued_(maxQueued), maxRetainedTerminal_(maxRetainedTerminal),
+      diagnostics_(diagnostics),
       events_(std::make_unique<JobEventStream>(256, 256, diagnostics))
 {
     if (workers == 0 || maxQueued == 0) {
@@ -186,6 +188,7 @@ JobId JobRuntime::submitImpl(std::string name, Task task, bool resumable) {
     const auto id = entry->shared->snapshot.id;
     entries_.emplace(id, entry);
     queue_.push_back(entry);
+    pruneTerminalJobsLocked(maxRetainedTerminal_);
 
     if (diagnostics_) {
         diagnostics_->recordJobSubmitted();
@@ -236,44 +239,52 @@ bool JobRuntime::requestCancel(JobId id) {
     }
 
     auto& shared = *it->second->shared;
-    std::lock_guard jobLock(shared.mutex);
-    if (shared.snapshot.status == JobStatus::Queued) {
-        shared.snapshot.pauseRequested = false;
-        shared.snapshot.cancellationRequested = true;
-        shared.cancel.store(true, std::memory_order_release);
-        shared.snapshot.status = JobStatus::Cancelled;
-        shared.snapshot.finishedAt = std::chrono::system_clock::now();
-        // Remove cancelled entries immediately: their queue capacity should
-        // be available to new jobs even while every worker is occupied.
-        queue_.erase(std::remove(queue_.begin(), queue_.end(), it->second), queue_.end());
-        if (diagnostics_) {
-            diagnostics_->recordJobCancelled(false);
-        }
-        events_->publish(JobEventKind::Cancelled, shared.snapshot);
-    } else if (shared.snapshot.status == JobStatus::Paused && shared.resumable) {
-        shared.snapshot.pauseRequested = false;
-        shared.snapshot.cancellationRequested = true;
-        shared.cancel.store(true, std::memory_order_release);
-        if (shared.pausedSince) {
-            shared.snapshot.pausedDuration += std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::steady_clock::now() - *shared.pausedSince);
-            shared.pausedSince.reset();
-        }
-        shared.snapshot.status = JobStatus::Cancelled;
-        shared.snapshot.finishedAt = std::chrono::system_clock::now();
-        if (diagnostics_) {
-            diagnostics_->recordJobCancelledPaused();
-        }
-        events_->publish(JobEventKind::Cancelled, shared.snapshot);
-    } else if (shared.snapshot.status == JobStatus::Running || shared.snapshot.status == JobStatus::Paused) {
-        if (!shared.cancel.exchange(true, std::memory_order_acq_rel)) {
+    bool cancelledImmediately = false;
+    {
+        std::lock_guard jobLock(shared.mutex);
+        if (shared.snapshot.status == JobStatus::Queued) {
+            shared.snapshot.pauseRequested = false;
             shared.snapshot.cancellationRequested = true;
+            shared.cancel.store(true, std::memory_order_release);
+            shared.snapshot.status = JobStatus::Cancelled;
+            shared.snapshot.finishedAt = std::chrono::system_clock::now();
+            // Remove cancelled entries immediately: their queue capacity should
+            // be available to new jobs even while every worker is occupied.
+            queue_.erase(std::remove(queue_.begin(), queue_.end(), it->second), queue_.end());
             if (diagnostics_) {
-                diagnostics_->recordJobCancellationRequested();
+                diagnostics_->recordJobCancelled(false);
             }
-            events_->publish(JobEventKind::CancellationRequested, shared.snapshot);
+            events_->publish(JobEventKind::Cancelled, shared.snapshot);
+            cancelledImmediately = true;
+        } else if (shared.snapshot.status == JobStatus::Paused && shared.resumable) {
+            shared.snapshot.pauseRequested = false;
+            shared.snapshot.cancellationRequested = true;
+            shared.cancel.store(true, std::memory_order_release);
+            if (shared.pausedSince) {
+                shared.snapshot.pausedDuration += std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - *shared.pausedSince);
+                shared.pausedSince.reset();
+            }
+            shared.snapshot.status = JobStatus::Cancelled;
+            shared.snapshot.finishedAt = std::chrono::system_clock::now();
+            if (diagnostics_) {
+                diagnostics_->recordJobCancelledPaused();
+            }
+            events_->publish(JobEventKind::Cancelled, shared.snapshot);
+            cancelledImmediately = true;
+        } else if (shared.snapshot.status == JobStatus::Running || shared.snapshot.status == JobStatus::Paused) {
+            if (!shared.cancel.exchange(true, std::memory_order_acq_rel)) {
+                shared.snapshot.cancellationRequested = true;
+                if (diagnostics_) {
+                    diagnostics_->recordJobCancellationRequested();
+                }
+                events_->publish(JobEventKind::CancellationRequested, shared.snapshot);
+            }
+            shared.pauseChanged.notify_all();
         }
-        shared.pauseChanged.notify_all();
+    }
+    if (cancelledImmediately) {
+        pruneTerminalJobsLocked(maxRetainedTerminal_);
     }
 
     return true;
@@ -504,7 +515,50 @@ void JobRuntime::workerLoop() {
                 }
             }
         }
+        {
+            // Always take runtime mutex before a job mutex, matching Cancel/Resume.
+            std::lock_guard lock(mutex_);
+            pruneTerminalJobsLocked(maxRetainedTerminal_);
+        }
     }
+}
+
+std::size_t JobRuntime::pruneTerminalJobsLocked(std::size_t keepLatest) {
+    // IDs are monotonically increasing; maps iterate from oldest to newest.
+    // Only terminal entries are considered. Never remove a dispatched job.
+    std::size_t terminals = 0;
+    for (const auto& [id, entry] : entries_) {
+        std::lock_guard lock(entry->shared->mutex);
+        const auto state = entry->shared->snapshot.status;
+        if (state == JobStatus::Completed || state == JobStatus::Failed || state == JobStatus::Cancelled) {
+            ++terminals;
+        }
+    }
+    std::size_t removed = 0;
+    for (auto it = entries_.begin(); it != entries_.end() && terminals > keepLatest;) {
+        std::lock_guard lock(it->second->shared->mutex);
+        const auto state = it->second->shared->snapshot.status;
+        if (state == JobStatus::Completed || state == JobStatus::Failed || state == JobStatus::Cancelled) {
+            // Queued cancellation removes the entry from queue_ immediately.
+            // Other terminal jobs are no longer present in the queue.
+            it = entries_.erase(it);
+            --terminals;
+            ++removed;
+        } else {
+            ++it;
+        }
+    }
+    return removed;
+}
+
+std::size_t JobRuntime::pruneTerminalJobs(std::size_t keepLatest) {
+    std::lock_guard lock(mutex_);
+    return pruneTerminalJobsLocked(keepLatest);
+}
+
+bool JobRuntime::isStopping() const noexcept {
+    std::lock_guard lock(mutex_);
+    return stopping_;
 }
 
 void JobRuntime::shutdown() noexcept {

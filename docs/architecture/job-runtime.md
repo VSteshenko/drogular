@@ -49,8 +49,14 @@ auto id = jobs.submit("Index", [](drogular::JobContext& job) {
 - Shutdown rejects new submissions, cancels queued work, requests cancellation
   for running work, then joins workers. A blocking/non-cooperative task can
   delay shutdown indefinitely. Do not call shutdown from one of its own jobs.
-- The runtime retains Job snapshots until it is destroyed. Retention/eviction
-  policies must be added before long-lived high-volume production use.
+- The runtime retains the latest 256 **terminal** snapshots by default. Configure
+  the fourth constructor argument (`maxRetainedTerminal`) to change that limit.
+  Active, queued and paused tasks are never evicted. Terminal results are
+  evicted with their snapshots; `find(id)` can then return `std::nullopt`.
+  Use `pruneTerminalJobs(keepLatest)` for explicit cleanup. The bounded event
+  replay ring may independently retain recent snapshot copies; neither mechanism
+  provides durable storage. Applications needing persistent results should
+  copy them to their own storage before eviction.
 - `RuntimeDiagnostics` is an optional, non-owning pointer. It must outlive the
   JobRuntime and exposes aggregate Job counters in the existing Developer Tools
   `jobs` section. This is not a persistent event log.
@@ -94,6 +100,11 @@ SSE connection gauges apply only to endpoints registered using
 A connection is counted from admission until its streaming lease is released;
 `Closed` counts lease releases including normal close and disconnects.
 Stream `eventGaps` counts cursor gaps and subscriber-buffer overflows.
+The SSE forwarding worker checks `JobRuntime::isStopping()` after each
+heartbeat/event wait and closes the stream when shutdown is requested. This
+check is bounded by the configured heartbeat interval, rather than synchronous
+with shutdown. Detached SSE workers are still a lifecycle limitation requiring
+a stronger ownership model before exposing this endpoint to untrusted traffic.
 The diagnostics pointer must outlive the runtime and its SSE connections;
 these metrics are aggregates, not a per-user activity log.
 
@@ -129,9 +140,10 @@ it is elapsed *wall-clock time since the first start*, including parked pauses
 and requeue waits for resumable jobs; it is **not** active CPU/worker time.
 Cancelled queued Jobs have neither duration. Both durations use milliseconds.
 
-The `std::any` result is held in process memory and retained for the runtime
-lifetime. Avoid storing large payloads or secrets without an appropriate
-retention and authorization policy.
+The `std::any` result is held in process memory until terminal retention
+evicts the corresponding Job (or the runtime is destroyed). Avoid storing
+large payloads or secrets without an appropriate retention and authorization
+policy. An SSE replay event can temporarily hold a separate copy.
 
 ## Process-local events and SSE framing
 
@@ -223,6 +235,11 @@ The transport integration is intentionally independent of `Drogular::App`:
 Application routes and the future JobsDemo may register it without changing
 the core Runtime. A full live-browser cross-platform integration test remains
 a follow-up alongside JobsDemo.
+
+## Registered job types
+
+For catalog-based discovery and parameter-validated launches, see
+[Job Registry](job-registry.md). `JobRuntime` itself does not require registration.
 
 ## Remaining 0.26 work
 
