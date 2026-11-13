@@ -1,4 +1,4 @@
-# Job Runtime (0.26 development)
+# Job Runtime (Drogular 0.26)
 
 The process-local `drogular::JobRuntime` is independent of Drogon, HTTP, and
 Drogular Application. It owns a bounded FIFO queue and a fixed worker pool.
@@ -100,11 +100,11 @@ SSE connection gauges apply only to endpoints registered using
 A connection is counted from admission until its streaming lease is released;
 `Closed` counts lease releases including normal close and disconnects.
 Stream `eventGaps` counts cursor gaps and subscriber-buffer overflows.
-The SSE forwarding worker checks `JobRuntime::isStopping()` after each
-heartbeat/event wait and closes the stream when shutdown is requested. This
-check is bounded by the configured heartbeat interval, rather than synchronous
-with shutdown. Detached SSE workers are still a lifecycle limitation requiring
-a stronger ownership model before exposing this endpoint to untrusted traffic.
+SSE forwarding threads are owned by a session manager instead of being detached.
+On manager teardown they receive a stop request and are joined. The forwarding
+loop also checks `JobRuntime::isStopping()` using short bounded waits; connection
+cleanup may still lag until disconnect is detected or the current send returns.
+The session manager does not replace application-level authorization and resource limits.
 The diagnostics pointer must outlive the runtime and its SSE connections;
 these metrics are aggregates, not a per-user activity log.
 
@@ -225,24 +225,54 @@ fetch an up-to-date authorized snapshot. SSE never serializes opaque results.
 
 Important production constraints: this is a **process-local** adapter, not
 cross-node event delivery. Its connection model dedicates a lightweight
-worker thread per EventSource client (bounded by `maxConnections`). Connection
-cleanup is detected by a failed socket send, so idle disconnections may
-remain counted until the next heartbeat. A shared runtime must remain alive
+managed worker thread per EventSource client (bounded by `maxConnections`).
+The endpoint owns the worker handles and requests stop and joins them at
+endpoint teardown; each stream also exits promptly after Runtime shutdown.
+Connection cleanup is detected by a failed socket send, so idle disconnections
+may remain counted until the next heartbeat. A shared runtime must remain alive
 while it is passed to the endpoint; this adapter captures its ownership.
 Do not use an `authorize` callback that always returns true in production.
 
 The transport integration is intentionally independent of `Drogular::App`:
-Application routes and the future JobsDemo may register it without changing
-the core Runtime. A full live-browser cross-platform integration test remains
-a follow-up alongside JobsDemo.
+Application routes and the [JobsDemo](../../examples/jobs_demo/README.md) register
+it without changing the core Runtime. The example uses the same diagnostic
+instance as Drogular Application via `App::runtimeDiagnostics()` and presents
+Job progress through native EventSource. Full live-browser cross-platform integration and shutdown stress tests remain
+release-qualification checks.
 
 ## Registered job types
 
 For catalog-based discovery and parameter-validated launches, see
 [Job Registry](job-registry.md). `JobRuntime` itself does not require registration.
 
-## Remaining 0.26 work
+## Release qualification and scope
 
-Application convenience wiring, retention policy, JobsDemo, extended timings
-and concurrency diagnostics, and full network stress/integration tests are
-**not yet implemented**.
+The Runtime, bounded terminal retention, resumable checkpoint/requeue model,
+and managed SSE worker ownership are implemented. Before release, verify the
+full macOS/Linux test matrix, Docker JobsDemo, multi-client SSE disconnects,
+and shutdown under active and paused tasks. JobsDemo routes are intentionally
+development-only and must not be exposed without application authentication,
+authorization and CSRF protection. Persistent job storage and distributed
+workers are not part of 0.26.
+
+### Yielding pauses (resumable jobs)
+
+`JobRuntime::submitResumable(name, task)` is opt-in. When a pause is requested,
+`JobContext::waitIfPaused()` unwinds the callback at its next cooperative
+checkpoint. This **releases the worker** and transitions the job to `Paused`.
+`requestResume()` places it at the **back of the bounded FIFO queue**; execution
+restarts the callback on an available worker. The callback must store durable
+checkpoint state (e.g. a shared state object captured by its closure). Its
+stack-local variables are lost when it yields. This is not stack suspension or
+transparent continuation of arbitrary C++ code. Never repeat non-idempotent
+side effects after resuming: commit checkpoint progress before a possible yield.
+
+A paused resumable job does not count as `running` or `queued`; it does count as
+`paused`. Resuming fails (returns `false`) if the queue is full; the job stays
+paused and can be retried. Cancelling a paused resumable job is immediate.
+Legacy `submit()` jobs retain cooperative blocking Pause semantics, including
+occupied worker slots, for backward compatibility.
+
+JobsDemo demonstrates resumable jobs. It keeps batch progress in a captured
+state object and creates a worker-local memory allocation on each execution,
+releasing that allocation when a pause unwinds the callback.

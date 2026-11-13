@@ -5,9 +5,12 @@
 
 #include <drogon/HttpResponse.h>
 
+#include <algorithm>
 #include <atomic>
 #include <charconv>
 #include <optional>
+#include <mutex>
+#include <vector>
 #include <stdexcept>
 #include <string_view>
 #include <thread>
@@ -77,6 +80,7 @@ struct ConnectionLease {
 };
 
 void forwardStream(std::shared_ptr<JobRuntime> jobs,
+                   const std::atomic_bool& stopRequested,
                    JobId jobId,
                    drogon::ResponseStreamPtr stream,
                    JobEventStream::Subscription subscription,
@@ -92,9 +96,13 @@ void forwardStream(std::shared_ptr<JobRuntime> jobs,
         if (!initial || isTerminalJobStatus(initial->status)) {
             connected = false;
         }
-        while (connected && !jobs->isStopping()) {
-            auto batch = subscription.waitFor(heartbeat);
-            if (jobs->isStopping()) {
+        auto lastHeartbeat = std::chrono::steady_clock::now();
+        while (connected && !stopRequested && !jobs->isStopping()) {
+            // Short waits allow session shutdown to join promptly even with a
+            // long configured heartbeat. Only send heartbeats at the configured interval.
+            const auto waitTime = std::min(heartbeat, std::chrono::milliseconds(250));
+            auto batch = subscription.waitFor(waitTime);
+            if (stopRequested || jobs->isStopping()) {
                 break;
             }
             if (batch.gap) {
@@ -104,8 +112,13 @@ void forwardStream(std::shared_ptr<JobRuntime> jobs,
                 continue;
             }
             if (batch.events.empty()) {
-                connected = stream->send(encodeJobSseHeartbeat());
+                const auto now = std::chrono::steady_clock::now();
+                if (now - lastHeartbeat >= heartbeat) {
+                    connected = stream->send(encodeJobSseHeartbeat());
+                    lastHeartbeat = now;
+                }
             } else {
+                lastHeartbeat = std::chrono::steady_clock::now();
                 for (const auto& event : batch.events) {
                     if (!(connected = stream->send(encodeJobSse(event)))) {
                         break;
@@ -127,6 +140,77 @@ void forwardStream(std::shared_ptr<JobRuntime> jobs,
     stream->close();
 }
 
+// Owns all SSE forwarding threads. The endpoint callback retains this manager
+// and its destructor requests cancellation and joins every remaining worker.
+// Workers deliberately do not capture the manager, preventing ownership cycles.
+class StreamWorkers {
+public:
+    explicit StreamWorkers(std::size_t maxConnections) {
+        workers_.reserve(maxConnections);
+    }
+
+    ~StreamWorkers() {
+        std::lock_guard lock(mutex_);
+        for (auto& worker : workers_) {
+            worker.stop->store(true);
+        }
+        for (auto& worker : workers_) {
+            if (worker.thread.joinable()) {
+                worker.thread.join();
+            }
+        }
+    }
+
+    void start(std::shared_ptr<JobRuntime> runtime, JobId id,
+               drogon::ResponseStreamPtr stream,
+               JobEventStream::Subscription subscription,
+               std::chrono::milliseconds heartbeat,
+               std::shared_ptr<ConnectionLease> lease) {
+        auto stop = std::make_shared<std::atomic_bool>(false);
+        auto done = std::make_shared<std::atomic_bool>(false);
+        std::lock_guard lock(mutex_);
+        // Join completed workers before adding a new one, so long-running
+        // servers do not accumulate thread handles after client disconnects.
+        auto it = workers_.begin();
+        while (it != workers_.end()) {
+            if (it->done->load()) {
+                if (it->thread.joinable()) {
+                    it->thread.join();
+                }
+                it = workers_.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        Worker worker;
+        worker.stop = std::move(stop);
+        worker.done = std::move(done);
+        worker.thread = std::thread(
+            [runtime = std::move(runtime), id, stream = std::move(stream),
+             subscription = std::move(subscription), heartbeat,
+             lease = std::move(lease), stop = worker.stop,
+             done = worker.done]() mutable {
+                try {
+                    forwardStream(std::move(runtime), *stop, id,
+                                  std::move(stream), std::move(subscription), heartbeat);
+                } catch (...) {
+                    // No exception may escape an SSE forwarding thread.
+                }
+                done->store(true);
+            });
+        workers_.push_back(std::move(worker));
+    }
+
+private:
+    struct Worker {
+        std::thread thread;
+        std::shared_ptr<std::atomic_bool> stop;
+        std::shared_ptr<std::atomic_bool> done;
+    };
+    std::mutex mutex_;
+    std::vector<Worker> workers_;
+};
+
 } // namespace
 
 void registerJobSseEndpoint(drogon::HttpAppFramework& app,
@@ -143,10 +227,11 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
     }
 
     auto connections = std::make_shared<ConnectionCount>();
+    auto workers = std::make_shared<StreamWorkers>(options.maxConnections);
     connections->limit = options.maxConnections;
     app.registerHandler(std::move(path),
         [runtime = std::move(runtime), authorize = std::move(authorize),
-         connections, heartbeat = options.heartbeat](
+         connections, workers, heartbeat = options.heartbeat](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback)
         {
@@ -203,7 +288,7 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
                 lease->diagnostics->recordJobSseOpened();
             }
             auto response = drogon::HttpResponse::newAsyncStreamResponse(
-                [runtime, jobId = *id, heartbeat,
+                [runtime, workers, jobId = *id, heartbeat,
                  lease = std::move(lease),
                  subscription = std::make_shared<JobEventStream::Subscription>(
                      std::move(subscription))](drogon::ResponseStreamPtr stream) mutable
@@ -212,16 +297,13 @@ void registerJobSseEndpoint(drogon::HttpAppFramework& app,
                     // Drogon may retain this callback for the response lifetime,
                     // which must NOT keep the active connection gauge elevated.
                     auto workerLease = std::move(lease);
-                    if (!stream) return;
+                    if (!stream) {
+                        return;
+                    }
                     try {
-                        std::thread([runtime, jobId, stream = std::move(stream),
-                                     subscription = std::move(*subscription), heartbeat,
-                                     lease = std::move(workerLease)]() mutable
-                        {
-                            forwardStream(std::move(runtime), jobId, std::move(stream),
-                                          std::move(subscription), heartbeat);
-                            // lease destructs when the forwarding worker exits.
-                        }).detach();
+                        workers->start(runtime, jobId, std::move(stream),
+                                       std::move(*subscription), heartbeat,
+                                       std::move(workerLease));
                     } catch (...) {
                         // Thread construction failure releases the lease via RAII.
                     }

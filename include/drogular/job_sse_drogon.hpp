@@ -24,7 +24,8 @@ using JobSseAuthorize = std::function<bool(const drogon::HttpRequestPtr&, JobId)
 /** Registers GET /.../events?job=<id> for authorized Job EventSource clients.
  * Owns a shared JobRuntime for the lifetime of active streams. The endpoint
  * accepts Last-Event-ID for bounded replay and sends job.reset on gaps.
- * No Drogon I/O thread blocks while waiting for events.
+ * No Drogon I/O thread blocks while waiting for events. Forwarding workers
+ * are owned and joined by the endpoint on teardown (not detached).
  */
 void registerJobSseEndpoint(drogon::HttpAppFramework& app,
                             std::string path,
