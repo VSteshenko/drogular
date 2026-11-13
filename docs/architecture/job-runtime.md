@@ -3,7 +3,8 @@
 The process-local `drogular::JobRuntime` is independent of Drogon, HTTP, and
 Drogular Application. It owns a bounded FIFO queue and a fixed worker pool.
 A Job is submitted with `submit(name, callable)`, inspected with `find(id)` or
-`list()`, and cooperatively cancelled with `requestCancel(id)`.
+`list()`, cooperatively cancelled with `requestCancel(id)`, and paused or resumed with
+`requestPause(id)` / `requestResume(id)`.
 
 ```cpp
 #include <drogular/job_runtime.hpp>
@@ -12,15 +13,29 @@ A Job is submitted with `submit(name, callable)`, inspected with `find(id)` or
 drogular::JobRuntime jobs(2, 128);
 auto id = jobs.submit("Index", [](drogular::JobContext& job) {
     job.reportProgress(25, "Reading inputs");
-    job.throwIfCancellationRequested();
-    // Perform bounded work; check for cancellation regularly.
+    job.waitIfPaused();
+    // Perform bounded work; check for pause/cancellation regularly.
     job.reportProgress(100, "Indexed");
 });
 ```
 
 ## Lifecycle and concurrency
 
-- `Queued` -> `Running` -> `Completed` / `Failed` / `Cancelled`.
+- `Queued` -> `Running` -> `Completed` / `Failed` / `Cancelled`, with an
+  intermediate `Paused` state for running tasks at cooperative checkpoints.
+- `requestPause()` records `pauseRequested` and emits `job.pause-requested`;
+  it does not forcibly suspend user code. A queued pause keeps the task queued
+  and not eligible for worker dispatch until `requestResume()`. A running task
+  enters `Paused` at `JobContext::waitIfPaused()`, or at `reportProgress()` or
+  `setResult()` (which invoke the checkpoint).
+- `requestResume()` clears the request and wakes waiting tasks. A paused worker
+  **remains occupied**; there is no stack serialization/checkpoint-and-requeue.
+  Running tasks that never reach a checkpoint cannot be paused promptly.
+- `requestCancel()` and shutdown wake paused tasks so cancellation is observed.
+  `pauseRequested` is independent of `cancellationRequested`. Terminal jobs are
+  unaffected by Pause/Resume; unknown IDs return `false`.
+- Pausing an already queued job does not count as `Paused` until it has started;
+  pending requests are visible through `snapshot.pauseRequested`.
 - Queued cancellation is immediate; running cancellation is a request and only
   becomes `Cancelled` when the task observes it. A task that catches and
   suppresses `JobCancelled` cannot be forcibly terminated.
@@ -56,6 +71,11 @@ provides rounded-down `queueWaitAverageMs` and `executionAverageMs`, plus
 worker utilization and queue saturation are represented in basis points
 (`workerUtilizationBps`, `queueSaturationBps`; 10000 = 100%). A zero
 capacity yields zero basis points; the UI displays these ratios as unavailable.
+Pause diagnostics include `paused`, `pauseRequests`, `resumeRequests`,
+`pauseTotalMs`, `pauseSamples` and `pauseAverageMs`. Time spent in Paused
+is accumulated on wakeup; a currently paused interval is not yet included
+in the aggregate total. `running` and worker utilization include paused tasks
+because cooperative pause retains a worker.
 Capacity gauges aggregate all active JobRuntime instances sharing diagnostics;
 peaks are lifetime high-water marks for the aggregate, not per-runtime maxima.
 The ratios are instantaneous gauges, not time-weighted utilization averages.

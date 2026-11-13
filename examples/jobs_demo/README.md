@@ -110,3 +110,10 @@ multiple jobs. Physical RSS may remain elevated after the vector is freed:
 allocators can retain reusable pages, so the chart is not a measurement of
 per-job memory ownership. Do not expose these unauthenticated demo routes to
 untrusted networks.
+
+## Cooperative Pause / Resume
+
+Running tasks pause at their next checkpoint and retain their worker. Paused
+queued tasks remain in the queue until resumed. The Jobs view offers Pause,
+Resume and Cancel; JSON endpoints `POST /api/jobs/pause?id=<id>` and
+`POST /api/jobs/resume?id=<id>` are for this local demonstration only.

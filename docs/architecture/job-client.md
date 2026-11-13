@@ -10,6 +10,8 @@ import {JobClient} from '/__drogular/assets/job-client.js';
 const jobs = new JobClient({baseUrl: '/api/jobs'});
 const snapshots = await jobs.list();
 const one = await jobs.get(123);
+await jobs.pause(123);
+await jobs.resume(123);
 await jobs.cancel(123);
 const diagnostics = await jobs.diagnostics();
 const stream = jobs.watch(123);
@@ -22,7 +24,8 @@ stream.close();
 ```
 
 The default transport contract uses `GET <baseUrl>`,
-`GET <baseUrl>/detail?id=...`, `POST <baseUrl>/cancel?id=...`,
+`GET <baseUrl>/detail?id=...`, `POST <baseUrl>/pause?id=...`,
+`POST <baseUrl>/resume?id=...`, `POST <baseUrl>/cancel?id=...`,
 `GET <baseUrl>/diagnostics` and `GET <baseUrl>/events?job=...`.
 Applications control authentication, authorization, CSRF defenses and endpoint
 publication. The client uses `credentials: 'same-origin'` and `cache: 'no-store'`

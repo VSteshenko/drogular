@@ -30,7 +30,8 @@ enum class JobStatus {
     Running,
     Completed,
     Failed,
-    Cancelled
+    Cancelled,
+    Paused
 };
 
 struct JobError {
@@ -54,6 +55,8 @@ struct JobSnapshot {
         return std::any_cast<T>(&result);
     }
     bool cancellationRequested = false;
+    bool pauseRequested = false;
+    std::chrono::milliseconds pausedDuration{0};
     std::chrono::system_clock::time_point createdAt{};
     std::optional<std::chrono::system_clock::time_point> startedAt;
     std::optional<std::chrono::system_clock::time_point> finishedAt;
@@ -82,6 +85,8 @@ class JobContext {
 public:
     bool cancellationRequested() const noexcept;
     void throwIfCancellationRequested() const;
+    // Cooperative checkpoint: waits without polling; worker remains occupied.
+    void waitIfPaused() const;
     void reportProgress(unsigned percent, std::string message = {});
     // Store a copyable C++ result. The value is published only if the task
     // finishes successfully; cancellation/failure clears it.
@@ -118,6 +123,8 @@ public:
     std::vector<JobSnapshot> list() const;
     // Returns false only for an unknown Job. Terminal Jobs are unchanged.
     bool requestCancel(JobId id);
+    bool requestPause(JobId id);
+    bool requestResume(JobId id);
     // Reject new jobs, cancel queued jobs, request cancellation of running
     // jobs and join all workers. Running tasks must cooperate to stop promptly.
     void shutdown() noexcept;

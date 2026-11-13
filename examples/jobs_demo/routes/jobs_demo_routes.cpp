@@ -35,6 +35,9 @@ Json::Value jobJson(const drogular::JobSnapshot& job) {
     case drogular::JobStatus::Running:
         value["status"] = "Running";
         break;
+    case drogular::JobStatus::Paused:
+        value["status"] = "Paused";
+        break;
     case drogular::JobStatus::Completed:
         value["status"] = "Completed";
         break;
@@ -48,6 +51,8 @@ Json::Value jobJson(const drogular::JobSnapshot& job) {
     value["progress"] = job.progress;
     value["message"] = job.message;
     value["cancellationRequested"] = job.cancellationRequested;
+    value["pauseRequested"] = job.pauseRequested;
+    value["pausedMs"] = Json::Int64(job.pausedDuration.count());
     if (job.failure) {
         value["error"] = job.failure->message;
         value["errorCode"] = job.failure->code;
@@ -116,6 +121,12 @@ Json::Value metricJson(const drogular::JobRuntimeDiagnostics& d) {
     JOB_METRIC(cancelled);
     JOB_METRIC(rejected);
     JOB_METRIC(cancellationRequests);
+    JOB_METRIC(paused);
+    JOB_METRIC(pauseRequests);
+    JOB_METRIC(resumeRequests);
+    JOB_METRIC(pauseTotalMs);
+    JOB_METRIC(pauseAverageMs);
+    JOB_METRIC(pauseSamples);
     JOB_METRIC(progressUpdates);
     JOB_METRIC(queueWaitTotalMs);
     JOB_METRIC(executionTotalMs);
@@ -244,6 +255,38 @@ void installRoutesInternal(std::shared_ptr<drogular::JobRuntime> jobs,
                 return;
             }
             if (!jobs->requestCancel(*id)) {
+                Json::Value error; error["error"] = "Unknown job";
+                callback(jsonResponse(std::move(error), drogon::k404NotFound));
+                return;
+            }
+            callback(jsonResponse(jobJson(*jobs->find(*id))));
+        }, {drogon::Post});
+
+    drogon::app().registerHandler("/api/jobs/pause",
+        [jobs](const drogon::HttpRequestPtr& request, ResponseCallback&& callback) {
+            const auto id = parseId(request->getParameter("id"));
+            if (!id) {
+                Json::Value error; error["error"] = "Invalid job ID";
+                callback(jsonResponse(std::move(error), drogon::k400BadRequest));
+                return;
+            }
+            if (!jobs->requestPause(*id)) {
+                Json::Value error; error["error"] = "Unknown job";
+                callback(jsonResponse(std::move(error), drogon::k404NotFound));
+                return;
+            }
+            callback(jsonResponse(jobJson(*jobs->find(*id))));
+        }, {drogon::Post});
+
+    drogon::app().registerHandler("/api/jobs/resume",
+        [jobs](const drogon::HttpRequestPtr& request, ResponseCallback&& callback) {
+            const auto id = parseId(request->getParameter("id"));
+            if (!id) {
+                Json::Value error; error["error"] = "Invalid job ID";
+                callback(jsonResponse(std::move(error), drogon::k400BadRequest));
+                return;
+            }
+            if (!jobs->requestResume(*id)) {
                 Json::Value error; error["error"] = "Unknown job";
                 callback(jsonResponse(std::move(error), drogon::k404NotFound));
                 return;

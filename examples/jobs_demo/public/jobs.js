@@ -20,6 +20,9 @@ const events = [
     'job.started',
     'job.progress',
     'job.cancellation-requested',
+    'job.pause-requested',
+    'job.paused',
+    'job.resumed',
     'job.completed',
     'job.failed',
     'job.cancelled'
@@ -89,12 +92,17 @@ function subscribe(job) {
                 'job.queued':'Queued',
                 'job.started':'Running',
                 'job.progress':'Running',
+                'job.paused':'Paused',
+                'job.resumed':null,
                 'job.completed':'Completed',
                 'job.failed':'Failed',
                 'job.cancelled':'Cancelled'
             })[eventName];
             const old = state.get(message.id) || job;
-            state.set(message.id, {...old, ...message, status: status || old.status});
+            const nextStatus = eventName === 'job.resumed'
+                ? (old.status === 'Queued' ? 'Queued' : 'Running')
+                : (status || old.status);
+            state.set(message.id, {...old, ...message, status: nextStatus});
             render();
             if (status && terminal.has(status)) {
                 closeStream(message.id);
@@ -153,6 +161,25 @@ function render() {
                                                     job.result || job.message || 'Waiting'}`;
         row.append(heading, bar, detail);
         if (!terminal.has(job.status)) {
+            const pauseButton = document.createElement('button');
+            pauseButton.className = 'secondary small';
+            const canResume = job.status === 'Paused' || job.pauseRequested;
+            pauseButton.textContent = canResume ? 'Resume' : 'Pause';
+            pauseButton.disabled = job.cancellationRequested;
+            pauseButton.onclick = async () => {
+                pauseButton.disabled = true;
+                try {
+                    state.set(job.id, canResume
+                        ? await client.resume(job.id)
+                        : await client.pause(job.id));
+                    reconcileStreams();
+                    render();
+                } catch (error) {
+                    showNotice(error.message);
+                    render();
+                }
+            };
+            row.append(pauseButton);
             const button = document.createElement('button');
             button.className = 'secondary small';
             button.textContent = job.cancellationRequested ? 'Cancelling…' : 'Cancel';

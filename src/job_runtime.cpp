@@ -12,6 +12,8 @@ struct JobContext::Shared {
     mutable std::mutex mutex;
     JobSnapshot snapshot;
     std::atomic<bool> cancel{false};
+    std::condition_variable pauseChanged;
+    std::optional<std::chrono::steady_clock::time_point> pausedSince;
     RuntimeDiagnostics* diagnostics = nullptr;
     JobEventStream* events = nullptr;
 };
@@ -36,7 +38,42 @@ void JobContext::throwIfCancellationRequested() const {
     }
 }
 
+void JobContext::waitIfPaused() const {
+    throwIfCancellationRequested();
+    std::unique_lock lock(shared_->mutex);
+    if (!shared_->snapshot.pauseRequested || shared_->snapshot.status != JobStatus::Running) {
+        return;
+    }
+    shared_->snapshot.status = JobStatus::Paused;
+    shared_->pausedSince = std::chrono::steady_clock::now();
+    if (shared_->diagnostics) {
+        shared_->diagnostics->recordJobPaused();
+    }
+    if (shared_->events) {
+        shared_->events->publish(JobEventKind::Paused, shared_->snapshot);
+    }
+    shared_->pauseChanged.wait(lock, [this] {
+        return !shared_->snapshot.pauseRequested || shared_->cancel.load(std::memory_order_acquire);
+    });
+    if (shared_->pausedSince) {
+        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - *shared_->pausedSince);
+        shared_->snapshot.pausedDuration += elapsed;
+        shared_->pausedSince.reset();
+        if (shared_->diagnostics) {
+            shared_->diagnostics->recordJobResumed(elapsed.count());
+        }
+    }
+    shared_->snapshot.status = JobStatus::Running;
+    if (shared_->events && !shared_->cancel.load(std::memory_order_acquire)) {
+        shared_->events->publish(JobEventKind::Resumed, shared_->snapshot);
+    }
+    lock.unlock();
+    throwIfCancellationRequested();
+}
+
 void JobContext::reportProgress(unsigned percent, std::string message) {
+    waitIfPaused();
     if (percent > 100) {
         throw std::out_of_range("Job progress must be 0..100");
     }
@@ -60,7 +97,7 @@ void JobContext::reportProgress(unsigned percent, std::string message) {
 }
 
 void JobContext::setResult(std::any value) {
-    throwIfCancellationRequested();
+    waitIfPaused();
     std::lock_guard lock(shared_->mutex);
     if (shared_->snapshot.status != JobStatus::Running) {
         return;
@@ -177,9 +214,11 @@ bool JobRuntime::requestCancel(JobId id) {
     if (it == entries_.end()) {
         return false;
     }
+
     auto& shared = *it->second->shared;
     std::lock_guard jobLock(shared.mutex);
     if (shared.snapshot.status == JobStatus::Queued) {
+        shared.snapshot.pauseRequested = false;
         shared.snapshot.cancellationRequested = true;
         shared.cancel.store(true, std::memory_order_release);
         shared.snapshot.status = JobStatus::Cancelled;
@@ -188,7 +227,7 @@ bool JobRuntime::requestCancel(JobId id) {
             diagnostics_->recordJobCancelled(false);
         }
         events_->publish(JobEventKind::Cancelled, shared.snapshot);
-    } else if (shared.snapshot.status == JobStatus::Running) {
+    } else if (shared.snapshot.status == JobStatus::Running || shared.snapshot.status == JobStatus::Paused) {
         if (!shared.cancel.exchange(true, std::memory_order_acq_rel)) {
             shared.snapshot.cancellationRequested = true;
             if (diagnostics_) {
@@ -196,6 +235,57 @@ bool JobRuntime::requestCancel(JobId id) {
             }
             events_->publish(JobEventKind::CancellationRequested, shared.snapshot);
         }
+        shared.pauseChanged.notify_all();
+    }
+
+    return true;
+}
+
+bool JobRuntime::requestPause(JobId id) {
+    std::lock_guard lock(mutex_);
+    const auto it = entries_.find(id);
+    if (it == entries_.end()) {
+        return false;
+    }
+
+    auto& shared = *it->second->shared;
+    std::lock_guard jobLock(shared.mutex);
+    if (shared.snapshot.status == JobStatus::Queued ||
+        shared.snapshot.status == JobStatus::Running ||
+        shared.snapshot.status == JobStatus::Paused
+    ) {
+        if (!shared.snapshot.cancellationRequested && !shared.snapshot.pauseRequested) {
+            shared.snapshot.pauseRequested = true;
+            if (diagnostics_) {
+                diagnostics_->recordJobPauseRequested();
+            }
+            events_->publish(JobEventKind::PauseRequested, shared.snapshot);
+        }
+    }
+
+    return true;
+}
+
+bool JobRuntime::requestResume(JobId id) {
+    std::lock_guard lock(mutex_);
+    const auto it = entries_.find(id);
+    if (it == entries_.end()) {
+        return false;
+    }
+
+    auto& shared = *it->second->shared;
+    std::lock_guard jobLock(shared.mutex);
+    if (shared.snapshot.pauseRequested && !shared.snapshot.cancellationRequested && !stopping_) {
+        shared.snapshot.pauseRequested = false;
+        if (diagnostics_) {
+            diagnostics_->recordJobResumeRequested();
+        }
+        // Queued tasks stay queued; paused workers resume at their checkpoint.
+        if (shared.snapshot.status == JobStatus::Queued) {
+            events_->publish(JobEventKind::Resumed, shared.snapshot);
+        }
+        shared.pauseChanged.notify_all();
+        ready_.notify_all();
     }
 
     return true;
@@ -207,7 +297,10 @@ void JobRuntime::workerLoop() {
         {
             std::unique_lock lock(mutex_);
             ready_.wait(lock, [this] {
-                return stopping_ || !queue_.empty();
+                return stopping_ || std::any_of(queue_.begin(), queue_.end(), [](const auto& entry) {
+                    std::lock_guard lock(entry->shared->mutex);
+                    return !entry->shared->snapshot.pauseRequested;
+                });
             });
             if (queue_.empty()) {
                 if (stopping_) {
@@ -215,8 +308,15 @@ void JobRuntime::workerLoop() {
                 }
                 continue;
             }
-            entry = queue_.front();
-            queue_.pop_front();
+            const auto ready = std::find_if(queue_.begin(), queue_.end(), [](const auto& candidate) {
+                std::lock_guard lock(candidate->shared->mutex);
+                return !candidate->shared->snapshot.pauseRequested;
+            });
+            if (ready == queue_.end()) {
+                continue;
+            }
+            entry = *ready;
+            queue_.erase(ready);
         }
 
         auto& shared = *entry->shared;
@@ -244,9 +344,9 @@ void JobRuntime::workerLoop() {
         std::string errorCode;
         try {
             JobContext ctx(entry->shared);
-            ctx.throwIfCancellationRequested();
+            ctx.waitIfPaused();
             entry->task(ctx);
-            ctx.throwIfCancellationRequested();
+            ctx.waitIfPaused();
         } catch (const JobCancelled&) {
             outcome = JobStatus::Cancelled;
         } catch (const JobFailure& e) {
@@ -266,6 +366,7 @@ void JobRuntime::workerLoop() {
         {
             std::lock_guard lock(shared.mutex);
             shared.snapshot.status = outcome;
+            shared.snapshot.pauseRequested = false;
             shared.snapshot.error = std::move(error);
             if (outcome == JobStatus::Failed) {
                 shared.snapshot.failure = JobError {
@@ -320,6 +421,7 @@ void JobRuntime::shutdown() noexcept {
                 auto& shared = *entry->shared;
                 std::lock_guard jobLock(shared.mutex);
                 if (shared.snapshot.status == JobStatus::Queued) {
+                    shared.snapshot.pauseRequested = false;
                     shared.cancel.store(true, std::memory_order_release);
                     shared.snapshot.cancellationRequested = true;
                     shared.snapshot.status = JobStatus::Cancelled;
@@ -328,9 +430,12 @@ void JobRuntime::shutdown() noexcept {
                         diagnostics_->recordJobCancelled(false);
                     }
                     events_->publish(JobEventKind::Cancelled, shared.snapshot);
-                } else if (shared.snapshot.status == JobStatus::Running) {
+                } else if (shared.snapshot.status == JobStatus::Running ||
+                           shared.snapshot.status == JobStatus::Paused
+                ) {
                     shared.cancel.store(true, std::memory_order_release);
                     shared.snapshot.cancellationRequested = true;
+                    shared.pauseChanged.notify_all();
                 }
             }
             queue_.clear();

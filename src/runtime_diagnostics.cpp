@@ -33,6 +33,11 @@ struct RuntimeDiagnostics::State {
     std::atomic<std::uint64_t> jobFailed{0};
     std::atomic<std::uint64_t> jobCancelled{0};
     std::atomic<std::uint64_t> jobCancellationRequests{0};
+    std::atomic<std::uint64_t> jobPaused{0};
+    std::atomic<std::uint64_t> jobPauseRequests{0};
+    std::atomic<std::uint64_t> jobResumeRequests{0};
+    std::atomic<std::uint64_t> jobPauseTotalMs{0};
+    std::atomic<std::uint64_t> jobPauseSamples{0};
     std::atomic<std::uint64_t> jobProgress{0};
     std::atomic<std::uint64_t> jobRejected{0};
     std::atomic<std::uint64_t> jobQueued{0};
@@ -176,6 +181,21 @@ void RuntimeDiagnostics::recordJobCancellationRequested() noexcept {
     state_->jobCancellationRequests.fetch_add(1, std::memory_order_relaxed);
 }
 
+void RuntimeDiagnostics::recordJobPauseRequested() noexcept {
+    state_->jobPauseRequests.fetch_add(1, std::memory_order_relaxed);
+}
+void RuntimeDiagnostics::recordJobResumeRequested() noexcept {
+    state_->jobResumeRequests.fetch_add(1, std::memory_order_relaxed);
+}
+void RuntimeDiagnostics::recordJobPaused() noexcept {
+    state_->jobPaused.fetch_add(1, std::memory_order_relaxed);
+}
+void RuntimeDiagnostics::recordJobResumed(std::uint64_t milliseconds) noexcept {
+    state_->jobPaused.fetch_sub(1, std::memory_order_relaxed);
+    state_->jobPauseTotalMs.fetch_add(milliseconds, std::memory_order_relaxed);
+    state_->jobPauseSamples.fetch_add(1, std::memory_order_relaxed);
+}
+
 void RuntimeDiagnostics::recordJobProgress() noexcept {
     state_->jobProgress.fetch_add(1, std::memory_order_relaxed);
 }
@@ -250,6 +270,14 @@ RuntimeDiagnosticsSnapshot RuntimeDiagnostics::snapshot() const noexcept {
     LOAD_JOB(failed, jobFailed);
     LOAD_JOB(cancelled, jobCancelled);
     LOAD_JOB(cancellationRequests, jobCancellationRequests);
+    LOAD_JOB(paused, jobPaused);
+    LOAD_JOB(pauseRequests, jobPauseRequests);
+    LOAD_JOB(resumeRequests, jobResumeRequests);
+    LOAD_JOB(pauseTotalMs, jobPauseTotalMs);
+    LOAD_JOB(pauseSamples, jobPauseSamples);
+    if (result.jobs.pauseSamples != 0) {
+        result.jobs.pauseAverageMs = result.jobs.pauseTotalMs / result.jobs.pauseSamples;
+    }
     LOAD_JOB(progressUpdates, jobProgress);
     LOAD_JOB(rejected, jobRejected);
     LOAD_JOB(queued, jobQueued);

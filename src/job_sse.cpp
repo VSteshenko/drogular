@@ -51,6 +51,12 @@ std::string_view kindName(JobEventKind kind) {
         return "job.progress";
     case JobEventKind::CancellationRequested:
         return "job.cancellation-requested";
+    case JobEventKind::PauseRequested:
+        return "job.pause-requested";
+    case JobEventKind::Paused:
+        return "job.paused";
+    case JobEventKind::Resumed:
+        return "job.resumed";
     case JobEventKind::Completed:
         return "job.completed";
     case JobEventKind::Failed:
@@ -71,7 +77,8 @@ std::string encodeJobSse(const JobEvent& event) {
         ",\"progress\":" + std::to_string(job.progress) +
         ",\"message\":" + quote(job.message) +
         ",\"cancellationRequested\":" +
-            (job.cancellationRequested ? "true" : "false");
+            (job.cancellationRequested ? "true" : "false") +
+        ",\"pauseRequested\":" + (job.pauseRequested ? "true" : "false");
     if (job.failure) {
         data += ",\"failure\":{\"code\":" + quote(job.failure->code) +
                 ",\"message\":" + quote(job.failure->message) + "}";

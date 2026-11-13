@@ -26,6 +26,8 @@ export class JobClient {
     list() { return this.request(''); }
     get(id) { return this.request(`/detail?id=${encodeURIComponent(id)}`); }
     cancel(id) { return this.request(`/cancel?id=${encodeURIComponent(id)}`, {method: 'POST'}); }
+    pause(id) { return this.request(`/pause?id=${encodeURIComponent(id)}`, {method: 'POST'}); }
+    resume(id) { return this.request(`/resume?id=${encodeURIComponent(id)}`, {method: 'POST'}); }
     diagnostics() { return this.request('/diagnostics'); }
     /** Caller owns EventSource lifetime and MUST close it when done. */
     watch(id) {

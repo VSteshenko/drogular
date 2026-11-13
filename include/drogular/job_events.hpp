@@ -19,6 +19,9 @@ enum class JobEventKind {
     Started,
     Progress,
     CancellationRequested,
+    PauseRequested,
+    Paused,
+    Resumed,
     Completed,
     Failed,
     Cancelled

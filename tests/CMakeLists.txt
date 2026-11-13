@@ -387,12 +387,10 @@ if(TARGET drogular_cli)
 endif()
 
 # Independent Job Core smoke test: does not require a running HTTP server.
-add_executable(
-    drogular_job_runtime_smoke
+add_executable(drogular_job_runtime_smoke
     job_runtime/job_runtime_smoke.cpp
 )
-target_link_libraries(
-    drogular_job_runtime_smoke
+target_link_libraries(drogular_job_runtime_smoke
     PRIVATE Drogular::drogular
 )
 add_test(
@@ -401,12 +399,10 @@ add_test(
 )
 
 # Job event replay, overflow and runtime lifecycle integration.
-add_executable(
-    drogular_job_events_smoke
+add_executable(drogular_job_events_smoke
     job_runtime/job_events_smoke.cpp
 )
-target_link_libraries(
-    drogular_job_events_smoke
+target_link_libraries(drogular_job_events_smoke
     PRIVATE Drogular::drogular
 )
 add_test(
@@ -415,15 +411,25 @@ add_test(
 )
 
 # Process-local Job diagnostics and event observer accounting.
-add_executable(
-    drogular_job_diagnostics_smoke
+add_executable(drogular_job_diagnostics_smoke
     job_runtime/job_diagnostics_smoke.cpp
 )
-target_link_libraries(
-    drogular_job_diagnostics_smoke
+target_link_libraries(drogular_job_diagnostics_smoke
     PRIVATE Drogular::drogular
 )
 add_test(
     NAME drogular_job_diagnostics_smoke
     COMMAND drogular_job_diagnostics_smoke
+)
+
+# Cooperative pause/resume and cancel/shutdown wakeups.
+add_executable(drogular_job_pause_smoke
+    job_runtime/job_pause_smoke.cpp
+)
+target_link_libraries(drogular_job_pause_smoke
+    PRIVATE Drogular::drogular
+)
+add_test(
+    NAME drogular_job_pause_smoke
+    COMMAND drogular_job_pause_smoke
 )

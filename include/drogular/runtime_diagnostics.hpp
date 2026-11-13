@@ -40,6 +40,12 @@ struct JobRuntimeDiagnostics {
     std::uint64_t failed = 0;
     std::uint64_t cancelled = 0;
     std::uint64_t cancellationRequests = 0;
+    std::uint64_t paused = 0;
+    std::uint64_t pauseRequests = 0;
+    std::uint64_t resumeRequests = 0;
+    std::uint64_t pauseTotalMs = 0;
+    std::uint64_t pauseSamples = 0;
+    std::uint64_t pauseAverageMs = 0;
     std::uint64_t progressUpdates = 0;
     std::uint64_t rejected = 0;
     std::uint64_t queued = 0;
@@ -120,6 +126,10 @@ public:
     void recordJobFailed() noexcept;
     void recordJobCancelled(bool wasRunning) noexcept;
     void recordJobCancellationRequested() noexcept;
+    void recordJobPauseRequested() noexcept;
+    void recordJobResumeRequested() noexcept;
+    void recordJobPaused() noexcept;
+    void recordJobResumed(std::uint64_t milliseconds) noexcept;
     void recordJobProgress() noexcept;
     void recordJobRejected() noexcept;
     void registerJobWorkers(std::size_t count) noexcept;

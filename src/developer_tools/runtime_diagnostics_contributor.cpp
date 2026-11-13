@@ -68,6 +68,12 @@ Json::Value jobsSection(const RuntimeDiagnosticsSnapshot& snapshot) {
     JOB_FIELD(failed);
     JOB_FIELD(cancelled);
     JOB_FIELD(cancellationRequests);
+    JOB_FIELD(paused);
+    JOB_FIELD(pauseRequests);
+    JOB_FIELD(resumeRequests);
+    JOB_FIELD(pauseTotalMs);
+    JOB_FIELD(pauseSamples);
+    JOB_FIELD(pauseAverageMs);
     JOB_FIELD(progressUpdates);
     JOB_FIELD(rejected);
     JOB_FIELD(queued);
