@@ -243,6 +243,9 @@ bool JobRuntime::requestCancel(JobId id) {
         shared.cancel.store(true, std::memory_order_release);
         shared.snapshot.status = JobStatus::Cancelled;
         shared.snapshot.finishedAt = std::chrono::system_clock::now();
+        // Remove cancelled entries immediately: their queue capacity should
+        // be available to new jobs even while every worker is occupied.
+        queue_.erase(std::remove(queue_.begin(), queue_.end(), it->second), queue_.end());
         if (diagnostics_) {
             diagnostics_->recordJobCancelled(false);
         }
@@ -333,8 +336,9 @@ bool JobRuntime::requestResume(JobId id) {
             }
             events_->publish(JobEventKind::Resumed, shared.snapshot);
         }
-        // Legacy cooperative jobs resume on their occupied worker.
-        if (shared.snapshot.status == JobStatus::Queued) {
+        // Legacy queued pauses did not leave the queue; publish a single
+        // resume event, not a duplicate for resumable requeue transitions.
+        else if (shared.snapshot.status == JobStatus::Queued) {
             events_->publish(JobEventKind::Resumed, shared.snapshot);
         }
         shared.pauseChanged.notify_all();

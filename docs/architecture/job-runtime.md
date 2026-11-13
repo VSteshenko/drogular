@@ -28,16 +28,19 @@ auto id = jobs.submit("Index", [](drogular::JobContext& job) {
   and not eligible for worker dispatch until `requestResume()`. A running task
   enters `Paused` at `JobContext::waitIfPaused()`, or at `reportProgress()` or
   `setResult()` (which invoke the checkpoint).
-- `requestResume()` clears the request and wakes waiting tasks. A paused worker
-  **remains occupied**; there is no stack serialization/checkpoint-and-requeue.
-  Running tasks that never reach a checkpoint cannot be paused promptly.
+- For legacy `submit()` jobs, `requestResume()` clears the pause request and
+  wakes the blocked worker. Legacy cooperative pauses **retain** the worker.
+  For opt-in `submitResumable()` jobs, yielding unwinds the callback and frees
+  the worker; Resume requeues the task. See *Yielding pauses* below. Neither
+  mode forcibly suspends arbitrary user code: checkpoints must be reached.
 - `requestCancel()` and shutdown wake paused tasks so cancellation is observed.
   `pauseRequested` is independent of `cancellationRequested`. Terminal jobs are
   unaffected by Pause/Resume; unknown IDs return `false`.
 - Pausing an already queued job does not count as `Paused` until it has started;
   pending requests are visible through `snapshot.pauseRequested`.
-- Queued cancellation is immediate; running cancellation is a request and only
-  becomes `Cancelled` when the task observes it. A task that catches and
+- Queued cancellation is immediate and frees a slot in the bounded queue;
+  running cancellation is a request and only becomes `Cancelled` when the task
+  observes it. A task that catches and
   suppresses `JobCancelled` cannot be forcibly terminated.
 - Throwing an exception fails the Job, and the error message is inspectable.
 - Progress is an integer from 0 through 100; completed Jobs have progress 100.
@@ -74,8 +77,9 @@ capacity yields zero basis points; the UI displays these ratios as unavailable.
 Pause diagnostics include `paused`, `pauseRequests`, `resumeRequests`,
 `pauseTotalMs`, `pauseSamples` and `pauseAverageMs`. Time spent in Paused
 is accumulated on wakeup; a currently paused interval is not yet included
-in the aggregate total. `running` and worker utilization include paused tasks
-because cooperative pause retains a worker.
+in the aggregate total. Legacy cooperative paused tasks retain a worker
+and count toward `running`; yielded resumable paused tasks release their worker
+and do not count toward `running` or `queued` until resumed.
 Capacity gauges aggregate all active JobRuntime instances sharing diagnostics;
 peaks are lifetime high-water marks for the aggregate, not per-runtime maxima.
 The ratios are instantaneous gauges, not time-weighted utilization averages.
@@ -120,8 +124,10 @@ machine-readable `failure.code`. Other `std::exception` instances use code
 `exception`; unknown exceptions use `unknown_exception`. The existing `error`
 string remains for backwards compatibility. Failed or cancelled Jobs never
 publish partial results. `queueDuration` is populated when a Job begins;
-`executionDuration` is populated when it terminates after beginning. Cancelled
-queued Jobs have neither duration. Both durations use milliseconds.
+`executionDuration` is populated when it terminates after beginning. Currently
+it is elapsed *wall-clock time since the first start*, including parked pauses
+and requeue waits for resumable jobs; it is **not** active CPU/worker time.
+Cancelled queued Jobs have neither duration. Both durations use milliseconds.
 
 The `std::any` result is held in process memory and retained for the runtime
 lifetime. Avoid storing large payloads or secrets without an appropriate

@@ -1,5 +1,7 @@
 #include <drogular/job_runtime.hpp>
+#include <drogular/job_events.hpp>
 #include <drogular/runtime_diagnostics.hpp>
+#include <algorithm>
 #include <cassert>
 #include <atomic>
 #include <chrono>
@@ -135,10 +137,17 @@ int main() {
         return released.find(urgent)->status == JobStatus::Completed;
     });
     assert(released.find(longId)->status == JobStatus::Paused);
+    auto resumeEvents = released.events().subscribe(longId);
     assert(released.requestResume(longId));
     until([&] {
         return released.find(longId)->status == JobStatus::Completed;
     });
+    const auto resumeBatch = resumeEvents.drain();
+    const auto resumeCount = std::count_if(resumeBatch.events.begin(),
+        resumeBatch.events.end(), [](const auto& event) {
+            return event.kind == JobEventKind::Resumed;
+        });
+    assert(resumeCount == 1);
     assert(releasedDiagnostics.snapshot().jobs.paused == 0);
     assert(releasedDiagnostics.snapshot().jobs.running == 0);
     assert(releasedDiagnostics.snapshot().jobs.queued == 0);
@@ -178,6 +187,33 @@ int main() {
     });
     shutdownRuntime.shutdown();
     assert(shutdownRuntime.find(parking)->status == JobStatus::Cancelled);
+
+    // Сancelling a queued job releases bounded FIFO
+    // capacity immediately, even if the only worker remains blocked.
+    RuntimeDiagnostics capacityDiagnostics;
+    JobRuntime capacityJobs(1, 1, &capacityDiagnostics);
+    std::promise<void> capacityStarted;
+    std::promise<void> capacityRelease;
+    const auto capacityGate = capacityRelease.get_future().share();
+    const auto capacityBusy = capacityJobs.submit("busy", [&](JobContext&) {
+        capacityStarted.set_value();
+        capacityGate.wait();
+    });
+    capacityStarted.get_future().wait();
+    const auto cancelledQueued = capacityJobs.submit("cancelled-queued", [](JobContext&) {});
+    assert(capacityJobs.requestCancel(cancelledQueued));
+    assert(capacityJobs.find(cancelledQueued)->status == JobStatus::Cancelled);
+    const auto replacement = capacityJobs.submit("replacement", [](JobContext&) {});
+    assert(capacityDiagnostics.snapshot().jobs.queued == 1);
+    capacityRelease.set_value();
+    until([&] {
+        return capacityJobs.find(replacement)->status == JobStatus::Completed;
+    });
+    until([&] {
+        return capacityJobs.find(capacityBusy)->status == JobStatus::Completed;
+    });
+    assert(capacityDiagnostics.snapshot().jobs.queued == 0);
+    capacityJobs.shutdown();
 
     jobs.shutdown();
     assert(jobs.find(halted)->status == JobStatus::Cancelled);
