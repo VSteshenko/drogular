@@ -120,6 +120,7 @@ PortalDemo ist keine Sammlung isolierter Beispiele, sondern zeigt, wie diese Fun
 | System Monitor PWA | Serverseitig gerenderte Live-Fragmente, PWA-Verhalten und Fernüberwachung von System und Hardware |
 | PortalDemo | Vollständige Architektur einer Referenzanwendung |
 | Mini Store | Lokalisierter Storefront- und Staff-Workflow, Warenkorb/Checkout, Bestelllebenszyklus, Interactions und PWA-Verhalten |
+| JobsDemo | Job Registry, Fortschritt, fortsetzbare Pause, SSE und Ressourcendiagnostik |
 
 ---
 
@@ -196,18 +197,15 @@ Die Anleitung [Getting Started](docs/getting-started/README.md) erläutert die e
 
 ---
 
-## Neu in Version 0.25
+## Neu in Version 0.26
 
-Drogular 0.25 ergänzt Client-/Offline-Lokalisierung, sichere Rücksprungnavigation und interaktive Aufgaben in PortalDemo.
+Drogular 0.26 ergänzt eine unabhängige Job Runtime mit Fortschritt, Abbruch,
+fortsetzbarer Pause mit erneuter Einreihung, typisierten Ergebnissen, Job Registry
+und SSE-Ereignissen. JobsDemo verwendet den gemeinsamen Browser-JobClient.
+Developer Tools bietet Job-Diagnostik sowie unabhängige CPU-/RSS-Verläufe.
 
-- 🌍 `ClientLocalizationCatalog` erzeugt deterministische Manifest- und Sprachressourcen aus dem serverseitigen Übersetzungskatalog.
-- 📱 `App::clientLocalization()` stellt die Browser-Laufzeit mit `configure()`, `ready()`, `setLocale()` und `translate()` bereit. Die Fallback-Reihenfolge bleibt angeforderte Sprache → Standardsprache → Schlüssel.
-- 📴 Versionierte Sprachressourcen werden unabhängig vom Service-Worker-Shell-Cache in einem eigenen Cache-Storage-Namensraum gespeichert.
-- ↩️ `NavigationContext` prüft und überträgt sichere lokale Rücksprungziele.
-- 📋 PortalDemo verwendet eigenständige Aufgaben mit Status, Priorität, einem gemeinsamen Demo-Datensatz und autorisierten interaktiven Änderungen.
-- 🧪 Regressionstests decken Lokalisierung, Navigation, Aufgabenänderungen und die Service-Worker-Cache-Isolation ab.
-
-Details: [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md).
+Details, Kompatibilitätshinweise und Einschränkungen stehen in
+[RELEASE_NOTES_0.26.md](RELEASE_NOTES_0.26.md).
 
 ---
 
@@ -220,24 +218,11 @@ Details: [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md).
 - 🧩 [Examples](examples/)
 - 🚀 [PortalDemo – Referenzanwendung](examples/portal_demo/)
 - 🛍 [Mini Store – Referenzanwendung](examples/mini_store/)
+- ⚙️ [JobsDemo – Referenzanwendung](examples/jobs_demo/README.md)
 
 ---
 
 ## Roadmap
-
-### 0.26 — Hintergrundaufgaben und Fortschritt
-
-> In Entwicklung: Job Runtime, SSE-Adapter, Diagnoseintegration und JobsDemo sind implementiert; Produktionshärtung steht noch aus.
-> Siehe [Job-Runtime-Architektur](docs/architecture/job-runtime.md) für den Implementierungsstand.
-
-Ein einheitliches Modell für lang laufende und im Hintergrund ausgeführte Aufgaben einführen. So können Anwendungen wie Atlasys Vorgänge starten, beobachten und steuern, ohne deren Lebensdauer an eine einzelne HTTP-Anfrage zu binden.
-
-- Ein Framework-weites Job-Modell mit Identität, Lebenszyklusstatus, Ergebnis-/Fehlerstatus und Ausführungsmetadaten hinzufügen
-- Fortschrittsmeldungen für lang laufende Jobs bereitstellen
-- Kooperative Job-Abbrüche mit eindeutigem Abbruchstatus und klar definiertem Verhalten ermöglichen
-- Einen SSE-/Event-Stream für Live-Aktualisierungen von Job-Status und Fortschritt hinzufügen
-- [`JobsDemo`](examples/jobs_demo/README.md) als Referenzanwendung zum Starten, Beobachten, Abbrechen und erneuten Verbinden mit Jobs ergänzen
-- Job-Diagnose für Zustandsübergänge, Ausführungsdauer, Fehler, Abbrüche sowie die Inspektion aktiver und abgeschlossener Jobs hinzufügen
 
 ### 0.27 — Health, Readiness und Authentifizierungskontext
 

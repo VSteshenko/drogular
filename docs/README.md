@@ -94,6 +94,7 @@ The repository includes focused examples for individual framework capabilities a
 | `portal_demo` | Complete reference application architecture, Interactions, UI, and Offline Read Models |
 | `system_monitor_pwa` | Live server-rendered fragments, polling, connection state, and PWA monitoring |
 | `mini_store` | Localized Storefront and Staff workflows, history navigation, and offline behavior |
+| `jobs_demo` | Job Registry, resumable background jobs, SSE progress, diagnostics and resource allocation |
 
 `PortalDemo` is the primary application used to validate and evolve Drogular's public API before features are documented 
 as established patterns. See the [Demo Applications](demos/README.md) index for the current examples.

@@ -45,3 +45,6 @@ Architecture documents describe ownership, boundaries, lifetimes, and design int
 Working code and tests are the final source of truth when an implementation detail and a document disagree.
 
 - [Process Metrics](process-metrics.md) — process CPU, RSS, threads and uptime independent of Jobs.
+- [Job Runtime](job-runtime.md) — background job lifecycle, queue, pause/requeue, diagnostics and SSE.
+- [Job Registry](job-registry.md) — discoverable, validated job definitions and launch boundaries.
+- [Browser JobClient](job-client.md) — shared DOM-independent job HTTP/SSE client.

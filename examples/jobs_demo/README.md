@@ -28,8 +28,9 @@ command (e.g. `jobs_demo --port 8084`), but update port mapping accordingly.
 
 The HTML is maintained in `templates/index.html`; `main.cpp` configures the
 application, while `routes/jobs_demo_routes.cpp` contains demo HTTP handlers.
-See [browser-client reuse audit](docs/job-client-api-audit.md) for the proposed
-shared JavaScript API boundary.
+See [browser-client reuse audit](docs/job-client-api-audit.md) and
+[shared JobClient architecture](../../docs/architecture/job-client.md) for the
+client/server boundary.
 
 Open <http://localhost:8084>. Use **Run job** or **Run failing job** to see
 queued/running/terminal states, progress, typed result, error code and cooperative
@@ -54,10 +55,11 @@ CSRF protection. Do not expose port 8084 outside a trusted local development
 environment. Production applications must authenticate all endpoints, enforce
 job-level ownership and protect state-changing requests against CSRF.
 
-**Limitations:** Jobs live in process memory, and the demo retains completed
-jobs until shutdown. Runtime persistence and retention policies are outside
-Stage F. This example exercises the existing SSE adapter; load and disconnect
-stress tests belong to Stage G.
+**Limitations:** Jobs and results live in process memory. Runtime retains up to
+256 terminal jobs by default and evicts older terminal snapshots; active jobs
+are not evicted. There is no durable persistence across server restarts.
+HTTP/SSE disconnect and shutdown stress tests remain release-qualification
+checks.
 
 **Live events:** JobsDemo opens at most two job-scoped EventSource connections
 at once. Remaining jobs use periodic polling (every 2.5 seconds). Each stream
@@ -113,7 +115,12 @@ untrusted networks.
 
 ## Cooperative Pause / Resume
 
-Running tasks pause at their next checkpoint and retain their worker. Paused
-queued tasks remain in the queue until resumed. The Jobs view offers Pause,
-Resume and Cancel; JSON endpoints `POST /api/jobs/pause?id=<id>` and
+JobsDemo uses opt-in resumable tasks. A running Job yields at its next
+cooperative checkpoint, frees the worker slot, and enters `Paused`. Resume
+requeues it at the back of the bounded FIFO queue; it continues from
+application-managed checkpoint state when a worker becomes available. If the
+queue is full, Resume is rejected and the Job remains paused. Legacy
+`JobRuntime::submit()` tasks instead retain the worker while paused for
+backward compatibility. The Jobs view offers Pause, Resume and Cancel;
+JSON endpoints `POST /api/jobs/pause?id=<id>` and
 `POST /api/jobs/resume?id=<id>` are for this local demonstration only.

@@ -120,6 +120,7 @@ Rather than being a collection of isolated examples, PortalDemo shows how these 
 | System Monitor PWA | Live server-rendered fragments, PWA behavior, and remote/system hardware monitoring |
 | PortalDemo | Complete reference application architecture |
 | Mini Store | Localized storefront and staff workflows, cart/checkout, order lifecycle, Interactions, and PWA behavior |
+| JobsDemo | Job Registry, progress, resumable pause/requeue, SSE and resource diagnostics |
 
 ---
 
@@ -198,18 +199,14 @@ The [Getting Started](docs/getting-started/README.md) guide adds the required CM
 
 ---
 
-## What's New in 0.25
+## What's New in 0.26
 
-Drogular 0.25 adds client/offline localization, safe return navigation, and interactive tasks in PortalDemo.
+Drogular 0.26 adds an independent Job Runtime with progress, cancellation,
+resumable pause/requeue, typed results, job registration and SSE events.
+JobsDemo demonstrates the shared browser JobClient, and Developer Tools adds
+Job Diagnostics plus independent CPU/RSS history and resource charts.
 
-- 🌍 `ClientLocalizationCatalog` exports deterministic manifest and per-locale JSON resources from the server translation catalog.
-- 📱 `App::clientLocalization()` serves a browser runtime with `configure()`, `ready()`, `setLocale()`, and `translate()`; it keeps requested locale → default locale → key fallback.
-- 📴 Versioned locale resources persist in a dedicated Cache Storage namespace, independently of the PortalDemo Service Worker shell cache.
-- ↩️ `NavigationContext` validates and propagates safe local return targets.
-- 📋 PortalDemo models tasks separately from projects, with status, priority, a unified demo dataset and authorization-checked interactive updates.
-- 🧪 Regression coverage includes localization, navigation, task updates, and PortalDemo Service Worker cache isolation.
-
-See [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md) for details.
+See [RELEASE_NOTES_0.26.md](RELEASE_NOTES_0.26.md) for the complete release highlights, compatibility notes, and limitations.
 
 ---
 
@@ -222,26 +219,11 @@ See [RELEASE_NOTES_0.25.md](RELEASE_NOTES_0.25.md) for details.
 - 🧩 [Examples](examples/)
 - 🚀 [PortalDemo Reference Application](examples/portal_demo/)
 - 🛍 [Mini Store Reference Application](examples/mini_store/)
+- ⚙️ [JobsDemo Reference Application](examples/jobs_demo/README.md)
 
 ---
 
 ## Roadmap
-
-### 0.26 — Background Jobs & Progress
-
-> In development: Job Runtime, SSE adapter, diagnostics integration and JobsDemo are implemented; production hardening remains.
-> See [Job Runtime architecture](docs/architecture/job-runtime.md) for implemented behavior and remaining work.
-
-Introduce a first-class model for long-running and background work so applications such as Atlasys can execute, observe, and control operations without tying their lifetime to a single HTTP request.
-
-- Add a framework-level Job model with identity, lifecycle state, result/error state, and execution metadata
-- Add Job progress reporting for long-running operations
-- Add cooperative Job cancellation with explicit cancellation state and semantics
-- Add an SSE/event stream for live Job state and progress updates
-- Add [`JobsDemo`](examples/jobs_demo/README.md) as a reference application for starting, observing, cancelling, and reconnecting to Jobs
-- Add Job diagnostics for lifecycle transitions, execution time, failures, cancellation, and active/completed Job inspection
-- Support opt-in resumable jobs that release worker capacity while paused and requeue on resume
-- Include independent Process Metrics, five-minute resource history and reusable browser JobClient
 
 ### 0.27 — Health, Readiness & Authentication Context
 
@@ -282,3 +264,9 @@ Drogular is designed around one simple idea:
 Components, dependency injection, state management, GraphQL integration, localization and Developer Tools all follow the same architectural principles, creating a consistent programming model across the entire application.
 
 The goal of Drogular is not simply to provide more features, but to provide a cohesive framework where those features naturally work together.
+
+### Drogular 0.26 — Process Metrics
+
+The independent `ProcessMetricsProvider` and bounded `ProcessMetricsHistory` supply process CPU, RSS/peak RSS, 
+thread count, uptime, and five-minute CPU/RSS charts to Developer Tools via `drogular.process`. JobsDemo can 
+allocate 0–2 MiB per job to demonstrate memory behavior. See [Process Metrics](docs/architecture/process-metrics.md).
