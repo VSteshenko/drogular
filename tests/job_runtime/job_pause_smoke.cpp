@@ -2,7 +2,8 @@
 #include <drogular/job_events.hpp>
 #include <drogular/runtime_diagnostics.hpp>
 #include <algorithm>
-#include <cassert>
+#include <cstdlib>
+#include <iostream>
 #include <atomic>
 #include <chrono>
 #include <future>
@@ -11,11 +12,21 @@
 using namespace drogular;
 using namespace std::chrono_literals;
 
+// Keep test checks active in Release builds where NDEBUG disables assert().
+#define CHECK(expr) do { \
+    if (!(expr)) { \
+        std::cerr << "CHECK failed: " #expr << " at " << __FILE__ \
+                  << ':' << __LINE__ << '\n'; \
+        std::abort(); \
+    } \
+} while (false)
+
 template<class Pred> void until(Pred pred) {
-    for (int i = 0; i < 1000 && !pred(); ++i) {
+    for (int i = 0; i < 1000; ++i) {
+        if (pred()) return;
         std::this_thread::sleep_for(2ms);
     }
-    assert(pred());
+    CHECK(pred());
 }
 
 int main() {
@@ -32,22 +43,22 @@ int main() {
         }
     });
     started.get_future().wait();
-    assert(jobs.requestPause(id));
+    CHECK(jobs.requestPause(id));
     until([&] {
         return jobs.find(id)->status == JobStatus::Paused;
     });
     const auto before = steps.load();
     std::this_thread::sleep_for(25ms);
-    assert(steps.load() == before);
-    assert(jobs.find(id)->pauseRequested);
-    assert(diagnostics.snapshot().jobs.paused == 1);
-    assert(diagnostics.snapshot().jobs.running == 1); // Occupies worker.
-    assert(jobs.requestResume(id));
+    CHECK(steps.load() == before);
+    CHECK(jobs.find(id)->pauseRequested);
+    CHECK(diagnostics.snapshot().jobs.paused == 1);
+    CHECK(diagnostics.snapshot().jobs.running == 1); // Occupies worker.
+    CHECK(jobs.requestResume(id));
     until([&] {
         return jobs.find(id)->status == JobStatus::Completed;
     });
-    assert(jobs.find(id)->pausedDuration.count() > 0);
-    assert(diagnostics.snapshot().jobs.paused == 0);
+    CHECK(jobs.find(id)->pausedDuration.count() > 0);
+    CHECK(diagnostics.snapshot().jobs.paused == 0);
 
     std::promise<void> gateStarted;
     std::promise<void> release;
@@ -61,18 +72,18 @@ int main() {
     auto queued = jobs.submit("queued", [&](JobContext&) {
         queuedRan = true;
     });
-    assert(jobs.requestPause(queued));
+    CHECK(jobs.requestPause(queued));
     release.set_value();
     until([&] {
         return jobs.find(busy)->status == JobStatus::Completed;
     });
     std::this_thread::sleep_for(20ms);
-    assert(!queuedRan && jobs.find(queued)->status == JobStatus::Queued);
-    assert(jobs.requestResume(queued));
+    CHECK(!queuedRan && jobs.find(queued)->status == JobStatus::Queued);
+    CHECK(jobs.requestResume(queued));
     until([&] {
         return jobs.find(queued)->status == JobStatus::Completed;
     });
-    assert(queuedRan);
+    CHECK(queuedRan);
 
     std::atomic<bool> reached{ false };
     auto cancellable = jobs.submit("cancel-paused", [&](JobContext& ctx) {
@@ -85,15 +96,15 @@ int main() {
     until([&] {
         return reached.load();
     });
-    assert(jobs.requestPause(cancellable));
+    CHECK(jobs.requestPause(cancellable));
     until([&] {
         return jobs.find(cancellable)->status == JobStatus::Paused;
     });
-    assert(jobs.requestCancel(cancellable));
+    CHECK(jobs.requestCancel(cancellable));
     until([&] {
         return jobs.find(cancellable)->status == JobStatus::Cancelled;
     });
-    assert(diagnostics.snapshot().jobs.paused == 0);
+    CHECK(diagnostics.snapshot().jobs.paused == 0);
 
     auto halted = jobs.submit("shutdown-paused", [](JobContext& ctx) {
         for (;;) {
@@ -104,7 +115,7 @@ int main() {
     until([&] {
         return jobs.find(halted)->status == JobStatus::Running;
     });
-    assert(jobs.requestPause(halted));
+    CHECK(jobs.requestPause(halted));
     until([&] {
         return jobs.find(halted)->status == JobStatus::Paused;
     });
@@ -125,20 +136,20 @@ int main() {
     until([&] {
         return checkpoint->step.load() >= 3;
     });
-    assert(released.requestPause(longId));
+    CHECK(released.requestPause(longId));
     until([&] {
         return released.find(longId)->status == JobStatus::Paused;
     });
-    assert(releasedDiagnostics.snapshot().jobs.running == 0);
-    assert(releasedDiagnostics.snapshot().jobs.paused == 1);
+    CHECK(releasedDiagnostics.snapshot().jobs.running == 0);
+    CHECK(releasedDiagnostics.snapshot().jobs.paused == 1);
 
     const auto urgent = released.submit("urgent", [](JobContext&) {});
     until([&] {
         return released.find(urgent)->status == JobStatus::Completed;
     });
-    assert(released.find(longId)->status == JobStatus::Paused);
+    CHECK(released.find(longId)->status == JobStatus::Paused);
     auto resumeEvents = released.events().subscribe(longId);
-    assert(released.requestResume(longId));
+    CHECK(released.requestResume(longId));
     until([&] {
         return released.find(longId)->status == JobStatus::Completed;
     });
@@ -147,10 +158,10 @@ int main() {
         resumeBatch.events.end(), [](const auto& event) {
             return event.kind == JobEventKind::Resumed;
         });
-    assert(resumeCount == 1);
-    assert(releasedDiagnostics.snapshot().jobs.paused == 0);
-    assert(releasedDiagnostics.snapshot().jobs.running == 0);
-    assert(releasedDiagnostics.snapshot().jobs.queued == 0);
+    CHECK(resumeCount == 1);
+    CHECK(releasedDiagnostics.snapshot().jobs.paused == 0);
+    CHECK(releasedDiagnostics.snapshot().jobs.running == 0);
+    CHECK(releasedDiagnostics.snapshot().jobs.queued == 0);
     // Paused resumable jobs can be cancelled without consuming a worker.
     const auto toCancel = released.submitResumable("cancel", [](JobContext& ctx) {
         for (;;) {
@@ -161,13 +172,13 @@ int main() {
     until([&] {
         return released.find(toCancel)->status == JobStatus::Running;
     });
-    assert(released.requestPause(toCancel));
+    CHECK(released.requestPause(toCancel));
     until([&] {
         return released.find(toCancel)->status == JobStatus::Paused;
     });
-    assert(released.requestCancel(toCancel));
-    assert(released.find(toCancel)->status == JobStatus::Cancelled);
-    assert(releasedDiagnostics.snapshot().jobs.paused == 0);
+    CHECK(released.requestCancel(toCancel));
+    CHECK(released.find(toCancel)->status == JobStatus::Cancelled);
+    CHECK(releasedDiagnostics.snapshot().jobs.paused == 0);
     released.shutdown();
 
     // Shutdown cancels resumable jobs parked without workers.
@@ -181,12 +192,12 @@ int main() {
     until([&] {
         return shutdownRuntime.find(parking)->status == JobStatus::Running;
     });
-    assert(shutdownRuntime.requestPause(parking));
+    CHECK(shutdownRuntime.requestPause(parking));
     until([&] {
         return shutdownRuntime.find(parking)->status == JobStatus::Paused;
     });
     shutdownRuntime.shutdown();
-    assert(shutdownRuntime.find(parking)->status == JobStatus::Cancelled);
+    CHECK(shutdownRuntime.find(parking)->status == JobStatus::Cancelled);
 
     // Сancelling a queued job releases bounded FIFO
     // capacity immediately, even if the only worker remains blocked.
@@ -201,10 +212,10 @@ int main() {
     });
     capacityStarted.get_future().wait();
     const auto cancelledQueued = capacityJobs.submit("cancelled-queued", [](JobContext&) {});
-    assert(capacityJobs.requestCancel(cancelledQueued));
-    assert(capacityJobs.find(cancelledQueued)->status == JobStatus::Cancelled);
+    CHECK(capacityJobs.requestCancel(cancelledQueued));
+    CHECK(capacityJobs.find(cancelledQueued)->status == JobStatus::Cancelled);
     const auto replacement = capacityJobs.submit("replacement", [](JobContext&) {});
-    assert(capacityDiagnostics.snapshot().jobs.queued == 1);
+    CHECK(capacityDiagnostics.snapshot().jobs.queued == 1);
     capacityRelease.set_value();
     until([&] {
         return capacityJobs.find(replacement)->status == JobStatus::Completed;
@@ -212,10 +223,10 @@ int main() {
     until([&] {
         return capacityJobs.find(capacityBusy)->status == JobStatus::Completed;
     });
-    assert(capacityDiagnostics.snapshot().jobs.queued == 0);
+    CHECK(capacityDiagnostics.snapshot().jobs.queued == 0);
     capacityJobs.shutdown();
 
     jobs.shutdown();
-    assert(jobs.find(halted)->status == JobStatus::Cancelled);
-    assert(diagnostics.snapshot().jobs.paused == 0);
+    CHECK(jobs.find(halted)->status == JobStatus::Cancelled);
+    CHECK(diagnostics.snapshot().jobs.paused == 0);
 }
