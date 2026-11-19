@@ -21,6 +21,7 @@ find_package(Drogon REQUIRED)
 
 add_library(drogular
     src/app.cpp
+    src/health.cpp
     src/developer_tools/application_inspection.cpp
     src/developer_tools/application_inspection_controller.cpp
     src/developer_tools/runtime_diagnostics_contributor.cpp

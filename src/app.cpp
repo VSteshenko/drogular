@@ -11,11 +11,61 @@
 #include <drogon/drogon.h>
 
 #include <stdexcept>
+#include <thread>
 
 namespace drogular {
 
 App::App() {
     services_.setOptions(&options_);
+}
+
+App& App::enableHealthEndpoints() {
+    if (healthEndpointsEnabled_) {
+        return *this;
+    }
+
+    drogon::app().registerHandler(
+        "/health/live",
+        [](const drogon::HttpRequestPtr&,
+           std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
+            Json::Value body(Json::objectValue);
+            body["status"] = "healthy";
+            auto response = drogon::HttpResponse::newHttpJsonResponse(body);
+            response->addHeader("Cache-Control", "no-store");
+            callback(response);
+        }, {drogon::Get});
+
+    auto registry = healthRegistry_;
+    drogon::app().registerHandler(
+        "/health/ready",
+        [registry](const drogon::HttpRequestPtr&,
+                   std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
+            // Execute dependency probes outside Drogon's event loop.
+            std::thread([registry, callback = std::move(callback)]() mutable {
+            const auto report = registry->readiness();
+            Json::Value body(Json::objectValue);
+            body["status"] = healthStatusName(report.status);
+            Json::Value checks(Json::arrayValue);
+            for (const auto& check : report.checks) {
+                Json::Value item(Json::objectValue);
+                item["name"] = check.name;
+                item["status"] = healthStatusName(check.result.status);
+                item["durationMs"] = static_cast<Json::UInt64>(check.duration.count());
+                // Intentionally omit internal error messages from public endpoints.
+                checks.append(std::move(item));
+            }
+            body["checks"] = std::move(checks);
+            auto response = drogon::HttpResponse::newHttpJsonResponse(body);
+            if (report.status != HealthStatus::Healthy) {
+                response->setStatusCode(drogon::k503ServiceUnavailable);
+            }
+            response->addHeader("Cache-Control", "no-store");
+            callback(response);
+            }).detach();
+        }, {drogon::Get});
+
+    healthEndpointsEnabled_ = true;
+    return *this;
 }
 
 App& App::profile(ApplicationProfile profile) {

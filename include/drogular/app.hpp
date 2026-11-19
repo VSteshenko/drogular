@@ -6,6 +6,7 @@
 #include <drogular/router.hpp>
 #include <drogular/runtime_diagnostics.hpp>
 #include <drogular/process_metrics.hpp>
+#include <drogular/health.hpp>
 #include <drogular/process_metrics_history.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/application_options.hpp>
@@ -453,9 +454,23 @@ public:
         return processMetricsHistory_;
     }
 
+    /**
+     * Opt in to /health/live and /health/ready (no auth, no secret details).
+     */
+    App& enableHealthEndpoints();
+
+    /**
+     * Register dependency checks independently of Job Runtime.
+     */
+    HealthRegistry& health() noexcept {
+        return *healthRegistry_;
+    }
+
     void run(unsigned short port);
 
 private:
+    std::shared_ptr<HealthRegistry> healthRegistry_ = std::make_shared<HealthRegistry>();
+    bool healthEndpointsEnabled_ = false;
     ApplicationOptions options_;
     ApplicationServices services_;
     RuntimeDiagnostics runtimeDiagnostics_;
