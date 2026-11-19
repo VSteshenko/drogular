@@ -31,7 +31,8 @@ public:
      * - The path does not reference a regular file.
      */
     std::optional<std::filesystem::path> resolve(
-        const std::string& filePath
+        const std::string& filePath,
+        bool recursive = false
     ) const;
 
 private:

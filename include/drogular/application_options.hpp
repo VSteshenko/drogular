@@ -90,11 +90,13 @@ public:
      */
     void addStaticFiles(
         std::string routePrefix,
-        std::filesystem::path directory
+        std::filesystem::path directory,
+        bool recursive = false
     ) {
         staticFiles_.push_back({
             .routePrefix = std::move(routePrefix),
-            .directory = std::move(directory)
+            .directory = std::move(directory),
+            .recursive = recursive
         });
     }
 

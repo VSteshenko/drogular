@@ -18,6 +18,7 @@
 struct StaticFileMapping {
     std::string routePrefix;
     std::filesystem::path directory;
+    bool recursive = false;
 };
 ```
 
@@ -78,3 +79,16 @@ app.staticFiles("/assets", "public");
 - [`ApplicationOptions`](../application/application-options.md)
 - [`Router`](../routing/router.md)
 - [`StaticFileResolver`](static-file-resolver.md)
+
+## Recursive mappings
+
+Nested asset paths are opt-in to preserve existing mappings:
+
+```cpp
+app.staticFiles("/assets", "public", true);
+```
+
+The URL `/assets/js/components/menu.js` then maps to
+`public/js/components/menu.js`. With the default `false`, only direct
+children are served. Path traversal and symlinks escaping the root are rejected;
+there is no recursive directory scan at application startup.

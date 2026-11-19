@@ -172,6 +172,9 @@ public:
      *
      * public/logo.png
      *
+     * Pass recursive=true as the third argument to serve nested paths.
+     * The default is false for backwards compatibility.
+     *
      * Static file mappings are typically used for:
      *
      * - Images
@@ -183,11 +186,13 @@ public:
      */
     App& staticFiles(
         std::string routePrefix,
-        std::filesystem::path directory
+        std::filesystem::path directory,
+        bool recursive = false
     ) {
         options_.addStaticFiles(
             std::move(routePrefix),
-            std::move(directory)
+            std::move(directory),
+            recursive
         );
 
         return *this;

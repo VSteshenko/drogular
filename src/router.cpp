@@ -16,31 +16,23 @@
 
 #include <filesystem>
 #include <unordered_map>
+#include <string_view>
 
 namespace drogular {
 
 namespace {
 
-bool isInsideDirectory(
-    const std::filesystem::path& root,
-    const std::filesystem::path& requested
-) {
-    const auto canonicalRoot =
-        std::filesystem::weakly_canonical(root);
+std::string regexEscape(const std::string& value) {
+    std::string escaped;
+    for (const char ch : value) {
+        if (std::string_view(R"(\.^$|()[]{}*+?)").find(ch) !=
+            std::string_view::npos) {
+            escaped.push_back('\\');
+        }
+        escaped.push_back(ch);
+    }
 
-    const auto canonicalRequested =
-        std::filesystem::weakly_canonical(requested);
-
-    const auto rootString =
-        canonicalRoot.string();
-
-    const auto requestedString =
-        canonicalRequested.string();
-
-    return requestedString == rootString ||
-           requestedString.starts_with(
-               rootString + std::string(1, std::filesystem::path::preferred_separator)
-           );
+    return escaped;
 }
 
 void recordActionResponseDiagnostics(
@@ -268,7 +260,8 @@ void Router::action(
 
 void Router::staticFiles(
     const std::string& routePrefix,
-    const std::filesystem::path& directory
+    const std::filesystem::path& directory,
+    bool recursive
 ) {
     routes_.push_back({
         routePrefix,
@@ -292,55 +285,24 @@ void Router::staticFiles(
             ? services_->options()
             : nullptr;
 
-    drogon::app().registerHandler(
-        normalizedPrefix + "/{filePath}",
-        [rootDirectory, options](
+    // A single capture group provides the entire relative path, including
+    // nested segments. The resolver remains the security boundary.
+    const auto pattern =
+        "^" + regexEscape(normalizedPrefix) +
+        (recursive ? "/(.+)$" : "/([^/]+)$");
+
+    auto handler = [rootDirectory, options, recursive](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback,
             const std::string& filePath
         ) {
-            const auto requestedPath =
-                rootDirectory / filePath;
-
-            if (!isInsideDirectory(
-                    rootDirectory,
-                    requestedPath
-                )) {
-                auto response =
-                    drogon::HttpResponse::newHttpResponse();
-
-                response->setStatusCode(
-                    drogon::k403Forbidden
-                );
-
-                callback(response);
-                return;
-            }
-
-            if (!std::filesystem::exists(requestedPath) ||
-                !std::filesystem::is_regular_file(requestedPath)) {
-                auto response =
-                    drogon::HttpResponse::newHttpResponse();
-
-                response->setStatusCode(
-                    drogon::k404NotFound
-                );
-
-                callback(response);
-                return;
-            }
-
             StaticFileResolver resolver(rootDirectory);
-
-            const auto resolved =
-                resolver.resolve(filePath);
+            const auto resolved = resolver.resolve(filePath, recursive);
 
             if (!resolved.has_value()) {
                 auto response =
                     drogon::HttpResponse::newHttpResponse();
-
                 response->setStatusCode(drogon::k404NotFound);
-
                 callback(response);
                 return;
             }
@@ -408,9 +370,18 @@ void Router::staticFiles(
                 );
 
             callback(response);
-        },
-        {drogon::Get}
-    );
+        };
+
+    if (recursive) {
+        drogon::app().registerHandlerViaRegex(
+            pattern, handler, {drogon::Get}
+        );
+    } else {
+        // Retain the original route registration and its precedence.
+        drogon::app().registerHandler(
+            normalizedPrefix + "/{filePath}", handler, {drogon::Get}
+        );
+    }
 }
 
 void Router::serviceWorker(

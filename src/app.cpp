@@ -464,7 +464,8 @@ void App::run(unsigned short port) {
     for (const auto& mapping : options_.staticFiles()) {
         router_.staticFiles(
             mapping.routePrefix,
-            mapping.directory
+            mapping.directory,
+            mapping.recursive
         );
     }
 

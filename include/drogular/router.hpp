@@ -64,7 +64,8 @@ public:
      */
     void staticFiles(
         const std::string& routePrefix,
-        const std::filesystem::path& directory
+        const std::filesystem::path& directory,
+        bool recursive = false
     );
 
     /**

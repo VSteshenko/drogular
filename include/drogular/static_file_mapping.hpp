@@ -32,6 +32,11 @@ struct StaticFileMapping {
      * under the route prefix.
      */
     std::filesystem::path directory;
+
+    /**
+     * Enable nested URL paths below this mapping (opt-in).
+     */
+    bool recursive = false;
 };
 
 } // namespace drogular

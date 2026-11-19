@@ -110,3 +110,13 @@ TEST(CoreApplicationOptionsTests, StoresServiceWorkerPath) {
         std::filesystem::path("public/service-worker.js")
     );
 }
+
+TEST(CoreApplicationOptionsTests, RecursiveStaticFileMappingIsOptIn) {
+    drogular::ApplicationOptions options;
+    options.addStaticFiles("/legacy", "public");
+    options.addStaticFiles("/assets", "public", true);
+
+    ASSERT_EQ(options.staticFiles().size(), 2u);
+    EXPECT_FALSE(options.staticFiles()[0].recursive);
+    EXPECT_TRUE(options.staticFiles()[1].recursive);
+}
