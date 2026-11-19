@@ -1,4 +1,4 @@
-# Job Runtime (Drogular 0.26)
+# Job Runtime
 
 The process-local `drogular::JobRuntime` is independent of Drogon, HTTP, and
 Drogular Application. It owns a bounded FIFO queue and a fixed worker pool.

@@ -1,4 +1,4 @@
-# Browser JobClient (Drogular 0.26)
+# Browser JobClient
 
 `App::jobClient()` is opt-in and serves an ES module at
 `/__drogular/assets/job-client.js`. No script files need to be copied into

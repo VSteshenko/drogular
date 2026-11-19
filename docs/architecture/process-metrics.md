@@ -1,4 +1,4 @@
-# Process Metrics (Drogular 0.26 Stage F)
+# Process Metrics
 
 `drogular::ProcessMetricsProvider` is independent of Job Runtime, HTTP, Drogon,
 application services, and Developer Tools. It samples **the entire server process**.

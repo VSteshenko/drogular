@@ -1,4 +1,4 @@
-# Job Registry (Drogular 0.26)
+# Job Registry
 
 `JobRegistry` is a transport-neutral catalog of explicitly registered Job types.
 It owns a non-owning reference to a `JobRuntime`, and applications must ensure

@@ -1,4 +1,4 @@
-# JobsDemo (Drogular 0.26)
+# JobsDemo
 
 A development-only example of the transport-neutral Job Runtime integrated into
 Drogular Application and the existing Developer Tools diagnostics.
