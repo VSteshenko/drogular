@@ -3,6 +3,7 @@ add_executable(drogular_tests
     core/core_expected_tests.cpp
     core/core_principal_tests.cpp
     core/core_principal_claims_tests.cpp
+    core/core_security_context_tests.cpp
     core/core_health_tests.cpp
     job_runtime/job_sse_drogon_tests.cpp
     job_runtime/job_registry_tests.cpp

@@ -58,3 +58,30 @@ The two namespaces do not overlap: a name may appear in both.
 verified claims. Only a future authentication adapter may establish their
 trustworthiness; `Attributes` must never be implicitly used as trusted identity
 claims. Neither class offers public mutations after construction.
+
+## SecurityContext
+
+`drogular::security::SecurityContext` is an HTTP-independent identity snapshot.
+A default-constructed context (or `SecurityContext::anonymous()`) has no
+Principal and reports `authenticated() == false`. An identity can be attached
+using `SecurityContext::forPrincipal(Principal, optional<string> method)`.
+This factory **does not verify credentials**: it is the responsibility of a
+future trusted authentication adapter to establish identity before creating a
+context. Applications must not treat self-asserted contexts as authenticated
+proof. The optional method is descriptive metadata, not a credential.
+
+```cpp
+#include <drogular/security/security_context.hpp>
+
+auto context = drogular::security::SecurityContext::forPrincipal(
+    std::move(result.value()), std::string{"session"});
+if (context.authenticated()) {
+    auto identity = context.principal(); // shared_ptr<const Principal>
+}
+```
+
+Copies share a read-only Principal snapshot that outlives an HTTP request when
+retained by an asynchronous operation. No token, password, session cookie,
+or authorization decision is stored. `authenticationMethod()` returns an
+optional non-owning string view valid only while the corresponding context
+is alive and unchanged. For detached storage, copy the string.
