@@ -14,7 +14,12 @@ namespace drogular::security {
 enum class PrincipalErrorCode {
     MissingIssuer,
     MissingSubject,
-    InvalidRole
+    InvalidRole,
+    InvalidClaimName,
+    InvalidAttributeName,
+    DuplicateClaim,
+    DuplicateAttribute,
+    ConflictingIdentityClaim
 };
 
 struct PrincipalError final {
@@ -28,40 +33,69 @@ public:
         id_.issuer = std::move(value);
         return *this;
     }
+
     PrincipalBuilder&& issuer(std::string value) && {
         static_cast<void>(this->issuer(std::move(value)));
         return std::move(*this);
     }
+
     PrincipalBuilder& subject(std::string value) & {
         id_.subject = std::move(value);
         return *this;
     }
+
     PrincipalBuilder&& subject(std::string value) && {
         static_cast<void>(this->subject(std::move(value)));
         return std::move(*this);
     }
+
     PrincipalBuilder& type(PrincipalType value) & {
         type_ = value;
         return *this;
     }
+
     PrincipalBuilder&& type(PrincipalType value) && {
         static_cast<void>(this->type(value));
         return std::move(*this);
     }
+
     PrincipalBuilder& displayName(std::string value) & {
         displayName_ = std::move(value);
         return *this;
     }
+
     PrincipalBuilder&& displayName(std::string value) && {
         static_cast<void>(this->displayName(std::move(value)));
         return std::move(*this);
     }
+
     PrincipalBuilder& role(std::string value) & {
         roles_.push_back(std::move(value));
         return *this;
     }
+
     PrincipalBuilder&& role(std::string value) && {
         static_cast<void>(this->role(std::move(value)));
+        return std::move(*this);
+    }
+
+    PrincipalBuilder& claim(std::string name, ClaimValue value) & {
+        claimEntries_.emplace_back(std::move(name), std::move(value));
+        return *this;
+    }
+
+    PrincipalBuilder&& claim(std::string name, ClaimValue value) && {
+        static_cast<void>(this->claim(std::move(name), std::move(value)));
+        return std::move(*this);
+    }
+
+    PrincipalBuilder& attribute(std::string name, ClaimValue value) & {
+        attributeEntries_.emplace_back(std::move(name), std::move(value));
+        return *this;
+    }
+
+    PrincipalBuilder&& attribute(std::string name, ClaimValue value) && {
+        static_cast<void>(this->attribute(std::move(name), std::move(value)));
         return std::move(*this);
     }
 
@@ -86,8 +120,48 @@ public:
                 uniqueRoles.push_back(std::move(role));
             }
         }
-        return Principal{std::move(id_), type_, std::move(displayName_),
-                         std::move(uniqueRoles)};
+
+        Claims::Storage claims;
+        for (auto& [name, value] : claimEntries_) {
+            if (blank(name)) {
+                return Unexpected{PrincipalError{PrincipalErrorCode::InvalidClaimName,
+                                                 "Claim name must not be empty"}};
+            }
+            if (name == "iss" || name == "sub") {
+                const auto* text = std::get_if<std::string>(&value);
+                const auto& expected = name == "iss" ? id_.issuer : id_.subject;
+                if (!text || *text != expected) {
+                    return Unexpected{PrincipalError{PrincipalErrorCode::ConflictingIdentityClaim,
+                                                     "Identity claim conflicts with PrincipalId"}};
+                }
+            }
+            if (!claims.emplace(std::move(name), std::move(value)).second) {
+                return Unexpected{PrincipalError{PrincipalErrorCode::DuplicateClaim,
+                                                 "Duplicate claim name"}};
+            }
+        }
+
+        Attributes::Storage attributes;
+        for (auto& [name, value] : attributeEntries_) {
+            if (blank(name)) {
+                return Unexpected{PrincipalError{PrincipalErrorCode::InvalidAttributeName,
+                                                 "Attribute name must not be empty"}};
+            }
+            if (!attributes.emplace(std::move(name), std::move(value)).second) {
+                return Unexpected{PrincipalError{PrincipalErrorCode::DuplicateAttribute,
+                                                 "Duplicate attribute name"}};
+            }
+        }
+
+        return Principal {
+            std::move(id_), type_,
+            std::move(displayName_),
+            std::move(uniqueRoles),
+            Claims{std::move(claims)},
+            Attributes{
+                std::move(attributes)
+            }
+        };
     }
 
 private:
@@ -101,6 +175,8 @@ private:
     PrincipalType type_ = PrincipalType::User;
     std::string displayName_;
     std::vector<std::string> roles_;
+    std::vector<std::pair<std::string, ClaimValue>> claimEntries_;
+    std::vector<std::pair<std::string, ClaimValue>> attributeEntries_;
 };
 
 } // namespace drogular::security
