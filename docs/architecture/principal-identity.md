@@ -85,3 +85,24 @@ retained by an asynchronous operation. No token, password, session cookie,
 or authorization decision is stored. `authenticationMethod()` returns an
 optional non-owning string view valid only while the corresponding context
 is alive and unchanged. For detached storage, copy the string.
+
+## Request integration
+
+`ActionContext::securityContext()` and `RenderContext::securityContext()`
+return a lightweight copy of the shared request identity snapshot.
+`principal()` is a read-only convenience accessor returning
+`std::shared_ptr<const security::Principal>` (null for anonymous requests).
+Both accessors are read-only and do **not** authenticate the request.
+
+The internal `detail::RequestContextBridge::bindSecurityContext(action, context)`
+can be used by framework integration code after verification by a trusted
+adapter (planned for next Stage). It must **not** be used to treat unverified
+request claims or headers as authenticated credentials. The snapshot is
+shared from an action into its render context and child render contexts, but
+not across independently constructed ActionContexts. Detached copies keep
+Principal alive after the original HTTP request ends; they do not carry
+permissions or guarantee that roles remain current.
+
+This stage does not add a `drogon::HttpRequest` extension or a global current
+user. Third-party Drogon controllers remain outside the action/render
+integration until a separately designed request adapter is introduced.

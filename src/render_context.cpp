@@ -205,6 +205,14 @@ drogon::HttpRequestPtr RenderContext::request() const {
     return state_->request();
 }
 
+security::SecurityContext RenderContext::securityContext() const {
+    return state_->securityContext();
+}
+
+std::shared_ptr<const security::Principal> RenderContext::principal() const {
+    return securityContext().principal();
+}
+
 std::optional<std::string> RenderContext::cookie(
     const std::string& name
 ) const {

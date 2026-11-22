@@ -39,6 +39,12 @@ public:
 
     const drogon::HttpRequestPtr& request() const;
 
+    /** Returns the identity snapshot associated with this request. */
+    [[nodiscard]] security::SecurityContext securityContext() const;
+
+    /** Convenience access to the immutable Principal, or nullptr for anonymous. */
+    [[nodiscard]] std::shared_ptr<const security::Principal> principal() const;
+
     /**
      * Returns true when the request was issued by Drogular Interactions.
      */

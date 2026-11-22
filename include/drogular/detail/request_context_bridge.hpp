@@ -13,6 +13,14 @@ namespace drogular::detail {
  */
 class RequestContextBridge final {
 public:
+    // Internal integration point: callers must authenticate before binding.
+    static void bindSecurityContext(
+        ActionContext& actionContext,
+        security::SecurityContext context
+    ) {
+        actionContext.state_->setSecurityContext(std::move(context));
+    }
+
     static RenderContext renderContext(
         const ActionContext& actionContext
     ) {

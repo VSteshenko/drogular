@@ -2,6 +2,8 @@
 #include <drogular/detail/request_context_bridge.hpp>
 #include <drogular/render_context.hpp>
 #include <drogular/services.hpp>
+#include <drogular/security/principal_builder.hpp>
+#include <drogular/security/security_context.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -134,4 +136,66 @@ TEST(
         firstRender.requireService<RequestScopedService>(),
         secondRender.requireService<RequestScopedService>()
     );
+}
+
+TEST(RequestContextBridgeTests, AnonymousSecurityContextIsDefault) {
+    drogular::ActionContext action(drogon::HttpRequest::newHttpRequest(), nullptr);
+    EXPECT_FALSE(action.securityContext().authenticated());
+    EXPECT_EQ(action.principal(), nullptr);
+
+    const auto render = drogular::detail::RequestContextBridge::renderContext(action);
+    EXPECT_FALSE(render.securityContext().authenticated());
+    EXPECT_EQ(render.principal(), nullptr);
+}
+
+TEST(RequestContextBridgeTests, SecuritySnapshotSharedWithRenderChildrenAndDetachedCopy) {
+    using namespace drogular::security;
+    auto principal = PrincipalBuilder{}
+        .issuer("test-issuer")
+        .subject("alice")
+        .role("editor")
+        .build();
+    ASSERT_TRUE(principal);
+
+    SecurityContext detached;
+    {
+        drogular::ActionContext action(
+            drogon::HttpRequest::newHttpRequest(), nullptr);
+        drogular::detail::RequestContextBridge::bindSecurityContext(
+            action, SecurityContext::forPrincipal(
+                std::move(principal.value()), std::string{"test-adapter"}));
+        auto render = drogular::detail::RequestContextBridge::renderContext(action);
+        auto child = render.createChild();
+
+        ASSERT_TRUE(action.securityContext().authenticated());
+        ASSERT_NE(action.principal(), nullptr);
+        EXPECT_EQ(action.principal(), render.principal());
+        EXPECT_EQ(render.principal(), child.principal());
+        EXPECT_EQ(child.principal()->id().subject, "alice");
+        detached = child.securityContext();
+    }
+    ASSERT_TRUE(detached.authenticated());
+    ASSERT_NE(detached.principal(), nullptr);
+    EXPECT_EQ(detached.principal()->id().subject, "alice");
+    ASSERT_TRUE(detached.authenticationMethod());
+    EXPECT_EQ(*detached.authenticationMethod(), "test-adapter");
+}
+
+TEST(RequestContextBridgeTests, SecurityContextsAreIsolatedAcrossRequests) {
+    using namespace drogular::security;
+    auto principal = PrincipalBuilder{}
+        .issuer("test-issuer")
+        .subject("alice")
+        .build();
+    ASSERT_TRUE(principal);
+
+    drogular::ActionContext first(drogon::HttpRequest::newHttpRequest(), nullptr);
+    drogular::ActionContext second(drogon::HttpRequest::newHttpRequest(), nullptr);
+    drogular::detail::RequestContextBridge::bindSecurityContext(
+        first,
+        SecurityContext::forPrincipal(std::move(principal.value()))
+    );
+    EXPECT_TRUE(first.securityContext().authenticated());
+    EXPECT_FALSE(second.securityContext().authenticated());
+    EXPECT_EQ(second.principal(), nullptr);
 }

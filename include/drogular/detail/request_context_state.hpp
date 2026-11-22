@@ -2,6 +2,7 @@
 
 #include <drogular/services.hpp>
 #include <drogular/runtime_diagnostics.hpp>
+#include <drogular/security/security_context.hpp>
 
 #include <drogon/HttpRequest.h>
 
@@ -68,6 +69,16 @@ public:
         return *serviceScope_;
     }
 
+    // Framework-owned request identity snapshot. Not derived from request headers.
+    [[nodiscard]] security::SecurityContext securityContext() const {
+        return securityContext_;
+    }
+
+    // Internal binding point for a future verified authentication adapter.
+    void setSecurityContext(security::SecurityContext context) {
+        securityContext_ = std::move(context);
+    }
+
     void setRouteParam(
         const std::string& name,
         const std::string& value
@@ -89,6 +100,7 @@ public:
 
 private:
     drogon::HttpRequestPtr request_;
+    security::SecurityContext securityContext_;
     ApplicationServices* services_ = nullptr;
     RuntimeDiagnostics* diagnostics_ = nullptr;
     std::shared_ptr<ServiceScope> serviceScope_;

@@ -343,6 +343,12 @@ public:
 
     drogon::HttpRequestPtr request() const;
 
+    /** Returns the identity snapshot shared with the owning action request. */
+    [[nodiscard]] security::SecurityContext securityContext() const;
+
+    /** Convenience access to the immutable Principal, or nullptr for anonymous. */
+    [[nodiscard]] std::shared_ptr<const security::Principal> principal() const;
+
     std::optional<std::string> cookie(
         const std::string& name
     ) const;

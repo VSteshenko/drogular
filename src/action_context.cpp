@@ -27,6 +27,14 @@ const drogon::HttpRequestPtr& ActionContext::request() const {
     return state_->request();
 }
 
+security::SecurityContext ActionContext::securityContext() const {
+    return state_->securityContext();
+}
+
+std::shared_ptr<const security::Principal> ActionContext::principal() const {
+    return securityContext().principal();
+}
+
 bool ActionContext::isInteraction() const {
     const auto& httpRequest = request();
 
