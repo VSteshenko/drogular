@@ -4,6 +4,9 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <future>
+#include <thread>
+#include <vector>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -82,4 +85,29 @@ TEST(CoreSecurityContext, CarriesIdentityNotAuthorization) {
     // SecurityContext has no grant, permission, or credential APIs.
     EXPECT_TRUE(context.authenticated());
     EXPECT_FALSE(context.authenticationMethod());
+}
+
+TEST(CoreSecurityContext, DetachedCopiesSupportConcurrentReadOnlyUse) {
+    const auto original = SecurityContext::forPrincipal(
+        makePrincipal(), std::string{"test-adapter"});
+    std::vector<std::future<bool>> readers;
+    readers.reserve(8);
+    for (int index = 0; index < 8; ++index) {
+        readers.emplace_back(std::async(std::launch::async, [context = original] {
+            for (int iteration = 0; iteration < 100; ++iteration) {
+                const auto principal = context.principal();
+                if (!principal || principal->id().subject != "user-123" ||
+                    !principal->hasRole("editor") ||
+                    principal->claims().get<std::string>("department") != "engineering" ||
+                    context.authenticationMethod() != "test-adapter"
+                ) {
+                    return false;
+                }
+            }
+            return true;
+        }));
+    }
+    for (auto& reader : readers) {
+        EXPECT_TRUE(reader.get());
+    }
 }

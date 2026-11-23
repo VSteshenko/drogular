@@ -2,7 +2,8 @@
 
 Drogular provides session-based primitives for establishing application identity and enforcing simple access requirements.
 
-The framework does not define users, credentials, roles, permissions, or persistence. Applications build those concepts on top of `SessionStore`, `Session`, and the authentication support helpers.
+The framework provides a separate, transport-independent `Principal` identity model, but does not validate credentials or 
+grant permissions. Applications implement authentication using `SessionStore`, `Session`, and the existing helpers.
 
 ```text
 HTTP Request
@@ -23,6 +24,7 @@ Session
 
 ## Types
 
+- [`Principal` and `SecurityContext`](principal-identity.md) — immutable identity snapshots, typed claims, request access, and explicit Job attribution (no automatic authentication or authorization).
 - [`AuthSupport`](auth-support.md) — read authentication-related session values from render or action contexts.
 - [`PageAuthSupport`](page-auth-support.md) — expose page-level authentication and access flags through `RenderContext`.
 - [`ActionAuthSupport`](action-auth-support.md) — stop action execution by returning redirect results when session requirements are not met.
