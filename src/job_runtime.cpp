@@ -17,6 +17,8 @@ struct JobContext::Shared {
     RuntimeDiagnostics* diagnostics = nullptr;
     JobEventStream* events = nullptr;
     bool resumable = false;
+    // Kept out of JobSnapshot, events, and diagnostics.
+    std::shared_ptr<const security::Principal> initiator;
 };
 
 namespace {
@@ -33,6 +35,10 @@ struct JobRuntime::Entry {
 JobContext::JobContext(std::shared_ptr<Shared> shared)
     : shared_(std::move(shared))
 {
+}
+
+std::shared_ptr<const security::Principal> JobContext::initiator() const noexcept {
+    return shared_->initiator;
 }
 
 bool JobContext::cancellationRequested() const noexcept {
@@ -151,14 +157,26 @@ JobRuntime::~JobRuntime() {
 }
 
 JobId JobRuntime::submit(std::string name, Task task) {
-    return submitImpl(std::move(name), std::move(task), false);
+    return submit(std::move(name), std::move(task), security::SecurityContext::anonymous());
+}
+
+JobId JobRuntime::submit(std::string name, Task task,
+                         security::SecurityContext initiator) {
+    return submitImpl(std::move(name), std::move(task), false, std::move(initiator));
 }
 
 JobId JobRuntime::submitResumable(std::string name, Task task) {
-    return submitImpl(std::move(name), std::move(task), true);
+    return submitResumable(std::move(name), std::move(task),
+                           security::SecurityContext::anonymous());
 }
 
-JobId JobRuntime::submitImpl(std::string name, Task task, bool resumable) {
+JobId JobRuntime::submitResumable(std::string name, Task task,
+                                  security::SecurityContext initiator) {
+    return submitImpl(std::move(name), std::move(task), true, std::move(initiator));
+}
+
+JobId JobRuntime::submitImpl(std::string name, Task task, bool resumable,
+                             security::SecurityContext initiator) {
     if (!task) {
         throw std::invalid_argument("Job task cannot be empty");
     }
@@ -177,6 +195,7 @@ JobId JobRuntime::submitImpl(std::string name, Task task, bool resumable) {
 
     auto shared = std::make_shared<JobContext::Shared>();
     shared->resumable = resumable;
+    shared->initiator = initiator.principal();
     shared->diagnostics = diagnostics_;
     shared->events = events_.get();
     shared->snapshot.id = nextId_++;

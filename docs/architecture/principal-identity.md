@@ -106,3 +106,34 @@ permissions or guarantee that roles remain current.
 This stage does not add a `drogon::HttpRequest` extension or a global current
 user. Third-party Drogon controllers remain outside the action/render
 integration until a separately designed request adapter is introduced.
+
+## Explicit async/Job identity attribution
+
+A `SecurityContext` is a copyable identity snapshot. A callback may capture it by
+value to keep its immutable Principal alive independently of the HTTP request.
+Neither callbacks nor workers implicitly inherit a global/thread-local user.
+
+`JobRuntime` also offers explicit overloads for both regular and resumable Jobs:
+
+```cpp
+const auto identity = action.securityContext();
+auto jobId = jobs.submit("rebuild-index", [](drogular::JobContext& job) {
+    const auto initiator = job.initiator(); // nullable shared_ptr<const Principal>
+    // For attribution only; do not authorize based on this snapshot.
+}, identity);
+```
+
+The existing two-argument `submit` / `submitResumable` overloads remain anonymous.
+The explicit overloads accept a `security::SecurityContext` **by value**, and
+`JobContext::initiator()` returns an immutable Principal pointer. Attribution
+survives the source request and is isolated per Job, including resumable Jobs.
+The identity is **not** copied into JobSnapshot, SSE events, or diagnostics.
+It may be retained internally until the terminal Job is pruned or the runtime
+is destroyed, so avoid unnecessary sensitive personal data in Principal.
+
+**Security boundary:** no credential, permission, or authorization decision is
+transferred. Identity (including historical role/claim data) is a snapshot, not
+proof of current authority. Any privileged action must perform authorization
+against current policy and relevant tenant scope at execution time. No automatic
+HTTP-to-Job propagation occurs; the caller opts in explicitly after verifying
+its authentication source. The runtime does not independently verify that source.

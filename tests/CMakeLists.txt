@@ -403,6 +403,18 @@ add_test(
     COMMAND drogular_job_runtime_smoke
 )
 
+# Explicit, transport-independent job initiator propagation.
+add_executable(drogular_job_identity_smoke
+    job_runtime/job_identity_smoke.cpp
+)
+target_link_libraries(drogular_job_identity_smoke
+    PRIVATE Drogular::drogular
+)
+add_test(
+    NAME drogular_job_identity_smoke
+    COMMAND drogular_job_identity_smoke
+)
+
 # Bounded retention of terminal jobs, without eviction of active work.
 add_executable(drogular_job_retention_smoke
     job_runtime/job_retention_smoke.cpp

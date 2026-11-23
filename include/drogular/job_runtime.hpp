@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drogular/security/security_context.hpp>
+
 #include <any>
 #include <atomic>
 #include <chrono>
@@ -83,6 +85,10 @@ private:
 
 class JobContext {
 public:
+    // Identity snapshot of the initiating actor, if explicitly supplied.
+    // This is attribution only: permissions must be checked at execution time.
+    // Never contains credentials or an implicit authorization grant.
+    [[nodiscard]] std::shared_ptr<const security::Principal> initiator() const noexcept;
     bool cancellationRequested() const noexcept;
     void throwIfCancellationRequested() const;
     // Cooperative checkpoint: waits without polling; worker remains occupied.
@@ -93,8 +99,11 @@ public:
     // Store a copyable C++ result. The value is published only if the task
     // finishes successfully; cancellation/failure clears it.
     void setResult(std::any value);
+
     template <typename T>
-    void setResult(T value) { setResult(std::any(std::move(value))); }
+    void setResult(T value) {
+        setResult(std::any(std::move(value)));
+    }
 
 private:
     friend class JobRuntime;
@@ -122,8 +131,12 @@ public:
     // Throws std::invalid_argument for an empty task, std::runtime_error if
     // stopped or full. Rejections never create an inspectable Job.
     JobId submit(std::string name, Task task);
+    // Explicit, opt-in identity attribution; never inherited from a thread or HTTP request.
+    // This snapshot may be retained until the terminal Job is pruned.
+    JobId submit(std::string name, Task task, security::SecurityContext initiator);
     // Opt-in: tasks must be restartable and retain checkpoint state in captures.
     JobId submitResumable(std::string name, Task task);
+    JobId submitResumable(std::string name, Task task, security::SecurityContext initiator);
 
     std::optional<JobSnapshot> find(JobId id) const;
     std::vector<JobSnapshot> list() const;
@@ -148,7 +161,8 @@ private:
     struct Entry;
     void workerLoop();
     std::size_t pruneTerminalJobsLocked(std::size_t keepLatest);
-    JobId submitImpl(std::string name, Task task, bool resumable);
+    JobId submitImpl(std::string name, Task task, bool resumable,
+                     security::SecurityContext initiator);
     mutable std::mutex mutex_;
     std::condition_variable ready_;
     std::map<JobId, std::shared_ptr<Entry>> entries_;
