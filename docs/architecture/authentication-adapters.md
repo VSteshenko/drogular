@@ -40,3 +40,33 @@ credentials and trustworthy claims before returning an authenticated context.
 This API does not change `AuthSupport`, `PageAuthSupport`, `ActionAuthSupport`,
 `ActionContext` or `RequestContextBridge`. Session adapter, HTTP status mapping,
 and AuthSample wiring are separate planned increments.
+
+## Server-side session adapter
+
+`<drogular/security/session_authentication_adapter.hpp>` adds an **opt-in**
+`SessionAuthenticationAdapter` and a `SessionAuthenticationRequest` facade.
+The facade takes an existing server-side `Session` resolved by `SessionStore`;
+it does not trust or parse raw cookies. A missing session or missing `username`
+returns not-applicable, while a present but invalid identity fails closed.
+
+```cpp
+// An HTTP integration must first resolve the session ID using SessionStore.
+auto request = drogular::security::SessionAuthenticationRequest{existingSession};
+auto pipeline = drogular::security::AuthenticationPipeline{};
+pipeline.add(std::make_shared<drogular::security::SessionAuthenticationAdapter>(
+    "my.application"));
+auto identity = pipeline.authenticate(request);
+```
+
+The default subject key is `username` to match the existing `AuthSupport`
+contract. An explicit, stable issuer is required to namespace identities.
+The adapter deliberately **does not import session roles or permissions**:
+those require a separately reviewed trust and authorization policy.
+The resulting `SecurityContext` carries the method `session` and remains
+valid after the original session/request is destroyed.
+
+The facade caches string values for the duration of synchronous authentication
+so its returned `string_view`s do not dangle. Do not reuse or concurrently
+share one facade across requests. No existing `AuthSupport`, `PageAuthSupport`
+or `ActionAuthSupport` behavior is changed. Automatic HTTP binding, failure
+responses and redirects are addressed in next Stage.
