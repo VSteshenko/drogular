@@ -152,6 +152,51 @@ public:
         return *this;
     }
 
+    /** Enables the new authentication pipeline for Drogular routes.
+     * Configure before run(); legacy session-based AuthSupport remains unchanged.
+     */
+    App& authenticationPipeline(
+        std::shared_ptr<const security::AuthenticationPipeline> pipeline) {
+        router_.authenticationPipeline(std::move(pipeline));
+        return *this;
+    }
+
+    /** Registers a page protected by an explicit security policy. */
+    template <typename PageType>
+    App& securePage(const std::string& path, security::HttpSecurityPolicy policy) {
+        static_assert(std::is_base_of_v<Page, PageType>);
+        router_.page(path, [] {
+                return std::make_shared<PageType>();
+            },
+            typeid(PageType).name(),
+            std::move(policy));
+        return *this;
+    }
+
+    /** Registers a POST action protected by an explicit security policy. */
+    template <typename ActionType>
+    App& secureAction(const std::string& path, security::HttpSecurityPolicy policy) {
+        static_assert(std::is_base_of_v<ActionHandler, ActionType>);
+        router_.action(path, [] {
+                return std::make_shared<ActionType>();
+            },
+            typeid(ActionType).name(),
+            ActionMethod::Post, std::move(policy));
+        return *this;
+    }
+
+    /** Registers a GET action protected by an explicit security policy. */
+    template <typename ActionType>
+    App& secureGet(const std::string& path, security::HttpSecurityPolicy policy) {
+        static_assert(std::is_base_of_v<ActionHandler, ActionType>);
+        router_.action(path, [] {
+                return std::make_shared<ActionType>();
+            },
+            typeid(ActionType).name(),
+            ActionMethod::Get, std::move(policy));
+        return *this;
+    }
+
     /**
      * Registers a static file mapping.
      *

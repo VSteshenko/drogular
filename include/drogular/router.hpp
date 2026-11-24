@@ -1,6 +1,7 @@
 #pragma once
 
 #include <drogular/services.hpp>
+#include <drogular/security/http_security_policy.hpp>
 #include <drogular/runtime_diagnostics.hpp>
 #include <drogular/action_handler.hpp>
 #include <drogular/developer_tools/application_inspection.hpp>
@@ -40,7 +41,8 @@ public:
     void page(
         const std::string& path,
         PageFactory factory,
-        std::string target
+        std::string target,
+        security::HttpSecurityPolicy policy = {}
     );
 
     /**
@@ -51,7 +53,8 @@ public:
         const std::string& path,
         ActionFactory factory,
         std::string target,
-        ActionMethod method = ActionMethod::Post
+        ActionMethod method = ActionMethod::Post,
+        security::HttpSecurityPolicy policy = {}
     );
 
     /**
@@ -78,9 +81,17 @@ public:
         const std::filesystem::path& path
     );
 
+    // Call during application setup, before the server begins processing requests.
+    // Existing routes remain public unless registered with an explicit policy.
+    void authenticationPipeline(std::shared_ptr<const security::AuthenticationPipeline> pipeline) {
+        securityConfig_->pipeline = std::move(pipeline);
+    }
+
     const std::vector<RouteInspection>& routes() const { return routes_; }
 
 private:
+    std::shared_ptr<security::HttpSecurityConfiguration> securityConfig_ =
+        std::make_shared<security::HttpSecurityConfiguration>();
     ApplicationServices* services_ = nullptr;
     RuntimeDiagnostics* diagnostics_ = nullptr;
     std::vector<RouteInspection> routes_;

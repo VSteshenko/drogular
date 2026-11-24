@@ -11,6 +11,7 @@
 #include <drogular/route_pattern.hpp>
 #include <drogular/error.hpp>
 #include <drogular/detail/request_context_state.hpp>
+#include "http_security_integration.hpp"
 
 #include <drogon/drogon.h>
 
@@ -81,7 +82,8 @@ Router::Router(
 void Router::page(
     const std::string& path,
     PageFactory factory,
-    std::string target
+    std::string target,
+    security::HttpSecurityPolicy policy
 ) {
     routes_.push_back({
         path,
@@ -92,11 +94,13 @@ void Router::page(
 
     auto* services = services_;
     auto* diagnostics = diagnostics_;
+    auto securityConfig = securityConfig_;
     const RoutePattern pattern(path);
 
     drogon::app().registerHandler(
         path,
-        [factory = std::move(factory), services, diagnostics, pattern](
+        [factory = std::move(factory), services, diagnostics, pattern,
+         securityConfig, policy = std::move(policy)](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
@@ -125,6 +129,13 @@ void Router::page(
                 );
             }
 
+            if (const auto rejected = detail::authenticateAndAuthorize(
+                    state, *securityConfig, policy)
+            ) {
+                callback(detail::securityErrorResponse(*rejected));
+                return;
+            }
+
             RenderContext context(state);
 
             auto page = factory();
@@ -144,7 +155,8 @@ void Router::action(
     const std::string& path,
     ActionFactory factory,
     std::string target,
-    ActionMethod method
+    ActionMethod method,
+    security::HttpSecurityPolicy policy
 ) {
     const auto methodName =
         method == ActionMethod::Get ? "GET" : "POST";
@@ -160,11 +172,13 @@ void Router::action(
 
     auto* services = services_;
     auto* diagnostics = diagnostics_;
+    auto securityConfig = securityConfig_;
     const RoutePattern pattern(path);
 
     drogon::app().registerHandler(
         path,
-        [factory = std::move(factory), services, diagnostics, pattern, method](
+        [factory = std::move(factory), services, diagnostics, pattern, method,
+         securityConfig, policy = std::move(policy)](
             const drogon::HttpRequestPtr& request,
             std::function<void(const drogon::HttpResponsePtr&)>&& callback
         ) {
@@ -192,6 +206,13 @@ void Router::action(
                     name,
                     value
                 );
+            }
+
+            if (const auto rejected = detail::authenticateAndAuthorize(
+                    state, *securityConfig, policy)
+            ) {
+                callback(detail::securityErrorResponse(*rejected));
+                return;
             }
 
             ActionContext context(state);
