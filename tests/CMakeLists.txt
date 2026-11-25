@@ -7,6 +7,7 @@ add_executable(drogular_tests
     core/core_authorization_tests.cpp
     core/core_authentication_adapter_tests.cpp
     core/core_http_security_policy_tests.cpp
+    core/core_http_authentication_integration_tests.cpp
     core/core_session_authentication_adapter_tests.cpp
     core/core_health_tests.cpp
     job_runtime/job_sse_drogon_tests.cpp
